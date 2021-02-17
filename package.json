@@ -1,0 +1,26 @@
+{
+  "name": "explorer",
+  "version": "1.0.0",
+  "description": "## Installation",
+  "main": "index.js",
+  "scripts": {
+    "dev:prepare:html": "cpr node_modules/ode-bootstrap-neo/docs/explorer.html src/main/resources/view/",
+    "dev:prepare:assets": "cpr node_modules/ode-bootstrap-neo/docs/ src/main/resources/public/",
+    "dev:replace:apple": "gsed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer.html",
+    "dev:replace:gnu": "sed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer.html",
+    "dev:replace:logo:apple": "gsed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer.html",
+    "dev:replace:logo:gnu": "sed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer.html",
+    "dev:prepare": "npm run dev:clean && npm run dev:prepare:html && npm run dev:prepare:assets",
+    "dev:clean": "rimraf src/main/resources/view/ && rimraf src/main/resources/public/",
+    "dev:build:apple": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:apple && npm run dev:replace:logo:apple",
+    "dev:build": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:gnu && npm run dev:replace:logo:gnu"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ode-bootstrap-neo": "^1.0.0-explorer"
+  },
+  "devDependencies": {
+    "cpr": "^3.0.1"
+  }
+}

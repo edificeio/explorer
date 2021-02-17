@@ -1,0 +1,26 @@
+    {
+      "name": "com.opendigitaleducation~explorer~1.0-SNAPSHOT",
+      "config": {
+        "main" : "com.opendigitaleducation.explorer.Explorer",
+        "port" : 8068,
+        "app-name" : "Explorer",
+        "app-address" : "/explorer",
+        "app-icon" : "explorer-large",
+        "host": "${host}",
+        "ssl" : $ssl,
+        "auto-redeploy": false,
+        "userbook-host": "${host}",
+        "mode" : "${mode}",
+        "max-workertime-minutes":15,
+	"projects" : [],
+        "publicConf": {
+          <% if ("true".equals(xitiSwitch)) { %>
+            "xiti": {
+              "ID_SERVICE": {
+                "default": 2
+              }
+            }
+          <% } %>
+        }
+      }
+    }
