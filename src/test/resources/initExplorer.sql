@@ -1,10 +1,20 @@
 DROP SCHEMA IF EXISTS explorer CASCADE;
 CREATE SCHEMA explorer;
 CREATE TABLE explorer.resource_queue (
-    id uuid not null,
-    updated_at timestamp without time zone not null,
+    id VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    resource_action VARCHAR(16) NOT NULL CHECK (resource_action IN ('create', 'update', 'delete')),
     payload JSONB NOT NULL,
-    PRIMARY KEY (id, updated_at)
+    attempted_at TIMESTAMP WITHOUT TIME ZONE,
+    attempted_count INTEGER NOT NULL DEFAULT 0,
+    attempt_status SMALLINT NOT NULL DEFAULT 0,
+    priority INTEGER NOT NULL,
+    random_num INTEGER NOT NULL --used for splitting accross worker
+);
+CREATE TABLE explorer.resource_queue_causes (
+    id VARCHAR(128) NOT NULL,
+    attempt_reason TEXT,
+    attempted_at TIMESTAMP WITHOUT TIME ZONE
 );
 CREATE TABLE explorer.share_subjects (
     id TEXT not null PRIMARY KEY

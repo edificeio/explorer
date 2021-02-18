@@ -10,7 +10,18 @@ public class ElasticFolderQuery {
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> parentId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
+    private Integer from;
+    private Integer size;
 
+    public ElasticFolderQuery withFrom(Integer from) {
+        this.from = from;
+        return this;
+    }
+
+    public ElasticFolderQuery withSize(Integer size) {
+        this.size = size;
+        return this;
+    }
 
     public ElasticFolderQuery withCreatorId(final String creatorId) {
         this.creatorId.add(creatorId);
@@ -44,7 +55,7 @@ public class ElasticFolderQuery {
         return id;
     }
 
-    public JsonObject getSearchQuery(){
+    public JsonObject getSearchQuery() {
         final JsonObject payload = new JsonObject();
         final JsonObject query = new JsonObject();
         final JsonObject bool = new JsonObject();
@@ -53,19 +64,26 @@ public class ElasticFolderQuery {
         query.put("bool", bool);
         bool.put("filter", filter);
         //by creator
-        if(creatorId.size() > 0){
-            Object value = creatorId.size()==1?creatorId.get(0):new JsonArray(creatorId);
-            filter.add(new JsonObject().put("term",new JsonObject().put("creatorId",value )));
+        if (creatorId.size() > 0) {
+            Object value = creatorId.size() == 1 ? creatorId.get(0) : new JsonArray(creatorId);
+            filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", value)));
         }
         //by parent
-        if(parentId.size() > 0) {
-            Object value = parentId.size()==1?parentId.get(0):new JsonArray(parentId);
+        if (parentId.size() > 0) {
+            Object value = parentId.size() == 1 ? parentId.get(0) : new JsonArray(parentId);
             filter.add(new JsonObject().put("term", new JsonObject().put("parentId", value)));
         }
         //by id
-        if(id.size() > 0) {
-            Object value = id.size()==1?id.get(0):new JsonArray(id);
+        if (id.size() > 0) {
+            Object value = id.size() == 1 ? id.get(0) : new JsonArray(id);
             filter.add(new JsonObject().put("term", new JsonObject().put("_id", value)));
+        }
+        //from / size
+        if (from != null) {
+            payload.put("from", from);
+        }
+        if (size != null) {
+            payload.put("size", size);
         }
         return payload;
     }

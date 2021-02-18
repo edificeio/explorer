@@ -1,14 +1,14 @@
 #!/usr/bin/env groovy
 
 pipeline {
-  agent any
+    agent any
     stages {
-      stage('Build') {
-        steps {
-          checkout scm
-          sh './build.sh clean install publish'
+        stage('Build') {
+            steps {
+                checkout scm
+                sh './build.sh clean install publish'
+            }
         }
-      }
     }
 }
 

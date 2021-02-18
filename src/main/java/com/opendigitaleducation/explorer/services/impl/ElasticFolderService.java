@@ -37,17 +37,20 @@ public class ElasticFolderService implements FolderService {
         final String creatorId = creator.getUserId();
         final ElasticFolderQuery query = new ElasticFolderQuery().withCreatorId(creatorId).withParentId(parentId);
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        //TODO limit/offset?
+        //TODO store countchildren? (used by front)
+        //TODO create root folder for each user? not needed?
         return manager.getClient().search(index, query.getSearchQuery(), options);
     }
 
-    protected String getRoutingKey(final UserInfos creator){
+    protected String getRoutingKey(final UserInfos creator) {
         //TODO use application?
         return creator.getUserId();
     }
 
     @Override
     public Future<String> create(final UserInfos creator, final JsonObject folder) {
-        return beforeCreate(creator, Arrays.asList(folder)).compose(prepare->{
+        return beforeCreate(creator, Arrays.asList(folder)).compose(prepare -> {
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
             return manager.getClient().createDocument(index, folder, options);
         });
@@ -55,7 +58,7 @@ public class ElasticFolderService implements FolderService {
 
     @Override
     public Future<List<JsonObject>> create(final UserInfos creator, final List<JsonObject> folders) {
-        return beforeCreate(creator, folders).compose(prepare-> {
+        return beforeCreate(creator, folders).compose(prepare -> {
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
             final ElasticBulkRequest bulk = manager.getClient().bulk(index, options);
             for (final JsonObject folder : folders) {
@@ -66,11 +69,14 @@ public class ElasticFolderService implements FolderService {
                 String message = "";
                 for (int i = 0; i < folders.size(); i++) {
                     final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
+                    final JsonObject folder = folders.get(i);
                     if (res.isOk()) {
-                        folders.get(i).put("_id", res.getId());
+                        folder.put("_id", res.getId());
+                        folder.put(SUCCESS_FIELD, true);
                     } else {
                         success = false;
-                        folders.get(i).put("_error", res.getMessage());
+                        folder.put(ERROR_FIELD, res.getMessage());
+                        folder.put(SUCCESS_FIELD, false);
                         message += " - " + res.getMessage();
                     }
                 }
@@ -83,41 +89,41 @@ public class ElasticFolderService implements FolderService {
         });
     }
 
-    protected boolean hasParent(final JsonObject folder){
+    protected boolean hasParent(final JsonObject folder) {
         final String parentId = folder.getString("parentId");
         return hasParent(parentId);
     }
 
 
-    protected boolean hasParent(final String parentId){
+    protected boolean hasParent(final String parentId) {
         return !ROOT_FOLDER_ID.equals(parentId) && !StringUtils.isEmpty(parentId);
     }
 
-    protected Future<Void> mergeAncestors(final UserInfos creator, final List<JsonObject> folders){
-        final List<String> ids = folders.stream().map(f->f.getString("parentId")).filter(f->hasParent(f)).collect(Collectors.toList());
-        if(ids.isEmpty()){
-            for(final JsonObject folder : folders){
+    protected Future<Void> mergeAncestors(final UserInfos creator, final List<JsonObject> folders) {
+        final List<String> ids = folders.stream().map(f -> f.getString("parentId")).filter(f -> hasParent(f)).collect(Collectors.toList());
+        if (ids.isEmpty()) {
+            for (final JsonObject folder : folders) {
                 folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
                 folder.put("parentId", ROOT_FOLDER_ID);
             }
             return Future.succeededFuture();
-        }else{
+        } else {
             final String creatorId = creator.getUserId();
-            final ElasticFolderQuery query = new ElasticFolderQuery().withCreatorId(creatorId).withId(ids);
+            final ElasticFolderQuery query = new ElasticFolderQuery().withCreatorId(creatorId).withId(ids).withFrom(0).withSize(ids.size());
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-            return manager.getClient().search(index, query.getSearchQuery(), options).compose(parents->{
-                for(final JsonObject folder : folders){
+            return manager.getClient().search(index, query.getSearchQuery(), options).compose(parents -> {
+                for (final JsonObject folder : folders) {
                     final String parentId = folder.getString("parentId");
-                    if(hasParent(parentId)){
-                        final Optional<JsonObject> found = parents.stream().map(o->(JsonObject)o).filter(p->parentId.equals(p.getString("_id"))).findFirst();
-                        if(found.isPresent()){
+                    if (hasParent(parentId)) {
+                        final Optional<JsonObject> found = parents.stream().map(o -> (JsonObject) o).filter(p -> parentId.equals(p.getString("_id"))).findFirst();
+                        if (found.isPresent()) {
                             final JsonArray ancestors = found.get().getJsonArray("ancestors", new JsonArray()).add(parentId);
                             folder.put("ancestors", ancestors);
-                        }else{
+                        } else {
                             folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
                             folder.put("parentId", ROOT_FOLDER_ID);
                         }
-                    }else{
+                    } else {
                         folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
                         folder.put("parentId", ROOT_FOLDER_ID);
                     }
@@ -127,19 +133,19 @@ public class ElasticFolderService implements FolderService {
         }
     }
 
-    protected Future<Void> beforeCreate(final UserInfos creator, final List<JsonObject> folders){
-        for(final JsonObject folder : folders){
+    protected Future<Void> beforeCreate(final UserInfos creator, final List<JsonObject> folders) {
+        for (final JsonObject folder : folders) {
             folder.put("creatorId", creator.getUserId());
             folder.put("creatorName", creator.getUsername());
             folder.put("createdAt", new Date().getTime());
             folder.put("updatedAt", new Date().getTime());
-            if(!folder.containsKey("parentId")){
+            if (!folder.containsKey("parentId")) {
                 folder.put("parentId", ROOT_FOLDER_ID);
             }
-            if(!folder.containsKey("ancestors")){
+            if (!folder.containsKey("ancestors")) {
                 folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
             }
-            if(!folder.containsKey("trashed")){
+            if (!folder.containsKey("trashed")) {
                 folder.put("trashed", false);
             }
         }

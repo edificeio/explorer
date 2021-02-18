@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class ElasticBulkRequest {
-    private final HttpClientRequest request;
     final Future<Buffer> body;
     final List<String> actions = new ArrayList<>();
+    private final HttpClientRequest request;
 
     public ElasticBulkRequest(final HttpClientRequest aReq, final Future<Buffer> body) {
         this.request = aReq;
@@ -35,74 +35,86 @@ public class ElasticBulkRequest {
     }
 
     public void index(final JsonObject document) {
-        index(document, document.getString("_id"), null);
+        index(document, document.getString("_id"), Optional.empty(), Optional.empty());
     }
 
     public void index(final JsonObject document, final String id) {
-        index(document, id, null);
+        index(document, id, Optional.empty(), Optional.empty());
     }
 
-    public void index(final JsonObject document, final String id, final String index) {
+    public void index(final JsonObject document, final String id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
         if (id != null) {
             metadata.put("_id", id);
         }
-        if (index != null) {
-            metadata.put("_index", index);
+        if (index.isPresent()) {
+            metadata.put("_index", index.get());
+        }
+        if (routing.isPresent()) {
+            metadata.put("_routing", routing.get());
         }
         doWrite(Optional.of(document), metadata, "index");
         actions.add("index");
     }
 
     public void create(final JsonObject document) {
-        create(document, document.getString("_id"), null);
+        create(document, document.getString("_id"));
     }
 
     public void create(final JsonObject document, final String id) {
-        create(document, id, null);
+        create(document, Optional.ofNullable(id), Optional.empty(), Optional.empty());
     }
 
-    public void create(final JsonObject document, final String id, final String index) {
+    public void create(final JsonObject document, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
-        if (id != null) {
-            metadata.put("_id", id);
+        if (id.isPresent()) {
+            metadata.put("_id", id.get());
         }
-        if (index != null) {
-            metadata.put("_index", index);
+        if (index.isPresent()) {
+            metadata.put("_index", index.get());
+        }
+        if (routing.isPresent()) {
+            metadata.put("_routing", routing.get());
         }
         doWrite(Optional.of(document), metadata, "create");
         actions.add("create");
     }
 
     public void update(final JsonObject document) {
-        update(document, document.getString("_id"), null);
+        update(document, document.getString("_id"), Optional.empty(), Optional.empty());
     }
 
     public void update(final JsonObject document, final String id) {
-        update(document, id, null);
+        update(document, id, Optional.empty(), Optional.empty());
     }
 
-    public void update(final JsonObject document, final String id, final String index) {
+    public void update(final JsonObject document, final String id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
         if (id != null) {
             metadata.put("_id", id);
         }
-        if (index != null) {
-            metadata.put("_index", index);
+        if (index.isPresent()) {
+            metadata.put("_index", index.get());
+        }
+        if (routing.isPresent()) {
+            metadata.put("_routing", routing.get());
         }
         doWrite(Optional.of(new JsonObject().put("doc", document)), metadata, "update");
         actions.add("update");
     }
 
     public void delete(final String id) {
-        delete(id, null);
+        delete(id, Optional.empty(), Optional.empty());
     }
 
-    public void delete(final String id, final String index) {
+    public void delete(final String id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
         metadata.put("_id", id);
-        if (index != null) {
-            metadata.put("_index", index);
+        if (index.isPresent()) {
+            metadata.put("_index", index.get());
+        }
+        if (routing.isPresent()) {
+            metadata.put("_routing", routing.get());
         }
         doWrite(Optional.empty(), metadata, "delete");
         actions.add("update");

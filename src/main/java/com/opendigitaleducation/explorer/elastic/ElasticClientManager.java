@@ -5,7 +5,6 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.elasticsearch.ElasticSearch;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -16,11 +15,13 @@ import java.util.Random;
 public class ElasticClientManager {
     static final Logger log = LoggerFactory.getLogger(ElasticClientManager.class);
     private final Random rnd = new Random();
-    private List<ElasticClient> clients = new ArrayList<>();
+    private final List<ElasticClient> clients = new ArrayList<>();
+
     public ElasticClientManager(final Vertx vertx, final URI[] uris) {
-     this(vertx, uris, new JsonObject());
+        this(vertx, uris, new JsonObject());
     }
-    public ElasticClientManager(final Vertx vertx, final URI[] uris, final JsonObject config){
+
+    public ElasticClientManager(final Vertx vertx, final URI[] uris, final JsonObject config) {
         try {
             final int poolSize = config.getInteger("poolSize", 16);
             final boolean keepAlive = config.getBoolean("keepAlive", true);
