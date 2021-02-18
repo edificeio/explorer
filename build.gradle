@@ -34,6 +34,10 @@ configurations {
 
 sourceSets {
   main { compileClasspath += configurations.provided }
+  test {
+    runtimeClasspath += configurations.compileOnly
+    resources.srcDirs = ["src/test/resources"]
+  }
 }
 
 configurations.all {
@@ -55,8 +59,7 @@ compileTestJava {
 dependencies {
   compileOnly "io.vertx:vertx-core:$vertxVersion"
   compile "org.entcore:common:$entCoreVersion"
-  testCompile "org.entcore:tests:$entCoreVersion"
-  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+  testCompile "org.entcore:test:$entCoreVersion:fat"
 }
 
 jar {
