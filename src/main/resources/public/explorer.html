@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="fr" class="ode-bootstrap-neo">
+<html class="ode-bootstrap-neo" lang="fr">
 
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="./index.css" />
-  <title>Explorateur universel - 2D</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <!-- Bootstrap CSS -->
+    <link href="./index.css" rel="stylesheet"/>
+    <title>Explorateur universel - 2D</title>
 </head>
 
 <body id="explorer">
-  <header class="no-1d navbar navbar-dark bg-secondary">
+<header class="no-1d navbar navbar-dark bg-secondary">
     <a class="d-mobile-none" href="">
-        <img class="logo" src="/assets/images/logo.png" alt="Logo de l'ENT">
+        <img alt="Logo de l'ENT" class="logo" src="/assets/images/logo.png">
         <span class="text-truncate d-desktop-none">
             <i18n><span class="no-style ng-scope">Blog</span></i18n>
         </span>
@@ -26,7 +26,7 @@
             <a href="/timeline/timeline" title="Accueil"><i class="ic-home"></i></a>
         </div>
         <div class="navigation__item">
-           <a class="zero-mobile ng-scope" href="/community" title="Communautés"><i class="ic-community"></i></a>
+            <a class="zero-mobile ng-scope" href="/community" title="Communautés"><i class="ic-community"></i></a>
         </div>
         <div class="navigation__item">
             <popover>
@@ -34,27 +34,35 @@
             </popover>
         </div>
         <div class="navigation__item">
-            <span ng-include="template.containers.portal.conversationUnread" class="ng-scope">
+            <span class="ng-scope" ng-include="template.containers.portal.conversationUnread">
               <a href="/conversation/conversation" tooltip="navbar.messages">
                 <i class="mail ic-conversation"></i>
               </a>
             </span>
         </div>
         <div class="navigation__item">
-           <popover class="searchengine">
+            <popover class="searchengine">
                 <a href="/searchengine" title="Recherche transverse">
                     <i class="ic-search"></i>
                 </a>
             </popover>
         </div>
-       <div ng-if="currentLanguage == 'fr'" class="navigation__item ng-scope">
+        <div class="navigation__item ng-scope" ng-if="currentLanguage == 'fr'">
             <a title="Aide en ligne">
-                <i18n><span class="no-style ng-scope"><help class="ng-isolate-scope"><i class="navbar-help ic-help"></i><lightbox show="display.read" on-close="display.read = false" class="ng-isolate-scope"><section class="lightbox" ng-class="{'lightbox': !tiny, 'tiny-lightbox': tiny}" style="display: none;"><div class="background"></div><div class="content"><div class="twelve cell" ng-transclude=""><div class="ng-scope"></div></div><div class="close-lightbox"><i class="close-2x"></i></div></div></section></lightbox></help></span></i18n>
+                <i18n><span class="no-style ng-scope"><help class="ng-isolate-scope"><i class="navbar-help ic-help"></i><lightbox
+                        class="ng-isolate-scope" on-close="display.read = false" show="display.read"><section
+                        class="lightbox" ng-class="{'lightbox': !tiny, 'tiny-lightbox': tiny}" style="display: none;"><div
+                        class="background"></div><div class="content"><div class="twelve cell" ng-transclude=""><div
+                        class="ng-scope"></div></div><div class="close-lightbox"><i
+                        class="close-2x"></i></div></div></section></lightbox></help></span></i18n>
             </a>
         </div><!-- end ngIf: currentLanguage == 'fr' -->
         <div class="navigation__item">
-            <a class="avatar ng-scope" href="/userbook/mon-compte" title="Mon compte" pulsar="{ index: 4, i18n: 'portal.pulsar.account', position: 'bottom center'}">
-                <img data-ng-src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48" id="my-photo" src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48">
+            <a class="avatar ng-scope" href="/userbook/mon-compte"
+               pulsar="{ index: 4, i18n: 'portal.pulsar.account', position: 'bottom center'}"
+               title="Mon compte">
+                <img data-ng-src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48" id="my-photo"
+                     src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48">
             </a>
         </div>
         <div class="navigation__item">
@@ -64,352 +72,366 @@
         </div>
     </nav>
 </header>
-  <div class="container d-flex">
+<div class="container d-flex">
     <!-- SIDEBAR -->
     <aside class="sidebar sidebar--left">
-      <h1 class="sidebar__title">Blog</h1>
-      <ul class="sidebar__tree">
-        <li><a class="active" href="">Mes blogs</a>
-          <ul>
-            <li><a href="">Dossier 1</a></li>
-            <li><a href="">Dossier 2</a>
-              <ul>
-                <li><a href="">Sous-dossier 1</a></li>
-                <li><a href="">Sous-dossier 2</a></li>
-                <li><a href="">Sous-dossier 3</a></li>
-                <li><a href="">Sous-dossier avec un nom très long</a></li>
-              </ul>
+        <h1 class="sidebar__title">Blog</h1>
+        <ul class="sidebar__tree">
+            <li><a class="active" href="">Mes blogs</a>
+                <ul>
+                    <li><a href="">Dossier 1</a></li>
+                    <li><a href="">Dossier 2</a>
+                        <ul>
+                            <li><a href="">Sous-dossier 1</a></li>
+                            <li><a href="">Sous-dossier 2</a></li>
+                            <li><a href="">Sous-dossier 3</a></li>
+                            <li><a href="">Sous-dossier avec un nom très long</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="">Dossier 3</a>
+                        <ul>
+                            <li><a href="">Sous-dossier 1</a></li>
+                            <li><a href="">Sous-dossier 2</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </li>
-            <li><a href="">Dossier 3</a>
-              <ul>
-                <li><a href="">Sous-dossier 1</a></li>
-                <li><a href="">Sous-dossier 2</a></li>
-              </ul>
-            </li>
-          </ul>
-        </li>
-        <li><a href="">Ma corbeille</a></li>
-      </ul>
-      <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
-      <a class="btn btn-outline-secondary btn-block">Importer</a>
+            <li><a href="">Ma corbeille</a></li>
+        </ul>
+        <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
+        <a class="btn btn-outline-secondary btn-block">Importer</a>
     </aside>
     <!-- MAIN CONTENT -->
     <main class="main-content">
-      <section class="explorer">
-        <section class="explorer__header">
+        <section class="explorer">
+            <section class="explorer__header">
 
-          <form class="row justify-content-between mb-2">
-            <div class="col-lg-9 col-md-12 input-searchbar">
-              <!-- <label for="" class="visually-hidden">Taper votre recherche ici</label> -->
-              <i class="ic-search form-control-feedback"></i>
-              <input type="search" class="form-control" id="" placeholder="Rechercher un blog">
-            </div>
-            <div class="col-lg-3 d-none d-sm-none d-md-none d-lg-block">
-              <button class="btn btn-block btn-primary" type="submit"><i class="ic-plus"></i> Créer un blog</button>
-            </div>
-          </form>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2>Mes blogs</h2>
-            <div class="filters d-flex">
-              <div class="dropdown">
-                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="fas fa-filter"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item active" href="#">
-                    <input type="checkbox" aria-label="">
-                    <i class="ic-user"></i>
-                     Mes blogs</a>
-                  <a class="dropdown-item" href="#">
-                    <input type="checkbox" aria-label="">
-                    <i class="ic-share"></i>
-                     Les blogs partagés avec moi
-                  </a>
-                  <a class="dropdown-item" href="#">
-                    <input type="checkbox" aria-label="">
-                    <i class="ic-public"></i>
-                     Blogs public
-                    </a>
+                <form class="row justify-content-between mb-2">
+                    <div class="col-lg-9 col-md-12 input-searchbar">
+                        <!-- <label for="" class="visually-hidden">Taper votre recherche ici</label> -->
+                        <i class="ic-search form-control-feedback"></i>
+                        <input class="form-control" id="" placeholder="Rechercher un blog" type="search">
+                    </div>
+                    <div class="col-lg-3 d-none d-sm-none d-md-none d-lg-block">
+                        <button class="btn btn-block btn-primary" type="submit"><i class="ic-plus"></i> Créer un blog
+                        </button>
+                    </div>
+                </form>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2>Mes blogs</h2>
+                    <div class="filters d-flex">
+                        <div class="dropdown">
+                            <button aria-expanded="false" aria-haspopup="true" class="btn dropdown-toggle"
+                                    data-toggle="dropdown" id="dropdownMenuButton" type="button">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                            <div aria-labelledby="dropdownMenuButton" class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item active" href="#">
+                                    <input aria-label="" type="checkbox">
+                                    <i class="ic-user"></i>
+                                    Mes blogs</a>
+                                <a class="dropdown-item" href="#">
+                                    <input aria-label="" type="checkbox">
+                                    <i class="ic-share"></i>
+                                    Les blogs partagés avec moi
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    <input aria-label="" type="checkbox">
+                                    <i class="ic-public"></i>
+                                    Blogs public
+                                </a>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button aria-expanded="false" aria-haspopup="true" class="btn dropdown-toggle"
+                                    data-toggle="dropdown" id="dropdownMenuButton" type="button">
+                                <i class="fas fa-sort-alpha-down"></i>
+                            </button>
+                            <div aria-labelledby="dropdownMenuButton" class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#">Ordre alphabétique</a>
+                                <a class="dropdown-item active" href="#">Dernière modification</a>
+                            </div>
+                        </div>
+                        <button class="btn"><i class="ic-grid"></i></button>
+                        <button class="btn inactive"><i class="ic-list"></i></button>
+                    </div>
                 </div>
-              </div>
-              <div class="dropdown">
-                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="fas fa-sort-alpha-down"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Ordre alphabétique</a>
-                  <a class="dropdown-item active" href="#">Dernière modification</a>
-                </div>
-              </div>
-              <button class="btn"><i class="ic-grid"></i></button>
-              <button class="btn inactive"><i class="ic-list"></i></button>
+            </section>
+            <section class="explorer__view dominos dominos--square d-none">
+
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+
+                <article class="domino active">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+                <article class="domino">
+                    <div class="domino__image">
+                        <div class="domino__overlay">
+                            <div class="domino__overlay--left">
+                                <span title="Ressource public"><i class="ic-public"></i></span>
+                                <span title="Ressource partagée"><i class="ic-share"></i></span>
+                            </div>
+                            <div class="domino__overlay--right">
+                                <span title="Nombre de vues"><i class="ic-view"></i>484</span>
+                                <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domino__infos">
+                        <h2 class="domino__title">Titre de la ressource</h2>
+                        <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+                        <span class="domino__info">Il y a 23 heures</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="explorer__view list">
+                <section class="list__header">
+                    <span class="list__title"><i class="fas fa-sort"></i> Titre</span>
+                    <span class="list__status text-white">Status</span>
+                    <span class="list__owner">Propriétaire</span>
+                    <span class="list__modification"><i class="fas fa-sort"></i> Dernière modification</span>
+                </section>
+                <article class="list__item">
+                    <h2 class="list__title">
+                        <i class="fas fa-folder-open text-secondary"></i>
+                        Titre de la ressource
+                    </h2>
+                    <div class="list__status">
+                        <span title="Ressource public"><i class="ic-public"></i></span>
+                        <span title="Ressource partagée"><i class="ic-share"></i></span>
+                    </div>
+                    <article class="list__owner">
+                        <img class="avatar avatar--20"
+                             src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/>
+                        <a>Isabelle Polonio</a>
+                    </article>
+
+                    <div class="list__modification">
+                        <span class="">Il y a 23 heures</span><br/>
+                        <span class="list__modifiedBy"><img class="avatar avatar--20"
+                                                            src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/> <a>Brigitte Fontaine</a></span>
+                    </div>
+                </article>
+
+                <article class="list__item">
+                    <h2 class="list__title">
+                        <i class="fas fa-bullhorn text-gray"></i>
+                        Titre de la ressource
+                    </h2>
+                    <div class="list__status">
+                        <span title="Ressource partagée"><i class="ic-share"></i></span>
+                    </div>
+                    <article class="list__owner">
+                        <img class="avatar avatar--20"
+                             src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/>
+                        <a>Isabelle Polonio</a>
+                    </article>
+
+                    <div class="list__modification">
+                        <span class="">Il y a 23 heures</span><br/>
+                        <span class="list__modifiedBy"><img class="avatar avatar--20"
+                                                            src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/> <a>Brigitte Fontaine</a></span>
+                    </div>
+                </article>
+                <article class="list__item">
+                    <h2 class="list__title">
+                        <i class="fas fa-bullhorn text-gray"></i>
+                        Titre de la ressource
+                    </h2>
+                    <div class="list__status">
+                        <span title="Ressource public"><i class="ic-public"></i></span>
+                    </div>
+                    <article class="list__owner">
+                        <img class="avatar avatar--20"
+                             src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/>
+                        <a>Isabelle Polonio</a>
+                    </article>
+
+                    <div class="list__modification">
+                        <span class="">Il y a 23 heures</span><br/>
+                        <span class="list__modifiedBy"><img class="avatar avatar--20"
+                                                            src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/> <a>Brigitte Fontaine</a></span>
+                    </div>
+                </article>
+                <article class="list__item">
+                    <h2 class="list__title">
+                        <i class="fas fa-bullhorn text-gray"></i>
+                        Titre de la ressource
+                    </h2>
+                    <div class="list__status">
+                        <span title="Ressource public"><i class="ic-public"></i></span>
+                        <span title="Ressource partagée"><i class="ic-share"></i></span>
+                    </div>
+                    <article class="list__owner">
+                        <img class="avatar avatar--20"
+                             src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/>
+                        <a>Isabelle Polonio</a>
+                    </article>
+
+                    <div class="list__modification">
+                        <span class="">Il y a 23 heures</span><br/>
+                        <span class="list__modifiedBy"><img class="avatar avatar--20"
+                                                            src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png"/> <a>Brigitte Fontaine</a></span>
+                    </div>
+                </article>
+            </section>
+
+            <!-- TOASTER -->
+            <div class="toaster d-none">
+                <a class="d-mobile-none" href="">Ouvrir</a>
+                <a href="">Propriétés</a>
+                <a href="">Déplacer</a>
+                <a href="">Dupliquer</a>
+                <a class="d-mobile-none" href="">Exporter</a>
+                <a href="">Partager</a>
+                <a class="d-mobile-none" href="">Commenter</a>
+                <a class="d-mobile-none" href="">Imprimer</a>
+                <a class="d-mobile-none" href="">Publier dans la bibliothèque</a>
+                <a href="">Supprimer</a>
             </div>
-          </div>
         </section>
-        <section class="explorer__view dominos dominos--square d-none">
-
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-
-          <article class="domino active">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-          <article class="domino">
-            <div class="domino__image">
-              <div class="domino__overlay">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>484</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
-            </div>
-          </article>
-        </section>
-
-        <section class="explorer__view list">
-          <section class="list__header">
-            <span class="list__title"><i class="fas fa-sort"></i> Titre</span>
-            <span class="list__status text-white">Status</span>
-            <span class="list__owner">Propriétaire</span>
-            <span class="list__modification"><i class="fas fa-sort"></i> Dernière modification</span>
-          </section>
-          <article class="list__item">
-            <h2 class="list__title">
-              <i class="fas fa-folder-open text-secondary"></i>
-              Titre de la ressource
-            </h2>
-            <div class="list__status">
-              <span title="Ressource public"><i class="ic-public"></i></span>
-              <span title="Ressource partagée"><i class="ic-share"></i></span>
-            </div>
-            <article class="list__owner">
-              <img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" />
-              <a>Isabelle Polonio</a>
-            </article>
-
-            <div class="list__modification">
-              <span class="">Il y a 23 heures</span><br/>
-              <span class="list__modifiedBy"><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> <a>Brigitte Fontaine</a></span>
-            </div>
-          </article>
-
-          <article class="list__item">
-            <h2 class="list__title">
-              <i class="fas fa-bullhorn text-gray"></i>
-              Titre de la ressource
-            </h2>
-            <div class="list__status">
-              <span title="Ressource partagée"><i class="ic-share"></i></span>
-            </div>
-            <article class="list__owner">
-              <img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" />
-              <a>Isabelle Polonio</a>
-            </article>
-
-            <div class="list__modification">
-              <span class="">Il y a 23 heures</span><br/>
-              <span class="list__modifiedBy"><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> <a>Brigitte Fontaine</a></span>
-            </div>
-          </article>
-          <article class="list__item">
-            <h2 class="list__title">
-              <i class="fas fa-bullhorn text-gray"></i>
-              Titre de la ressource
-            </h2>
-            <div class="list__status">
-              <span title="Ressource public"><i class="ic-public"></i></span>
-            </div>
-            <article class="list__owner">
-              <img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" />
-              <a>Isabelle Polonio</a>
-            </article>
-
-            <div class="list__modification">
-              <span class="">Il y a 23 heures</span><br/>
-              <span class="list__modifiedBy"><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> <a>Brigitte Fontaine</a></span>
-            </div>
-          </article>
-          <article class="list__item">
-            <h2 class="list__title">
-              <i class="fas fa-bullhorn text-gray"></i>
-              Titre de la ressource
-            </h2>
-            <div class="list__status">
-              <span title="Ressource public"><i class="ic-public"></i></span>
-              <span title="Ressource partagée"><i class="ic-share"></i></span>
-            </div>
-            <article class="list__owner">
-              <img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" />
-              <a>Isabelle Polonio</a>
-            </article>
-
-            <div class="list__modification">
-              <span class="">Il y a 23 heures</span><br/>
-              <span class="list__modifiedBy"><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> <a>Brigitte Fontaine</a></span>
-            </div>
-          </article>
-        </section>
-
-        <!-- TOASTER -->
-        <div class="toaster d-none">
-          <a class="d-mobile-none" href="">Ouvrir</a>
-          <a href="">Propriétés</a>
-          <a href="">Déplacer</a>
-          <a href="">Dupliquer</a>
-          <a class="d-mobile-none" href="">Exporter</a>
-          <a href="">Partager</a>
-          <a class="d-mobile-none" href="">Commenter</a>
-          <a class="d-mobile-none" href="">Imprimer</a>
-          <a class="d-mobile-none" href="">Publier dans la bibliothèque</a>
-          <a href="">Supprimer</a>
-        </div>
-      </section>
     </main>
-  </div>
-  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-  <script type="text/javascript">
+</div>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript">
   $('#myModal').on('shown.bs.modal', function () {
     $('#myInput').trigger('focus')
   })
-  </script>
+
+
+
+</script>
 </body>
 </html>

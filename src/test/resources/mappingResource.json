@@ -1,7 +1,17 @@
 {
   "settings": {
     "number_of_shards": 1,
-    "number_of_replicas": 1
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "html_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "html_strip"
+          ]
+        }
+      }
+    }
   },
   "mappings": {
     "_routing": {
@@ -12,20 +22,17 @@
       "name": {
         "type": "text"
       },
+      "content": {
+        "type": "text"
+      },
       "application": {
         "type": "keyword"
       },
       "resourceType": {
         "type": "keyword"
       },
-      "parentId": {
+      "userAndFolderIds": {
         "type": "keyword"
-      },
-      "ancestors": {
-        "type": "keyword"
-      },
-      "trashed": {
-        "type": "boolean"
       },
       "creatorId": {
         "type": "keyword"
@@ -39,8 +46,14 @@
       "updatedAt": {
         "type": "date"
       },
-      "trashedAt": {
-        "type": "date"
+      "public": {
+        "type": "boolean"
+      },
+      "trashed": {
+        "type": "boolean"
+      },
+      "favoriteFor": {
+        "type": "keyword"
       }
     }
   }

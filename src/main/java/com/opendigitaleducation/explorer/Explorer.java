@@ -23,32 +23,21 @@
 package com.opendigitaleducation.explorer;
 
 
-import org.entcore.common.http.BaseServer;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageFactory;
-import org.entcore.common.storage.impl.FileStorage;
-import com.opendigitaleducation.explorer.controllers.*;
-
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.VertxOptions;
+import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import org.entcore.common.http.BaseServer;
 
 public class Explorer extends BaseServer {
-	static final Logger logger = LoggerFactory.getLogger(Explorer.class);
+    static final Logger logger = LoggerFactory.getLogger(Explorer.class);
 
-	@Override
-	public void start() throws Exception {
-		super.start();
+    @Override
+    public void start() throws Exception {
+        super.start();
 
-		final ExplorerController explorerController = new ExplorerController();
-		addController(explorerController);
+        final ExplorerController explorerController = new ExplorerController();
+        addController(explorerController);
 
-	}
+    }
 
 }

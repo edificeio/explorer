@@ -42,7 +42,7 @@ public class ElasticClient {
     public Future<String> createDocument(final String index, final JsonObject payload, final ElasticOptions options) {
         final Future<String> future = Future.future();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_doc"+queryParams).handler(res -> {
+        httpClient.post("/" + index + "/_doc" + queryParams).handler(res -> {
             if (res.statusCode() == 200 || res.statusCode() == 201) {
                 res.bodyHandler(resBody -> {
                     final JsonObject body = new JsonObject(resBody.toString());
@@ -58,13 +58,13 @@ public class ElasticClient {
     public Future<JsonArray> search(final String index, final JsonObject payload, final ElasticOptions options) {
         final Future<JsonArray> future = Future.future();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_search"+queryParams).handler(res -> {
+        httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
             if (res.statusCode() == 200) {
                 res.bodyHandler(resBody -> {
                     final JsonObject body = new JsonObject(resBody.toString());
                     final JsonArray hits = body.getJsonObject("hits").getJsonArray("hits");
-                    final JsonArray mapped = new JsonArray(hits.stream().map(o->{
-                        final JsonObject json = (JsonObject)o;
+                    final JsonArray mapped = new JsonArray(hits.stream().map(o -> {
+                        final JsonObject json = (JsonObject) o;
                         return json.getJsonObject("_source").put("_id", json.getString("_id"));
                     }).collect(Collectors.toList()));
                     future.complete(mapped);
@@ -79,23 +79,23 @@ public class ElasticClient {
     public ElasticBulkRequest bulk(final String index, final ElasticOptions options) {
         final Future<Buffer> future = Future.future();
         final String queryParams = options.getQueryParams();
-        final HttpClientRequest req = httpClient.post("/" + index + "/_bulk"+queryParams).handler(res -> {
-            if (res.statusCode() == 200 || res.statusCode() == 201) {
-                res.bodyHandler(resBody -> {
+        final HttpClientRequest req = httpClient.post("/" + index + "/_bulk" + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200 || res.statusCode() == 201) {
                     future.complete(resBody);
-                });
-            } else {
-                future.fail(res.statusCode() + ":" + res.statusMessage());
-            }
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                }
+            });
         }).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
                 .setChunked(true).exceptionHandler(onError);
         return new ElasticBulkRequest(req, future);
     }
 
-    public static class ElasticOptions{
+    public static class ElasticOptions {
+        private final List<String> routing = new ArrayList<>();
         private boolean waitFor = false;
-        private List<String> routing = new ArrayList<>();
 
         public ElasticOptions withWaitFor(boolean waitFor) {
             this.waitFor = waitFor;
@@ -107,18 +107,18 @@ public class ElasticClient {
             return this;
         }
 
-        public String getQueryParams(){
-           final List<String> queryParams = new ArrayList<>();
-            if(waitFor){
+        public String getQueryParams() {
+            final List<String> queryParams = new ArrayList<>();
+            if (waitFor) {
                 queryParams.add("refresh=wait_for");
             }
-            if(!routing.isEmpty()){
-                queryParams.add("routing="+String.join(",",routing));
+            if (!routing.isEmpty()) {
+                queryParams.add("routing=" + String.join(",", routing));
             }
-            if(queryParams.isEmpty()){
+            if (queryParams.isEmpty()) {
                 return "";
-            }else{
-                return "?"+String.join("&", queryParams);
+            } else {
+                return "?" + String.join("&", queryParams);
             }
         }
     }
