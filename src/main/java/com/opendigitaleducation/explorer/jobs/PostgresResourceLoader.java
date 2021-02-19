@@ -67,17 +67,22 @@ public class PostgresResourceLoader implements ResourceLoader {
     }
 
     @Override
+    public boolean isStarted() {
+        return start;
+    }
+
+    @Override
     public void setOnEnd(final Handler<AsyncResult<ResourceLoaderResult>> handler) {
         this.onEnd = handler;
     }
 
-    public Future<Void> execute() {
+    public Future<Void> execute(boolean force) {
         //TODO set a max attempt?
         //TODO debounce ms? (config)
         //TODO create a job to archive this table on night?
         //TODO optimize and merge updating related to one resource?
         // lock running
-        if (!this.start) {
+        if (!this.start && !force) {
             return Future.failedFuture("resource loader is stopped");
         }
         return running.compose(onReady -> {
@@ -113,10 +118,6 @@ public class PostgresResourceLoader implements ResourceLoader {
             final JsonObject json = (JsonObject) (row.getJson("payload")).value();
             final String creatorId = json.getString("creatorId");
             json.put("_id", idResource);
-            if (ExplorerService.RESOURCE_ACTION_CREATE.equals(resourceAction)) {
-                final String userFolderId = ResourceService.getUserFolderId(creatorId, FolderService.ROOT_FOLDER_ID);
-                json.put("userAndFolderIds", new JsonArray().add(userFolderId));
-            }
             final ResourceService.ResourceBulkOperationType type = ResourceService.getOperationType(resourceAction);
             resources.add(new ResourceService.ResourceBulkOperation(json, type, idQueue));
         }
