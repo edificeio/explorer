@@ -31,7 +31,13 @@
       "resourceType": {
         "type": "keyword"
       },
-      "userAndFolderIds": {
+      "folderIds": {
+        "type": "keyword"
+      },
+      "usersForFolderIds": {
+        "type": "keyword"
+      },
+      "visibleBy": {
         "type": "keyword"
       },
       "creatorId": {

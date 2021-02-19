@@ -8,6 +8,8 @@ import com.opendigitaleducation.explorer.services.ExplorerService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ElasticResourceService;
 import com.opendigitaleducation.explorer.services.impl.PostgresExplorerService;
+import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
+import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -24,6 +26,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
 public class ResourceServiceTest {
@@ -50,7 +54,8 @@ public class ResourceServiceTest {
         postgresClient = new PostgresClient(test.vertx(), postgresql);
         final String index = ResourceService.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
-        resourceService = new ElasticResourceService(elasticClientManager, index);
+        final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
+        resourceService = new ElasticResourceService(elasticClientManager, shareTableManager, index);
         explorerService = new PostgresExplorerService(test.vertx(), postgresClient);
         resourceLoader = new PostgresResourceLoader(test.vertx(), postgresClient, resourceService, new JsonObject());
         final Async async = context.async();
@@ -58,7 +63,7 @@ public class ResourceServiceTest {
     }
 
     @Before
-    public void after(){
+    public void before(){
         resourceLoader.stop();
     }
 
@@ -135,7 +140,6 @@ public class ResourceServiceTest {
 
     @Test
     public void testShouldIntegrateResourceOnRestart(TestContext context) {
-        resourceLoader.stop();
         final UserInfos user = test.http().sessionUser();
         final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id_restart1", "name1", "text1");
         explorerService.push(message1).setHandler(context.asyncAssertSuccess(push -> {
@@ -156,10 +160,35 @@ public class ResourceServiceTest {
 
     @Test
     public void testShouldExploreResource(TestContext context) {
-
+        final UserInfos user2 = test.directory().generateUser("user2");
+        final UserInfos user = test.http().sessionUser();
+        final ExplorerService.ExplorerMessageBuilder message1 = create(user, "idexplore1", "name1", "text1");
+        final ExplorerService.ExplorerMessageBuilder message2 = create(user, "idexplore2", "name2", "text2");
+        final ExplorerService.ExplorerMessageBuilder message3 = create(user2, "idexplore3", "name3", "text3");
+        final ExplorerService.ExplorerMessageBuilder message2_1 = create(user, "idexplore2_1", "name2_1", "text2_1");
+        explorerService.push(Arrays.asList(message1, message2, message3, message2_1)).setHandler(context.asyncAssertSuccess(push->{
+            resourceLoader.execute(true).setHandler(context.asyncAssertSuccess(load->{
+                resourceService.fetch(user, "blog", new ResourceService.SearchOperation()).setHandler(context.asyncAssertSuccess(fetch1->{
+                    context.assertEquals(3, fetch1.size());
+                    final JsonObject json = fetch1.stream().map(e-> (JsonObject)e).filter(e-> e.getString("_id").equals("idexplore2_1")).findFirst().get();
+                    resourceService.move(user, json, Optional.empty(), Optional.of("folder1")).setHandler(context.asyncAssertSuccess(move->{
+                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.of("folder1"))).setHandler(context.asyncAssertSuccess(fetch2->{
+                            context.assertEquals(1, fetch2.size());
+                        }));
+                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.empty())).setHandler(context.asyncAssertSuccess(fetch2->{
+                            context.assertEquals(2, fetch2.size());
+                        }));
+                    }));
+                }));
+                resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setSearch("text2")).setHandler(context.asyncAssertSuccess(fetch1->{
+                    context.assertEquals(1, fetch1.size());
+                }));
+            }));
+        }));
     }
+
     @Test
-    public void testShouldExploreResourceByRights(TestContext context) {
+    public void testShouldExploreResourceByShare(TestContext context) {
 
     }
 

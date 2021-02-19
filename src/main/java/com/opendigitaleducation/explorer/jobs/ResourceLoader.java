@@ -8,11 +8,18 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 
 public interface ResourceLoader {
+
+    boolean isStarted();
+
     Future<Void> start();
 
     void stop();
 
-    Future<Void> execute();
+    default Future<Void> execute(){
+        return execute(false);
+    }
+
+    Future<Void> execute(boolean force);
 
     void setOnEnd(final Handler<AsyncResult<ResourceLoaderResult>> handler);
 

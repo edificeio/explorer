@@ -18,17 +18,20 @@ CREATE TABLE explorer.resource_queue_causes (
     attempted_at TIMESTAMP WITHOUT TIME ZONE
 );
 CREATE TABLE explorer.share_subjects (
-    id TEXT not null PRIMARY KEY
+    id VARCHAR(200) not null PRIMARY KEY,
+    hash_algorithm VARCHAR(10) NOT NULL
 );
 CREATE TABLE explorer.share_groups (
-    id VARCHAR(64) not null PRIMARY KEY,
+    id VARCHAR(100) NOT NULL,
     displayName TEXT,
     share_subject_id TEXT NOT NULL,
-    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id)
+    PRIMARY KEY(id, share_subject_id),
+    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) INITIALLY DEFERRED
 );
 CREATE TABLE explorer.share_users (
-    id VARCHAR(64) not null PRIMARY KEY,
+    id VARCHAR(100) NOT NULL,
     displayName TEXT,
     share_subject_id TEXT NOT NULL,
-    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id)
+    PRIMARY KEY(id, share_subject_id),
+    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) INITIALLY DEFERRED
 );

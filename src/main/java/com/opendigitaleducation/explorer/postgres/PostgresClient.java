@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +79,7 @@ public class PostgresClient {
         return tuple;
     }
 
-    public static <T> String inPlaceholder(final List<T> values, int startAt) {
+    public static <T> String inPlaceholder(final Collection<T> values, int startAt) {
         int placeholderCounter = startAt;
         final List<String> placeholders = new ArrayList<>();
         for (final T value : values) {
@@ -88,7 +89,7 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
-    public static <T> Tuple inTuple(final Tuple tuple, final List<T> values) {
+    public static <T> Tuple inTuple(final Tuple tuple, final Collection<T> values) {
         for (final T value : values) {
             tuple.addValue(value);
         }
@@ -107,6 +108,7 @@ public class PostgresClient {
     }
 
     public PostgresClientPool getClientPool() {
+        //TODO get unique pool? configure it?
         final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
                 .setPort(config.getInteger("port", 5432))
                 .setHost(config.getString("host"))
