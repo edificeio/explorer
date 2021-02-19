@@ -26,12 +26,12 @@ CREATE TABLE explorer.share_groups (
     displayName TEXT,
     share_subject_id TEXT NOT NULL,
     PRIMARY KEY(id, share_subject_id),
-    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) INITIALLY DEFERRED
+    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) ON DELETE CASCADE INITIALLY DEFERRED
 );
 CREATE TABLE explorer.share_users (
     id VARCHAR(100) NOT NULL,
     displayName TEXT,
     share_subject_id TEXT NOT NULL,
     PRIMARY KEY(id, share_subject_id),
-    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) INITIALLY DEFERRED
+    CONSTRAINT fk_share_subjects FOREIGN KEY(share_subject_id) REFERENCES explorer.share_subjects(id) ON DELETE CASCADE INITIALLY DEFERRED
 );

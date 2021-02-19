@@ -40,6 +40,16 @@ public class ElasticFolderService implements FolderService {
         //TODO limit/offset?
         //TODO store countchildren? (used by front)
         //TODO create root folder for each user? not needed?
+        //TODO another query to count {tems ids : []} {aggs parentId}=> use it as limit and offset....
+        //if missing => count (both for parent and children) then use result
+        //max 2 queries?
+        /**
+         * "size": 0,
+         * {
+         *  "filter": { "term": { "parentId": "root" } },
+         *   aggs: { count: { terms: { field : parentIds}}}
+         * }
+         */
         return manager.getClient().search(index, query.getSearchQuery(), options);
     }
 
@@ -64,6 +74,7 @@ public class ElasticFolderService implements FolderService {
             for (final JsonObject folder : folders) {
                 bulk.create(folder);
             }
+            //update counter
             return bulk.end().compose(results -> {
                 boolean success = true;
                 String message = "";

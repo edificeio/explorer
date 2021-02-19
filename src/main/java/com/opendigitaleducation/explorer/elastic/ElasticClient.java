@@ -32,7 +32,7 @@ public class ElasticClient {
                 future.complete();
             } else {
                 res.bodyHandler(resBody -> {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 });
             }
         }).putHeader("content-type", "application/json")
@@ -49,7 +49,7 @@ public class ElasticClient {
                     final JsonObject body = new JsonObject(resBody.toString());
                     future.complete(body.getString("_id"));
                 } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
@@ -59,13 +59,13 @@ public class ElasticClient {
     public Future<String> updateDocument(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
         final Future<String> future = Future.future();
         final String queryParams = options.getQueryParams();
-        httpClient.post("/" + index + "/_update/"+id + queryParams).handler(res -> {
+        httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     final JsonObject body = new JsonObject(resBody.toString());
                     future.complete(body.getString("_id"));
                 } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
@@ -73,10 +73,10 @@ public class ElasticClient {
     }
 
     public Future<Void> updateDocument(final String index, final Set<String> id, final JsonObject payload, final ElasticOptions options) {
-        if(id.isEmpty()){
+        if (id.isEmpty()) {
             return Future.succeededFuture();
         }
-        if(id.size() == 1){
+        if (id.size() == 1) {
             return updateDocument(index, id.iterator().next(), payload, options).mapEmpty();
         }
         final Future<Void> future = Future.future();
@@ -87,7 +87,7 @@ public class ElasticClient {
                 future.complete();
             } else {
                 res.bodyHandler(resBody -> {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 });
             }
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
@@ -108,7 +108,7 @@ public class ElasticClient {
                     }).collect(Collectors.toList()));
                     future.complete(mapped);
                 } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());

@@ -5,7 +5,9 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class ElasticResourceQuery {
     private final UserInfos user;
@@ -13,14 +15,35 @@ public class ElasticResourceQuery {
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> folderId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
+    private final List<String> visibleIds = new ArrayList<>();
     private Integer from;
     private Integer size;
     private boolean onlyRoot = false;
     private Boolean trashed;
     private String text;
 
-    public ElasticResourceQuery(final UserInfos u){
+    public ElasticResourceQuery(final UserInfos u) {
         this.user = u;
+    }
+
+    static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
+        if (values.size() == 0) {
+            return Optional.empty();
+        } else if (values.size() == 1) {
+            return Optional.of(new JsonObject().put("term", new JsonObject().put(key, values.iterator().next())));
+        } else {
+            return Optional.of(new JsonObject().put("terms", new JsonObject().put(key, new JsonArray(values))));
+        }
+    }
+
+    public ElasticResourceQuery withTrashed(Boolean trashed) {
+        this.trashed = trashed;
+        return this;
+    }
+
+    public ElasticResourceQuery withVisibleIds(final Collection<String> ids) {
+        visibleIds.addAll(ids);
+        return this;
     }
 
     public ElasticResourceQuery withOnlyRoot(boolean onlyRoot) {
@@ -93,32 +116,44 @@ public class ElasticResourceQuery {
         bool.put("must_not", mustNot);
         bool.put("must", must);
         //by creator
-        if (creatorId.size() > 0) {
-            Object value = creatorId.size() == 1 ? creatorId.get(0) : new JsonArray(creatorId);
-            filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", value)));
+        final Optional<JsonObject> creatorIdTerm = createTerm("creatorId", creatorId);
+        if (creatorIdTerm.isPresent()) {
+            filter.add(creatorIdTerm.get());
+        }
+        //by visible
+        {
+            final List<String> visibles = new ArrayList<>();
+            visibles.add(ElasticResourceService.getVisibleByCreator(user.getUserId()));
+            visibles.addAll(this.visibleIds);
+            final Optional<JsonObject> visibleTerm = createTerm("visibleBy", visibles);
+            filter.add(visibleTerm.get());
         }
         //by folder
-        if(onlyRoot){
-            filter.add(new JsonObject().put("term", new JsonObject().put("visibleBy", ElasticResourceService.getVisibleByCreator(user.getUserId()))));
+        if (onlyRoot) {
             mustNot.add(new JsonObject().put("term", new JsonObject().put("usersForFolderIds", user.getUserId())));
-        }else if (folderId.size() > 0) {
-            Object value = folderId.size() == 1 ? folderId.get(0) : new JsonArray(folderId);
-            filter.add(new JsonObject().put("term", new JsonObject().put("folderIds", value)));
+        } else {
+            final Optional<JsonObject> folderIdsTerm = createTerm("folderIds", folderId);
+            if (folderIdsTerm.isPresent()) {
+                filter.add(folderIdsTerm.get());
+            }
         }
         //by id
-        if (id.size() > 0) {
-            Object value = id.size() == 1 ? id.get(0) : new JsonArray(id);
-            filter.add(new JsonObject().put("term", new JsonObject().put("_id", value)));
+        final Optional<JsonObject> idTerm = createTerm("_id", id);
+        if (idTerm.isPresent()) {
+            filter.add(idTerm.get());
         }
         //application
-        if(application.size() > 0){
-            Object value = application.size() == 1 ? application.get(0) : new JsonArray(application);
-            filter.add(new JsonObject().put("term", new JsonObject().put("application", value)));
+        final Optional<JsonObject> appTerm = createTerm("application", application);
+        if (appTerm.isPresent()) {
+            filter.add(appTerm.get());
         }
         //search text
-        if(text != null){
+        if (text != null) {
             final JsonArray fields = new JsonArray().add("application").add("name").add("content");
             must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text).put("fields", fields)));
+        }
+        if (trashed != null) {
+            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed)));
         }
         //from / size
         if (from != null) {
