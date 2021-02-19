@@ -32,7 +32,21 @@ public class PostgresClient {
                 group.add("$" + placeholderCounter);
                 placeholderCounter++;
             }
-            placeholders.add(String.format("(%s)", String.join(",", placeholders)));
+            placeholders.add(String.format("(%s)", String.join(",", group)));
+        }
+        return String.join(",", placeholders);
+    }
+
+    public static String insertPlaceholdersFromMap(final List<Map<String,Object>> rows, final int startAt, final String... column) {
+        int placeholderCounter = startAt;
+        final List<String> placeholders = new ArrayList<>();
+        for (final Map<String,Object> row : rows) {
+            final List<String> group = new ArrayList<>();
+            for (final String col : column) {
+                group.add("$" + placeholderCounter);
+                placeholderCounter++;
+            }
+            placeholders.add(String.format("(%s)", String.join(",", group)));
         }
         return String.join(",", placeholders);
     }
@@ -41,6 +55,15 @@ public class PostgresClient {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 tuple.addValue(row.getValue(col));
+            }
+        }
+        return tuple;
+    }
+
+    public static Tuple insertValuesFromMap(final List<Map<String, Object>> rows, final Tuple tuple, final String... column) {
+        for (final Map<String, Object> row : rows) {
+            for (final String col : column) {
+                tuple.addValue(row.get(col));
             }
         }
         return tuple;
@@ -98,7 +121,7 @@ public class PostgresClient {
     public static class PostgresTransaction {
         private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
         private final PgTransaction pgTransaction;
-        private List<Future> futures = new ArrayList<>();
+        private final List<Future> futures = new ArrayList<>();
 
         PostgresTransaction(final PgTransaction pgTransaction) {
             this.pgTransaction = pgTransaction;
@@ -126,7 +149,7 @@ public class PostgresClient {
         }
 
         public Future<Void> commit() {
-            return CompositeFuture.all(futures).compose(r->{
+            return CompositeFuture.all(futures).compose(r -> {
                 final Future<Void> future = Future.future();
                 this.pgTransaction.commit(future.completer());
                 return future;

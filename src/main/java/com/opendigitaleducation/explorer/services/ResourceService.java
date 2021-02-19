@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 
 public interface ResourceService {
+    String CUSTOM_IDENTIFIER = "_identifier";
     String SUCCESS_FIELD = "_success";
     String ERROR_FIELD = "_error";
     String DEFAULT_RESOURCE_INDEX = "explorer_resource";
@@ -24,19 +25,25 @@ public interface ResourceService {
         }
     }
 
-    Future<List<JsonObject>> bulkOperations(final List<ResourceBulkOperation> operations);
+    <T> Future<List<JsonObject>> bulkOperations(final List<ResourceBulkOperation<T>> operations);
 
     enum ResourceBulkOperationType {
         Create, Update, Delete
     }
 
-    class ResourceBulkOperation {
+    class ResourceBulkOperation<T> {
         final JsonObject resource;
         final ResourceBulkOperationType type;
+        final T customIdentifier;
 
-        public ResourceBulkOperation(JsonObject resource, ResourceBulkOperationType type) {
+        public ResourceBulkOperation(final JsonObject resource, final ResourceBulkOperationType type) {
+            this(resource, type, null);
+        }
+
+        public ResourceBulkOperation(JsonObject resource, ResourceBulkOperationType type, final T customIdentifier) {
             this.resource = resource;
             this.type = type;
+            this.customIdentifier = customIdentifier;
         }
 
         public JsonObject getResource() {
@@ -45,6 +52,10 @@ public interface ResourceService {
 
         public ResourceBulkOperationType getType() {
             return type;
+        }
+
+        public T getCustomIdentifier() {
+            return customIdentifier;
         }
     }
 }

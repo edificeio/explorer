@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 import java.util.Date;
+import java.util.List;
 
 public interface ExplorerService {
     int PRIORITY_LOW = -1;
@@ -16,6 +17,8 @@ public interface ExplorerService {
     String RESOURCE_CHANNEL = "channel_resource";
 
     Future<Void> push(ExplorerMessageBuilder message);
+
+    Future<Void> push(List<ExplorerMessageBuilder> messages);
 
     class ExplorerMessageBuilder {
         private final String id;

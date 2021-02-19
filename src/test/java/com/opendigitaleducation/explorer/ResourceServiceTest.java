@@ -18,9 +18,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -53,10 +51,15 @@ public class ResourceServiceTest {
         final String index = ResourceService.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
         resourceService = new ElasticResourceService(elasticClientManager, index);
-        explorerService = new PostgresExplorerService(postgresClient);
+        explorerService = new PostgresExplorerService(test.vertx(), postgresClient);
         resourceLoader = new PostgresResourceLoader(test.vertx(), postgresClient, resourceService, new JsonObject());
         final Async async = context.async();
         createMapping(context, index).setHandler(r -> async.complete());
+    }
+
+    @Before
+    public void after(){
+        resourceLoader.stop();
     }
 
     static Future<Void> createMapping(TestContext context, String index) {
@@ -64,28 +67,99 @@ public class ResourceServiceTest {
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
+    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content) {
+        return create(user, id, name, content, "blog", "post", false);
+    }
+
+    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content, String application, String type) {
+        return create(user, id, name, content, application, type, false);
+    }
+
+    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content, String application, String type, boolean pub) {
+        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.create(id, user);
+        message.withContent(content).withName(name).withPublic(pub).withResourceType(application, type);
+        return message;
+    }
+
+    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content) {
+        return update(user, id, name, content, "blog", "post", false);
+    }
+
+    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content, String application, String type) {
+        return update(user, id, name, content, application, type, false);
+    }
+
+    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content, String application, String type, boolean pub) {
+        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.update(id, user);
+        message.withContent(content).withName(name).withPublic(pub).withResourceType(application, type);
+        return message;
+    }
+
+    static ExplorerService.ExplorerMessageBuilder delete(UserInfos user, String id) {
+        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.delete(id, user);
+        return message;
+    }
+
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
         final UserInfos user = test.http().sessionUser();
-        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.create("id1", user);
-        message.withContent("my text....").withName("name1").withPublic(true).withResourceType("blog", "post");
-        resourceLoader.start();
-        final Future<ResourceLoader.ResourceLoaderResult> future = Future.future();
-        resourceLoader.setOnEnd(future.completer());
-        explorerService.push(message).setHandler(context.asyncAssertSuccess(push -> {
-            future.setHandler(context.asyncAssertSuccess(results -> {
-                context.assertEquals(1, results.getSucceed().size());
+        resourceLoader.start().setHandler(context.asyncAssertSuccess(r -> {
+            final Future<ResourceLoader.ResourceLoaderResult> fCreate = Future.future();
+            resourceLoader.setOnEnd(fCreate.completer());
+            final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id1", "name1", "text1");
+            explorerService.push(message1).setHandler(context.asyncAssertSuccess(push -> {
+                fCreate.setHandler(context.asyncAssertSuccess(results -> {
+                    context.assertEquals(1, results.getSucceed().size());
+                    //update
+                    final Future<ResourceLoader.ResourceLoaderResult> fUpdate = Future.future();
+                    resourceLoader.setOnEnd(fUpdate.completer());
+                    final ExplorerService.ExplorerMessageBuilder message2 = update(user, "id1", "name1_1", "text1_1");
+                    explorerService.push(message2).setHandler(context.asyncAssertSuccess(push2 -> {
+                        fUpdate.setHandler(context.asyncAssertSuccess(results2 -> {
+                            context.assertEquals(1, results2.getSucceed().size());
+                            //delete
+                            final Future<ResourceLoader.ResourceLoaderResult> fDelete = Future.future();
+                            resourceLoader.setOnEnd(fDelete.completer());
+                            final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
+                            explorerService.push(message3).setHandler(context.asyncAssertSuccess(push3 -> {
+                                fDelete.setHandler(context.asyncAssertSuccess(results3 -> {
+                                    context.assertEquals(1, results3.getSucceed().size());
+                                }));
+                            }));
+                        }));
+                    }));
+                }));
             }));
         }));
     }
 
     @Test
     public void testShouldIntegrateResourceOnRestart(TestContext context) {
-
+        resourceLoader.stop();
+        final UserInfos user = test.http().sessionUser();
+        final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id_restart1", "name1", "text1");
+        explorerService.push(message1).setHandler(context.asyncAssertSuccess(push -> {
+            final Future<ResourceLoader.ResourceLoaderResult> fCreate = Future.future();
+            resourceLoader.setOnEnd(fCreate.completer());
+            resourceLoader.start().setHandler(context.asyncAssertSuccess(r -> {
+                fCreate.setHandler(context.asyncAssertSuccess(results -> {
+                    context.assertEquals(1, results.getSucceed().size());
+                }));
+            }));
+        }));
     }
+
+
+    //TODO share
+    //TODO redis try
+    //TODO resource right retro
 
     @Test
     public void testShouldExploreResource(TestContext context) {
+
+    }
+    @Test
+    public void testShouldExploreResourceByRights(TestContext context) {
 
     }
 

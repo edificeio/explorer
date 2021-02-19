@@ -28,37 +28,40 @@ public class ElasticBulkRequest {
             //System.out.print(buffer);
         } else {
             final String buffer = (new JsonObject()).put(action, metadata).encode() + "\n";
-            //System.out.print(buffer);
             this.request.write(buffer);
+            //System.out.print(buffer);
 
         }
     }
 
     public void index(final JsonObject document) {
-        index(document, document.getString("_id"), Optional.empty(), Optional.empty());
+        index(document, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public void index(final JsonObject document, final String id) {
-        index(document, id, Optional.empty(), Optional.empty());
+        index(document, Optional.ofNullable(id), Optional.empty(), Optional.empty());
     }
 
-    public void index(final JsonObject document, final String id, final Optional<String> index, final Optional<String> routing) {
+    public void index(final JsonObject document, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
-        if (id != null) {
-            metadata.put("_id", id);
+        if (id.isPresent()) {
+            metadata.put("_id", id.get());
+        } else if (document.containsKey("_id")) {
+            metadata.put("_id", document.getString("_id"));
         }
         if (index.isPresent()) {
             metadata.put("_index", index.get());
         }
         if (routing.isPresent()) {
-            metadata.put("_routing", routing.get());
+            metadata.put("routing", routing.get());
         }
+        document.remove("_id");
         doWrite(Optional.of(document), metadata, "index");
         actions.add("index");
     }
 
     public void create(final JsonObject document) {
-        create(document, document.getString("_id"));
+        create(document, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public void create(final JsonObject document, final String id) {
@@ -69,36 +72,42 @@ public class ElasticBulkRequest {
         final JsonObject metadata = new JsonObject();
         if (id.isPresent()) {
             metadata.put("_id", id.get());
+        } else if (document.containsKey("_id")) {
+            metadata.put("_id", document.getString("_id"));
         }
         if (index.isPresent()) {
             metadata.put("_index", index.get());
         }
         if (routing.isPresent()) {
-            metadata.put("_routing", routing.get());
+            metadata.put("routing", routing.get());
         }
+        document.remove("_id");
         doWrite(Optional.of(document), metadata, "create");
         actions.add("create");
     }
 
     public void update(final JsonObject document) {
-        update(document, document.getString("_id"), Optional.empty(), Optional.empty());
+        update(document, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public void update(final JsonObject document, final String id) {
-        update(document, id, Optional.empty(), Optional.empty());
+        update(document, Optional.ofNullable(id), Optional.empty(), Optional.empty());
     }
 
-    public void update(final JsonObject document, final String id, final Optional<String> index, final Optional<String> routing) {
+    public void update(final JsonObject document, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
-        if (id != null) {
-            metadata.put("_id", id);
+        if (id.isPresent()) {
+            metadata.put("_id", id.get());
+        } else if (document.containsKey("_id")) {
+            metadata.put("_id", document.getString("_id"));
         }
         if (index.isPresent()) {
             metadata.put("_index", index.get());
         }
         if (routing.isPresent()) {
-            metadata.put("_routing", routing.get());
+            metadata.put("routing", routing.get());
         }
+        document.remove("_id");
         doWrite(Optional.of(new JsonObject().put("doc", document)), metadata, "update");
         actions.add("update");
     }
@@ -114,10 +123,10 @@ public class ElasticBulkRequest {
             metadata.put("_index", index.get());
         }
         if (routing.isPresent()) {
-            metadata.put("_routing", routing.get());
+            metadata.put("routing", routing.get());
         }
         doWrite(Optional.empty(), metadata, "delete");
-        actions.add("update");
+        actions.add("delete");
     }
 
     public Future<List<ElasticBulkRequestResult>> end() {

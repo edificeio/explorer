@@ -26,8 +26,8 @@ public class ElasticResourceService implements ResourceService {
     }
 
     @Override
-    public Future<List<JsonObject>> bulkOperations(List<ResourceBulkOperation> operations) {
-        if(operations.isEmpty()){
+    public <T> Future<List<JsonObject>> bulkOperations(List<ResourceBulkOperation<T>> operations) {
+        if (operations.isEmpty()) {
             return Future.succeededFuture(new ArrayList<>());
         }
         final ElasticBulkRequest bulk = manager.getClient().bulk(index, new ElasticClient.ElasticOptions().withWaitFor(waitFor));
@@ -42,7 +42,7 @@ public class ElasticResourceService implements ResourceService {
                     bulk.delete(id, Optional.empty(), Optional.of(routing));
                     break;
                 case Update:
-                    bulk.update(op.getResource(), id, Optional.empty(), Optional.of(routing));
+                    bulk.update(op.getResource(), Optional.of(id), Optional.empty(), Optional.of(routing));
                     break;
             }
         }
@@ -50,7 +50,9 @@ public class ElasticResourceService implements ResourceService {
             final List<JsonObject> resources = new ArrayList<>();
             for (int i = 0; i < results.size(); i++) {
                 final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
-                final JsonObject resource = operations.get(i).getResource();
+                final ResourceBulkOperation op = operations.get(i);
+                final JsonObject resource = op.getResource();
+                resource.put(CUSTOM_IDENTIFIER, op.getCustomIdentifier());
                 if (res.isOk()) {
                     resource.put(SUCCESS_FIELD, true);
                 } else {
