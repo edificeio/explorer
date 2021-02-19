@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 
 public interface ResourceLoader {
-    void start();
+    Future<Void> start();
 
     void stop();
 

@@ -84,7 +84,7 @@ public class ElasticClient {
                 if (res.statusCode() == 200 || res.statusCode() == 201) {
                     future.complete(resBody);
                 } else {
-                    future.fail(res.statusCode() + ":" + res.statusMessage()+". "+resBody);
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
         }).putHeader("Content-Type", "application/x-ndjson")
