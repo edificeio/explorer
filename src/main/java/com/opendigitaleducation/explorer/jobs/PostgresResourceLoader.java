@@ -13,7 +13,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -40,7 +39,7 @@ public class PostgresResourceLoader implements ResourceLoader {
     //TODO define max concurrent thread
     //TODO define max bulk size according (dynamic bulk size acording to response?)
     private boolean start = false;
-    private Future<Void> running = Future.succeededFuture();
+    private Future<Void> lock = Future.succeededFuture();
     private Handler<AsyncResult<ResourceLoaderResult>> onEnd = e -> {
     };
 
@@ -62,8 +61,12 @@ public class PostgresResourceLoader implements ResourceLoader {
         return future;
     }
 
-    public void stop() {
+    public Future<Void> stop() {
         this.start = false;
+        return this.lock.setHandler(ee->{
+            this.onEnd = e -> {
+            };
+        });
     }
 
     @Override
@@ -85,28 +88,36 @@ public class PostgresResourceLoader implements ResourceLoader {
         if (!this.start && !force) {
             return Future.failedFuture("resource loader is stopped");
         }
-        return running.compose(onReady -> {
-            running = Future.future();
-            // use modulo to split between different thread
-            final String modulo = this.modulo == 1 ? "" : String.format(" AND MOD(id,%s)=0 ", this.modulo);
-            final String query = String.format("SELECT * FROM explorer.resource_queue WHERE attempt_status=$1 %s ORDER BY priority DESC, created_at ASC LIMIT $2", modulo);
-            this.pgClient.preparedQuery(query, Tuple.of(STATUS_PENDING, bulkSize)).compose(result -> {
-                return loadPendings(result);
-            }).compose(bulkResults -> {
-                return saveStatus(bulkResults);
-            }).setHandler(e -> {
-                try{
-                    if (e.succeeded()) {
-                        this.onEnd.handle(new DefaultAsyncResult<>(e.result()));
-                    } else {
-                        this.onEnd.handle(new DefaultAsyncResult<>(e.cause()));
-                        log.error("Failed loading resources to engine:", e.cause());
+        final Future<Void> previous = lock;
+        final Future<Void> current = Future.future();
+        this.lock = current;
+        previous.setHandler(onReady -> {
+            try {
+                // use modulo to split between different thread
+                final String modulo = this.modulo == 1 ? "" : String.format(" AND MOD(id,%s)=0 ", this.modulo);
+                final String query = String.format("SELECT * FROM explorer.resource_queue WHERE attempt_status=$1 %s ORDER BY priority DESC, created_at ASC LIMIT $2", modulo);
+                this.pgClient.preparedQuery(query, Tuple.of(STATUS_PENDING, bulkSize)).compose(result -> {
+                    return loadPendings(result);
+                }).compose(bulkResults -> {
+                    return saveStatus(bulkResults);
+                }).setHandler(e -> {
+                    try {
+                        if (e.succeeded()) {
+                            this.onEnd.handle(new DefaultAsyncResult<>(e.result()));
+                        } else {
+                            this.onEnd.handle(new DefaultAsyncResult<>(e.cause()));
+                            log.error("Failed loading resources to engine:", e.cause());
+                        }
+                    } catch (Exception exc) {
+                    } finally {
+                        current.complete();
                     }
-                }catch(Exception exc){}
-                running.complete();
-            });
-            return running;
+                });
+            } catch (Exception e) {
+                current.complete();
+            }
         });
+        return current;
     }
 
     protected Future<List<JsonObject>> loadPendings(final PgRowSet result) {
@@ -140,7 +151,6 @@ public class PostgresResourceLoader implements ResourceLoader {
             }
         }
         //save
-        final Future<Void> future = Future.future();
         return this.pgClient.transaction().compose(transaction -> {
             if (succeed.size() > 0) {
                 final List<Long> ids = succeed.stream().map(e -> e.getLong(ResourceService.CUSTOM_IDENTIFIER)).collect(Collectors.toList());
@@ -156,7 +166,7 @@ public class PostgresResourceLoader implements ResourceLoader {
                 final List<Long> ids = failed.stream().map(e -> e.getLong(ResourceService.CUSTOM_IDENTIFIER)).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(now), ids);
                 final String placeholder = PostgresClient.inPlaceholder(failed, 2);
-                final String query = String.format("UPDATE explorer.resource_queue SET  attempted_count=attempted_count+1, attempted_at=? WHERE id IN (%s)", placeholder);
+                final String query = String.format("UPDATE explorer.resource_queue SET  attempted_count=attempted_count+1, attempted_at=$1 WHERE id IN (%s)", placeholder);
                 transaction.addPreparedQuery(query, tuple);
                 final Tuple tupleMessage = PostgresClient.insertValues(failed, Tuple.tuple(), defaultValues, "_id", FolderService.ERROR_FIELD, "_attemptat");
                 final String placeholderMessage = PostgresClient.insertPlaceholders(failed, 1, ResourceService.CUSTOM_IDENTIFIER, "id_resource", FolderService.ERROR_FIELD, "_attemptat");

@@ -7,7 +7,6 @@ import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -37,12 +36,12 @@ public class PostgresExplorerService implements ExplorerService {
 
     @Override
     public Future<Void> push(List<ExplorerMessageBuilder> messages) {
-        if(messages.isEmpty()){
+        if (messages.isEmpty()) {
             return Future.succeededFuture();
         }
         return pgPool.transaction().compose(transaction -> {
             final LocalDateTime now = LocalDateTime.now();
-            final List<Map<String,Object>> rows = messages.stream().map(e->{
+            final List<Map<String, Object>> rows = messages.stream().map(e -> {
                 final Map<String, Object> map = new HashMap<>();
                 map.put("id_resource", e.getId());
                 map.put("created_at", now);
@@ -51,20 +50,20 @@ public class PostgresExplorerService implements ExplorerService {
                 map.put("priority", e.getPriority());
                 return map;
             }).collect(Collectors.toList());
-            final String placeholder = PostgresClient.insertPlaceholdersFromMap(rows, 1, "id_resource","created_at", "resource_action", "payload", "priority");
-            final Tuple values = PostgresClient.insertValuesFromMap(rows, Tuple.tuple(), "id_resource","created_at", "resource_action", "payload", "priority");
+            final String placeholder = PostgresClient.insertPlaceholdersFromMap(rows, 1, "id_resource", "created_at", "resource_action", "payload", "priority");
+            final Tuple values = PostgresClient.insertValuesFromMap(rows, Tuple.tuple(), "id_resource", "created_at", "resource_action", "payload", "priority");
             //TODO dynamic table name?
-            final String query = String.format("INSERT INTO explorer.resource_queue (id_resource,created_at, resource_action, payload, priority) VALUES %s",placeholder);
+            final String query = String.format("INSERT INTO explorer.resource_queue (id_resource,created_at, resource_action, payload, priority) VALUES %s", placeholder);
             transaction.addPreparedQuery(query, values).setHandler(r -> {
                 if (r.failed()) {
                     //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                     final PostgresExplorerFailed fail = new PostgresExplorerFailed(query, values);
                     pendingFailed.add(fail);
-                    vertx.setTimer(retryUntil, rr->{
+                    vertx.setTimer(retryUntil, rr -> {
                         pendingFailed.remove(fail);
                     });
                     log.error("Failed to push resources to queue: ", r.cause());
-                    log.error("Query causing error: "+ query);
+                    log.error("Query causing error: " + query);
                 }
             });
             //retry failed
@@ -88,7 +87,7 @@ public class PostgresExplorerService implements ExplorerService {
         });
     }
 
-    class PostgresExplorerFailed{
+    class PostgresExplorerFailed {
         final String query;
         final Tuple tuple;
 

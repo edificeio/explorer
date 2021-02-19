@@ -26,7 +26,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
@@ -44,6 +46,8 @@ public class ResourceServiceTest {
     static ResourceLoader resourceLoader;
 
     //TODO add more logs
+    //TODO redis try
+    //TODO resource right retro
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         final JsonObject postgresql = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
@@ -60,11 +64,6 @@ public class ResourceServiceTest {
         resourceLoader = new PostgresResourceLoader(test.vertx(), postgresClient, resourceService, new JsonObject());
         final Async async = context.async();
         createMapping(context, index).setHandler(r -> async.complete());
-    }
-
-    @Before
-    public void before(){
-        resourceLoader.stop();
     }
 
     static Future<Void> createMapping(TestContext context, String index) {
@@ -101,8 +100,36 @@ public class ResourceServiceTest {
     }
 
     static ExplorerService.ExplorerMessageBuilder delete(UserInfos user, String id) {
-        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.delete(id, user);
+        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.delete(id, user).withResourceType("blog", "post");
         return message;
+    }
+
+    static List<ResourceService.ShareOperation> shareTo(JsonObject rights, UserInfos... users) {
+        final List<ResourceService.ShareOperation> share = new ArrayList<>();
+        for (UserInfos user : users) {
+            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(user.getUserId(), false, rights);
+            share.add(op);
+        }
+        return share;
+    }
+
+    static List<ResourceService.ShareOperation> shareToGroup(JsonObject rights, String... groups) {
+        final List<ResourceService.ShareOperation> share = new ArrayList<>();
+        for (String group : groups) {
+            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(group, true, rights);
+            share.add(op);
+        }
+        return share;
+    }
+
+    @Before
+    public void before(TestContext context) {
+        resourceLoader.stop().setHandler(context.asyncAssertSuccess());
+    }
+
+    @After
+    public void after(TestContext context) {
+        resourceLoader.stop().setHandler(context.asyncAssertSuccess());
     }
 
     @Test
@@ -142,45 +169,49 @@ public class ResourceServiceTest {
     public void testShouldIntegrateResourceOnRestart(TestContext context) {
         final UserInfos user = test.http().sessionUser();
         final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id_restart1", "name1", "text1");
-        explorerService.push(message1).setHandler(context.asyncAssertSuccess(push -> {
+        explorerService.push(message1).compose((push -> {
             final Future<ResourceLoader.ResourceLoaderResult> fCreate = Future.future();
             resourceLoader.setOnEnd(fCreate.completer());
-            resourceLoader.start().setHandler(context.asyncAssertSuccess(r -> {
-                fCreate.setHandler(context.asyncAssertSuccess(results -> {
-                    context.assertEquals(1, results.getSucceed().size());
-                }));
-            }));
+            resourceLoader.start();
+            return fCreate;
+        })).setHandler(context.asyncAssertSuccess(results -> {
+            context.assertEquals(1, results.getSucceed().size());
         }));
     }
 
 
-    //TODO share
-    //TODO redis try
-    //TODO resource right retro
-
     @Test
-    public void testShouldExploreResource(TestContext context) {
+    public void testShouldExploreResourceByFolder(TestContext context) {
+        final Async async = context.async(2);
         final UserInfos user2 = test.directory().generateUser("user2");
         final UserInfos user = test.http().sessionUser();
         final ExplorerService.ExplorerMessageBuilder message1 = create(user, "idexplore1", "name1", "text1");
         final ExplorerService.ExplorerMessageBuilder message2 = create(user, "idexplore2", "name2", "text2");
         final ExplorerService.ExplorerMessageBuilder message3 = create(user2, "idexplore3", "name3", "text3");
         final ExplorerService.ExplorerMessageBuilder message2_1 = create(user, "idexplore2_1", "name2_1", "text2_1");
-        explorerService.push(Arrays.asList(message1, message2, message3, message2_1)).setHandler(context.asyncAssertSuccess(push->{
-            resourceLoader.execute(true).setHandler(context.asyncAssertSuccess(load->{
-                resourceService.fetch(user, "blog", new ResourceService.SearchOperation()).setHandler(context.asyncAssertSuccess(fetch1->{
+        //user1 has 3 resources and user2 has 1
+        explorerService.push(Arrays.asList(message1, message2, message3, message2_1)).setHandler(context.asyncAssertSuccess(push -> {
+            resourceLoader.execute(true).setHandler(context.asyncAssertSuccess(load -> {
+                //user1 see 3 resource at root
+                resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setTrashed(false)).setHandler(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(3, fetch1.size());
-                    final JsonObject json = fetch1.stream().map(e-> (JsonObject)e).filter(e-> e.getString("_id").equals("idexplore2_1")).findFirst().get();
-                    resourceService.move(user, json, Optional.empty(), Optional.of("folder1")).setHandler(context.asyncAssertSuccess(move->{
-                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.of("folder1"))).setHandler(context.asyncAssertSuccess(fetch2->{
+                    final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals("idexplore2_1")).findFirst().get();
+                    //user1 move 1 resource to folder1
+                    resourceService.move(user, json, Optional.empty(), Optional.of("folder1")).setHandler(context.asyncAssertSuccess(move -> {
+                        //user1 see 1 resource at folder1
+                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.of("folder1"))).setHandler(context.asyncAssertSuccess(fetch2 -> {
                             context.assertEquals(1, fetch2.size());
+                            async.countDown();
                         }));
-                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.empty())).setHandler(context.asyncAssertSuccess(fetch2->{
+                        //user1 see 2 resource at root
+                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.empty())).setHandler(context.asyncAssertSuccess(fetch2 -> {
                             context.assertEquals(2, fetch2.size());
+                            async.countDown();
                         }));
                     }));
                 }));
-                resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setSearch("text2")).setHandler(context.asyncAssertSuccess(fetch1->{
+                //user1 has 1 resource with text -> text2
+                resourceService.fetch(user, "blog", new ResourceService.SearchOperation().setSearch("text2")).setHandler(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(1, fetch1.size());
                 }));
             }));
@@ -189,7 +220,77 @@ public class ResourceServiceTest {
 
     @Test
     public void testShouldExploreResourceByShare(TestContext context) {
-
+        final JsonObject rights = new JsonObject().put("read", true).put("contrib", true).put("manage", true);
+        final Async async = context.async(2);
+        final UserInfos user1 = test.directory().generateUser("user_share1", "group_share1");
+        final UserInfos user2 = test.directory().generateUser("user_share2", "group_share2");
+        final ExplorerService.ExplorerMessageBuilder message1 = create(user1, "idshare1", "name1", "text1");
+        final ExplorerService.ExplorerMessageBuilder message2 = create(user1, "idshare2", "name2", "text2");
+        final ExplorerService.ExplorerMessageBuilder message3 = create(user1, "idshare3", "name3", "text3");
+        //load documents
+        explorerService.push(Arrays.asList(message1, message2, message3)).compose((push -> {
+            return resourceLoader.execute(true).compose((load -> {
+                //user1 see 3 resources
+                return resourceService.fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch1 -> {
+                    context.assertEquals(3, fetch1.size());
+                    return Future.succeededFuture();
+                }));
+            })).compose(r -> {
+                //user2 see 0 resources
+                return resourceService.fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch1 -> {
+                    context.assertEquals(0, fetch1.size());
+                    return Future.succeededFuture();
+                }));
+            });
+        })).compose(rr -> {
+            //share doc1 to user2
+            try {
+                final JsonObject doc1 = new JsonObject().put("application", "blog").put("_id", "idshare1");
+                final List<ResourceService.ShareOperation> shares1 = shareTo(rights, user2);
+                return resourceService.share(user1, doc1, shares1).compose((share1 -> {
+                    //user1 see 3 resources
+                    return resourceService.fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch2 -> {
+                        context.assertEquals(3, fetch2.size());
+                        return Future.succeededFuture();
+                    }));
+                })).compose((r -> {
+                    //user2 see 1 resources
+                    return resourceService.fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch2 -> {
+                        context.assertEquals(1, fetch2.size());
+                        return Future.succeededFuture();
+                    }));
+                }));
+            } catch (Exception e) {
+                context.fail(e);
+                return Future.failedFuture(e);
+            }
+        }).compose(rr -> {
+            //share doc2 to group2
+            try {
+                final List<ResourceService.ShareOperation> shares2 = shareToGroup(rights, "group_share1", "group_share2", "group_share3", "group_share4", "group_share5", "group_share6");
+                final JsonObject doc2 = new JsonObject().put("application", "blog").put("_id", "idshare2");
+                return resourceService.share(user1, doc2, shares2).compose((share2 -> {
+                    //user1 see 3 resources
+                    return resourceService.fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch3 -> {
+                        context.assertEquals(3, fetch3.size());
+                        async.countDown();
+                        return Future.succeededFuture();
+                    }));
+                })).compose(rrrr -> {
+                    //user2 see 2 resources
+                    return resourceService.fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch3 -> {
+                        context.assertEquals(2, fetch3.size());
+                        async.countDown();
+                        return Future.succeededFuture();
+                    }));
+                });
+            } catch (Exception e) {
+                context.fail(e);
+                return Future.failedFuture(e);
+            }
+        }).setHandler(context.asyncAssertSuccess(r -> {
+            System.out.println("end of testShouldExploreResourceByShare");
+        }));
     }
 
     @Test

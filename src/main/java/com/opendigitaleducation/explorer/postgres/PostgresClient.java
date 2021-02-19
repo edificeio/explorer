@@ -18,6 +18,7 @@ import java.util.Map;
 public class PostgresClient {
     private final Vertx vertx;
     private final JsonObject config;
+    private PostgresClientPool pool;
 
     public PostgresClient(final Vertx vertx, final JsonObject config) {
         this.vertx = vertx;
@@ -38,10 +39,10 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
-    public static String insertPlaceholdersFromMap(final List<Map<String,Object>> rows, final int startAt, final String... column) {
+    public static String insertPlaceholdersFromMap(final List<Map<String, Object>> rows, final int startAt, final String... column) {
         int placeholderCounter = startAt;
         final List<String> placeholders = new ArrayList<>();
-        for (final Map<String,Object> row : rows) {
+        for (final Map<String, Object> row : rows) {
             final List<String> group = new ArrayList<>();
             for (final String col : column) {
                 group.add("$" + placeholderCounter);
@@ -108,16 +109,34 @@ public class PostgresClient {
     }
 
     public PostgresClientPool getClientPool() {
-        //TODO get unique pool? configure it?
-        final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
-                .setPort(config.getInteger("port", 5432))
-                .setHost(config.getString("host"))
-                .setDatabase(config.getString("database"))
-                .setUser(config.getString("user"))
-                .setPassword(config.getString("password"))
-                .setMaxSize(config.getInteger("pool-size", 10))
-        );
-        return new PostgresClientPool(pgPool, config);
+        return getClientPool(true);
+    }
+
+    public PostgresClientPool getClientPool(boolean reuse) {
+        if (reuse) {
+            if (pool == null) {
+                final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
+                        .setPort(config.getInteger("port", 5432))
+                        .setHost(config.getString("host"))
+                        .setDatabase(config.getString("database"))
+                        .setUser(config.getString("user"))
+                        .setPassword(config.getString("password"))
+                        .setMaxSize(config.getInteger("pool-size", 10))
+                );
+                pool = new PostgresClientPool(pgPool, config);
+            }
+            return pool;
+        } else {
+            final PgPool pgPool = PgClient.pool(vertx, new PgPoolOptions()
+                    .setPort(config.getInteger("port", 5432))
+                    .setHost(config.getString("host"))
+                    .setDatabase(config.getString("database"))
+                    .setUser(config.getString("user"))
+                    .setPassword(config.getString("password"))
+                    .setMaxSize(config.getInteger("pool-size", 10))
+            );
+            return new PostgresClientPool(pgPool, config);
+        }
     }
 
     public static class PostgresTransaction {

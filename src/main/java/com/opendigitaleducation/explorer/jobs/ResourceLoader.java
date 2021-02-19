@@ -13,9 +13,9 @@ public interface ResourceLoader {
 
     Future<Void> start();
 
-    void stop();
+    Future<Void> stop();
 
-    default Future<Void> execute(){
+    default Future<Void> execute() {
         return execute(false);
     }
 

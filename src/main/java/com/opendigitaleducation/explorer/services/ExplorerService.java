@@ -20,12 +20,18 @@ public interface ExplorerService {
 
     Future<Void> push(List<ExplorerMessageBuilder> messages);
 
+    default <T> Future<Void> push(ExplorerMessageBuilder message, final Future<T> onSave) {
+        return onSave.compose(e -> {
+            return push(message);
+        });
+    }
+
     class ExplorerMessageBuilder {
         private final String id;
         private final String action;
         private final JsonObject message = new JsonObject();
         private int priority = ExplorerService.PRIORITY_DEFAULT;
-
+        //TODO application mandatory? which are mandatory fields?
         public ExplorerMessageBuilder(final String id, final String action) {
             this.id = id;
             this.action = action;

@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ElasticFolderQuery {
     private final List<String> creatorId = new ArrayList<>();
@@ -12,6 +13,16 @@ public class ElasticFolderQuery {
     private final List<String> id = new ArrayList<>();
     private Integer from;
     private Integer size;
+
+    static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
+        if (values.size() == 0) {
+            return Optional.empty();
+        } else if (values.size() == 1) {
+            return Optional.of(new JsonObject().put("term", new JsonObject().put(key, values.iterator().next())));
+        } else {
+            return Optional.of(new JsonObject().put("terms", new JsonObject().put(key, new JsonArray(values))));
+        }
+    }
 
     public ElasticFolderQuery withFrom(Integer from) {
         this.from = from;
@@ -64,19 +75,19 @@ public class ElasticFolderQuery {
         query.put("bool", bool);
         bool.put("filter", filter);
         //by creator
-        if (creatorId.size() > 0) {
-            Object value = creatorId.size() == 1 ? creatorId.get(0) : new JsonArray(creatorId);
-            filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", value)));
+        final Optional<JsonObject> creatorTerm = createTerm("creatorId", creatorId);
+        if (creatorTerm.isPresent()) {
+            filter.add(creatorTerm.get());
         }
         //by parent
-        if (parentId.size() > 0) {
-            Object value = parentId.size() == 1 ? parentId.get(0) : new JsonArray(parentId);
-            filter.add(new JsonObject().put("term", new JsonObject().put("parentId", value)));
+        final Optional<JsonObject> parentIdTerm = createTerm("parentId", parentId);
+        if (parentIdTerm.isPresent()) {
+            filter.add(parentIdTerm.get());
         }
         //by id
-        if (id.size() > 0) {
-            Object value = id.size() == 1 ? id.get(0) : new JsonArray(id);
-            filter.add(new JsonObject().put("term", new JsonObject().put("_id", value)));
+        final Optional<JsonObject> idTerm = createTerm("_id", id);
+        if (idTerm.isPresent()) {
+            filter.add(idTerm.get());
         }
         //from / size
         if (from != null) {

@@ -4,7 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class RedisResourceLoader  implements ResourceLoader{
+public class RedisResourceLoader implements ResourceLoader {
     @Override
     public Future<Void> start() {
         //TODO listen
@@ -18,8 +18,9 @@ public class RedisResourceLoader  implements ResourceLoader{
     }
 
     @Override
-    public void stop() {
+    public Future<Void> stop() {
         //TODO stop listen
+        return null;
     }
 
     @Override
