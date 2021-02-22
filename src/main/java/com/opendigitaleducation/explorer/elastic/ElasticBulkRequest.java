@@ -112,6 +112,32 @@ public class ElasticBulkRequest {
         actions.add("update");
     }
 
+    public void script(final JsonObject document) {
+        script(document, Optional.empty(), Optional.empty(), Optional.empty());
+    }
+
+    public void script(final JsonObject document, final String id) {
+        script(document, Optional.ofNullable(id), Optional.empty(), Optional.empty());
+    }
+
+    public void script(final JsonObject document, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
+        final JsonObject metadata = new JsonObject();
+        if (id.isPresent()) {
+            metadata.put("_id", id.get());
+        } else if (document.containsKey("_id")) {
+            metadata.put("_id", document.getString("_id"));
+        }
+        if (index.isPresent()) {
+            metadata.put("_index", index.get());
+        }
+        if (routing.isPresent()) {
+            metadata.put("routing", routing.get());
+        }
+        document.remove("_id");
+        doWrite(Optional.of(document), metadata, "update");
+        actions.add("update");
+    }
+
     public void delete(final String id) {
         delete(id, Optional.empty(), Optional.empty());
     }

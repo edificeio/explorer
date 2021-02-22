@@ -72,6 +72,38 @@ public class ElasticClient {
         return future;
     }
 
+    public Future<JsonObject> getDocument(final String index, final String id, final ElasticOptions options) {
+        final Future<JsonObject> future = Future.future();
+        final String queryParams = options.getQueryParams();
+        httpClient.get("/" + index + "/" + id + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200 || res.statusCode() == 201) {
+                    final JsonObject body = new JsonObject(resBody.toString());
+                    future.complete(body.getJsonObject("_source").put("_id", body.getString("_id")));
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }).putHeader("content-type", "application/json").exceptionHandler(onError).end();
+        return future;
+    }
+
+    public Future<String> updateByQuery(final String index, final JsonObject payload, final ElasticOptions options) {
+        final Future<String> future = Future.future();
+        final String queryParams = options.getQueryParams();
+        httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200 || res.statusCode() == 201) {
+                    final JsonObject body = new JsonObject(resBody.toString());
+                    future.complete(body.getString("_id"));
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        return future;
+    }
+
     public Future<Void> updateDocument(final String index, final Set<String> id, final JsonObject payload, final ElasticOptions options) {
         if (id.isEmpty()) {
             return Future.succeededFuture();
@@ -135,6 +167,12 @@ public class ElasticClient {
     public static class ElasticOptions {
         private final Set<String> routing = new HashSet<>();
         private boolean waitFor = false;
+        private boolean refresh = false;
+
+        public ElasticOptions withRefresh(boolean refresh) {
+            this.refresh = refresh;
+            return this;
+        }
 
         public ElasticOptions withWaitFor(boolean waitFor) {
             this.waitFor = waitFor;
@@ -155,6 +193,9 @@ public class ElasticClient {
             final List<String> queryParams = new ArrayList<>();
             if (waitFor) {
                 queryParams.add("refresh=wait_for");
+            }
+            if (refresh) {
+                queryParams.add("refresh=true");
             }
             if (!routing.isEmpty()) {
                 queryParams.add("routing=" + String.join(",", routing));

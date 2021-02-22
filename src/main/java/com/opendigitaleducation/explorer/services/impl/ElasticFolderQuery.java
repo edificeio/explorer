@@ -11,6 +11,7 @@ public class ElasticFolderQuery {
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> parentId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
+    private final List<String> ancestors = new ArrayList<>();
     private Integer from;
     private Integer size;
 
@@ -45,7 +46,19 @@ public class ElasticFolderQuery {
     }
 
     public ElasticFolderQuery withId(final String id) {
-        this.id.add(id);
+        if(id != null) {
+            this.id.add(id);
+        }
+        return this;
+    }
+
+    public ElasticFolderQuery withAncestors(final String ancestors) {
+        this.ancestors.add(ancestors);
+        return this;
+    }
+
+    public ElasticFolderQuery withAncestors(final List<String> ancestors) {
+        this.ancestors.addAll(ancestors);
         return this;
     }
 
@@ -88,6 +101,11 @@ public class ElasticFolderQuery {
         final Optional<JsonObject> idTerm = createTerm("_id", id);
         if (idTerm.isPresent()) {
             filter.add(idTerm.get());
+        }
+        //by ancestors
+        final Optional<JsonObject> ancestorsTerm = createTerm("ancestors", ancestors);
+        if (ancestorsTerm.isPresent()) {
+            filter.add(ancestorsTerm.get());
         }
         //from / size
         if (from != null) {
