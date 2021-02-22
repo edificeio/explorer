@@ -14,7 +14,7 @@ public class ElasticFolderQuery {
     private final List<String> ancestors = new ArrayList<>();
     private Integer from;
     private Integer size;
-
+    //TODO force creator on constructor (every query is by creator)
     static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
         if (values.size() == 0) {
             return Optional.empty();

@@ -209,6 +209,7 @@ public class ElasticFolderService implements FolderService {
             final JsonObject script = new JsonObject().put("lang","painless").put("params",params);
             final JsonObject payload = new JsonObject().put("script", script);
             final ElasticFolderQuery query2 = new ElasticFolderQuery().withCreatorId(creator.getUserId()).withAncestors(source.orElse(null));
+            //TODO avoid search by ancestor (if root match all) => get by id=document.id or ancestors=document.id + conditional update using script
             payload.put("query", query2.getSearchQuery().getJsonObject("query"));
             //remove all ancestor of new parent
             final StringBuilder sourceScript = new StringBuilder();
