@@ -86,7 +86,7 @@ publish () {
 }
 
 buildStatic () {
-    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm run dev:build"
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save ode-bootstrap-neo@feat-explorer && npm run dev:build"
 }
 
 watch () {
