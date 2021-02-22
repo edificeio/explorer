@@ -41,6 +41,9 @@
       },
       "trashedAt": {
         "type": "date"
+      },
+      "childrenIds": {
+        "type": "keyword"
       }
     }
   }

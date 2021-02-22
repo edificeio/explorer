@@ -41,7 +41,8 @@
         "type": "keyword"
       },
       "creatorId": {
-        "type": "keyword"
+        "type": "keyword",
+        "enabled": false
       },
       "creatorName": {
         "type": "text"
@@ -60,6 +61,10 @@
       },
       "favoriteFor": {
         "type": "keyword"
+      },
+      "shared": {
+        "type": "keyword",
+        "enabled": false
       }
     }
   }

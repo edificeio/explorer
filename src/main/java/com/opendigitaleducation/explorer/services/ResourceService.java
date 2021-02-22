@@ -112,6 +112,7 @@ public interface ResourceService {
     }
 
     class SearchOperation {
+        //TODO redirect setter to ElasticResourceQuery
         private Optional<String> parentId = Optional.empty();
         private String search;
         private Boolean trashed;
