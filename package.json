@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ode-bootstrap-neo": "^1.0.0-explorer"
+    "ode-bootstrap-neo": "feat-explorer"
   },
   "devDependencies": {
     "cpr": "^3.0.1"
