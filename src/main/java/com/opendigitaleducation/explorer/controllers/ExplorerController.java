@@ -5,6 +5,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.events.EventHelper;
@@ -24,5 +25,11 @@ public class ExplorerController extends BaseController {
     @SecuredAction("explorer.view")
     public void view(HttpServerRequest request) {
         renderView(request);
+    }
+    //TODO poc only
+    @Get("list")
+    @SecuredAction("explorer.view")
+    public void list(HttpServerRequest request) {
+        renderView(request, new JsonObject(), "explorer-list.html", null);
     }
 }
