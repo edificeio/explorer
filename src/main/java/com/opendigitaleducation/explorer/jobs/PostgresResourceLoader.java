@@ -172,6 +172,7 @@ public class PostgresResourceLoader implements ResourceLoader {
                 final String placeholderMessage = PostgresClient.insertPlaceholders(failed, 1, ResourceService.CUSTOM_IDENTIFIER, "id_resource", FolderService.ERROR_FIELD, "_attemptat");
                 final String queryMessage = String.format("INSERT INTO explorer.resource_queue_causes (id, id_resource, attempt_reason, attempted_at) VALUES %s", placeholderMessage);
                 transaction.addPreparedQuery(queryMessage, tupleMessage);
+                //TODO continue until non empty
             }
             return transaction.commit().map(e -> new ResourceLoaderResult(succeed, failed));
         });
