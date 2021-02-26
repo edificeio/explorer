@@ -134,7 +134,7 @@ public class ResourceServiceTest {
 
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
-        final UserInfos user = test.http().sessionUser();
+        final UserInfos user = test.directory().generateUser("intergrate_res");
         resourceLoader.start().setHandler(context.asyncAssertSuccess(r -> {
             final Future<ResourceLoader.ResourceLoaderResult> fCreate = Future.future();
             resourceLoader.setOnEnd(fCreate.completer());
@@ -149,13 +149,19 @@ public class ResourceServiceTest {
                     explorerService.push(message2).setHandler(context.asyncAssertSuccess(push2 -> {
                         fUpdate.setHandler(context.asyncAssertSuccess(results2 -> {
                             context.assertEquals(1, results2.getSucceed().size());
-                            //delete
-                            final Future<ResourceLoader.ResourceLoaderResult> fDelete = Future.future();
-                            resourceLoader.setOnEnd(fDelete.completer());
-                            final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
-                            explorerService.push(message3).setHandler(context.asyncAssertSuccess(push3 -> {
-                                fDelete.setHandler(context.asyncAssertSuccess(results3 -> {
-                                    context.assertEquals(1, results3.getSucceed().size());
+                            resourceService.fetch(user, "blog", new ResourceService.SearchOperation()).setHandler(context.asyncAssertSuccess(fetch1 -> {
+                                context.assertEquals(1, fetch1.size());
+                                //delete
+                                final Future<ResourceLoader.ResourceLoaderResult> fDelete = Future.future();
+                                resourceLoader.setOnEnd(fDelete.completer());
+                                final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
+                                explorerService.push(message3).setHandler(context.asyncAssertSuccess(push3 -> {
+                                    fDelete.setHandler(context.asyncAssertSuccess(results3 -> {
+                                        context.assertEquals(1, results3.getSucceed().size());
+                                        resourceService.fetch(user, "blog", new ResourceService.SearchOperation()).setHandler(context.asyncAssertSuccess(fetch2 -> {
+                                            context.assertEquals(0, fetch2.size());
+                                        }));
+                                    }));
                                 }));
                             }));
                         }));
@@ -294,8 +300,13 @@ public class ResourceServiceTest {
     }
 
     @Test
-    public void testShouldSearchResource(TestContext context) {
+    public void testShouldSearchResourceWithComplexContent(TestContext context) {
+        //TODO
+    }
 
+    @Test
+    public void testShouldSearchResourceWithComplexCriteria(TestContext context) {
+        //TODO
     }
 
 }
