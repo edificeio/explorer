@@ -13,7 +13,8 @@
     "dev:prepare": "npm run dev:clean && npm run dev:prepare:html && npm run dev:prepare:assets",
     "dev:clean": "rimraf src/main/resources/view/ && rimraf src/main/resources/public/",
     "dev:build:apple": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:apple && npm run dev:replace:logo:apple",
-    "dev:build": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:gnu && npm run dev:replace:logo:gnu"
+    "dev:build": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:gnu && npm run dev:replace:logo:gnu",
+    "watch": "npx webpack --config webpack.config.watch.js --env build_target=${npm_config_springboard} --env build_app=${npm_config_app} --watch"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +22,11 @@
     "ode-bootstrap-neo": "feat-explorer"
   },
   "devDependencies": {
-    "cpr": "^3.0.1"
+    "cpr": "^3.0.1",
+    "ode-ts-client": "^0.2.0-explorer.0",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.26.3",
+    "webpack-cli": "^4.5.0"
   }
 }
