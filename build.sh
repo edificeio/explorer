@@ -32,6 +32,11 @@ case $i in
 esac
 done
 
+# Read value of a key from gradle.properties.
+function prop {
+    grep "^\\s*${1}=" gradle.properties|cut -d'=' -f2
+}
+
 clean () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
 }
@@ -90,7 +95,13 @@ buildStatic () {
 }
 
 watch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch --springboard=/home/node/$SPRINGBOARD"
+  BUILD_APP="$(prop 'modowner')~$(prop 'modname')~$(prop 'version')"
+  echo "Watching app $BUILD_APP"
+  docker-compose run \
+    --rm \
+    -u "$USER_UID:$GROUP_GID" \
+    -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
+    node sh -c "npm run watch --springboard=/home/node/$SPRINGBOARD --app=\"$BUILD_APP\""
 }
 
 for param in "$@"
