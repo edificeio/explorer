@@ -1,0 +1,42 @@
+{
+	"folders":[{
+		"id": "blogFolder010",
+		"name": "Dossier 1",
+		"type": "",
+		"childNumber": 0
+	},{
+		"id": "blogFolder020",
+		"name": "Dossier 2",
+		"type": "",
+		"childNumber": 0
+	},{
+		"id": "blogFolder030",
+		"name": "Dossier 3",
+		"type": "",
+		"childNumber": 0
+	}]
+
+	,"pagination": {
+		"startIdx": 0,
+		"pageSize": 1
+	}
+	
+	,"resources": [{
+		"id": "resource001",
+		"name": "Titre de la ressource 1",
+		"thumbnail": "https://loremflickr.com/240/160?random=2",
+		"application": "blog",
+		"createdAt": "2021-03-21T08:50:00Z",
+		"authorId": "",
+		"authorName": "",
+		"modifierId": "",
+		"modifierName": "Isabelle Polonio",
+		"modifiedAt":"2021-03-23T08:50:00Z",
+		"folderId": "blogFolder000",
+		"public": true,
+		"shared": true,
+		"favorite": true,
+		"views": 28,
+		"comments": 3
+	}]
+  }
