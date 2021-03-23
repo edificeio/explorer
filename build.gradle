@@ -59,6 +59,7 @@ compileTestJava {
 dependencies {
     compileOnly "io.vertx:vertx-core:$vertxVersion"
     compile "org.entcore:common:$entCoreVersion"
+    compile "io.vertx:vertx-redis-client:$vertxVersion"
     testCompile "org.entcore:test:$entCoreVersion:fat"
 }
 

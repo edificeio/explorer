@@ -2,7 +2,7 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.services.FolderService;
-import com.opendigitaleducation.explorer.services.impl.ElasticFolderService;
+import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -44,7 +44,7 @@ public class FolderServiceTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String index = FolderService.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
-        folderService = new ElasticFolderService(elasticClientManager, index);
+        folderService = new FolderServiceElastic(elasticClientManager, index);
         final Async async = context.async();
         createMapping(context, index).setHandler(r -> async.complete());
     }

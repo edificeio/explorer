@@ -26,6 +26,7 @@ public class ExplorerController extends BaseController {
     public void view(HttpServerRequest request) {
         renderView(request);
     }
+
     //TODO poc only
     @Get("list")
     @SecuredAction("explorer.view")

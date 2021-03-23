@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class ElasticResourceQuery {
+public class ResourceQueryElastic {
     private final UserInfos user;
     private final List<String> application = new ArrayList<>();
     private final List<String> creatorId = new ArrayList<>();
@@ -22,7 +22,7 @@ public class ElasticResourceQuery {
     private Boolean trashed;
     private String text;
 
-    public ElasticResourceQuery(final UserInfos u) {
+    public ResourceQueryElastic(final UserInfos u) {
         this.user = u;
     }
 
@@ -36,57 +36,57 @@ public class ElasticResourceQuery {
         }
     }
 
-    public ElasticResourceQuery withTrashed(Boolean trashed) {
+    public ResourceQueryElastic withTrashed(Boolean trashed) {
         this.trashed = trashed;
         return this;
     }
 
-    public ElasticResourceQuery withVisibleIds(final Collection<String> ids) {
+    public ResourceQueryElastic withVisibleIds(final Collection<String> ids) {
         visibleIds.addAll(ids);
         return this;
     }
 
-    public ElasticResourceQuery withOnlyRoot(boolean onlyRoot) {
+    public ResourceQueryElastic withOnlyRoot(boolean onlyRoot) {
         this.onlyRoot = onlyRoot;
         return this;
     }
 
-    public ElasticResourceQuery withTextSearch(String text) {
+    public ResourceQueryElastic withTextSearch(String text) {
         this.text = text;
         return this;
     }
 
-    public ElasticResourceQuery withApplication(String application) {
+    public ResourceQueryElastic withApplication(String application) {
         this.application.add(application);
         return this;
     }
 
-    public ElasticResourceQuery withFrom(Integer from) {
+    public ResourceQueryElastic withFrom(Integer from) {
         this.from = from;
         return this;
     }
 
-    public ElasticResourceQuery withSize(Integer size) {
+    public ResourceQueryElastic withSize(Integer size) {
         this.size = size;
         return this;
     }
 
-    public ElasticResourceQuery withCreatorId(final String creatorId) {
+    public ResourceQueryElastic withCreatorId(final String creatorId) {
         this.creatorId.add(creatorId);
         return this;
     }
 
-    public ElasticResourceQuery withFolderId(final String folderId) {
+    public ResourceQueryElastic withFolderId(final String folderId) {
         this.folderId.add(folderId);
         return this;
     }
 
-    public ElasticResourceQuery withId(final String id) {
+    public ResourceQueryElastic withId(final String id) {
         this.id.add(id);
         return this;
     }
 
-    public ElasticResourceQuery withId(final List<String> id) {
+    public ResourceQueryElastic withId(final List<String> id) {
         this.id.addAll(id);
         return this;
     }
@@ -123,7 +123,7 @@ public class ElasticResourceQuery {
         //by visible
         {
             final List<String> visibles = new ArrayList<>();
-            visibles.add(ElasticResourceService.getVisibleByCreator(user.getUserId()));
+            visibles.add(ResourceServiceElastic.getVisibleByCreator(user.getUserId()));
             visibles.addAll(this.visibleIds);
             final Optional<JsonObject> visibleTerm = createTerm("visibleBy", visibles);
             filter.add(visibleTerm.get());
