@@ -1,0 +1,44 @@
+{
+	"folders":[{
+		"id": "blogFolder000",
+		"name": "Mes blogs",
+		"type": "default",
+		"childNumber": 3
+	},{
+		"id": "blogFolder999",
+		"name": "Ma corbeille",
+		"type": "bin",
+		"childNumber": 0
+	}]
+   ,"filters":[]
+   ,"orders":[{
+	   "id": "name"
+	  ,"defaultValue": "asc"
+	  ,"name": "fake.key.order.name.asc"
+	}
+   ]
+   ,"actions":[
+		{"id":"comment",  "available":false}
+	   ,{"id":"copy",     "available":false}
+	   ,{"id":"create",   "available":false}
+	   ,{"id":"delete",   "available":false}
+	   ,{"id":"export",   "available":false}
+	   ,{"id":"initialize", "available":true}
+	   ,{"id":"manage",   "available":false}
+	   ,{"id":"move",     "available":false}
+	   ,{"id":"open",     "available":false}
+	   ,{"id":"print",    "available":false}
+	   ,{"id":"publish",  "available":false}
+	   ,{"id":"search",   "available":true}
+	   ,{"id":"share",    "available":false}
+	  ]
+   ,"pagination":{
+	   "startIdx": 0
+	  ,"maxIdx": 22
+	  ,"pageSize": 10
+   }
+   ,"resources":[]
+   ,"preferences":{
+	   "view": "list"
+   }
+  }
