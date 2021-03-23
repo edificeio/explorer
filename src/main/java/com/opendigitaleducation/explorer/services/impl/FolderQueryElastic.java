@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ElasticFolderQuery {
+public class FolderQueryElastic {
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> parentId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
     private final List<String> ancestors = new ArrayList<>();
     private Integer from;
     private Integer size;
+
     //TODO force creator on constructor (every query is by creator)
     static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
         if (values.size() == 0) {
@@ -25,44 +26,44 @@ public class ElasticFolderQuery {
         }
     }
 
-    public ElasticFolderQuery withFrom(Integer from) {
+    public FolderQueryElastic withFrom(Integer from) {
         this.from = from;
         return this;
     }
 
-    public ElasticFolderQuery withSize(Integer size) {
+    public FolderQueryElastic withSize(Integer size) {
         this.size = size;
         return this;
     }
 
-    public ElasticFolderQuery withCreatorId(final String creatorId) {
+    public FolderQueryElastic withCreatorId(final String creatorId) {
         this.creatorId.add(creatorId);
         return this;
     }
 
-    public ElasticFolderQuery withParentId(final String parentId) {
+    public FolderQueryElastic withParentId(final String parentId) {
         this.parentId.add(parentId);
         return this;
     }
 
-    public ElasticFolderQuery withId(final String id) {
-        if(id != null) {
+    public FolderQueryElastic withId(final String id) {
+        if (id != null) {
             this.id.add(id);
         }
         return this;
     }
 
-    public ElasticFolderQuery withAncestors(final String ancestors) {
+    public FolderQueryElastic withAncestors(final String ancestors) {
         this.ancestors.add(ancestors);
         return this;
     }
 
-    public ElasticFolderQuery withAncestors(final List<String> ancestors) {
+    public FolderQueryElastic withAncestors(final List<String> ancestors) {
         this.ancestors.addAll(ancestors);
         return this;
     }
 
-    public ElasticFolderQuery withId(final List<String> id) {
+    public FolderQueryElastic withId(final List<String> id) {
         this.id.addAll(id);
         return this;
     }

@@ -4,6 +4,7 @@ import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -74,7 +75,11 @@ public class PostgresClient {
     public static Tuple insertValues(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
-                tuple.addValue(row.getValue(col, defaultValues.get(col)));
+                Object value = row.getValue(col, defaultValues.get(col));
+                if(value == null){
+                    value = defaultValues.getOrDefault(col, value);
+                }
+                tuple.addValue(value);
             }
         }
         return tuple;
@@ -171,16 +176,16 @@ public class PostgresClient {
 
         public Future<Void> commit() {
             return CompositeFuture.all(futures).compose(r -> {
-                final Future<Void> future = Future.future();
-                this.pgTransaction.commit(future.completer());
-                return future;
+                final Promise<Void> future = Promise.promise();
+                this.pgTransaction.commit(future);
+                return future.future();
             });
         }
 
         public Future<Void> rollback() {
-            final Future<Void> future = Future.future();
-            this.pgTransaction.rollback(future.completer());
-            return future;
+            final Promise<Void> future = Promise.promise();
+            this.pgTransaction.rollback(future);
+            return future.future();
         }
     }
 }

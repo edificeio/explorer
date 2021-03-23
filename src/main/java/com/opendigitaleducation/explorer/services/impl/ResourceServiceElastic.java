@@ -14,18 +14,18 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ElasticResourceService implements ResourceService {
+public class ResourceServiceElastic implements ResourceService {
     private static final String VISIBLE_BY_CREATOR = "creator:";
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
     final String index;
     final boolean waitFor = true;
 
-    public ElasticResourceService(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
         this(aManager, shareTableManager, DEFAULT_RESOURCE_INDEX);
     }
 
-    public ElasticResourceService(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final String index) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final String index) {
         this.manager = aManager;
         this.index = index;
         this.shareTableManager = shareTableManager;
@@ -114,7 +114,7 @@ public class ElasticResourceService implements ResourceService {
     @Override
     public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation) {
         return shareTableManager.findHashes(user).compose(hashes -> {
-            final ElasticResourceQuery query = new ElasticResourceQuery(user).withApplication(application).withVisibleIds(hashes);
+            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
             if (operation.getParentId().isPresent()) {
                 query.withFolderId(operation.getParentId().get());
             } else if (!operation.isSearchEverywhere()) {

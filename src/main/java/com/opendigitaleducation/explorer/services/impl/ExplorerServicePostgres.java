@@ -6,6 +6,7 @@ import com.opendigitaleducation.explorer.services.ExplorerService;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -14,16 +15,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PostgresExplorerService implements ExplorerService {
-    static final int MAX_RANDOM = 10000;
-    static Logger log = LoggerFactory.getLogger(PostgresExplorerService.class);
+public class ExplorerServicePostgres implements ExplorerService {
+    static Logger log = LoggerFactory.getLogger(ExplorerServicePostgres.class);
     private final PostgresClientPool pgPool;
-    private final Random rnd = new Random();
     private final List<PostgresExplorerFailed> pendingFailed = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
 
-    public PostgresExplorerService(final Vertx vertx, final PostgresClient pgClient) {
+    public ExplorerServicePostgres(final Vertx vertx, final PostgresClient pgClient) {
         this.pgPool = pgClient.getClientPool();
         this.vertx = vertx;
     }
@@ -31,6 +30,7 @@ public class PostgresExplorerService implements ExplorerService {
     @Override
     public Future<Void> push(final ExplorerMessageBuilder message) {
         //TODO debounce ?
+        //TODO create a job to archive this table on night?
         return push(Arrays.asList(message));
     }
 
@@ -54,7 +54,7 @@ public class PostgresExplorerService implements ExplorerService {
             final Tuple values = PostgresClient.insertValuesFromMap(rows, Tuple.tuple(), "id_resource", "created_at", "resource_action", "payload", "priority");
             //TODO dynamic table name?
             final String query = String.format("INSERT INTO explorer.resource_queue (id_resource,created_at, resource_action, payload, priority) VALUES %s", placeholder);
-            transaction.addPreparedQuery(query, values).setHandler(r -> {
+            transaction.addPreparedQuery(query, values).onComplete(r -> {
                 if (r.failed()) {
                     //TODO push somewhere else to retry? limit in size? in time? fallback to redis?
                     final PostgresExplorerFailed fail = new PostgresExplorerFailed(query, values);
@@ -68,22 +68,26 @@ public class PostgresExplorerService implements ExplorerService {
             });
             //retry failed
             for (final PostgresExplorerFailed failed : pendingFailed) {
-                transaction.addPreparedQuery(failed.query, failed.tuple).setHandler(r -> {
+                transaction.addPreparedQuery(failed.query, failed.tuple).onComplete(r -> {
                     if (r.succeeded()) {
                         pendingFailed.remove(failed);
                     }
                 });
             }
             //
-            transaction.notify(ExplorerService.RESOURCE_CHANNEL, "new_events");
-            final Future<Void> future = Future.future();
-            transaction.commit().setHandler(e -> {
+            transaction.notify(ExplorerService.RESOURCE_CHANNEL, "new_resources").onComplete(e -> {
+                if (e.failed()) {
+                    log.error("Failed to notify new ressources: ", e.cause());
+                }
+            });
+            final Promise<Void> future = Promise.promise();
+            transaction.commit().onComplete(e -> {
                 future.handle(e);
                 if (e.failed()) {
                     log.error("Failed to commit resources to queue: ", e.cause());
                 }
             });
-            return future;
+            return future.future();
         });
     }
 

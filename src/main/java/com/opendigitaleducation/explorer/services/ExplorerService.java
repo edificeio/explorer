@@ -31,6 +31,7 @@ public interface ExplorerService {
         private final String action;
         private final JsonObject message = new JsonObject();
         private int priority = ExplorerService.PRIORITY_DEFAULT;
+
         //TODO application mandatory? which are mandatory fields?
         public ExplorerMessageBuilder(final String id, final String action) {
             this.id = id;
