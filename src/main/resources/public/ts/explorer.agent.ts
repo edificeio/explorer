@@ -2,6 +2,7 @@ import { AbstractBusAgent, ACTION, APP, CreateFolderParameters, CreateFolderResu
 import { IHandler } from 'ode-ts-client/dist/ts/foundation/Agent';
 import * as ContextData from "./mocked/GetContext.json";
 import * as SearchBlogFolder000Data from "./mocked/GetSearchBlogFolder000.json";
+import * as SearchBlogFolder020Data from "./mocked/GetSearchBlogFolder020.json";
 
 /* Ce code est une recopie du code de l'agent mocké pour les tests unitaires.
  * Il s'agit d'un agent de gestion de ressources de type Folder.
@@ -48,6 +49,7 @@ class ExplorerAgent extends AbstractBusAgent {
         // Simulate querying the server.
             switch(parameters.filters.folder) {
                 case "blogFolder000": return SearchBlogFolder000Data as unknown as GetResourcesResult;
+                case "blogFolder020": return SearchBlogFolder020Data as unknown as GetResourcesResult;
                 default: throw new Error(ERROR_CODE.NOT_SUPPORTED);
             }
         });        
