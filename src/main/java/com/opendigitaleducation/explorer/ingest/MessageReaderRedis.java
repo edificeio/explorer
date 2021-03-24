@@ -1,10 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.redis.RedisBatch;
 import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.impl.ExplorerServiceRedis;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,7 +30,8 @@ public class MessageReaderRedis implements MessageReader {
     private final RedisClient redisClient;
     private final List<String> streams = new ArrayList<>();
     private final List<Handler<Void>> listeners = new ArrayList<>();
-    private final List<JsonObject> pending = new ArrayList<>();
+    private int pendingNotifications = 0;
+    private boolean listening = false;
     private final JsonObject metrics = new JsonObject();
     private MessageReaderStatus status = MessageReaderStatus.Running;
 
@@ -43,72 +42,71 @@ public class MessageReaderRedis implements MessageReader {
         this.consumerName = config.getString("consumer-name", DEFAULT_CONSUMER_NAME);
         this.consumerGroup = config.getString("consumer-group", DEFAULT_CONSUMER_GROUP);
         final JsonArray streams = config.getJsonArray("streams", ExplorerServiceRedis.DEFAULT_STREAMS);
+        //order by priority DESC
+        final List<String> initStreams = new ArrayList<>();
         for (final Object stream : streams) {
             this.streams.add(stream.toString());
+            //stream to init
+            initStreams.add(stream.toString());
+            initStreams.add(stream.toString() + streamFailSuffix);
         }
         if (this.streams.isEmpty()) {
             log.error("Missing streams list");
         }
-        onReady = redisClient.xcreateGroup(consumerGroup, this.streams).onFailure(e -> {
+        onReady = redisClient.xcreateGroup(consumerGroup, initStreams).onFailure(e -> {
             log.error("Could not create redis group: " + consumerGroup, e.getCause());
         });
     }
 
     protected boolean notifyListeners(){
-        if(pending.size() > 0){
+        if(pendingNotifications > 0){
             //notify listeners
             final List<Handler<Void>> copy = new ArrayList<>(listeners);
             for(final Handler<Void> listener : copy){
                 listener.handle(null);
             }
+            this.pendingNotifications = 0;
             return true;
         }
         return false;
     }
 
-    protected void scheduleXread(boolean force) {
-        //if non empty list => notifylistener
-        if(notifyListeners()){
+    protected void scheduleXread() {
+        if(isStopped()){
             return;
         }
+        if(listening){
+            return;
+        }
+        listening = true;
         onReady.onSuccess(e -> {
-            //if no listeners no need to listen
-            if (listeners.isEmpty()) {
-                return;
-            }
-            //if already listening no need to trigger
-            if (isPaused() && !force) {
-                metrics.put("last_listen_skip_at", new Date().getTime());
-                metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0)+1);
-                return;
-            }
-            redisClient.xreadGroup(consumerGroup, consumerName, streams, false, Optional.of(1), Optional.of(consumerBlockMs)).onComplete(res -> {
-                if (res.succeeded()) {
-                    pending.addAll(res.result());
-                    notifyListeners();
-                } else {
-                    log.error(String.format("Could not xread (%s,%s) from streams: %s", consumerGroup, consumerName, streams), res.cause());
-                }
-                metrics.put("last_listen_at", new Date().getTime());
-                metrics.put("listen_count", metrics.getInteger("listen_count", 0)+1);
-                if(pending.isEmpty()) {
-                    scheduleXread(false);
-                }
+            //only new messages
+            final String startFrom = ">";
+            redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom)).onComplete(res -> {
+                   this.listening = false;
+                   if(res.result().size() > 0) {
+                       this.pendingNotifications++;
+                   }
+                   //do not notify each time
+                   if (isStopped()) {
+                       metrics.put("last_listen_skip_at", new Date().getTime());
+                       metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0)+1);
+                   }else{
+                       metrics.put("last_listen_at", new Date().getTime());
+                       metrics.put("listen_count", metrics.getInteger("listen_count", 0)+1);
+                   }
+                   //call listeners (avoid concurrent modification
+                   notifyListeners();
+                   //if paused on notify => stop listening => while rerun on resume
+                   scheduleXread();
             });
         });
     }
 
-    protected List<JsonObject> cleanPending() {
-        final List<JsonObject> result = new ArrayList<>();
-        result.addAll(pending);
-        pending.clear();
-        return result;
-    }
 
     @Override
-    public Function<Void, Void> listenNewMessages(Handler<Void> handler) {
+    public Function<Void, Void> listenNewMessages(final Handler<Void> handler) {
         listeners.add(handler);
-        scheduleXread(false);
         return e -> {
             listeners.remove(handler);
             return null;
@@ -121,21 +119,23 @@ public class MessageReaderRedis implements MessageReader {
     }
 
     @Override
-    public void pause() {
-        status = MessageReaderStatus.Paused;
+    public void stop() {
+        status = MessageReaderStatus.Stopped;
     }
 
     @Override
-    public void resume() {
-        if(this.pending.size() > 0){
-            notifyListeners();
-        }
+    public Future<Void> start() {
         status = MessageReaderStatus.Running;
+        final Promise<Void> promise = Promise.promise();
+        //schedule listen
+        scheduleXread();
+        return Future.succeededFuture();
     }
 
-    protected Future<List<JsonObject>> fetchOneStream(final String stream, int maxBatchSize) {
+    protected Future<List<JsonObject>> fetchOneStream(final String stream, int maxBatchSize, boolean pending) {
         final Promise<List<JsonObject>> promise = Promise.promise();
-        redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty()).onComplete(res -> {
+        final String startAt = pending? "0" : ">";
+        redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt)).onComplete(res -> {
             if (res.succeeded()) {
                 promise.complete(res.result());
             } else {
@@ -148,21 +148,30 @@ public class MessageReaderRedis implements MessageReader {
     protected Future<List<MessageIngester.Message>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
         //iterate over streams by priority and fill results list
         final Iterator<String> it = streams.iterator();
-        final int newMaxBatchSizeFirst = maxBatchSize - result.size();
-        final String firstStream = it.next() + suffix.orElse("");
-        Future<List<JsonObject>> futureIt = fetchOneStream(firstStream, newMaxBatchSizeFirst);
-        while (it.hasNext()) {
+        Future<List<JsonObject>> futureIt = Future.succeededFuture(new ArrayList<>());
+        do {
+            final String nextStream = it.next() + suffix.orElse("");
+            //fetch pending first
             futureIt = futureIt.compose(r -> {
                 result.addAll(r);
-                final String nextStream = it.next() + suffix.orElse("");
                 final int newMaxBatchSize = maxBatchSize - result.size();
                 if (newMaxBatchSize > 0) {
-                    return fetchOneStream(nextStream, maxBatchSize);
+                    return fetchOneStream(nextStream, maxBatchSize, true);
                 } else {
                     return Future.succeededFuture(new ArrayList<>());
                 }
             });
-        }
+            //fetch new then
+            futureIt = futureIt.compose(r -> {
+                result.addAll(r);
+                final int newMaxBatchSize = maxBatchSize - result.size();
+                if (newMaxBatchSize > 0) {
+                    return fetchOneStream(nextStream, maxBatchSize, false);
+                } else {
+                    return Future.succeededFuture(new ArrayList<>());
+                }
+            });
+        } while (it.hasNext());
         return futureIt.map(r -> {
             //metrics
             metrics.put("last_fetch_max_attempt", maxAttempt.orElse(0));
@@ -182,7 +191,7 @@ public class MessageReaderRedis implements MessageReader {
             final String nameStream = row.getString(RedisClient.NAME_STREAM);
             final String idResource = row.getString("id_resource");
             final Integer attemptCount = row.getInteger("attempt_count", 0);
-            final JsonObject json = row.getJsonObject("payload");
+            final JsonObject json = new JsonObject(row.getString("payload"));
             final MessageIngester.Message message = new MessageIngester.Message(resourceAction, idQueue, idResource, json);
             message.metadata.put(RedisClient.NAME_STREAM, nameStream);
             message.metadata.put(ATTEMPT_COUNT, attemptCount);
@@ -195,18 +204,13 @@ public class MessageReaderRedis implements MessageReader {
         final JsonObject json = new JsonObject();
         json.put("resource_action", message.action);
         json.put("id_resource", message.idResource);
-        json.put("payload", message.payload);
+        json.put("payload", message.payload.encode());
         return json;
     }
 
     @Override
     public Future<List<MessageIngester.Message>> getIncomingMessages(final int maxBatchSize) {
-        final List<JsonObject> result = cleanPending();
-        if (result.size() >= maxBatchSize) {
-            return fetchAllStreams(result, maxBatchSize, Optional.empty(), Optional.empty());
-        } else {
-            return Future.succeededFuture(toMessage(result));
-        }
+        return fetchAllStreams(new ArrayList<>(), maxBatchSize, Optional.empty(), Optional.empty());
     }
 
     @Override
@@ -217,36 +221,37 @@ public class MessageReaderRedis implements MessageReader {
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult ingestResult, final int maxAttempt) {
         //prepare
-        final Map<String, List<String>> toDelete = new HashMap<>();
-        final Map<String, List<JsonObject>> toFailStreams = new HashMap<>();
+        final RedisBatch batch = redisClient.batch();
+        //on succeed => ACK + DEL (DEL only if ACK succeed)
+        //if we want transaction we cannot push all ids to ack or delete CMD at once
         for (final MessageIngester.Message mess : ingestResult.succeed) {
             final String idQueue = mess.idQueue;
             final String stream = mess.metadata.getString(RedisClient.NAME_STREAM);
-            toDelete.putIfAbsent(stream, new ArrayList<>());
-            toDelete.get(stream).add(idQueue);
+            batch.beginTransaction();
+            batch.xAck(stream, consumerGroup, idQueue);
+            batch.xDel(stream, idQueue);
+            batch.commitTransaction();
         }
+        //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
         for (final MessageIngester.Message mess : ingestResult.failed) {
             final String idQueue = mess.idQueue;
             final String stream = mess.metadata.getString(RedisClient.NAME_STREAM);
             final Integer attemptCount = mess.metadata.getInteger(ATTEMPT_COUNT);
             final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime());
-            toDelete.putIfAbsent(stream, new ArrayList<>());
-            toDelete.get(stream).add(idQueue);
-            toFailStreams.putIfAbsent(stream + streamFailSuffix, new ArrayList<>());
-            toFailStreams.get(stream).add(json);
-        }
-        //push to failed stream
-        final List<Future> addFutures = new ArrayList<>();
-        for (final String stream : toFailStreams.keySet()) {
-            addFutures.add(redisClient.xAdd(stream, toFailStreams.get(stream)));
-        }
-        return CompositeFuture.all(addFutures).compose(add -> {
-            //delete all
-            final List<Future> delFutures = new ArrayList<>();
-            for (final String stream : toDelete.keySet()) {
-                delFutures.add(redisClient.xDel(stream, toDelete.get(stream)));
+            batch.beginTransaction();
+            //if already failed => do not add suffix to stream name
+            if(stream.contains(streamFailSuffix)){
+                batch.xAdd(stream, json);
+            }else{
+                batch.xAdd(stream+streamFailSuffix, json);
             }
-            return CompositeFuture.all(delFutures);
+            batch.xAck(stream, consumerGroup, idQueue);
+            batch.xDel(stream, idQueue);
+            batch.commitTransaction();
+        }
+        //execute batch
+        return batch.end().onFailure(e->{
+            log.error("Could not update resource status on queue: ", e);
         }).mapEmpty();
     }
 

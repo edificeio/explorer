@@ -37,7 +37,7 @@ public class ExplorerServiceRedis implements ExplorerService {
         final JsonObject json = new JsonObject();
         json.put("resource_action", message.getAction());
         json.put("id_resource", message.getId());
-        json.put("payload", message.getMessage());
+        json.put("payload", message.getMessage().encode());
         return json;
     }
 

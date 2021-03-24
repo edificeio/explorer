@@ -39,14 +39,13 @@ public class MessageReaderPostgres implements MessageReader {
         this.pgClient.listen(ExplorerService.RESOURCE_CHANNEL, onMessage -> {
             this.pendingNotifications ++;
             //do not notify each time
-            if (isPaused()) {
+            if (isStopped()) {
                 metrics.put("last_listen_skip_at", new Date().getTime());
                 metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0)+1);
-                return;
+            }else{
+                metrics.put("last_listen_at", new Date().getTime());
+                metrics.put("listen_count", metrics.getInteger("listen_count", 0)+1);
             }
-            //
-            metrics.put("last_listen_at", new Date().getTime());
-            metrics.put("listen_count", metrics.getInteger("listen_count", 0)+1);
             //call listeners (avoid concurrent modification
             notifyListeners();
         });
@@ -81,18 +80,19 @@ public class MessageReaderPostgres implements MessageReader {
     }
 
     @Override
-    public void pause() {
-        this.status = MessageReaderStatus.Paused;
+    public void stop() {
+        this.status = MessageReaderStatus.Stopped;
     }
 
     @Override
-    public void resume() {
+    public Future<Void> start() {
         notifyListeners();
         this.status = MessageReaderStatus.Running;
+        return Future.succeededFuture();
     }
 
     protected void notifyListeners(){
-        if(this.pendingNotifications > 0){
+        if(this.pendingNotifications > 0 && isRunning()){
             final List<Handler<Void>> copy = new ArrayList<>(listeners);
             for (final Handler<Void> listener : copy) {
                 listener.handle(null);

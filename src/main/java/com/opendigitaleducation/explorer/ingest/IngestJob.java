@@ -56,6 +56,9 @@ public class IngestJob {
         });
     }
 
+    public boolean isRunning(){
+        return this.status.equals(IngestJobStatus.Running);
+    }
 
     public Future<Void> execute() {
         return execute(false);
@@ -68,14 +71,13 @@ public class IngestJob {
         //TODO debounce ms? (config)
         //TODO optimize and merge updating related to one resource?
         // lock running
-        if (!this.status.equals(IngestJobStatus.Running) && !force) {
+        if (!isRunning() && !force) {
             return Future.failedFuture("resource loader is stopped");
         }
         final List<Future> copyPending = new ArrayList<>(pending);
         final Promise<Void> current = Promise.promise();
         pending.add(current.future());
         idExecution++;
-        messageReader.pause();
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 final long tmpIdExecution = idExecution;
@@ -132,7 +134,6 @@ public class IngestJob {
     private void onTaskComplete(final Promise<Void> current){
         pending.remove(current.future());
         current.complete();
-        messageReader.resume();
     }
 
     private void scheduleNextExecution(final IngestJobResult newMessages, final IngestJobResult retryMessages) {
@@ -163,28 +164,53 @@ public class IngestJob {
         return status;
     }
 
+    public Future<Void> waitPending(){
+        final List<Future> copyPending = new ArrayList<>(pending);
+        return CompositeFuture.all(copyPending).mapEmpty();
+    }
+
+    private boolean pendingNotification = false;
 
     public Future<Void> start() {
-        this.status = IngestJobStatus.Running;
-        final Future<Void> future = execute();
+        //unlisten previous
         if (subscription != null) {
             subscription.apply(null);
             this.subscription = null;
         }
-        subscription = messageReader.listenNewMessages(e -> {
-            execute();
+        //first listen for new message
+        subscription = messageReader.listenNewMessages(listen -> {
+            //avoid multiple notification at once
+            if(pendingNotification){
+                return;
+            }
+            pendingNotification = true;
+            waitPending().onComplete(pending->{
+                pendingNotification = false;
+                execute();
+            });
         });
-        return future;
+        this.status = IngestJobStatus.Running;
+        //start reader (listening)
+        return this.messageReader.start().compose(ee->{
+            if(pending.isEmpty()){
+                //execute for first time (history)
+                final Future<Void> future = execute();
+                return future;
+            }else{
+                //already running
+                return waitPending();
+            }
+        });
     }
 
     public Future<Void> stop() {
+        this.messageReader.stop();
         this.status = IngestJobStatus.Stopped;
         if (subscription != null) {
             subscription.apply(null);
             this.subscription = null;
         }
-        final List<Future> copyPending = new ArrayList<>(pending);
-        final Future<Void> future = CompositeFuture.all(copyPending).mapEmpty();
+        final Future<Void> future = waitPending().mapEmpty();
         return future.onComplete(ee -> {
             this.onExecutionEnd = e -> {
             };

@@ -117,44 +117,56 @@ public abstract class ResourceServiceTest {
 
     @Before
     public void before(TestContext context) {
-        getIngestJob().stop().onComplete(context.asyncAssertSuccess());
+        final Async async = context.async();
+        getIngestJob().stop().onComplete(e->{
+            getIngestJob().waitPending().onComplete(ee->{
+                async.complete();
+            });
+        });
     }
 
     @After
     public void after(TestContext context) {
-        getIngestJob().stop().onComplete(context.asyncAssertSuccess());
+        final Async async = context.async();
+        getIngestJob().stop().onComplete(e->{
+            getIngestJob().waitPending().onComplete(ee->{
+                async.complete();
+            });
+        });
     }
     //TODO redis test + folder (ingest) + share (without hash) + complex search
+    //TODO http layer
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();
         final ExplorerService exService = getExplorerService();
         final UserInfos user = test.directory().generateUser("intergrate_res");
         job.start().onComplete(context.asyncAssertSuccess(r -> {
-            final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
-            job.onEachExecutionEnd(fCreate);
-            final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id1", "name1", "text1");
-            exService.push(message1).onComplete(context.asyncAssertSuccess(push -> {
-                fCreate.future().onComplete(context.asyncAssertSuccess(results -> {
-                    context.assertEquals(1, results.getSucceed().size());
-                    //update
-                    final Promise<IngestJob.IngestJobResult> fUpdate = Promise.promise();
-                    job.onEachExecutionEnd(fUpdate);
-                    final ExplorerService.ExplorerMessageBuilder message2 = update(user, "id1", "name1_1", "text1_1");
-                    exService.push(message2).onComplete(context.asyncAssertSuccess(push2 -> {
-                        fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
-                            context.assertEquals(1, results2.getSucceed().size());
-                            getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
-                                context.assertEquals(1, fetch1.size());
-                                //delete
-                                final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
-                                job.onEachExecutionEnd(fDelete);
-                                final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
-                                exService.push(message3).onComplete(context.asyncAssertSuccess(push3 -> {
-                                    fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
-                                        context.assertEquals(1, results3.getSucceed().size());
-                                        getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
-                                            context.assertEquals(0, fetch2.size());
+                final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
+                job.onEachExecutionEnd(fCreate);
+                final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id1", "name1", "text1");
+                exService.push(message1).onComplete(context.asyncAssertSuccess(push -> {
+                    fCreate.future().onComplete(context.asyncAssertSuccess(results -> {
+                        context.assertEquals(1, results.getSucceed().size());
+                        //update
+                        final Promise<IngestJob.IngestJobResult> fUpdate = Promise.promise();
+                        job.onEachExecutionEnd(fUpdate);
+                        final ExplorerService.ExplorerMessageBuilder message2 = update(user, "id1", "name1_1", "text1_1");
+                        exService.push(message2).onComplete(context.asyncAssertSuccess(push2 -> {
+                            fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
+                                context.assertEquals(1, results2.getSucceed().size());
+                                getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                    context.assertEquals(1, fetch1.size());
+                                    //delete
+                                    final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
+                                    job.onEachExecutionEnd(fDelete);
+                                    final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
+                                    exService.push(message3).onComplete(context.asyncAssertSuccess(push3 -> {
+                                        fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
+                                            context.assertEquals(1, results3.getSucceed().size());
+                                            getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                                context.assertEquals(0, fetch2.size());
+                                            }));
                                         }));
                                     }));
                                 }));
@@ -162,7 +174,6 @@ public abstract class ResourceServiceTest {
                         }));
                     }));
                 }));
-            }));
         }));
     }
 

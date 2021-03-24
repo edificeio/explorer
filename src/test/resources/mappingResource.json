@@ -42,7 +42,7 @@
       },
       "creatorId": {
         "type": "keyword",
-        "enabled": false
+        "index": false
       },
       "creatorName": {
         "type": "text"
@@ -63,8 +63,8 @@
         "type": "keyword"
       },
       "shared": {
-        "type": "keyword",
-        "enabled": false
+        "type": "object",
+        "index": false
       }
     }
   }
