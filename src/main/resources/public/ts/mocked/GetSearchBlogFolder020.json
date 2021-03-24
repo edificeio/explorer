@@ -1,29 +1,24 @@
 {
 	"folders":[{
-		"id": "blogFolder010",
-		"name": "Dossier 1",
+		"id": "blogFolder021",
+		"name": "Dossier 2.1",
 		"type": "",
 		"childNumber": 0
 	},{
-		"id": "blogFolder020",
-		"name": "Dossier 2",
-		"type": "",
-		"childNumber": 2
-	},{
-		"id": "blogFolder030",
-		"name": "Dossier 3",
+		"id": "blogFolder022",
+		"name": "Dossier 2.2",
 		"type": "",
 		"childNumber": 0
 	}]
 
 	,"pagination": {
 		"startIdx": 0,
-		"pageSize": 2
+		"pageSize": 3
 	}
 	
 	,"resources": [{
-		"id": "resource001",
-		"name": "Titre de la ressource 1",
+		"id": "resource021",
+		"name": "Ressource 2.1",
 		"thumbnail": "https://loremflickr.com/240/160?random=2",
 		"application": "blog",
 		"createdAt": "2021-03-21T08:50:00Z",
@@ -32,15 +27,32 @@
 		"modifierId": "",
 		"modifierName": "Isabelle Polonio",
 		"modifiedAt":"2021-03-23T08:50:00Z",
-		"folderId": "blogFolder000",
+		"folderId": "blogFolder020",
+		"public": true,
+		"shared": true,
+		"favorite": false,
+		"views": 99999999,
+		"comments": 0
+	},{
+		"id": "resource022",
+		"name": "Ressource 2.2",
+		"thumbnail": "https://loremflickr.com/240/160?random=2",
+		"application": "blog",
+		"createdAt": "2021-03-21T08:50:00Z",
+		"authorId": "",
+		"authorName": "",
+		"modifierId": "",
+		"modifierName": "Moi",
+		"modifiedAt":"2021-03-23T08:50:00Z",
+		"folderId": "blogFolder020",
 		"public": false,
 		"shared": true,
 		"favorite": true,
-		"views": 28,
+		"views": 1,
 		"comments": 3
 	},{
-		"id": "resource002",
-		"name": "Ressource 2",
+		"id": "resource023",
+		"name": "Ressource 2.3",
 		"thumbnail": "https://loremflickr.com/240/160?random=2",
 		"application": "blog",
 		"createdAt": "2021-03-21T08:50:00Z",
@@ -49,11 +61,11 @@
 		"modifierId": "",
 		"modifierName": "Alain Terrieur",
 		"modifiedAt":"2021-03-23T08:50:00Z",
-		"folderId": "blogFolder000",
+		"folderId": "blogFolder020",
 		"public": false,
 		"shared": true,
-		"favorite": true,
-		"views": 28,
-		"comments": 3
+		"favorite": false,
+		"views": 77,
+		"comments": 0
 	}]
   }
