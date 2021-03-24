@@ -187,7 +187,17 @@ public abstract class ResourceServiceTest {
             getIngestJob().start();
             return fCreate.future();
         })).onComplete(context.asyncAssertSuccess(results -> {
-            context.assertEquals(1, results.getSucceed().size());
+            context.assertEquals(0, results.getFailed().size());
+            //if result empty => maybe notification start at same time of first execution
+            if(results.getSucceed().isEmpty()){
+                final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
+                getIngestJob().onEachExecutionEnd(fCreate);
+                fCreate.future().onComplete(context.asyncAssertSuccess(results2->{
+                    context.assertEquals(1, results2.getSucceed().size());
+                }));
+            }else{
+                context.assertEquals(1, results.getSucceed().size());
+            }
         }));
     }
 

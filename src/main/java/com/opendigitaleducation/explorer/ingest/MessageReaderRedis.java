@@ -126,10 +126,9 @@ public class MessageReaderRedis implements MessageReader {
     @Override
     public Future<Void> start() {
         status = MessageReaderStatus.Running;
-        final Promise<Void> promise = Promise.promise();
         //schedule listen
         scheduleXread();
-        return Future.succeededFuture();
+        return onReady;
     }
 
     protected Future<List<JsonObject>> fetchOneStream(final String stream, int maxBatchSize, boolean pending) {
