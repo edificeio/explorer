@@ -1,11 +1,9 @@
 package com.opendigitaleducation.explorer.redis;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.redis.client.*;
+import org.entcore.common.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +15,13 @@ import java.util.stream.Collectors;
 public class RedisClient {
     public static final String ID_STREAM = "$id_stream";
     public static final String NAME_STREAM = "$name_stream";
-    private final Redis client;
-    private final RedisOptions redisOptions;
+    protected final Redis client;
+    protected final RedisOptions redisOptions;
+
+    public RedisClient(final Redis redis, final RedisOptions redisOptions) {
+        this.client = redis;
+        this.redisOptions = redisOptions;
+    }
 
     public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
         final String host = redisConfig.getString("host");
@@ -26,36 +29,49 @@ public class RedisClient {
         final String username = redisConfig.getString("username");
         final String password = redisConfig.getString("password");
         final Integer select = redisConfig.getInteger("select", 0);
-        final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
-        this.redisOptions = new RedisOptions().setConnectionString(url);
+        if(StringUtils.isEmpty(username)){
+            final String url = String.format("redis://%s:%s/%s", host, port, select);
+            this.redisOptions = new RedisOptions().setConnectionString(url);
+        }else{
+            final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
+            this.redisOptions = new RedisOptions().setConnectionString(url);
+        }
         client = Redis.createClient(vertx, redisOptions);
     }
 
+    public Redis getClient() {
+        return client;
+    }
+
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, Optional.empty());
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, Optional.empty(), Optional.empty());
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs) {
-        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs);
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, Optional.empty());
+    }
+
+    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final String stream, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids) {
+        return xreadGroup(group, consumer, Arrays.asList(stream), ack, count, blockMs, ids);
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams) {
-        return xreadGroup(group, consumer, streams, false, Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, streams, false, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack) {
-        return xreadGroup(group, consumer, streams, ack, Optional.empty(), Optional.empty());
+        return xreadGroup(group, consumer, streams, ack, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count) {
-        return xreadGroup(group, consumer, streams, ack, count, Optional.empty());
+        return xreadGroup(group, consumer, streams, ack, count, Optional.empty(), Optional.empty());
     }
 
-    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs) {
+    public Future<List<JsonObject>> xreadGroup(final String group, final String consumer, final List<String> streams, final boolean ack, final Optional<Integer> count, final Optional<Integer> blockMs, final Optional<String> ids) {
         if (streams.isEmpty()) {
             return Future.succeededFuture(new ArrayList<>());
         }
@@ -73,23 +89,25 @@ public class RedisClient {
         for (final String stream : streams) {
             req.arg(stream);
         }
-        //only messages not received by other
+        //by default: only messages not received by other
         for (int i = 0; i < streams.size(); i++) {
-            req.arg(">");
+            req.arg(ids.orElse(">"));
         }
         final Promise<List<JsonObject>> promise = Promise.promise();
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
                 final List<JsonObject> jsons = new ArrayList<>();
-                for (final Response streamAndObjects : res.result()) {
-                    final String name = streamAndObjects.get(0).toString();
-                    final Response objects = streamAndObjects.get(1);
-                    for (final Response idAndObject : objects) {
-                        final String id = idAndObject.get(0).toString();
-                        final JsonObject json = toJson(idAndObject.get(1));
-                        json.put(ID_STREAM, id);
-                        json.put(NAME_STREAM, name);
-                        jsons.add(json);
+                if(res.result() != null) {
+                    for (final Response streamAndObjects : res.result()) {
+                        final String name = streamAndObjects.get(0).toString();
+                        final Response objects = streamAndObjects.get(1);
+                        for (final Response idAndObject : objects) {
+                            final String id = idAndObject.get(0).toString();
+                            final JsonObject json = toJson(idAndObject.get(1));
+                            json.put(ID_STREAM, id);
+                            json.put(NAME_STREAM, name);
+                            jsons.add(json);
+                        }
                     }
                 }
                 promise.complete(jsons);
@@ -107,9 +125,13 @@ public class RedisClient {
             req.arg(consumer);
         }
         final Promise<List<JsonObject>> promise = Promise.promise();
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
-                promise.complete(toJsonList(res.result()));
+                if(res.result() != null){
+                    promise.complete(toJsonList(res.result()));
+                }else{
+                    promise.complete(new ArrayList<>());
+                }
             } else {
                 promise.fail(res.cause());
             }
@@ -120,10 +142,14 @@ public class RedisClient {
     public Future<JsonObject> xRange(final String stream, final String id) {
         final Request req = Request.cmd(Command.XRANGE).arg(stream).arg(id).arg(id);
         final Promise<JsonObject> promise = Promise.promise();
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
-                final JsonObject json = toJson(res.result());
-                promise.complete(json);
+                if(res.result() != null){
+                    final JsonObject json = toJson(res.result());
+                    promise.complete(json);
+                }else{
+                    promise.fail("not found");
+                }
             } else {
                 promise.fail(res.cause());
             }
@@ -141,15 +167,24 @@ public class RedisClient {
             futures.add(promise.future());
             //TODO listen until now?
             final Request req = Request.cmd(Command.XGROUP).arg("CREATE").arg(stream).arg(group).arg("$").arg("MKSTREAM");
-            client.send(req, res -> {
+            send(req, res -> {
                 if (res.succeeded()) {
                     promise.complete();
                 } else {
-                    promise.fail(res.cause());
+                    if(res.cause().getMessage().contains("BUSYGROUP")){
+                        //already exists
+                        promise.complete();
+                    }else{
+                        promise.fail(res.cause());
+                    }
                 }
             });
         }
         return CompositeFuture.all(futures).mapEmpty();
+    }
+
+    public Future<String> xAdd(final String stream, final JsonObject json) {
+        return xAdd(stream, Arrays.asList(json)).map(e -> e.get(0));
     }
 
     public Future<List<String>> xAdd(final String stream, final List<JsonObject> jsons) {
@@ -166,7 +201,7 @@ public class RedisClient {
                 req.arg(key);
                 req.arg(json.getValue(key).toString());
             }
-            client.send(req, res -> {
+            send(req, res -> {
                 if (res.succeeded()) {
                     promise.complete(res.result().toString());
                 } else {
@@ -179,6 +214,10 @@ public class RedisClient {
         });
     }
 
+    public Future<Integer> xDel(final String stream, final String id) {
+        return xDel(stream, Arrays.asList(id));
+    }
+
     public Future<Integer> xDel(final String stream, final List<String> ids) {
         if (ids.isEmpty()) {
             return Future.succeededFuture();
@@ -188,7 +227,7 @@ public class RedisClient {
         for (final String id : ids) {
             req.arg(id);
         }
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
                 promise.complete(res.result().toInteger());
             } else {
@@ -196,6 +235,11 @@ public class RedisClient {
             }
         });
         return promise.future();
+    }
+
+
+    public Future<Integer> xAck(final String stream, final String group, final String id) {
+        return xAck(stream, group, Arrays.asList(id));
     }
 
     public Future<Integer> xAck(final String stream, final String group, final List<String> ids) {
@@ -207,7 +251,7 @@ public class RedisClient {
         for (final String id : ids) {
             req.arg(id);
         }
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
                 promise.complete(res.result().toInteger());
             } else {
@@ -220,9 +264,13 @@ public class RedisClient {
     public Future<JsonObject> xInfo(final String stream) {
         final Promise<JsonObject> promise = Promise.promise();
         final Request req = Request.cmd(Command.XINFO).arg("STREAM").arg(stream);
-        client.send(req, res -> {
+        send(req, res -> {
             if (res.succeeded()) {
-                promise.complete(toJson(res.result()));
+                if(res.result() != null){
+                    promise.complete(toJson(res.result()));
+                }else{
+                    promise.fail("not found");
+                }
             } else {
                 promise.fail(res.cause());
             }
@@ -251,7 +299,7 @@ public class RedisClient {
     protected void addToJson(final JsonObject json, final String key, final Response value) {
         switch (value.type()) {
             case BULK:
-                json.put(key, value.toBytes());
+                json.put(key, value.toString());
                 break;
             case ERROR:
                 json.put(key, value.toString());
@@ -264,5 +312,17 @@ public class RedisClient {
                 json.put(key, value.toString());
                 break;
         }
+    }
+
+    public RedisTransaction transaction(){
+        return new RedisTransaction(this);
+    }
+
+    public RedisBatch batch(){
+        return new RedisBatch(this);
+    }
+
+    protected Redis send(final Request command, final Handler<AsyncResult<Response>> onSend){
+        return client.send(command, onSend);
     }
 }

@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer.elastic;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
@@ -26,7 +27,7 @@ public class ElasticClient {
     }
 
     public Future<Void> createMapping(final String index, final Buffer payload) {
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         httpClient.put("/" + index).handler(res -> {
             if (res.statusCode() == 200 || res.statusCode() == 201) {
                 future.complete();
@@ -37,11 +38,11 @@ public class ElasticClient {
             }
         }).putHeader("content-type", "application/json")
                 .exceptionHandler(onError).end(payload);
-        return future;
+        return future.future();
     }
 
     public Future<String> createDocument(final String index, final JsonObject payload, final ElasticOptions options) {
-        final Future<String> future = Future.future();
+        final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         httpClient.post("/" + index + "/_doc" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -53,11 +54,11 @@ public class ElasticClient {
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
-        return future;
+        return future.future();
     }
 
     public Future<String> updateDocument(final String index, final String id, final JsonObject payload, final ElasticOptions options) {
-        final Future<String> future = Future.future();
+        final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         httpClient.post("/" + index + "/_update/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -69,11 +70,11 @@ public class ElasticClient {
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
-        return future;
+        return future.future();
     }
 
     public Future<JsonObject> getDocument(final String index, final String id, final ElasticOptions options) {
-        final Future<JsonObject> future = Future.future();
+        final Promise<JsonObject> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         httpClient.get("/" + index + "/" + id + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -85,11 +86,11 @@ public class ElasticClient {
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end();
-        return future;
+        return future.future();
     }
 
     public Future<String> updateByQuery(final String index, final JsonObject payload, final ElasticOptions options) {
-        final Future<String> future = Future.future();
+        final Promise<String> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -101,7 +102,7 @@ public class ElasticClient {
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
-        return future;
+        return future.future();
     }
 
     public Future<Void> updateDocument(final String index, final Set<String> id, final JsonObject payload, final ElasticOptions options) {
@@ -111,7 +112,7 @@ public class ElasticClient {
         if (id.size() == 1) {
             return updateDocument(index, id.iterator().next(), payload, options).mapEmpty();
         }
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         payload.put("query", new JsonObject("terms").put("_id", new JsonArray(new ArrayList(id))));
         httpClient.post("/" + index + "/_update_by_query" + queryParams).handler(res -> {
@@ -123,11 +124,11 @@ public class ElasticClient {
                 });
             }
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
-        return future;
+        return future.future();
     }
 
     public Future<JsonArray> search(final String index, final JsonObject payload, final ElasticOptions options) {
-        final Future<JsonArray> future = Future.future();
+        final Promise<JsonArray> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         httpClient.post("/" + index + "/_search" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -144,11 +145,11 @@ public class ElasticClient {
                 }
             });
         }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
-        return future;
+        return future.future();
     }
 
     public ElasticBulkRequest bulk(final String index, final ElasticOptions options) {
-        final Future<Buffer> future = Future.future();
+        final Promise<Buffer> future = Promise.promise();
         final String queryParams = options.getQueryParams();
         final HttpClientRequest req = httpClient.post("/" + index + "/_bulk" + queryParams).handler(res -> {
             res.bodyHandler(resBody -> {
@@ -161,7 +162,7 @@ public class ElasticClient {
         }).putHeader("Content-Type", "application/x-ndjson")
                 .putHeader("Accept", "application/json; charset=UTF-8")
                 .setChunked(true).exceptionHandler(onError);
-        return new ElasticBulkRequest(req, future);
+        return new ElasticBulkRequest(req, future.future());
     }
 
     public static class ElasticOptions {

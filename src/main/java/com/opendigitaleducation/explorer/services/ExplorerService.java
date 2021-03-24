@@ -39,7 +39,7 @@ public interface ExplorerService {
         }
 
         public static ExplorerMessageBuilder create(String id, UserInfos user) {
-            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_CREATE);
+            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_CREATE).withPriority(PRIORITY_HIGH);
             builder.message.put("creatorId", user.getUserId());
             builder.message.put("creatorName", user.getUsername());
             builder.message.put("createdAt", new Date().getTime());
@@ -47,12 +47,12 @@ public interface ExplorerService {
         }
 
         public static ExplorerMessageBuilder update(String id, UserInfos user) {
-            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_UPDATE);
+            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_UPDATE).withPriority(PRIORITY_HIGH);
             return builder;
         }
 
         public static ExplorerMessageBuilder delete(String id, UserInfos user) {
-            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_DELETE);
+            final ExplorerMessageBuilder builder = new ExplorerMessageBuilder(id, RESOURCE_ACTION_DELETE).withPriority(PRIORITY_HIGH);
             return builder;
         }
 

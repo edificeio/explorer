@@ -11,13 +11,13 @@ import java.util.function.Function;
 
 public interface MessageReader {
 
-    void pause();
+    void stop();
 
-    void resume();
+    Future<Void> start();
 
     MessageReaderStatus getStatus();
 
-    default boolean isPaused(){ return MessageReaderStatus.Paused.equals(getStatus()); }
+    default boolean isStopped(){ return !isRunning(); }
 
     default boolean isRunning(){ return MessageReaderStatus.Running.equals(getStatus()); }
 
@@ -45,6 +45,6 @@ public interface MessageReader {
     }
 
     enum MessageReaderStatus{
-        Paused, Running;
+        Stopped, Running;
     }
 }
