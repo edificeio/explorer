@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "cpr": "^3.0.1",
-    "ode-ts-client": "^0.2.0-explorer.0",
+    "ode-ts-client": "^0.3.0-explorer.0",
     "ts-loader": "^8.0.18",
     "typescript": "^4.2.3",
     "webpack": "^5.26.3",
