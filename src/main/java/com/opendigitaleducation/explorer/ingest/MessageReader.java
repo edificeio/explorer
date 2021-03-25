@@ -11,15 +11,27 @@ import java.util.function.Function;
 
 public interface MessageReader {
 
+    static MessageReader redis(final RedisClient client, final JsonObject config) {
+        return new MessageReaderRedis(client, config);
+    }
+
+    static MessageReader postgres(final PostgresClient client, final JsonObject config) {
+        return new MessageReaderPostgres(client, config);
+    }
+
     void stop();
 
     Future<Void> start();
 
     MessageReaderStatus getStatus();
 
-    default boolean isStopped(){ return !isRunning(); }
+    default boolean isStopped() {
+        return !isRunning();
+    }
 
-    default boolean isRunning(){ return MessageReaderStatus.Running.equals(getStatus()); }
+    default boolean isRunning() {
+        return MessageReaderStatus.Running.equals(getStatus());
+    }
 
     Function<Void, Void> listenNewMessages(final Handler<Void> handler);
 
@@ -31,20 +43,13 @@ public interface MessageReader {
 
     Future<JsonObject> getMetrics();
 
-    static MessageReader redis(final RedisClient client, final JsonObject config){
-        return new MessageReaderRedis(client, config);
+    enum MessageReaderStatus {
+        Stopped, Running
     }
 
-    static MessageReader postgres(final PostgresClient client, final JsonObject config){
-        return new MessageReaderPostgres(client, config);
-    }
-
-    interface MessageReaderListener{
+    interface MessageReaderListener {
         boolean canBeNotified();
-        void notifyMessage();
-    }
 
-    enum MessageReaderStatus{
-        Stopped, Running;
+        void notifyMessage();
     }
 }

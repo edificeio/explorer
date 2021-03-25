@@ -7,6 +7,7 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 public interface FolderService {
@@ -19,6 +20,10 @@ public interface FolderService {
     Future<JsonArray> fetch(final UserInfos creator, final Optional<String> parentId);
 
     Future<String> create(final UserInfos creator, final JsonObject folder);
+
+    Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder);
+
+    Future<List<JsonObject>> delete(final UserInfos creator, final Set<String> ids);
 
     Future<JsonObject> move(final UserInfos user, final JsonObject document, final Optional<String> source, final Optional<String> dest);
 

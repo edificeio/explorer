@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "application": { "type": "string"},
+    "resourceType": { "type": "string"},
+    "parentId": { "type": "string"},
+    "name": { "type": "boolean"}
+  },
+  "required": [
+    "application", "resourceType", "name"
+  ]
+}

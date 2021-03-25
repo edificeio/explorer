@@ -37,14 +37,14 @@ public class MessageReaderPostgres implements MessageReader {
         this.modulo = config.getInteger("consumer-modulo", DEFAULT_JOB_MODULO);
         //TODO close remove listeners?
         this.pgClient.listen(ExplorerService.RESOURCE_CHANNEL, onMessage -> {
-            this.pendingNotifications ++;
+            this.pendingNotifications++;
             //do not notify each time
             if (isStopped()) {
                 metrics.put("last_listen_skip_at", new Date().getTime());
-                metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0)+1);
-            }else{
+                metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0) + 1);
+            } else {
                 metrics.put("last_listen_at", new Date().getTime());
-                metrics.put("listen_count", metrics.getInteger("listen_count", 0)+1);
+                metrics.put("listen_count", metrics.getInteger("listen_count", 0) + 1);
             }
             //call listeners (avoid concurrent modification
             notifyListeners();
@@ -91,8 +91,8 @@ public class MessageReaderPostgres implements MessageReader {
         return Future.succeededFuture();
     }
 
-    protected void notifyListeners(){
-        if(this.pendingNotifications > 0 && isRunning()){
+    protected void notifyListeners() {
+        if (this.pendingNotifications > 0 && isRunning()) {
             final List<Handler<Void>> copy = new ArrayList<>(listeners);
             for (final Handler<Void> listener : copy) {
                 listener.handle(null);
@@ -116,13 +116,13 @@ public class MessageReaderPostgres implements MessageReader {
                 all.add(message);
             }
             //metrics
-            if(maxAttempt.isPresent()) {
-                metrics.put("last_fetch_max_attempt",maxAttempt.get());
+            if (maxAttempt.isPresent()) {
+                metrics.put("last_fetch_max_attempt", maxAttempt.get());
             }
             metrics.put("last_fetch_max_batch_size", maxBatchSize);
             metrics.put("last_fetch_at", new Date().getTime());
             metrics.put("last_fetch_size", all.size());
-            metrics.put("fetch_count", metrics.getInteger("fetch_count", 0)+1);
+            metrics.put("fetch_count", metrics.getInteger("fetch_count", 0) + 1);
             //return
             return all;
         });
@@ -157,7 +157,7 @@ public class MessageReaderPostgres implements MessageReader {
                 final String queryMessage = String.format("INSERT INTO explorer.resource_queue_causes (id, id_resource, attempt_reason, attempted_at) VALUES %s", placeholderMessage);
                 transaction.addPreparedQuery(queryMessage, tupleMessage);
             }
-            return transaction.commit().onFailure(e->{
+            return transaction.commit().onFailure(e -> {
                 log.error("Could not update resource status on queue: ", e);
             }).mapEmpty();
         });

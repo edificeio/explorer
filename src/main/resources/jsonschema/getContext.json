@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "application": { "type": "string"},
+    "resource_type": { "type": "string"},
+    "order_by": { "type": "string"},
+    "owner": { "type": "boolean"},
+    "shared": { "type": "boolean"},
+    "public": { "type": "boolean"},
+    "favorite": { "type": "boolean"},
+    "folder": { "type": "string"},
+    "search": { "type": "string"},
+    "start_idx": { "type": "number"},
+    "page_size": { "type": "number"}
+  },
+  "required": [
+    "application"
+  ]
+}

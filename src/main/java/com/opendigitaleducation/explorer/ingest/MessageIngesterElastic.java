@@ -51,7 +51,7 @@ public class MessageIngesterElastic implements MessageIngester {
             for (final JsonObject res : bulkResults) {
                 final String idQueue = res.getString(ResourceService.CUSTOM_IDENTIFIER);
                 final Message original = messageByIdQueue.get(idQueue);
-                if(original != null) {
+                if (original != null) {
                     final boolean success = res.getBoolean(ResourceService.SUCCESS_FIELD, false);
                     original.result.mergeIn(res);
                     if (success) {
@@ -59,7 +59,7 @@ public class MessageIngesterElastic implements MessageIngester {
                     } else {
                         failed.add(original);
                     }
-                }else{
+                } else {
                     log.warn(String.format("Original message not found for idQueue=%s and idResource=%s", original.idQueue, original.idResource));
                 }
             }

@@ -76,7 +76,7 @@ public class PostgresClient {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 Object value = row.getValue(col, defaultValues.get(col));
-                if(value == null){
+                if (value == null) {
                     value = defaultValues.getOrDefault(col, value);
                 }
                 tuple.addValue(value);

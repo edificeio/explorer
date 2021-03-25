@@ -24,9 +24,23 @@ package com.opendigitaleducation.explorer;
 
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
+import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
+import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
+import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
+import com.opendigitaleducation.explorer.share.ShareTableManager;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.BaseServer;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Explorer extends BaseServer {
     static final Logger logger = LoggerFactory.getLogger(Explorer.class);
@@ -34,8 +48,23 @@ public class Explorer extends BaseServer {
     @Override
     public void start() throws Exception {
         super.start();
-
-        final ExplorerController explorerController = new ExplorerController();
+        //TODO move to infra
+        final JsonObject elastic = config.getJsonObject("elastic");
+        final JsonArray esUri = elastic.getJsonArray("uris");
+        final List<URI> uriList = new ArrayList<>();
+        for (final Object u : esUri) {
+            uriList.add(new URI(u.toString()));
+        }
+        final JsonObject postgresqlConfig = config.getJsonObject("postgres");
+        //end move to infra
+        final String esIndex = elastic.getString("elastic", "explorer");
+        final URI[] uris = (URI[]) uriList.toArray();
+        final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
+        final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
+        final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, esIndex);
+        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, esIndex);
+        final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
 
     }
