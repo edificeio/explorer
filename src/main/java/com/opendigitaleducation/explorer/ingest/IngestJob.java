@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class IngestJob {
+    public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
+    public static final String INGESTOR_JOB_METRICS = "metrics";
     static final int DEFAULT_BATCH_SIZE = 100;
     static final int DEFAULT_MAX_ATTEMPT = 10;
     static final int DEFAULT_MAX_DELAY_MS = 45000;
@@ -22,18 +24,14 @@ public class IngestJob {
     private final MessageReader messageReader;
     private final MessageIngester messageIngester;
     private final int maxDelayBetweenExecutionMs;
+    private final List<Future> pending = new ArrayList<>();
     private long idExecution = 0;
     private long nextExecutionTimerId = -1;
     private Function<Void, Void> subscription;
     private IngestJobStatus status = IngestJobStatus.Idle;
-    private List<Future> pending = new ArrayList<>();
     private Handler<AsyncResult<IngestJob.IngestJobResult>> onExecutionEnd = e -> {
     };
-
-    public static IngestJob create(final Vertx vertx, final ResourceService resourceService, final JsonObject config, final MessageReader reader){
-        final MessageIngester ingester = new MessageIngesterElastic(resourceService);
-        return new IngestJob(vertx, reader, ingester, config);
-    }
+    private boolean pendingNotification = false;
 
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
         this.vertx = vertx;
@@ -42,6 +40,35 @@ public class IngestJob {
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
+        vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
+            final String action = message.headers().get("action");
+            switch (action) {
+                case "trigger":
+                    execute(true).onComplete(e -> {
+                        if (e.succeeded()) {
+                            message.reply(new JsonObject());
+                        } else {
+                            message.fail(500, e.cause().getMessage());
+                        }
+                    });
+                    break;
+                case INGESTOR_JOB_METRICS:
+                default:
+                    getMetrics().onComplete(e -> {
+                        if (e.succeeded()) {
+                            message.reply(e.result());
+                        } else {
+                            message.fail(500, e.cause().getMessage());
+                        }
+                    });
+                    break;
+            }
+        });
+    }
+
+    public static IngestJob create(final Vertx vertx, final ResourceService resourceService, final JsonObject config, final MessageReader reader) {
+        final MessageIngester ingester = new MessageIngesterElastic(resourceService);
+        return new IngestJob(vertx, reader, ingester, config);
     }
 
     public Future<JsonObject> getMetrics() {
@@ -56,7 +83,7 @@ public class IngestJob {
         });
     }
 
-    public boolean isRunning(){
+    public boolean isRunning() {
         return this.status.equals(IngestJobStatus.Running);
     }
 
@@ -87,9 +114,9 @@ public class IngestJob {
                 newMessage.compose(result -> {
                     return this.messageIngester.ingest(result);
                 }).compose(ingestResult -> {
-                    if(ingestResult.size() > 0){
+                    if (ingestResult.size() > 0) {
                         return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
-                    }else{
+                    } else {
                         return Future.succeededFuture(ingestResult);
                     }
                 }).onComplete(newMessageRes -> {
@@ -97,9 +124,9 @@ public class IngestJob {
                     failedMessage.compose(result -> {
                         return this.messageIngester.ingest(result);
                     }).compose(ingestResult -> {
-                        if(ingestResult.size() > 0) {
+                        if (ingestResult.size() > 0) {
                             return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
-                        }else{
+                        } else {
                             return Future.succeededFuture(ingestResult);
                         }
                     }).onComplete(failedMessageRes -> {
@@ -131,7 +158,7 @@ public class IngestJob {
         return current.future();
     }
 
-    private void onTaskComplete(final Promise<Void> current){
+    private void onTaskComplete(final Promise<Void> current) {
         pending.remove(current.future());
         current.complete();
     }
@@ -159,17 +186,14 @@ public class IngestJob {
         };
     }
 
-
     public IngestJobStatus getStatus() {
         return status;
     }
 
-    public Future<Void> waitPending(){
+    public Future<Void> waitPending() {
         final List<Future> copyPending = new ArrayList<>(pending);
         return CompositeFuture.all(copyPending).mapEmpty();
     }
-
-    private boolean pendingNotification = false;
 
     public Future<Void> start() {
         //unlisten previous
@@ -180,23 +204,23 @@ public class IngestJob {
         //first listen for new message
         subscription = messageReader.listenNewMessages(listen -> {
             //avoid multiple notification at once
-            if(pendingNotification){
+            if (pendingNotification) {
                 return;
             }
             pendingNotification = true;
-            waitPending().onComplete(pending->{
+            waitPending().onComplete(pending -> {
                 pendingNotification = false;
                 execute();
             });
         });
         this.status = IngestJobStatus.Running;
         //start reader (listening)
-        return this.messageReader.start().compose(ee->{
-            if(pending.isEmpty()){
+        return this.messageReader.start().compose(ee -> {
+            if (pending.isEmpty()) {
                 //execute for first time (history)
                 final Future<Void> future = execute();
                 return future;
-            }else{
+            } else {
                 //already running
                 return waitPending();
             }

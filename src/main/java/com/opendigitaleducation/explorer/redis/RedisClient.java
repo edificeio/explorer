@@ -29,10 +29,10 @@ public class RedisClient {
         final String username = redisConfig.getString("username");
         final String password = redisConfig.getString("password");
         final Integer select = redisConfig.getInteger("select", 0);
-        if(StringUtils.isEmpty(username)){
+        if (StringUtils.isEmpty(username)) {
             final String url = String.format("redis://%s:%s/%s", host, port, select);
             this.redisOptions = new RedisOptions().setConnectionString(url);
-        }else{
+        } else {
             final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
             this.redisOptions = new RedisOptions().setConnectionString(url);
         }
@@ -97,7 +97,7 @@ public class RedisClient {
         send(req, res -> {
             if (res.succeeded()) {
                 final List<JsonObject> jsons = new ArrayList<>();
-                if(res.result() != null) {
+                if (res.result() != null) {
                     for (final Response streamAndObjects : res.result()) {
                         final String name = streamAndObjects.get(0).toString();
                         final Response objects = streamAndObjects.get(1);
@@ -127,9 +127,9 @@ public class RedisClient {
         final Promise<List<JsonObject>> promise = Promise.promise();
         send(req, res -> {
             if (res.succeeded()) {
-                if(res.result() != null){
+                if (res.result() != null) {
                     promise.complete(toJsonList(res.result()));
-                }else{
+                } else {
                     promise.complete(new ArrayList<>());
                 }
             } else {
@@ -144,10 +144,10 @@ public class RedisClient {
         final Promise<JsonObject> promise = Promise.promise();
         send(req, res -> {
             if (res.succeeded()) {
-                if(res.result() != null){
+                if (res.result() != null) {
                     final JsonObject json = toJson(res.result());
                     promise.complete(json);
-                }else{
+                } else {
                     promise.fail("not found");
                 }
             } else {
@@ -171,10 +171,10 @@ public class RedisClient {
                 if (res.succeeded()) {
                     promise.complete();
                 } else {
-                    if(res.cause().getMessage().contains("BUSYGROUP")){
+                    if (res.cause().getMessage().contains("BUSYGROUP")) {
                         //already exists
                         promise.complete();
-                    }else{
+                    } else {
                         promise.fail(res.cause());
                     }
                 }
@@ -266,9 +266,9 @@ public class RedisClient {
         final Request req = Request.cmd(Command.XINFO).arg("STREAM").arg(stream);
         send(req, res -> {
             if (res.succeeded()) {
-                if(res.result() != null){
+                if (res.result() != null) {
                     promise.complete(toJson(res.result()));
-                }else{
+                } else {
                     promise.fail("not found");
                 }
             } else {
@@ -314,15 +314,15 @@ public class RedisClient {
         }
     }
 
-    public RedisTransaction transaction(){
+    public RedisTransaction transaction() {
         return new RedisTransaction(this);
     }
 
-    public RedisBatch batch(){
+    public RedisBatch batch() {
         return new RedisBatch(this);
     }
 
-    protected Redis send(final Request command, final Handler<AsyncResult<Response>> onSend){
+    protected Redis send(final Request command, final Handler<AsyncResult<Response>> onSend) {
         return client.send(command, onSend);
     }
 }

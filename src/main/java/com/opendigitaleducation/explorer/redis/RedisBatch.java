@@ -16,11 +16,12 @@ import java.util.List;
 public class RedisBatch extends RedisClient {
     private final List<Request> commands = new ArrayList<>();
     private final List<Handler<AsyncResult<Response>>> handlers = new ArrayList<>();
+
     RedisBatch(final RedisClient client) {
         super(client.client, client.redisOptions);
     }
 
-    public RedisBatch reset(){
+    public RedisBatch reset() {
         handlers.clear();
         commands.clear();
         return this;
@@ -28,42 +29,43 @@ public class RedisBatch extends RedisClient {
 
     /**
      * start a transaction in the middle of a batch
+     *
      * @return
      */
-    public Future<Void> beginTransaction(){
+    public Future<Void> beginTransaction() {
         final Promise<Response> promise = Promise.promise();
         send(Request.cmd(Command.MULTI), promise.future());
         return promise.future().mapEmpty();
     }
 
-    public Future<Void> rollbackTransaction(){
+    public Future<Void> rollbackTransaction() {
         final Promise<Response> promise = Promise.promise();
         send(Request.cmd(Command.DISCARD), promise.future());
         return promise.future().mapEmpty();
     }
 
-    public Future<Void> commitTransaction(){
+    public Future<Void> commitTransaction() {
         final Promise<Response> promise = Promise.promise();
         send(Request.cmd(Command.EXEC), promise.future());
         return promise.future().mapEmpty();
     }
 
-    public Future<List<Response>> end(){
+    public Future<List<Response>> end() {
         final Promise<List<Response>> promise = Promise.promise();
         client.batch(commands, promise.future());
-        return promise.future().onSuccess(responses ->{
+        return promise.future().onSuccess(responses -> {
             final List<Handler<AsyncResult<Response>>> tmpHandlers = new ArrayList<>();
-            for(int i = 0 ; i < responses.size(); i++){
+            for (int i = 0; i < responses.size(); i++) {
                 final Response response = responses.get(i);
                 final String responseStr = response.toString();
                 final Handler<AsyncResult<Response>> handler = handlers.get(i);
-                if("QUEUED".equals(responseStr)){
+                if ("QUEUED".equals(responseStr)) {
                     tmpHandlers.add(handler);
-                }else{
-                    if(tmpHandlers.isEmpty()){
+                } else {
+                    if (tmpHandlers.isEmpty()) {
                         handler.handle(new DefaultAsyncResult<>(response));
-                    }else{
-                        for(int j = 0 ; j < tmpHandlers.size(); j++){
+                    } else {
+                        for (int j = 0; j < tmpHandlers.size(); j++) {
                             tmpHandlers.get(j).handle(new DefaultAsyncResult<>(response.get(j)));
                         }
                     }

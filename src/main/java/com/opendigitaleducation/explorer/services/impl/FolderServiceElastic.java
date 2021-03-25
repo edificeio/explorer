@@ -189,6 +189,29 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
+    public Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder) {
+        final ElasticClient client = manager.getClient();
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        return client.updateDocument(this.index, id, folder, options).map(folder);
+    }
+
+    @Override
+    public Future<List<JsonObject>> delete(final UserInfos creator, final Set<String> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        final ElasticClient client = manager.getClient();
+        final ElasticBulkRequest bulk = client.bulk(this.index, options);
+        for(final String id : ids){
+            bulk.delete(id);
+        }
+        return bulk.end().map(e -> {
+            return e.stream().map(ee -> new JsonObject().put("id", ee.getId()).put("success", ee.isOk())).collect(Collectors.toList());
+        });
+    }
+
+    @Override
     public Future<JsonObject> move(final UserInfos creator, final JsonObject document, final Optional<String> source, final Optional<String> dest) {
         final ElasticClient client = manager.getClient();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
