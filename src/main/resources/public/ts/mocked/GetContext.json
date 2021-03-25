@@ -14,9 +14,11 @@
    ,"orders":[{
 	   "id": "name"
 	  ,"defaultValue": "asc"
-	  ,"name": "fake.key.order.name.asc"
-	}
-   ]
+	  ,"i18n": "fake.key.order.name"
+	},{
+		"id": "modifiedAt"
+	   ,"i18n": "fake.key.order.modifiedAt"
+	}]
    ,"actions":[
 		{"id":"comment",  "available":false}
 	   ,{"id":"copy",     "available":false}
