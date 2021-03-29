@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.controllers;
 
 import com.opendigitaleducation.explorer.Explorer;
+import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
@@ -172,9 +173,15 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Get("folders/:id")
+    @Get("folders")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getFolders(final HttpServerRequest request) {
+        getFoldersById(request);
+    }
+
+    @Get("folders/:id")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getFoldersById(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
@@ -218,8 +225,8 @@ public class ExplorerController extends BaseController {
     }
 
     @Put("folders/:id")
-    //TODO owner
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
+    @ResourceFilter(FolderFilter.class)
     public void updateFolder(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
@@ -227,14 +234,14 @@ public class ExplorerController extends BaseController {
                 return;
             }
             final String id = request.params().get("id");
-            if(StringUtils.isEmpty(id)){
+            if (StringUtils.isEmpty(id)) {
                 badRequest(request, "missing.id");
                 return;
             }
             RequestUtils.bodyToJson(request, "createFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
                     //TODO response details?
-                    body.put("updatedAt", new Date().getTime());
+                    body.mergeIn(e);
                     renderJson(request, body);
                 }).onFailure(e -> {
                     renderError(request);
@@ -245,7 +252,7 @@ public class ExplorerController extends BaseController {
     }
 
     @Delete("folders")
-    //TODO owner
+    @ResourceFilter(FolderFilter.class)
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
     public void deleteFolders(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
@@ -267,11 +274,25 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Get("folders/:id")
+    @Get("metrics")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(SuperAdminFilter.class)
     public void getMetrics(final HttpServerRequest request) {
-        final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_JOB_METRICS);
+        final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_JOB_METRICS).setSendTimeout(60000);
+        eb.request(IngestJob.INGESTOR_JOB_ADDRESS, new JsonObject(), opt, e -> {
+            if (e.succeeded()) {
+                renderJson(request, (JsonObject) e.result().body());
+            } else {
+                renderError(request, new JsonObject().put("error", e.cause().getMessage()));
+            }
+        });
+    }
+
+    @Get("job/trigger")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void triggerJob(final HttpServerRequest request) {
+        final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_JOB_TRIGGER);
         eb.request(IngestJob.INGESTOR_JOB_ADDRESS, new JsonObject(), opt, e -> {
             if (e.succeeded()) {
                 renderJson(request, (JsonObject) e.result().body());

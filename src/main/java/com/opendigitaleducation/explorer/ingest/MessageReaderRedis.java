@@ -53,8 +53,10 @@ public class MessageReaderRedis implements MessageReader {
         if (this.streams.isEmpty()) {
             log.error("Missing streams list");
         }
-        onReady = redisClient.xcreateGroup(consumerGroup, initStreams).onFailure(e -> {
-            log.error("Could not create redis group: " + consumerGroup, e.getCause());
+        onReady = redisClient.xcreateGroup(consumerGroup, initStreams).onComplete(e -> {
+            if(e.failed()){
+                log.error("Could not create redis group: " + consumerGroup, e.cause());
+            }
         });
     }
 
@@ -132,16 +134,18 @@ public class MessageReaderRedis implements MessageReader {
     }
 
     protected Future<List<JsonObject>> fetchOneStream(final String stream, int maxBatchSize, boolean pending) {
-        final Promise<List<JsonObject>> promise = Promise.promise();
-        final String startAt = pending ? "0" : ">";
-        redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt)).onComplete(res -> {
-            if (res.succeeded()) {
-                promise.complete(res.result());
-            } else {
-                log.error(String.format("Could not xread (%s,%s) from streams: %s", consumerGroup, consumerName, stream), res.cause());
-            }
+        return onReady.compose(e->{
+            final Promise<List<JsonObject>> promise = Promise.promise();
+            final String startAt = pending ? "0" : ">";
+            redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt)).onComplete(res -> {
+                if (res.succeeded()) {
+                    promise.complete(res.result());
+                } else {
+                    log.error(String.format("Could not xread (%s,%s) from streams: %s", consumerGroup, consumerName, stream), res.cause());
+                }
+            });
+            return promise.future();
         });
-        return promise.future();
     }
 
     protected Future<List<MessageIngester.Message>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {

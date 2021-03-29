@@ -133,6 +133,27 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
+    public Future<Integer> count(UserInfos user, String application, SearchOperation operation) {
+        return shareTableManager.findHashes(user).compose(hashes -> {
+            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
+            if (operation.getParentId().isPresent()) {
+                query.withFolderId(operation.getParentId().get());
+            } else if (!operation.isSearchEverywhere()) {
+                query.withOnlyRoot(true);
+            }
+            if (operation.getSearch() != null) {
+                query.withTextSearch(operation.getSearch());
+            }
+            if (operation.getTrashed() != null) {
+                query.withTrashed(operation.getTrashed());
+            }
+            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+            final JsonObject queryJson = query.getSearchQuery();
+            return manager.getClient().count(this.index, queryJson, options);
+        });
+    }
+
+    @Override
     public Future<JsonObject> move(final UserInfos user, final JsonObject resource, final Optional<String> source, final Optional<String> dest) {
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(resource));
         final StringBuilder scriptSource = new StringBuilder();

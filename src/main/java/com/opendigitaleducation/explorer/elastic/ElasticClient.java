@@ -69,7 +69,7 @@ public class ElasticClient {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }
             });
-        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(new JsonObject().put("doc",payload).toString());
         return future.future();
     }
 
@@ -140,6 +140,22 @@ public class ElasticClient {
                         return json.getJsonObject("_source").put("_id", json.getString("_id"));
                     }).collect(Collectors.toList()));
                     future.complete(mapped);
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }).putHeader("content-type", "application/json").exceptionHandler(onError).end(payload.toString());
+        return future.future();
+    }
+
+    public Future<Integer> count(final String index, final JsonObject payload, final ElasticOptions options) {
+        final Promise<Integer> future = Promise.promise();
+        final String queryParams = options.getQueryParams();
+        httpClient.post("/" + index + "/_count" + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200) {
+                    final JsonObject body = new JsonObject(resBody.toString());
+                    future.complete(body.getInteger("count"));
                 } else {
                     future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
                 }

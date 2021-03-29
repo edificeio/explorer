@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.services.impl;
 
+import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -14,7 +15,23 @@ public class FolderQueryElastic {
     private final List<String> ancestors = new ArrayList<>();
     private Integer from;
     private Integer size;
+    private Boolean trashed;
 
+    public FolderQueryElastic withOnlyRoot(boolean onlyRoot) {
+        this.parentId.clear();
+        this.parentId.add(FolderService.ROOT_FOLDER_ID);
+        return this;
+    }
+
+    public FolderQueryElastic withTrashed(Boolean trashed) {
+        this.trashed = trashed;
+        return this;
+    }
+
+    public FolderQueryElastic withFolderId(final String folderId) {
+        this.parentId.add(folderId);
+        return this;
+    }
     //TODO force creator on constructor (every query is by creator)
     static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
         if (values.size() == 0) {
@@ -107,6 +124,10 @@ public class FolderQueryElastic {
         final Optional<JsonObject> ancestorsTerm = createTerm("ancestors", ancestors);
         if (ancestorsTerm.isPresent()) {
             filter.add(ancestorsTerm.get());
+        }
+        //trashed
+        if (trashed != null) {
+            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed)));
         }
         //from / size
         if (from != null) {

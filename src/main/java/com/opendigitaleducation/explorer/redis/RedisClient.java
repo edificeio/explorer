@@ -297,6 +297,10 @@ public class RedisClient {
     }
 
     protected void addToJson(final JsonObject json, final String key, final Response value) {
+        if(value == null || value.type() == null){
+            json.putNull(key);
+            return;
+        }
         switch (value.type()) {
             case BULK:
                 json.put(key, value.toString());
