@@ -27,7 +27,11 @@ import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.filters.ResourceFilter;
+import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.MessageIngester;
+import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
@@ -46,7 +50,7 @@ import java.util.List;
 
 public class Explorer extends BaseServer {
     static final Logger logger = LoggerFactory.getLogger(Explorer.class);
-
+    private IngestJob job;
     @Override
     public void start() throws Exception {
         super.start();
@@ -60,7 +64,7 @@ public class Explorer extends BaseServer {
         }
         final JsonObject postgresqlConfig = config.getJsonObject("postgres");
         //end move to infra
-        final String esIndex = elastic.getString("elastic", "explorer");
+        final String esIndex = elastic.getString("index", "explorer");
         final URI[] uris = (URI[]) uriList.toArray();
         final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
         final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
@@ -71,6 +75,13 @@ public class Explorer extends BaseServer {
         addController(explorerController);
         ResourceFilter.setResourceService(resourceService);
         FolderFilter.setFolderService(folderService);
+        final JsonObject redisConfig = config.getJsonObject("redis");
+        final JsonObject ingestConfig = config.getJsonObject("ingest");
+        final RedisClient redisClient = new RedisClient(vertx , redisConfig);
+        final MessageReader reader = MessageReader.redis(redisClient, ingestConfig);
+        final MessageIngester ingester = MessageIngester.elastic(resourceService);
+        job = new IngestJob(vertx, reader, ingester, ingestConfig);
+        job.start();
     }
 
 }
