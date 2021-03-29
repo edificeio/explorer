@@ -26,10 +26,10 @@ public class RedisClient {
     public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
         final String host = redisConfig.getString("host");
         final Integer port = redisConfig.getInteger("port");
-        final String username = redisConfig.getString("username");
+        final String username = redisConfig.getString("username","");
         final String password = redisConfig.getString("password");
         final Integer select = redisConfig.getInteger("select", 0);
-        if (StringUtils.isEmpty(username)) {
+        if (StringUtils.isEmpty(password)) {
             final String url = String.format("redis://%s:%s/%s", host, port, select);
             this.redisOptions = new RedisOptions().setConnectionString(url);
         } else {
