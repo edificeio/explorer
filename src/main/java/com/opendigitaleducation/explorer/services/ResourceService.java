@@ -31,6 +31,8 @@ public interface ResourceService {
     //TODO fetch by other criterias...
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
 
+    Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
+
     Future<JsonObject> move(final UserInfos user, final JsonObject document, final Optional<String> source, final Optional<String> dest);
 
     Future<JsonObject> share(final UserInfos user, final JsonObject document, final List<ShareOperation> operation) throws Exception;
@@ -117,6 +119,16 @@ public interface ResourceService {
         private String search;
         private Boolean trashed;
         private boolean searchEverywhere = false;
+        private String id;
+
+        public SearchOperation setId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public String getId() {
+            return id;
+        }
 
         public boolean isSearchEverywhere() {
             return searchEverywhere;

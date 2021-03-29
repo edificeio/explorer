@@ -37,6 +37,44 @@ public class FolderServiceElastic implements FolderService {
         return manager.getClient().search(index, query.getSearchQuery(), options);
     }
 
+    @Override
+    public Future<JsonArray> fetch(final UserInfos creator, final SearchOperation search) {
+        final String creatorId = creator.getUserId();
+        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId);
+        if (search.getParentId().isPresent()) {
+            query.withFolderId(search.getParentId().get());
+        } else if (!search.isSearchEverywhere()) {
+            query.withOnlyRoot(true);
+        }
+        if (search.getTrashed() != null) {
+            query.withTrashed(search.getTrashed());
+        }
+        if(search.getId() != null){
+            query.withId(search.getId());
+        }
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        return manager.getClient().search(index, query.getSearchQuery(), options);
+    }
+
+    @Override
+    public Future<Integer> count(UserInfos creator, SearchOperation search) {
+        final String creatorId = creator.getUserId();
+        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId);
+        if (search.getParentId().isPresent()) {
+            query.withFolderId(search.getParentId().get());
+        } else if (!search.isSearchEverywhere()) {
+            query.withOnlyRoot(true);
+        }
+        if (search.getTrashed() != null) {
+            query.withTrashed(search.getTrashed());
+        }
+        if(search.getId() != null){
+            query.withId(search.getId());
+        }
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        return manager.getClient().count(index, query.getSearchQuery(), options);
+    }
+
     protected String getRoutingKey(final UserInfos creator) {
         //TODO use application?
         return creator.getUserId();
@@ -191,8 +229,12 @@ public class FolderServiceElastic implements FolderService {
     @Override
     public Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder) {
         final ElasticClient client = manager.getClient();
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-        return client.updateDocument(this.index, id, folder, options).map(folder);
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator)).withRefresh(waitFor);
+        return client.updateDocument(this.index, id, folder, options).map(e->{
+            folder.put("_id", id);
+            folder.put("updatedAt", new Date().getTime());
+            return folder;
+        });
     }
 
     @Override

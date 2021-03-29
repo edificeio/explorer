@@ -134,8 +134,10 @@ public abstract class ResourceServiceTest {
             });
         });
     }
+
+    //TODO tester api http puis faire folder dans PG (call direct messageingest?)
     //TODO redis test + folder (ingest) + share (without hash) + complex search
-    //TODO http layer
+    //TODO http layer (finish owner check + ingestjob start)
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();

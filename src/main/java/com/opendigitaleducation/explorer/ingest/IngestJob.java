@@ -14,6 +14,7 @@ import java.util.function.Function;
 public class IngestJob {
     public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
     public static final String INGESTOR_JOB_METRICS = "metrics";
+    public static final String INGESTOR_JOB_TRIGGER = "trigger";
     static final int DEFAULT_BATCH_SIZE = 100;
     static final int DEFAULT_MAX_ATTEMPT = 10;
     static final int DEFAULT_MAX_DELAY_MS = 45000;
@@ -43,12 +44,18 @@ public class IngestJob {
         vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
-                case "trigger":
-                    execute(true).onComplete(e -> {
-                        if (e.succeeded()) {
-                            message.reply(new JsonObject());
+                case INGESTOR_JOB_TRIGGER:
+                    execute(true).onComplete(ee -> {
+                        if (ee.succeeded()) {
+                            getMetrics().onComplete(e -> {
+                                if (e.succeeded()) {
+                                    message.reply(e.result());
+                                } else {
+                                    message.fail(500, e.cause().getMessage());
+                                }
+                            });
                         } else {
-                            message.fail(500, e.cause().getMessage());
+                            message.fail(500, ee.cause().getMessage());
                         }
                     });
                     break;

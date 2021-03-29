@@ -25,6 +25,8 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.filters.FolderFilter;
+import com.opendigitaleducation.explorer.filters.ResourceFilter;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
@@ -48,6 +50,7 @@ public class Explorer extends BaseServer {
     @Override
     public void start() throws Exception {
         super.start();
+        //TODO start ingestjob in worker?
         //TODO move to infra
         final JsonObject elastic = config.getJsonObject("elastic");
         final JsonArray esUri = elastic.getJsonArray("uris");
@@ -66,7 +69,8 @@ public class Explorer extends BaseServer {
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, esIndex);
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
-
+        ResourceFilter.setResourceService(resourceService);
+        FolderFilter.setFolderService(folderService);
     }
 
 }
