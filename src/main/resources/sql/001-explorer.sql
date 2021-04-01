@@ -1,5 +1,9 @@
 DROP SCHEMA IF EXISTS explorer CASCADE;
 CREATE SCHEMA explorer;
+CREATE TABLE explorer.scripts (
+	filename VARCHAR(255) NOT NULL PRIMARY KEY,
+	passed TIMESTAMP NOT NULL DEFAULT NOW()
+);
 CREATE TABLE explorer.resource_queue (
     id SERIAL PRIMARY KEY,
     id_resource VARCHAR(128) NOT NULL,

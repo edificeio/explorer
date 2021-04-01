@@ -1,8 +1,9 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationPostgres;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.postgres.PostgresClientChannel;
-import com.opendigitaleducation.explorer.services.ExplorerService;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
@@ -36,7 +37,7 @@ public class MessageReaderPostgres implements MessageReader {
         this.pgClient = postgresClient.getClientChannel();
         this.modulo = config.getInteger("consumer-modulo", DEFAULT_JOB_MODULO);
         //TODO close remove listeners?
-        this.pgClient.listen(ExplorerService.RESOURCE_CHANNEL, onMessage -> {
+        this.pgClient.listen(ExplorerPluginCommunicationPostgres.RESOURCE_CHANNEL, onMessage -> {
             this.pendingNotifications++;
             //do not notify each time
             if (isStopped()) {
@@ -62,14 +63,14 @@ public class MessageReaderPostgres implements MessageReader {
     }
 
     @Override
-    public Future<List<MessageIngester.Message>> getIncomingMessages(final int maxBatchSize) {
+    public Future<List<MessageIngester.ExplorerMessageDetails>> getIncomingMessages(final int maxBatchSize) {
         final String attemptFilter = " AND attempted_count = 0 ";
         return fetch(maxBatchSize, Optional.empty(), attemptFilter);
     }
 
 
     @Override
-    public Future<List<MessageIngester.Message>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
+    public Future<List<MessageIngester.ExplorerMessageDetails>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
         final String attemptFilter = String.format(" AND attempted_count > 0 AND attempted_count <= %s ", maxAttempt);
         return fetch(maxBatchSize, Optional.of(maxAttempt), attemptFilter);
     }
@@ -101,18 +102,18 @@ public class MessageReaderPostgres implements MessageReader {
         this.pendingNotifications = 0;
     }
 
-    Future<List<MessageIngester.Message>> fetch(final int maxBatchSize, final Optional<Integer> maxAttempt, final String attemptFilter) {
+    Future<List<MessageIngester.ExplorerMessageDetails>> fetch(final int maxBatchSize, final Optional<Integer> maxAttempt, final String attemptFilter) {
         // use modulo to split between different thread
         final String modulo = this.modulo == 1 ? "" : String.format(" AND MOD(id,%s)=0 ", this.modulo);
         final String query = String.format("SELECT * FROM explorer.resource_queue WHERE attempt_status=$1 %s %s ORDER BY priority DESC, created_at ASC LIMIT $2", modulo, attemptFilter);
         return this.pgClient.preparedQuery(query, Tuple.of(STATUS_PENDING, maxBatchSize)).map(result -> {
-            final List<MessageIngester.Message> all = new ArrayList<>();
+            final List<MessageIngester.ExplorerMessageDetails> all = new ArrayList<>();
             for (final Row row : result) {
                 final String resourceAction = row.getString("resource_action");
                 final Long idQueue = row.getLong("id");
                 final String idResource = row.getString("id_resource");
                 final JsonObject json = (JsonObject) (row.getJson("payload")).value();
-                final MessageIngester.Message message = new MessageIngester.Message(resourceAction, idQueue + "", idResource, json);
+                final MessageIngester.ExplorerMessageDetails message = new MessageIngester.ExplorerMessageDetails(resourceAction, idQueue + "", idResource, json);
                 all.add(message);
             }
             //metrics
@@ -130,13 +131,13 @@ public class MessageReaderPostgres implements MessageReader {
 
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult result, final int maxAttempt) {
-        final List<MessageIngester.Message> succeed = result.succeed;
-        final List<MessageIngester.Message> failed = result.failed;
-        final List<JsonObject> failedJson = result.failed.stream().map(e -> e.result.put("_idQueue", Long.valueOf(e.idQueue)).put("_idResource", e.idResource)).collect(Collectors.toList());
+        final List<MessageIngester.ExplorerMessageDetails> succeed = result.succeed;
+        final List<MessageIngester.ExplorerMessageDetails> failed = result.failed;
+        final List<JsonObject> failedJson = result.failed.stream().map(e -> e.getMessage().put("_idQueue", Long.valueOf(e.getIdQueue())).put("_idResource", e.getId()).put("_error", e.getError())).collect(Collectors.toList());
         //save
         return this.pgClient.transaction().compose(transaction -> {
             if (succeed.size() > 0) {
-                final List<Long> ids = succeed.stream().map(e -> Long.valueOf(e.idQueue)).collect(Collectors.toList());
+                final List<Long> ids = succeed.stream().map(e -> Long.valueOf(e.getIdQueue())).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(STATUS_SUCCESS), ids);
                 final String placeholder = PostgresClient.inPlaceholder(succeed, 2);
                 final String query = String.format("UPDATE explorer.resource_queue SET  attempt_status=$1, attempted_count=attempted_count+1, attempted_at=NOW() WHERE id IN (%s)", placeholder);
@@ -146,14 +147,14 @@ public class MessageReaderPostgres implements MessageReader {
                 final LocalDateTime now = LocalDateTime.now();
                 final Map<String, Object> defaultValues = new HashMap<>();
                 defaultValues.put("_attemptat", now);
-                defaultValues.put(FolderService.ERROR_FIELD, "");
-                final List<Long> ids = failed.stream().map(e -> Long.valueOf(e.idQueue)).collect(Collectors.toList());
+                defaultValues.put("_error", "");
+                final List<Long> ids = failed.stream().map(e -> Long.valueOf(e.getIdQueue())).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(now), ids);
                 final String placeholder = PostgresClient.inPlaceholder(failed, 2);
                 final String query = String.format("UPDATE explorer.resource_queue SET  attempted_count=attempted_count+1, attempted_at=$1 WHERE id IN (%s)", placeholder);
                 transaction.addPreparedQuery(query, tuple);
-                final Tuple tupleMessage = PostgresClient.insertValues(failedJson, Tuple.tuple(), defaultValues, "_idQueue", "_idResource", FolderService.ERROR_FIELD, "_attemptat");
-                final String placeholderMessage = PostgresClient.insertPlaceholders(failedJson, 1, "_idQueue", "id_resource", FolderService.ERROR_FIELD, "_attemptat");
+                final Tuple tupleMessage = PostgresClient.insertValues(failedJson, Tuple.tuple(), defaultValues, "_idQueue", "_idResource", "_error", "_attemptat");
+                final String placeholderMessage = PostgresClient.insertPlaceholders(failedJson, 1, "_idQueue", "id_resource", "_error", "_attemptat");
                 final String queryMessage = String.format("INSERT INTO explorer.resource_queue_causes (id, id_resource, attempt_reason, attempted_at) VALUES %s", placeholderMessage);
                 transaction.addPreparedQuery(queryMessage, tupleMessage);
             }

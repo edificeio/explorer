@@ -13,8 +13,6 @@ import java.util.Set;
 public interface FolderService {
     String SUCCESS_FIELD = "_success";
     String ERROR_FIELD = "_error";
-    String ROOT_FOLDER_ID = "root";
-    String DEFAULT_FOLDER_INDEX = "explorer_folder";
 
     //TODO fetch by application...
     Future<JsonArray> fetch(final UserInfos creator, final Optional<String> parentId);

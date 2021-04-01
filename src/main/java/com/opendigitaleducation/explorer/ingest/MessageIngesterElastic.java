@@ -1,17 +1,25 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
+import com.opendigitaleducation.explorer.elastic.ElasticClient;
+import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MessageIngesterElastic implements MessageIngester {
+    public static final String DEFAULT_RESOURCE_INDEX = "explorer_resource";
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
 
-    private final ResourceService resourceService;
+    private final JsonObject esIndexes;
+    private final ElasticClientManager elasticClient;
     private final Map<String, Long> nbIngestedPerAction = new HashMap<>();
     private Date lastIngestion;
     private long nbIngestion = 0;
@@ -20,61 +28,57 @@ public class MessageIngesterElastic implements MessageIngester {
     private long nbFailed = 0;
     private long lastIngestCount = 0;
 
-    public MessageIngesterElastic(final ResourceService resourceService) {
-        this.resourceService = resourceService;
+    public MessageIngesterElastic(final ElasticClientManager elasticClient) {
+        this(elasticClient, new JsonObject());
+    }
+
+    public MessageIngesterElastic(final ElasticClientManager elasticClient, final JsonObject esIndexes) {
+        this.elasticClient = elasticClient;
+        this.esIndexes = esIndexes;
     }
 
     //TODO if 429 retry and set maxBatchSize less than
     //TODO if payload greater than max reduce maxPayload
     @Override
-    public Future<IngestJob.IngestJobResult> ingest(final List<Message> messages) {
-        final Map<String, Message> messageByIdQueue = new HashMap<>();
-        final List<ResourceService.ResourceBulkOperation<String>> resources = new ArrayList<>();
-        for (final Message message : messages) {
-            final String resourceAction = message.action;
-            final String idQueue = message.idQueue;
-            final String idResource = message.idResource;
-            final JsonObject payload = message.payload;
-            messageByIdQueue.put(idQueue, message);
-            //final String creatorId = payload.getString("creatorId");
-            payload.put("_id", idResource);
-            final ResourceService.ResourceBulkOperationType type = ResourceService.getOperationType(resourceAction);
-            resources.add(new ResourceService.ResourceBulkOperation(payload, type, idQueue));
+    public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageDetails> messages) {
+        final List<MessageIngesterElasticOperation> operations = messages.stream().map(mess->{
+            return MessageIngesterElasticOperation.create(mess.getIdQueue(), mess).setEsIndexes(esIndexes);
+        }).collect(Collectors.toList());
+        //TODO upsert or get id for resources (non folders)
+        final ElasticBulkRequest bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions());
+        for(final MessageIngesterElasticOperation op : operations){
+            op.execute(bulk);
         }
-        return this.resourceService.bulkOperations(resources).map((List<JsonObject> bulkResults) -> {
-            if (bulkResults.isEmpty()) {
+        return bulk.end().map(results -> {
+            if (results.isEmpty()) {
                 return new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>());
             }
             //categorise
-            final List<Message> succeed = new ArrayList<>();
-            final List<Message> failed = new ArrayList<>();
-            for (final JsonObject res : bulkResults) {
-                final String idQueue = res.getString(ResourceService.CUSTOM_IDENTIFIER);
-                final Message original = messageByIdQueue.get(idQueue);
-                if (original != null) {
-                    final boolean success = res.getBoolean(ResourceService.SUCCESS_FIELD, false);
-                    original.result.mergeIn(res);
-                    if (success) {
-                        succeed.add(original);
-                    } else {
-                        failed.add(original);
-                    }
+            final List<ExplorerMessageDetails> succeed = new ArrayList<>();
+            final List<ExplorerMessageDetails> failed = new ArrayList<>();
+            //
+            for (int i = 0; i < results.size(); i++) {
+                final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
+                final MessageIngesterElasticOperation op = operations.get(i);
+                if (res.isOk()) {
+                    succeed.add(op.message);
                 } else {
-                    log.warn(String.format("Original message not found for idQueue=%s and idResource=%s", original.idQueue, original.idResource));
+                    op.message.setError(res.getMessage());
+                    op.message.setErrorDetails(res.getDetails());
+                    failed.add(op.message);
                 }
             }
             //metrics
-            this.lastIngestCount = bulkResults.size();
-            this.nbIngested += bulkResults.size();
+            this.lastIngestCount = results.size();
+            this.nbIngested += results.size();
             this.nbSuccess = succeed.size();
             this.nbFailed = failed.size();
             this.nbIngestion++;
             this.lastIngestion = new Date();
-            for (final ResourceService.ResourceBulkOperation<String> op : resources) {
-                nbIngestedPerAction.putIfAbsent(op.getType().name(), 0l);
-                nbIngestedPerAction.compute(op.getType().name(), (key, val) -> val + 1l);
+            for (final MessageIngesterElasticOperation op : operations) {
+                nbIngestedPerAction.putIfAbsent(op.getMessage().getAction(), 0l);
+                nbIngestedPerAction.compute(op.getMessage().getAction(), (key, val) -> val + 1l);
             }
-            //return
             return new IngestJob.IngestJobResult(succeed, failed);
         });
     }
@@ -94,5 +98,9 @@ public class MessageIngesterElastic implements MessageIngester {
             metrics.put("count_" + key, nbIngestedPerAction.getOrDefault(key, 0l));
         }
         return Future.succeededFuture(metrics);
+    }
+
+    public static String getDefaultIndexName(final String application){
+        return DEFAULT_RESOURCE_INDEX+"_"+application;
     }
 }

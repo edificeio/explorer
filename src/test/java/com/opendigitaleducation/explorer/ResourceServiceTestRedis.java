@@ -2,12 +2,10 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.redis.RedisClient;
-import com.opendigitaleducation.explorer.services.ExplorerService;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.impl.ExplorerServicePostgres;
-import com.opendigitaleducation.explorer.services.impl.ExplorerServiceRedis;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -22,14 +20,13 @@ import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @RunWith(VertxUnitRunner.class)
 public class ResourceServiceTestRedis extends ResourceServiceTest {
     private static JsonObject redisConfig;
     private IngestJob job;
     private PostgresClient postgresClient;
-    private ExplorerService explorerService;
+    private ExplorerPlugin explorerPlugin;
     private ShareTableManager shareTableManager;
     private ResourceService resourceService;
     private JsonObject postgresqlConfig;
@@ -78,17 +75,17 @@ public class ResourceServiceTestRedis extends ResourceServiceTest {
     protected synchronized IngestJob getIngestJob() {
         if (job == null) {
             final MessageReader reader = MessageReader.redis(getRedisClient(), new JsonObject());
-            job = IngestJob.create(test.vertx(), getResourceService(), new JsonObject(), reader);
+            job = IngestJob.create(test.vertx(), elasticClientManager, new JsonObject(), reader);
         }
         return job;
     }
 
     @Override
-    protected ExplorerService getExplorerService() {
-        if(explorerService == null){
-            explorerService = new ExplorerServiceRedis(test.vertx(), getRedisClient());
+    protected ExplorerPlugin getExplorerPlugin() {
+        if(explorerPlugin == null){
+            explorerPlugin = FakeExplorerPluginResource.withRedisStream(test.vertx(), getRedisClient(), getPostgresClient());
         }
-        return explorerService;
+        return explorerPlugin;
     }
 
     @Override

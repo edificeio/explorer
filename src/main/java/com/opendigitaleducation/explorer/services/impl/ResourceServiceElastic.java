@@ -35,7 +35,7 @@ public class ResourceServiceElastic implements ResourceService {
         return VISIBLE_BY_CREATOR + creatorId;
     }
 
-    protected void beforeCreate(final JsonObject document) {
+    public static JsonObject beforeCreate(final JsonObject document) {
         if (!document.containsKey("trashed")) {
             document.put("trashed", false);
         }
@@ -57,9 +57,23 @@ public class ResourceServiceElastic implements ResourceService {
         if (!document.containsKey("usersForFolderIds")) {
             document.put("usersForFolderIds", new JsonArray());
         }
+        //custom field should not override existing fields
+        final JsonObject custom = document.getJsonObject("custom", new JsonObject());
+        for (final String key : custom.fieldNames()) {
+            if (!document.containsKey(key)) {
+                document.put(key, custom.getValue(key));
+            }
+        }
+        document.remove("custom");
+        return document;
     }
 
-    protected void beforeUpdate(final JsonObject document) {
+    public static JsonObject beforeUpdate(final JsonObject document) {
+        //upsert should remove createdAt
+        document.remove("createdAt");
+        document.remove("creatorId");
+        document.remove("creatorName");
+        //
         if (!document.containsKey("trashed")) {
             document.put("trashed", false);
         }
@@ -67,48 +81,15 @@ public class ResourceServiceElastic implements ResourceService {
             document.put("public", false);
         }
         document.put("updatedAt", new Date().getTime());
-    }
-
-    @Override
-    public <T> Future<List<JsonObject>> bulkOperations(List<ResourceBulkOperation<T>> operations) {
-        if (operations.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        final ElasticBulkRequest bulk = manager.getClient().bulk(index, new ElasticClient.ElasticOptions().withWaitFor(waitFor));
-        for (final ResourceBulkOperation op : operations) {
-            final String routing = getRoutingKey(op.getResource());
-            final String id = op.getResource().getString("_id");
-            switch (op.getType()) {
-                case Create:
-                    beforeCreate(op.getResource());
-                    bulk.create(op.getResource(), Optional.ofNullable(id), Optional.empty(), Optional.ofNullable(routing));
-                    break;
-                case Delete:
-                    bulk.delete(id, Optional.empty(), Optional.ofNullable(routing));
-                    break;
-                case Update:
-                    beforeUpdate(op.getResource());
-                    bulk.update(op.getResource(), Optional.of(id), Optional.empty(), Optional.ofNullable(routing));
-                    break;
+        //custom field should not override existing fields
+        final JsonObject custom = document.getJsonObject("custom", new JsonObject());
+        for (final String key : custom.fieldNames()) {
+            if (!document.containsKey(key)) {
+                document.put(key, custom.getValue(key));
             }
         }
-        return bulk.end().compose(results -> {
-            final List<JsonObject> resources = new ArrayList<>();
-            for (int i = 0; i < results.size(); i++) {
-                final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
-                final ResourceBulkOperation op = operations.get(i);
-                final JsonObject resource = op.getResource();
-                resource.put(CUSTOM_IDENTIFIER, op.getCustomIdentifier());
-                if (res.isOk()) {
-                    resource.put(SUCCESS_FIELD, true);
-                } else {
-                    resource.put(ERROR_FIELD, res.getMessage());
-                    resource.put(SUCCESS_FIELD, false);
-                }
-                resources.add(resource);
-            }
-            return Future.succeededFuture(resources);
-        });
+        document.remove("custom");
+        return document;
     }
 
     @Override
@@ -215,11 +196,11 @@ public class ResourceServiceElastic implements ResourceService {
         }).map(resources);
     }
 
-    protected String getRoutingKey(final JsonObject resource) {
+    public static String getRoutingKey(final JsonObject resource) {
         return getRoutingKey(resource.getString("application"));
     }
 
-    protected String getRoutingKey(final String application) {
+    public static String getRoutingKey(final String application) {
         //TODO add resourceType?
         return application;
     }

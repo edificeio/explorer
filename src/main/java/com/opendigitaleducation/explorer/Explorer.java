@@ -49,23 +49,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Explorer extends BaseServer {
-    static final Logger logger = LoggerFactory.getLogger(Explorer.class);
     private IngestJob job;
     @Override
     public void start() throws Exception {
         super.start();
         //TODO start ingestjob in worker?
-        //TODO move to infra
+        //TODO move config to infra (or reuse)
+        //TODO create ES mapping and check why folders not diplsaying
         final JsonObject elastic = config.getJsonObject("elastic");
         final JsonArray esUri = elastic.getJsonArray("uris");
         final List<URI> uriList = new ArrayList<>();
-        for (final Object u : esUri) {
-            uriList.add(new URI(u.toString()));
+        for ( int i = 0 ; i < esUri.size() ; i++) {
+            final Object uri = esUri.getValue(i);
+            if(uri instanceof String) {
+                uriList.add(new URI(uri.toString()));
+            }else{
+                throw new Exception("Bad uri for elastic search: "+ uri);
+            }
         }
         final JsonObject postgresqlConfig = config.getJsonObject("postgres");
         //end move to infra
         final String esIndex = elastic.getString("index", "explorer");
-        final URI[] uris = (URI[]) uriList.toArray();
+        final URI[] uris = uriList.toArray(new URI[uriList.size()]);
         final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
         final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
         final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
@@ -75,7 +80,7 @@ public class Explorer extends BaseServer {
         addController(explorerController);
         ResourceFilter.setResourceService(resourceService);
         FolderFilter.setFolderService(folderService);
-        final JsonObject redisConfig = config.getJsonObject("redis");
+        final JsonObject redisConfig = config.getJsonObject("redisConfig");
         final JsonObject ingestConfig = config.getJsonObject("ingest");
         final RedisClient redisClient = new RedisClient(vertx , redisConfig);
         final MessageReader reader = MessageReader.redis(redisClient, ingestConfig);

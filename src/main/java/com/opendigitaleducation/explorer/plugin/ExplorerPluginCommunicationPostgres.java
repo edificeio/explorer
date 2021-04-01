@@ -1,41 +1,44 @@
-package com.opendigitaleducation.explorer.services.impl;
+package com.opendigitaleducation.explorer.plugin;
 
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
-import com.opendigitaleducation.explorer.services.ExplorerService;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ExplorerServicePostgres implements ExplorerService {
-    static Logger log = LoggerFactory.getLogger(ExplorerServicePostgres.class);
+public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommunication {
+    public static final String RESOURCE_CHANNEL = "channel_resource";
+    static Logger log = LoggerFactory.getLogger(ExplorerPluginCommunicationPostgres.class);
     private final PostgresClientPool pgPool;
     private final List<PostgresExplorerFailed> pendingFailed = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
 
-    public ExplorerServicePostgres(final Vertx vertx, final PostgresClient pgClient) {
+    public ExplorerPluginCommunicationPostgres(final Vertx vertx, final PostgresClient pgClient) {
         this.pgPool = pgClient.getClientPool();
         this.vertx = vertx;
     }
 
     @Override
-    public Future<Void> push(final ExplorerMessageBuilder message) {
-        //TODO debounce ?
-        //TODO create a job to archive this table on night?
-        return push(Arrays.asList(message));
+    public Future<Void> pushMessage(final ExplorerMessage message) {
+        return pushMessage(Arrays.asList(message));
     }
 
     @Override
-    public Future<Void> push(List<ExplorerMessageBuilder> messages) {
+    public Future<Void> pushMessage(final List<ExplorerMessage> messages) {
         if (messages.isEmpty()) {
             return Future.succeededFuture();
         }
@@ -75,7 +78,7 @@ public class ExplorerServicePostgres implements ExplorerService {
                 });
             }
             //
-            transaction.notify(ExplorerService.RESOURCE_CHANNEL, "new_resources").onComplete(e -> {
+            transaction.notify(RESOURCE_CHANNEL, "new_resources").onComplete(e -> {
                 if (e.failed()) {
                     log.error("Failed to notify new ressources: ", e.cause());
                 }
@@ -89,6 +92,15 @@ public class ExplorerServicePostgres implements ExplorerService {
             });
             return future.future();
         });
+    }
+
+    @Override
+    public Function<Void, Void> listen(String id, Handler<Message<JsonObject>> onMessage) {
+        final MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(id, onMessage);
+        return e->{
+            consumer.unregister();
+            return null;
+        };
     }
 
     class PostgresExplorerFailed {

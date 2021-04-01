@@ -1,8 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationRedis;
 import com.opendigitaleducation.explorer.redis.RedisBatch;
 import com.opendigitaleducation.explorer.redis.RedisClient;
-import com.opendigitaleducation.explorer.services.impl.ExplorerServiceRedis;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -41,7 +41,7 @@ public class MessageReaderRedis implements MessageReader {
         this.streamFailSuffix = config.getString("stream-fail-suffix", DEFAULT_STREAM_FAIL);
         this.consumerName = config.getString("consumer-name", DEFAULT_CONSUMER_NAME);
         this.consumerGroup = config.getString("consumer-group", DEFAULT_CONSUMER_GROUP);
-        final JsonArray streams = config.getJsonArray("streams", ExplorerServiceRedis.DEFAULT_STREAMS);
+        final JsonArray streams = config.getJsonArray("streams", ExplorerPluginCommunicationRedis.DEFAULT_STREAMS);
         //order by priority DESC
         final List<String> initStreams = new ArrayList<>();
         for (final Object stream : streams) {
@@ -148,7 +148,7 @@ public class MessageReaderRedis implements MessageReader {
         });
     }
 
-    protected Future<List<MessageIngester.Message>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
+    protected Future<List<MessageIngester.ExplorerMessageDetails>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
         //iterate over streams by priority and fill results list
         final Iterator<String> it = streams.iterator();
         Future<List<JsonObject>> futureIt = Future.succeededFuture(new ArrayList<>());
@@ -186,8 +186,8 @@ public class MessageReaderRedis implements MessageReader {
         });
     }
 
-    protected List<MessageIngester.Message> toMessage(final List<JsonObject> result) {
-        final List<MessageIngester.Message> messages = new ArrayList<>();
+    protected List<MessageIngester.ExplorerMessageDetails> toMessage(final List<JsonObject> result) {
+        final List<MessageIngester.ExplorerMessageDetails> messages = new ArrayList<>();
         for (final JsonObject row : result) {
             final String resourceAction = row.getString("resource_action");
             final String idQueue = row.getString(RedisClient.ID_STREAM);
@@ -195,29 +195,29 @@ public class MessageReaderRedis implements MessageReader {
             final String idResource = row.getString("id_resource");
             final Integer attemptCount = row.getInteger("attempt_count", 0);
             final JsonObject json = new JsonObject(row.getString("payload"));
-            final MessageIngester.Message message = new MessageIngester.Message(resourceAction, idQueue, idResource, json);
-            message.metadata.put(RedisClient.NAME_STREAM, nameStream);
-            message.metadata.put(ATTEMPT_COUNT, attemptCount);
+            final MessageIngester.ExplorerMessageDetails message = new MessageIngester.ExplorerMessageDetails(resourceAction, idQueue, idResource, json);
+            message.getMetadata().put(RedisClient.NAME_STREAM, nameStream);
+            message.getMetadata().put(ATTEMPT_COUNT, attemptCount);
             messages.add(message);
         }
         return messages;
     }
 
-    protected JsonObject toJson(final MessageIngester.Message message) {
+    protected JsonObject toJson(final MessageIngester.ExplorerMessageDetails message) {
         final JsonObject json = new JsonObject();
-        json.put("resource_action", message.action);
-        json.put("id_resource", message.idResource);
-        json.put("payload", message.payload.encode());
+        json.put("resource_action", message.getAction());
+        json.put("id_resource", message.getId());
+        json.put("payload", message.getMessage().encode());
         return json;
     }
 
     @Override
-    public Future<List<MessageIngester.Message>> getIncomingMessages(final int maxBatchSize) {
+    public Future<List<MessageIngester.ExplorerMessageDetails>> getIncomingMessages(final int maxBatchSize) {
         return fetchAllStreams(new ArrayList<>(), maxBatchSize, Optional.empty(), Optional.empty());
     }
 
     @Override
-    public Future<List<MessageIngester.Message>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
+    public Future<List<MessageIngester.ExplorerMessageDetails>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
         return fetchAllStreams(new ArrayList<>(), maxBatchSize, Optional.of(this.streamFailSuffix), Optional.of(maxAttempt));
     }
 
@@ -227,20 +227,20 @@ public class MessageReaderRedis implements MessageReader {
         final RedisBatch batch = redisClient.batch();
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
-        for (final MessageIngester.Message mess : ingestResult.succeed) {
-            final String idQueue = mess.idQueue;
-            final String stream = mess.metadata.getString(RedisClient.NAME_STREAM);
+        for (final MessageIngester.ExplorerMessageDetails mess : ingestResult.succeed) {
+            final String idQueue = mess.getIdQueue();
+            final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
             batch.beginTransaction();
             batch.xAck(stream, consumerGroup, idQueue);
             batch.xDel(stream, idQueue);
             batch.commitTransaction();
         }
         //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
-        for (final MessageIngester.Message mess : ingestResult.failed) {
-            final String idQueue = mess.idQueue;
-            final String stream = mess.metadata.getString(RedisClient.NAME_STREAM);
-            final Integer attemptCount = mess.metadata.getInteger(ATTEMPT_COUNT);
-            final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime());
+        for (final MessageIngester.ExplorerMessageDetails mess : ingestResult.failed) {
+            final String idQueue = mess.getIdQueue();
+            final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
+            final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT);
+            final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
             batch.beginTransaction();
             //if already failed => do not add suffix to stream name
             if (stream.contains(streamFailSuffix)) {

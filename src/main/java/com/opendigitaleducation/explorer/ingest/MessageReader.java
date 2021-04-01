@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.redis.RedisClient;
 import io.vertx.core.Future;
@@ -35,9 +36,9 @@ public interface MessageReader {
 
     Function<Void, Void> listenNewMessages(final Handler<Void> handler);
 
-    Future<List<MessageIngester.Message>> getIncomingMessages(final int maxBatchSize);
+    Future<List<MessageIngester.ExplorerMessageDetails>> getIncomingMessages(final int maxBatchSize);
 
-    Future<List<MessageIngester.Message>> getFailedMessages(final int maxBatchSize, final int maxAttempt);
+    Future<List<MessageIngester.ExplorerMessageDetails>> getFailedMessages(final int maxBatchSize, final int maxAttempt);
 
     Future<Void> updateStatus(final IngestJob.IngestJobResult ingestResult, final int maxAttempt);
 
