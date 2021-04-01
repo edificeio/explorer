@@ -1,8 +1,10 @@
 package com.opendigitaleducation.explorer.services.impl;
-
+import static com.opendigitaleducation.explorer.folders.FolderExplorerPlugin.ROOT_FOLDER_ID;
 import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -16,16 +18,18 @@ import java.util.stream.Collectors;
 
 public class FolderServiceElastic implements FolderService {
     final ElasticClientManager manager;
+    final FolderExplorerPlugin plugin;
     final String index;
     final boolean waitFor = true;
 
-    public FolderServiceElastic(final ElasticClientManager aManager) {
-        this(aManager, DEFAULT_FOLDER_INDEX);
+    public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
+        this(aManager, plugin, MessageIngesterElastic.getDefaultIndexName(FolderExplorerPlugin.FOLDER_APPLICATION));
     }
 
-    public FolderServiceElastic(final ElasticClientManager aManager, final String index) {
+    public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin, final String index) {
         this.manager = aManager;
         this.index = index;
+        this.plugin = plugin;
     }
 
     @Override
@@ -82,20 +86,20 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<String> create(final UserInfos creator, final JsonObject folder) {
-        return beforeCreate(creator, Arrays.asList(folder)).compose(prepare -> {
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
-            return manager.getClient().createDocument(index, folder, options);
-        }).compose(e -> {
-            folder.put("_id", e);
-            return afterCreate(creator, Arrays.asList(folder)).map(e);
+        beforeCreate(creator, folder);
+        return plugin.create(creator, folder, false).compose(id ->{
+            folder.put("id", id);
+            return afterCreate(creator, Arrays.asList(folder)).map(id);
         });
     }
 
     protected Future<Void> afterCreate(final UserInfos creator, final List<JsonObject> folders) {
+        //TODO do it in plugin? (update ChildrenIds of old parents and new parents)
+        //TODO custom routing for application?
         //set children ids
         final Map<String, Set<String>> childrenMap = new HashMap<>();
         for (final JsonObject folder : folders) {
-            final String id = folder.getString("_id");
+            final String id = folder.getString("id");
             final String parentId = folder.getString("parentId");
             if (parentId != null && !ROOT_FOLDER_ID.equals(parentId)) {
                 //TODO UPDATE ROOT parent only if need to load all at root (generateRootId)
@@ -124,7 +128,10 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<List<JsonObject>> create(final UserInfos creator, final List<JsonObject> folders) {
-        return beforeCreate(creator, folders).compose(prepare -> {
+        for(final JsonObject folder : folders){
+            beforeCreate(creator, folder);
+        }
+        return plugin.create(creator, folders, false).compose(prepare -> {
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
             final ElasticBulkRequest bulk = manager.getClient().bulk(index, options);
             for (final JsonObject folder : folders) {
@@ -170,60 +177,23 @@ public class FolderServiceElastic implements FolderService {
         return !ROOT_FOLDER_ID.equals(parentId) && !StringUtils.isEmpty(parentId);
     }
 
-    protected Future<Void> mergeAncestors(final UserInfos creator, final List<JsonObject> folders) {
-        final List<String> ids = folders.stream().map(f -> f.getString("parentId")).filter(f -> hasParent(f)).collect(Collectors.toList());
-        if (ids.isEmpty()) {
-            for (final JsonObject folder : folders) {
-                folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
-                folder.put("parentId", ROOT_FOLDER_ID);
-            }
-            return Future.succeededFuture();
-        } else {
-            final String creatorId = creator.getUserId();
-            final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withId(ids).withFrom(0).withSize(ids.size());
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-            return manager.getClient().search(index, query.getSearchQuery(), options).compose(parents -> {
-                for (final JsonObject folder : folders) {
-                    final String parentId = folder.getString("parentId");
-                    if (hasParent(parentId)) {
-                        final Optional<JsonObject> found = parents.stream().map(o -> (JsonObject) o).filter(p -> parentId.equals(p.getString("_id"))).findFirst();
-                        if (found.isPresent()) {
-                            final JsonArray ancestors = found.get().getJsonArray("ancestors", new JsonArray()).add(parentId);
-                            folder.put("ancestors", ancestors);
-                        } else {
-                            folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
-                            folder.put("parentId", ROOT_FOLDER_ID);
-                        }
-                    } else {
-                        folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
-                        folder.put("parentId", ROOT_FOLDER_ID);
-                    }
-                }
-                return Future.succeededFuture();
-            });
+    protected void beforeCreate(final UserInfos creator, JsonObject folder) {
+        folder.put("creatorId", creator.getUserId());
+        folder.put("creatorName", creator.getUsername());
+        folder.put("createdAt", new Date().getTime());
+        folder.put("updatedAt", new Date().getTime());
+        if (!folder.containsKey("parentId")) {
+            folder.put("parentId", ROOT_FOLDER_ID);
         }
-    }
-
-    protected Future<Void> beforeCreate(final UserInfos creator, final List<JsonObject> folders) {
-        for (final JsonObject folder : folders) {
-            folder.put("creatorId", creator.getUserId());
-            folder.put("creatorName", creator.getUsername());
-            folder.put("createdAt", new Date().getTime());
-            folder.put("updatedAt", new Date().getTime());
-            if (!folder.containsKey("parentId")) {
-                folder.put("parentId", ROOT_FOLDER_ID);
-            }
-            if (!folder.containsKey("ancestors")) {
-                folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
-            }
-            if (!folder.containsKey("trashed")) {
-                folder.put("trashed", false);
-            }
-            if (!folder.containsKey("childrenIds")) {
-                folder.put("childrenIds", new JsonArray());
-            }
+        if (!folder.containsKey("ancestors")) {
+            folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
         }
-        return mergeAncestors(creator, folders);
+        if (!folder.containsKey("trashed")) {
+            folder.put("trashed", false);
+        }
+        if (!folder.containsKey("childrenIds")) {
+            folder.put("childrenIds", new JsonArray());
+        }
     }
 
     @Override

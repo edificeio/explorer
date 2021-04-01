@@ -2,12 +2,8 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.services.ExplorerService;
+import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
-import com.opendigitaleducation.explorer.services.impl.ExplorerServicePostgres;
-import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -17,12 +13,9 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
@@ -43,7 +36,7 @@ public abstract class ResourceServiceTest {
     //TODO redis try
     //TODO resource right retro
     protected abstract IngestJob getIngestJob();
-    protected abstract ExplorerService getExplorerService();
+    protected abstract ExplorerPlugin getExplorerPlugin();
     protected abstract ShareTableManager getShareTableManager();
     protected abstract ResourceService getResourceService();
     
@@ -64,37 +57,17 @@ public abstract class ResourceServiceTest {
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
-    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content) {
-        return create(user, id, name, content, "blog", "post", false);
+    static JsonObject create(UserInfos user, String id, String name, String content) {
+        return create(user, id, name, content, false);
     }
 
-    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content, String application, String type) {
-        return create(user, id, name, content, application, type, false);
-    }
-
-    static ExplorerService.ExplorerMessageBuilder create(UserInfos user, String id, String name, String content, String application, String type, boolean pub) {
-        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.create(id, user);
-        message.withContent(content).withName(name).withPublic(pub).withResourceType(application, type);
-        return message;
-    }
-
-    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content) {
-        return update(user, id, name, content, "blog", "post", false);
-    }
-
-    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content, String application, String type) {
-        return update(user, id, name, content, application, type, false);
-    }
-
-    static ExplorerService.ExplorerMessageBuilder update(UserInfos user, String id, String name, String content, String application, String type, boolean pub) {
-        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.update(id, user);
-        message.withContent(content).withName(name).withPublic(pub).withResourceType(application, type);
-        return message;
-    }
-
-    static ExplorerService.ExplorerMessageBuilder delete(UserInfos user, String id) {
-        final ExplorerService.ExplorerMessageBuilder message = ExplorerService.ExplorerMessageBuilder.delete(id, user).withResourceType("blog", "post");
-        return message;
+    static JsonObject create(UserInfos user, String id, String name, String content, boolean pub) {
+        final JsonObject json = new JsonObject();
+        json.put("id", id);
+        json.put("name", name);
+        json.put("content", content);
+        json.put("public", pub);
+        return json;
     }
 
     static List<ResourceService.ShareOperation> shareTo(JsonObject rights, UserInfos... users) {
@@ -141,20 +114,20 @@ public abstract class ResourceServiceTest {
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();
-        final ExplorerService exService = getExplorerService();
+        final ExplorerPlugin exPlugin = getExplorerPlugin();
         final UserInfos user = test.directory().generateUser("intergrate_res");
         job.start().onComplete(context.asyncAssertSuccess(r -> {
                 final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
                 job.onEachExecutionEnd(fCreate);
-                final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id1", "name1", "text1");
-                exService.push(message1).onComplete(context.asyncAssertSuccess(push -> {
+                final JsonObject message1 = create(user, "id1", "name1", "text1");
+                exPlugin.notifyUpsert(user, message1).onComplete(context.asyncAssertSuccess(push -> {
                     fCreate.future().onComplete(context.asyncAssertSuccess(results -> {
                         context.assertEquals(1, results.getSucceed().size());
                         //update
                         final Promise<IngestJob.IngestJobResult> fUpdate = Promise.promise();
                         job.onEachExecutionEnd(fUpdate);
-                        final ExplorerService.ExplorerMessageBuilder message2 = update(user, "id1", "name1_1", "text1_1");
-                        exService.push(message2).onComplete(context.asyncAssertSuccess(push2 -> {
+                        final JsonObject message2 = create(user, "id1", "name1_1", "text1_1");
+                        exPlugin.notifyUpsert(user, message2).onComplete(context.asyncAssertSuccess(push2 -> {
                             fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
                                 context.assertEquals(1, results2.getSucceed().size());
                                 getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
@@ -162,8 +135,7 @@ public abstract class ResourceServiceTest {
                                     //delete
                                     final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
                                     job.onEachExecutionEnd(fDelete);
-                                    final ExplorerService.ExplorerMessageBuilder message3 = delete(user, "id1");
-                                    exService.push(message3).onComplete(context.asyncAssertSuccess(push3 -> {
+                                    exPlugin.notifyDeleteById(user, "id1").onComplete(context.asyncAssertSuccess(push3 -> {
                                         fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
                                             context.assertEquals(1, results3.getSucceed().size());
                                             getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
@@ -182,8 +154,8 @@ public abstract class ResourceServiceTest {
     @Test
     public void testShouldIntegrateResourceOnRestart(TestContext context) {
         final UserInfos user = test.http().sessionUser();
-        final ExplorerService.ExplorerMessageBuilder message1 = create(user, "id_restart1", "name1", "text1");
-        getExplorerService().push(message1).compose((push -> {
+        final JsonObject message1 = create(user, "id_restart1", "name1", "text1");
+        getExplorerPlugin().notifyUpsert(user, message1).compose((push -> {
             final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
             getIngestJob().onEachExecutionEnd(fCreate);
             getIngestJob().start();
@@ -209,12 +181,12 @@ public abstract class ResourceServiceTest {
         final Async async = context.async(2);
         final UserInfos user2 = test.directory().generateUser("user2");
         final UserInfos user = test.http().sessionUser();
-        final ExplorerService.ExplorerMessageBuilder message1 = create(user, "idexplore1", "name1", "text1");
-        final ExplorerService.ExplorerMessageBuilder message2 = create(user, "idexplore2", "name2", "text2");
-        final ExplorerService.ExplorerMessageBuilder message3 = create(user2, "idexplore3", "name3", "text3");
-        final ExplorerService.ExplorerMessageBuilder message2_1 = create(user, "idexplore2_1", "name2_1", "text2_1");
+        final JsonObject message1 = create(user, "idexplore1", "name1", "text1");
+        final JsonObject message2 = create(user, "idexplore2", "name2", "text2");
+        final JsonObject message3 = create(user2, "idexplore3", "name3", "text3");
+        final JsonObject message2_1 = create(user, "idexplore2_1", "name2_1", "text2_1");
         //user1 has 3 resources and user2 has 1
-        getExplorerService().push(Arrays.asList(message1, message2, message3, message2_1)).onComplete(context.asyncAssertSuccess(push -> {
+        getExplorerPlugin().notifyUpsert(user, Arrays.asList(message1, message2, message3, message2_1)).onComplete(context.asyncAssertSuccess(push -> {
             getIngestJob().execute(true).onComplete(context.asyncAssertSuccess(load -> {
                 //user1 see 3 resource at root
                 getResourceService().fetch(user, "blog", new ResourceService.SearchOperation().setTrashed(false)).onComplete(context.asyncAssertSuccess(fetch1 -> {
@@ -248,11 +220,11 @@ public abstract class ResourceServiceTest {
         final Async async = context.async(2);
         final UserInfos user1 = test.directory().generateUser("user_share1", "group_share1");
         final UserInfos user2 = test.directory().generateUser("user_share2", "group_share2");
-        final ExplorerService.ExplorerMessageBuilder message1 = create(user1, "idshare1", "name1", "text1");
-        final ExplorerService.ExplorerMessageBuilder message2 = create(user1, "idshare2", "name2", "text2");
-        final ExplorerService.ExplorerMessageBuilder message3 = create(user1, "idshare3", "name3", "text3");
+        final JsonObject message1 = create(user1, "idshare1", "name1", "text1");
+        final JsonObject message2 = create(user1, "idshare2", "name2", "text2");
+        final JsonObject message3 = create(user1, "idshare3", "name3", "text3");
         //load documents
-        getExplorerService().push(Arrays.asList(message1, message2, message3)).compose((push -> {
+        getExplorerPlugin().notifyUpsert(user1, Arrays.asList(message1, message2, message3)).compose((push -> {
             return getIngestJob().execute(true).compose((load -> {
                 //user1 see 3 resources
                 return getResourceService().fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch1 -> {

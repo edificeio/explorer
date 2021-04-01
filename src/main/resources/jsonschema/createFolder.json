@@ -6,7 +6,7 @@
     "application": { "type": "string"},
     "resourceType": { "type": "string"},
     "parentId": { "type": "string"},
-    "name": { "type": "boolean"}
+    "name": { "type": "string"}
   },
   "required": [
     "application", "resourceType", "name"

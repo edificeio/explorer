@@ -12,64 +12,80 @@
 
 <body id="explorer">
   <header class="no-1d navbar navbar-dark bg-secondary">
-    <a class="d-mobile-none" href="">
+    <a class="btn btn-secondary d-none d-md-none d-lg-block" href="/timeline/timeline" title="Accueil">
         <img class="logo" src="/assets/images/logo.png" alt="Logo de l'ENT">
-        <span class="text-truncate d-desktop-none">
-            <i18n><span class="no-style ng-scope">Blog</span></i18n>
-        </span>
     </a>
-    <a class="application__title d-desktop-none text-truncate" href="/welcome">
-        <i18n><span class="no-style ng-scope">Blog</span></i18n>
-    </a>
-    <nav class="navigation">
-        <div class="navigation__item">
-            <a href="/timeline/timeline" title="Accueil"><i class="ic-home"></i></a>
-        </div>
-        <div class="navigation__item">
-           <a class="zero-mobile ng-scope" href="/community" title="Communautés"><i class="ic-community"></i></a>
-        </div>
-        <div class="navigation__item">
-            <popover>
-                <a href="" title="Mes applis"><i class="ic-apps"></i></a>
-            </popover>
-        </div>
-        <div class="navigation__item">
-            <span ng-include="template.containers.portal.conversationUnread" class="ng-scope">
-              <a href="/conversation/conversation" tooltip="navbar.messages">
-                <i class="mail ic-conversation"></i>
-              </a>
-            </span>
-        </div>
-        <div class="navigation__item">
-           <popover class="searchengine">
-                <a href="/searchengine" title="Recherche transverse">
-                    <i class="ic-search"></i>
-                </a>
-            </popover>
-        </div>
-       <div ng-if="currentLanguage == 'fr'" class="navigation__item ng-scope">
-            <a title="Aide en ligne">
-                <i18n><span class="no-style ng-scope"><help class="ng-isolate-scope"><i class="navbar-help ic-help"></i><lightbox show="display.read" on-close="display.read = false" class="ng-isolate-scope"><section class="lightbox" ng-class="{'lightbox': !tiny, 'tiny-lightbox': tiny}" style="display: none;"><div class="background"></div><div class="content"><div class="twelve cell" ng-transclude=""><div class="ng-scope"></div></div><div class="close-lightbox"><i class="close-2x"></i></div></div></section></lightbox></help></span></i18n>
-            </a>
-        </div><!-- end ngIf: currentLanguage == 'fr' -->
-        <div class="navigation__item">
-            <a class="avatar ng-scope" href="/userbook/mon-compte" title="Mon compte" pulsar="{ index: 4, i18n: 'portal.pulsar.account', position: 'bottom center'}">
-                <img data-ng-src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48" id="my-photo" src="/userbook/avatar/91c22b66-ba1b-4fde-a3fe-95219cc18d4a?thumbnail=48x48">
-            </a>
-        </div>
-        <div class="navigation__item">
-            <a href="/auth/logout?callback=" logout="" title="Déconnexion">
-                <i class="ic-disconnect"></i>
-            </a>
-        </div>
-    </nav>
-</header>
+    <div class="sidebar__mobile">
+      <input type="checkbox" />
+      <i class="ic-burger"></i> <span class="text-truncate">Blog</span>
+      <aside class="sidebar">
+        <ul class="sidebar__tree">
+          <li><a class="active" href="">Mes blogs</a>
+            <ul>
+              <li><a href="">Dossier 1</a></li>
+              <li><a href="">Dossier 2</a>
+                <ul>
+                  <li><a href="">Sous-dossier 1</a></li>
+                  <li><a href="">Sous-dossier 2</a></li>
+                  <li><a href="">Sous-dossier 3</a></li>
+                  <li><a href="">Sous-dossier avec un nom très long</a></li>
+                </ul>
+              </li>
+              <li><a href="">Dossier 3</a>
+                <ul>
+                  <li><a href="">Sous-dossier 1</a></li>
+                  <li><a href="">Sous-dossier 2</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li><a href="">Ma corbeille</a></li>
+        </ul>
+        <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
+        <a class="btn btn-outline-secondary btn-block">Importer</a>
+      </aside>
+    </div>
+    <button class="btn btn-secondary" title="Accueil">
+      <i class="ic-home"></i>
+    </button>
+    <button class="btn btn-secondary d-none d-sm-block" title="Communautés">
+      <i class="ic-community"></i>
+    </button>
+    <button class="btn btn-secondary" title="Mes applis">
+      <i class="ic-apps"></i>
+    </button>
+    <button class="btn btn-secondary" title="Messagerie">
+      <i class="ic-conversation"></i>
+    </button>
+    <button class="btn btn-secondary d-none d-sm-block" title="Recherche transverse">
+      <i class="ic-search"></i>
+    </button>
+    <button class="btn btn-secondary" title="Aide en ligne">
+      <i class="ic-help"></i>
+    </button>
+    <button class="btn btn-secondary d-none d-sm-block" title="Mon compte">
+      <i class="fas fa-user-circle"></i>
+    </button>
+    <button class="btn btn-secondary d-none d-sm-block" title="Déconnexion">
+      <i class="ic-disconnect"></i>
+    </button>
+    <div class="nav-item dropdown d-block d-sm-none">
+      <a class="dropdown-toggle btn btn-secondary" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item" href="#"><i class="ic-community"></i> Communautés</a>
+        <a class="dropdown-item" href="#"><i class="ic-search"></i> Recherche transverse</a>
+        <a class="dropdown-item" href="#"><i class="ic-user"></i> Mon compte</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="#"><i class="ic-disconnect"></i> Déconnexion</a>
+      </div>
+    </div>
+  </header>
   <div class="container d-flex">
     <!-- SIDEBAR -->
     <aside class="sidebar sidebar--left">
       <h1 class="sidebar__title">Blog</h1>
       <ul class="sidebar__tree">
-        <li><a class="active" href="">Mes blogs</a>
+        <li><a class="active" href=""><i class="ic-app blog"></i> Mes blogs</a>
           <ul>
             <li><a href="">Dossier 1</a></li>
             <li><a href="">Dossier 2</a>
@@ -88,9 +104,9 @@
             </li>
           </ul>
         </li>
-        <li><a href="">Ma corbeille</a></li>
+        <li><a href=""><i class="fas fa-trash-alt"></i> Ma corbeille</a></li>
       </ul>
-      <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
+      <a class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#createFolder">Créer un dossier</a>
       <a class="btn btn-outline-secondary btn-block">Importer</a>
     </aside>
     <!-- MAIN CONTENT -->
@@ -98,21 +114,36 @@
       <section class="explorer">
         <section class="explorer__header">
 
-          <form class="row justify-content-between mb-2">
-            <div class="col-lg-9 col-md-12 input-searchbar">
+          <form class="row justify-content-between mb-2 d-none d-sm-none d-md-none d-lg-flex">
+            <div class="col-lg-7 input-searchbar">
               <!-- <label for="" class="visually-hidden">Taper votre recherche ici</label> -->
               <i class="ic-search form-control-feedback"></i>
               <input type="search" class="form-control" id="" placeholder="Rechercher un blog">
             </div>
-            <div class="col-lg-3 d-none d-sm-none d-md-none d-lg-block">
-              <button class="btn btn-block btn-primary" type="submit"><i class="ic-plus"></i> Créer un blog</button>
+            <div class="col-auto">
+              <a class="btn btn-primary px-4" data-toggle="modal" data-target="#createRessource">Créer un blog</a>
             </div>
           </form>
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2>Mes blogs</h2>
+            <h2 class="text-truncate">Mes blogs</h2>
             <div class="filters d-flex">
               <div class="dropdown">
-                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn d-none d-sm-block d-md-block d-lg-none" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="ic-search"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <form class="px-3 py-2" style="width: 300px">
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Rechercher un blog" aria-label="Rechercher un blog" aria-describedby="basic-addon2">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-gray" type="button" id="button-addon2"><i class="ic-search"></i></button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button class="btn dropdown-toggle d-none d-sm-block" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="fas fa-filter"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
@@ -122,7 +153,70 @@
                      Mes blogs</a>
                   <a class="dropdown-item" href="#">
                     <input type="checkbox" aria-label="">
-                    <i class="ic-share"></i>
+                    <i class="ic-users"></i>
+                     Les blogs partagés avec moi
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <input type="checkbox" aria-label="">
+                    <i class="ic-public"></i>
+                     Blogs public
+                  </a>
+                </div>
+              </div>
+              <div class="dropdown d-none d-sm-block">
+                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="fas fa-sort-alpha-down"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">Ordre alphabétique</a>
+                  <a class="dropdown-item active" href="#">Dernière modification</a>
+                </div>
+              </div>
+              <a class="btn d-none d-sm-block" href="explorer.html"><i class="fas fa-th-large"></i></a>
+              <a class="btn inactive d-none d-sm-block" href="explorer-list.html"><i class="fa fa-list" aria-hidden="true"></i></a>
+
+              <div class="dropdown d-block d-sm-none">
+                <button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                  <form class="px-3 py-2">
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Rechercher un blog" aria-label="Rechercher un blog" aria-describedby="basic-addon2">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-gray" type="button" id="button-addon2"><i class="ic-search"></i></button>
+                      </div>
+                    </div>
+                  </form>
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header">Choix de la vue :</h6>
+                  <div class="text-center">
+                    <a class="btn" href="explorer.html">
+                      <i class="fas fa-th-large"></i><br/>
+                      Grille
+                    </a>
+                    <a class="btn inactive" href="explorer-list.html">
+                      <i class="fa fa-list" aria-hidden="true"></i><br/>
+                      Liste
+                    </a>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header">Ordre d'affichage :</h6>
+                  <a class="dropdown-item active" href="#">
+                    <i class="fas fa-sort-alpha-down"></i> Ordre alphabétique
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <i class="fas fa-clock"></i> Dernière modification
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header">Filtres :</h6>
+                  <a class="dropdown-item" href="#">
+                    <input type="checkbox" aria-label="">
+                    <i class="ic-user"></i>
+                     Mes blogs</a>
+                  <a class="dropdown-item" href="#">
+                    <input type="checkbox" aria-label="">
+                    <i class="ic-users"></i>
                      Les blogs partagés avec moi
                   </a>
                   <a class="dropdown-item" href="#">
@@ -132,17 +226,6 @@
                     </a>
                 </div>
               </div>
-              <div class="dropdown">
-                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="fas fa-sort-alpha-down"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Ordre alphabétique</a>
-                  <a class="dropdown-item active" href="#">Dernière modification</a>
-                </div>
-              </div>
-              <a class="btn" href="explorer.html"><i class="ic-grid"></i></a>
-              <a class="btn inactive" href="explorer-list.html"><i class="ic-list"></i></a>
             </div>
           </div>
         </section>
@@ -162,7 +245,7 @@
             <div class="domino__image">
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>73</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>28</span>
@@ -176,12 +259,12 @@
               <span class="domino__info">Il y a 23 heures</span>
             </div>
           </article>
-          <article class="domino item">
+          <article class="domino item" data-toggle="modal" data-target="#editProperty">
             <div class="domino__image">
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>1006</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>484</span>
@@ -190,8 +273,8 @@
               </div>
             </div>
             <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Alain Terrieur</a></span>
+              <h2 class="domino__title" title="Titre de la ressource - modale propriétés">Titre de la ressource - modale propriétés</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Alain Terrieur</a></span>
               <span class="domino__info">Il y a 2 semaines</span>
             </div>
           </article>
@@ -200,7 +283,7 @@
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>127</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>104</span>
@@ -219,7 +302,7 @@
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>1286</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>758</span>
@@ -229,7 +312,7 @@
             </div>
             <div class="domino__infos">
               <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Alex Terrieur</a></span>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Alex Terrieur</a></span>
               <span class="domino__info">Il y a 4 mois</span>
             </div>
           </article>
@@ -237,7 +320,7 @@
             <div class="domino__image">
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>106</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>48</span>
@@ -247,7 +330,7 @@
             </div>
             <div class="domino__infos">
               <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Isabelle Polonio</a></span>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
               <span class="domino__info">Il y a 5 mois</span>
             </div>
           </article>
@@ -255,7 +338,7 @@
             <div class="domino__image">
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
-                  <span title="Ressource partagée"><i class="ic-share"></i></span>
+                  <span title="Ressource partagée"><i class="ic-users"></i>359</span>
                 </div>
                 <div class="domino__overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>263</span>
@@ -265,8 +348,62 @@
             </div>
             <div class="domino__infos">
               <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a>Brigitte Fontaine</a></span>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Brigitte Fontaine</a></span>
               <span class="domino__info">Il y a 5 mois</span>
+            </div>
+          </article>
+          <article class="domino item">
+            <div class="domino__image">
+              <div class="domino__overlay transition-hover">
+                <div class="domino__overlay--left">
+                  <span title="Ressource public"><i class="ic-public"></i></span>
+                </div>
+                <div class="domino__overlay--right">
+                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
+                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
+                </div>
+              </div>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource</h2>
+              <span class="domino__info">Modifié par <strong>Moi</strong></span>
+              <span class="domino__info">Il y a 7 mois</span>
+            </div>
+          </article>
+          <article class="domino item">
+            <div class="domino__image">
+              <div class="domino__overlay transition-hover">
+                <div class="domino__overlay--left">
+                  <span title="Ressource public"><i class="ic-public"></i></span>
+                </div>
+                <div class="domino__overlay--right">
+                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
+                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
+                </div>
+              </div>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource</h2>
+              <span class="domino__info">Modifié par <strong>Moi</strong></span>
+              <span class="domino__info">Il y a 7 mois</span>
+            </div>
+          </article>
+          <article class="domino item">
+            <div class="domino__image">
+              <div class="domino__overlay transition-hover">
+                <div class="domino__overlay--left">
+                  <span title="Ressource public"><i class="ic-public"></i></span>
+                </div>
+                <div class="domino__overlay--right">
+                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
+                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
+                </div>
+              </div>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource</h2>
+              <span class="domino__info">Modifié par <strong>Moi</strong></span>
+              <span class="domino__info">Il y a 7 mois</span>
             </div>
           </article>
           <article class="domino item">
@@ -304,6 +441,119 @@
         </div>
       </section>
     </main>
+    <!-- Modale de création de blog -->
+    <div class="modal fade" id="createRessource" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Créer un blog</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-12 col-md-5 col-lg-3 text-center">
+                <img src="https://dummyimage.com/200x200/f0f2f4/aaa" alt="..." class="img-thumbnail">
+                <div class="row p-2">
+                  <button class="btn btn-sm btn-outline-secondary m-1 mx-auto">Ajouter une image</button>
+                </div>
+              </div>
+              <form class="col-sm-12 col-md-7 col-lg-9">
+                <div class="form-group">
+                  <label for="">Titre de mon blog :</label>
+                  <input type="text" class="form-control" id="" placeholder="Taper ici le titre de votre blog">
+                </div>
+                <div class="custom-control custom-checkbox mt-4">
+                  <input type="checkbox" class="custom-control-input" id="customCheck1">
+                  <label class="custom-control-label" for="customCheck1">Le blog est accessible publiquement via cette adresse personnalisable :</label>
+                </div>
+                <div class="form-inline my-2">
+                  <label class="text-muted" for="inlineFormInput">https://recette-paris.opendigitaleducation.com/blog/pub/</label> <input type="text" class="form-control" id="inlineFormInput" value="titre-de-la-ressource">
+                  <button type="button" class="btn btn-link">Copier l'adresse</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-link" data-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modale de propriétés -->
+    <div class="modal fade" id="editProperty" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Propriétés du blog "Titre de la ressource"</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-12 col-md-5 col-lg-3 text-center">
+                <img src="https://loremflickr.com/200/200?random=3" alt="..." class="img-thumbnail">
+                <div class="row p-2">
+                  <button class="btn btn-sm btn-outline-secondary m-1 mx-auto"><i class="fa fa-edit" aria-hidden="true"></i> Changer l'image</button>
+                  <button class="btn btn-sm btn-outline-secondary m-1 mx-auto"><i class="fa fa-trash" aria-hidden="true"></i> Supprimer l'image</button>
+                </div>
+              </div>
+              <form class="col-sm-12 col-md-7 col-lg-9">
+                <div class="form-group">
+                  <label for="">Titre de mon blog :</label>
+                  <input type="text" class="form-control" id="" value="Titre de la ressource">
+                </div>
+                <div class="custom-control custom-checkbox mt-4">
+                  <input type="checkbox" class="custom-control-input" id="customCheck1" checked>
+                  <label class="custom-control-label" for="customCheck1">Le blog est accessible publiquement via cette adresse personnalisable :</label>
+                </div>
+                <div class="form-inline my-2">
+                  <label class="text-muted" for="inlineFormInput">https://recette-paris.opendigitaleducation.com/blog/pub/</label> <input type="text" class="form-control" id="inlineFormInput" value="titre-de-la-ressource">
+                  <button type="button" class="btn btn-link">Copier l'adresse</button>
+                </div>
+                <div class="my-3 alert alert-warning" role="alert">
+                  Attention, ce blog va devenir public, les documents appartenant à d'autres utilisateurs et présents sur le blog seront rendus publics également. Les liens pointant vers des ressources internes au réseau ne seront pas accessibles pour les visiteurs sans compte. 
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-link" data-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale de création de dossier -->
+    <div class="modal fade" id="createFolder" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Créer un dossier</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form class="col">
+              <div class="form-group">
+                <label for="">Nom de mon dossier :</label>
+                <input type="text" class="form-control" id="" value="Titre de mon dossier">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-link" data-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>

@@ -14,19 +14,6 @@ public interface ResourceService {
     String CUSTOM_IDENTIFIER = "_identifier";
     String SUCCESS_FIELD = "_success";
     String ERROR_FIELD = "_error";
-    String DEFAULT_RESOURCE_INDEX = "explorer_resource";
-
-    static ResourceService.ResourceBulkOperationType getOperationType(final String type) {
-        if (ExplorerService.RESOURCE_ACTION_DELETE.equals(type)) {
-            return ResourceBulkOperationType.Delete;
-        } else if (ExplorerService.RESOURCE_ACTION_UPDATE.equals(type)) {
-            return ResourceBulkOperationType.Update;
-        } else {
-            return ResourceBulkOperationType.Create;
-        }
-    }
-
-    <T> Future<List<JsonObject>> bulkOperations(final List<ResourceBulkOperation<T>> operations);
 
     //TODO fetch by other criterias...
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
@@ -37,53 +24,7 @@ public interface ResourceService {
 
     Future<JsonObject> share(final UserInfos user, final JsonObject document, final List<ShareOperation> operation) throws Exception;
 
-    /*
-        static String getUserFolderId(UserInfos user, Optional<String> folderId) {
-            return getUserFolderId(user.getUserId(), folderId);
-        }
-
-        static String getUserFolderId(String userId, Optional<String> folderId) {
-            if(folderId.isPresent()) {
-                return userId + ":" + folderId;
-            }else{
-                return userId + ":" + FolderService.ROOT_FOLDER_ID;
-            }
-        }
-    */
-
     Future<List<JsonObject>> share(final UserInfos user, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
-
-    enum ResourceBulkOperationType {
-        Create, Update, Delete
-    }
-
-    class ResourceBulkOperation<T> {
-        final JsonObject resource;
-        final ResourceBulkOperationType type;
-        final T customIdentifier;
-
-        public ResourceBulkOperation(final JsonObject resource, final ResourceBulkOperationType type) {
-            this(resource, type, null);
-        }
-
-        public ResourceBulkOperation(JsonObject resource, ResourceBulkOperationType type, final T customIdentifier) {
-            this.resource = resource;
-            this.type = type;
-            this.customIdentifier = customIdentifier;
-        }
-
-        public JsonObject getResource() {
-            return resource;
-        }
-
-        public ResourceBulkOperationType getType() {
-            return type;
-        }
-
-        public T getCustomIdentifier() {
-            return customIdentifier;
-        }
-    }
 
     class ShareOperation {
         final String id;

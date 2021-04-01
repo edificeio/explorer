@@ -181,6 +181,23 @@ public class ElasticClient {
         return new ElasticBulkRequest(req, future.future());
     }
 
+    public ElasticBulkRequest bulk(final ElasticOptions options) {
+        final Promise<Buffer> future = Promise.promise();
+        final String queryParams = options.getQueryParams();
+        final HttpClientRequest req = httpClient.post( "/_bulk" + queryParams).handler(res -> {
+            res.bodyHandler(resBody -> {
+                if (res.statusCode() == 200 || res.statusCode() == 201) {
+                    future.complete(resBody);
+                } else {
+                    future.fail(res.statusCode() + ":" + res.statusMessage() + ". " + resBody);
+                }
+            });
+        }).putHeader("Content-Type", "application/x-ndjson")
+                .putHeader("Accept", "application/json; charset=UTF-8")
+                .setChunked(true).exceptionHandler(onError);
+        return new ElasticBulkRequest(req, future.future());
+    }
+
     public static class ElasticOptions {
         private final Set<String> routing = new HashSet<>();
         private boolean waitFor = false;

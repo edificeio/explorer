@@ -210,7 +210,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            RequestUtils.bodyToJson(request, "createFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix+"createFolder", body -> {
                 folderService.create(user, body).onSuccess(e -> {
                     body.put("id", e);
                     body.put("childNumber", 0);
@@ -238,7 +238,7 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
-            RequestUtils.bodyToJson(request, "createFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix+"createFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
                     //TODO response details?
                     body.mergeIn(e);
@@ -260,7 +260,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            RequestUtils.bodyToJson(request, "deleteFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix+"deleteFolder", body -> {
                 //TODO resource delete
                 final Set<String> ids = body.getJsonArray("folderIds").stream().map(e -> e.toString()).collect(Collectors.toSet());
                 folderService.delete(user, ids).onSuccess(e -> {
@@ -370,7 +370,7 @@ public class ExplorerController extends BaseController {
         }
         //validate
         final Promise<JsonObject> promise = Promise.promise();
-        validator.validate(schema, json, res -> {
+        validator.validate(pathPrefix+schema, json, res -> {
             if (res.succeeded()) {
                 final JsonObject body = res.result().body();
                 if ("ok".equals(body.getString("status"))) {

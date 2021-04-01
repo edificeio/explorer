@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.postgres;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -10,10 +11,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //TODO merge with entcore common
 public class PostgresClient {
@@ -24,6 +22,10 @@ public class PostgresClient {
     public PostgresClient(final Vertx vertx, final JsonObject config) {
         this.vertx = vertx;
         this.config = config;
+    }
+
+    public static String insertPlaceholders(final List<JsonObject> rows, final int startAt, final List<String> columns) {
+        return insertPlaceholders(rows, startAt, columns.toArray(new String[columns.size()]));
     }
 
     public static String insertPlaceholders(final List<JsonObject> rows, final int startAt, final String... column) {
@@ -58,6 +60,19 @@ public class PostgresClient {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 tuple.addValue(row.getValue(col));
+            }
+        }
+        return tuple;
+    }
+
+    public static Tuple insertValuesWithDefault(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final List<String> column) {
+        return insertValuesWithDefault(rows, tuple, defaultValues, column.toArray(new String[column.size()]));
+    }
+
+    public static Tuple insertValuesWithDefault(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
+        for (final JsonObject row : rows) {
+            for (final String col : column) {
+                tuple.addValue(row.getValue(col, defaultValues.get(col)));
             }
         }
         return tuple;
@@ -100,6 +115,21 @@ public class PostgresClient {
             tuple.addValue(value);
         }
         return tuple;
+    }
+
+    public static JsonObject toJson(final Row row, final PgRowSet result) {
+        final JsonObject json = new JsonObject();
+        for (final String key : result.columnsNames()) {
+            final Object value = row.getValue(key);
+            if (value instanceof Json) {
+                json.put(key, ((Json) value).value());
+            } else if (value instanceof UUID) {
+                json.put(key, value.toString());
+            } else {
+                json.put(key, value);
+            }
+        }
+        return json;
     }
 
     public PostgresClientChannel getClientChannel() {
