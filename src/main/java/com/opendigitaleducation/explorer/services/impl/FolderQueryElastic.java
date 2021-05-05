@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.services.impl;
 
+import com.opendigitaleducation.explorer.ExplorerConstants;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -19,7 +20,7 @@ public class FolderQueryElastic {
 
     public FolderQueryElastic withOnlyRoot(boolean onlyRoot) {
         this.parentId.clear();
-        this.parentId.add(FolderService.ROOT_FOLDER_ID);
+        this.parentId.add(ExplorerConstants.ROOT_FOLDER_ID);
         return this;
     }
 

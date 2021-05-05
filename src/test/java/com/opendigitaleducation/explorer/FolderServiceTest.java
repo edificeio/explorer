@@ -1,6 +1,9 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import io.vertx.core.Future;
@@ -18,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -33,6 +37,9 @@ public class FolderServiceTest {
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
+    @ClassRule
+    public static GenericContainer redisContainer = new GenericContainer(("redis:5.0.3-alpine")).withReuse(true);
+
     static ElasticClientManager elasticClientManager;
     static FolderService folderService;
 
@@ -42,9 +49,14 @@ public class FolderServiceTest {
         final HttpClient httpClient = test.vertx().createHttpClient(httpOptions);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
-        final String index = FolderService.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
+        final String index = ExplorerConstants.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
-        folderService = new FolderServiceElastic(elasticClientManager, index);
+        final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
+        final RedisClient redisClient = new RedisClient(test.vertx(), redisConfig);
+        final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
+        final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
+        folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         final Async async = context.async();
         createMapping(context, index).setHandler(r -> async.complete());
     }
@@ -59,7 +71,7 @@ public class FolderServiceTest {
 
     static JsonObject folder(final String name, final String application, final String resourceType, String parentId) {
         if (parentId == null) {
-            parentId = FolderService.ROOT_FOLDER_ID;
+            parentId = ExplorerConstants.ROOT_FOLDER_ID;
         }
         final JsonObject folder = new JsonObject().put("name", name).put("application", application).put("resourceType", resourceType).put("parentId", parentId);
         return folder;
@@ -90,7 +102,7 @@ public class FolderServiceTest {
                         context.assertEquals(f3_id, id3);
                         context.assertEquals(1, a3.size());
                         context.assertEquals(1, ch3.size());
-                        context.assertEquals(FolderService.ROOT_FOLDER_ID, a3.getString(0));
+                        context.assertEquals(ExplorerConstants.ROOT_FOLDER_ID, a3.getString(0));
                         folderService.fetch(user, Optional.of(id3)).setHandler(context.asyncAssertSuccess(fetch2 -> {
                             context.assertEquals(1, fetch2.size());
                             final String id3_1 = fetch2.getJsonObject(0).getString("_id");
@@ -98,7 +110,7 @@ public class FolderServiceTest {
                             final JsonArray ch3_1 = fetch2.getJsonObject(0).getJsonArray("childrenIds");
                             context.assertEquals(r2, id3_1);
                             context.assertEquals(2, a3_1.size());
-                            context.assertEquals(FolderService.ROOT_FOLDER_ID, a3_1.getString(0));
+                            context.assertEquals(ExplorerConstants.ROOT_FOLDER_ID, a3_1.getString(0));
                             context.assertEquals(id3, a3_1.getString(1));
                             context.assertEquals(1, ch3_1.size());
                             folderService.fetch(user, Optional.of(id3_1)).setHandler(context.asyncAssertSuccess(fetch3 -> {
@@ -108,7 +120,7 @@ public class FolderServiceTest {
                                 final JsonArray ch3_1_1 = fetch3.getJsonObject(0).getJsonArray("childrenIds");
                                 context.assertEquals(r3, id3_1_1);
                                 context.assertEquals(3, a3_1_1.size());
-                                context.assertEquals(FolderService.ROOT_FOLDER_ID, a3_1_1.getString(0));
+                                context.assertEquals(ExplorerConstants.ROOT_FOLDER_ID, a3_1_1.getString(0));
                                 context.assertEquals(id3, a3_1_1.getString(1));
                                 context.assertEquals(id3_1, a3_1_1.getString(2));
                                 context.assertEquals(0, ch3_1_1.size());

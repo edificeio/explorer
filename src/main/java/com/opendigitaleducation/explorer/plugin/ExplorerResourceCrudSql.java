@@ -68,15 +68,15 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
     }
 
     @Override
-    protected String getIdForModel(final JsonObject json) {
+    public String getIdForModel(final JsonObject json) {
         return json.getInteger(getIdColumn()) + "";
     }
 
     @Override
-    protected void setIdForModel(final JsonObject json, final String id) { json.put(getIdColumn(), Integer.valueOf(id)); }
+    public void setIdForModel(final JsonObject json, final String id) { json.put(getIdColumn(), Integer.valueOf(id)); }
 
     @Override
-    protected UserInfos getCreatorForModel(final JsonObject json) {
+    public UserInfos getCreatorForModel(final JsonObject json) {
         final String id = json.getString(getCreatorIdColumn());
         final String name = json.getString(getCreatorNameColumn());
         final UserInfos user = new UserInfos();

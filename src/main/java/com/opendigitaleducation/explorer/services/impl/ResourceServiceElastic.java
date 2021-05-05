@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.services.impl;
 
+import com.opendigitaleducation.explorer.ExplorerConstants;
 import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
@@ -22,7 +23,7 @@ public class ResourceServiceElastic implements ResourceService {
     final boolean waitFor = true;
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
-        this(aManager, shareTableManager, DEFAULT_RESOURCE_INDEX);
+        this(aManager, shareTableManager, ExplorerConstants.DEFAULT_RESOURCE_INDEX);
     }
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final String index) {
@@ -52,7 +53,7 @@ public class ResourceServiceElastic implements ResourceService {
             document.put("visibleBy", new JsonArray());
         }
         if (!document.containsKey("folderIds")) {
-            document.put("folderIds", new JsonArray().add(FolderService.ROOT_FOLDER_ID));
+            document.put("folderIds", new JsonArray().add(ExplorerConstants.ROOT_FOLDER_ID));
         }
         if (!document.containsKey("usersForFolderIds")) {
             document.put("usersForFolderIds", new JsonArray());
@@ -154,7 +155,7 @@ public class ResourceServiceElastic implements ResourceService {
         script.put("source", scriptSource.toString());
         //set params
         params.put("oldFolderId", source.orElse(""));
-        params.put("newFolderId", dest.orElse(FolderService.ROOT_FOLDER_ID));
+        params.put("newFolderId", dest.orElse(ExplorerConstants.ROOT_FOLDER_ID));
         params.put("userid", user.getUserId());
         //update
         return manager.getClient().updateDocument(index, resource.getString("_id"), payload, options).map(resource);
