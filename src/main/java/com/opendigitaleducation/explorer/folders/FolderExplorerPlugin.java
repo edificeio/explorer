@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.folders;
 
+import com.opendigitaleducation.explorer.ExplorerConstants;
 import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationRedis;
@@ -14,16 +15,12 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
-    public static final String ROOT_FOLDER_ID = "root";
-    public static final String FOLDER_APPLICATION = "explorer";
-    public static final String FOLDER_TYPE = "folder";
     protected final PostgresClientPool pgPool;
 
     public FolderExplorerPlugin(final ExplorerPluginCommunication communication, final PostgresClient pgClient) {
@@ -38,12 +35,12 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
 
     @Override
     protected String getApplication() {
-        return FOLDER_APPLICATION;
+        return ExplorerConstants.FOLDER_APPLICATION;
     }
 
     @Override
     protected String getResourceType() {
-        return FOLDER_TYPE;
+        return ExplorerConstants.FOLDER_TYPE;
     }
 
     @Override
@@ -136,7 +133,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         message.withName(object.getString("name"));
         message.withTrashed(object.getBoolean("trashed", false));
         final JsonObject customFields = new JsonObject();
-        customFields.put("parentId", object.getString("parent_id", ROOT_FOLDER_ID));
+        customFields.put("parentId", object.getString("parent_id", ExplorerConstants.ROOT_FOLDER_ID));
         customFields.put("childrenIds", object.getJsonArray("childrenIds", new JsonArray()));
         customFields.put("ancestors", object.getJsonArray("ancestors", new JsonArray()));
         message.withCustomFields(customFields);

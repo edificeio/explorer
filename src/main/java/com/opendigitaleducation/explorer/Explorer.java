@@ -27,6 +27,7 @@ import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.filters.ResourceFilter;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageIngester;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
@@ -68,23 +69,25 @@ public class Explorer extends BaseServer {
             }
         }
         final JsonObject postgresqlConfig = config.getJsonObject("postgres");
+        //
+        final JsonObject redisConfig = config.getJsonObject("redisConfig");
+        final JsonObject ingestConfig = config.getJsonObject("ingest");
+        final RedisClient redisClient = new RedisClient(vertx , redisConfig);
         //end move to infra
         final String esIndex = elastic.getString("index", "explorer");
         final URI[] uris = uriList.toArray(new URI[uriList.size()]);
         final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
         final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
         final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
-        final FolderService folderService = new FolderServiceElastic(elasticClientManager, esIndex);
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(vertx, redisClient, postgresClient);
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, esIndex);
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
         ResourceFilter.setResourceService(resourceService);
         FolderFilter.setFolderService(folderService);
-        final JsonObject redisConfig = config.getJsonObject("redisConfig");
-        final JsonObject ingestConfig = config.getJsonObject("ingest");
-        final RedisClient redisClient = new RedisClient(vertx , redisConfig);
         final MessageReader reader = MessageReader.redis(redisClient, ingestConfig);
-        final MessageIngester ingester = MessageIngester.elastic(resourceService);
+        final MessageIngester ingester = MessageIngester.elastic(elasticClientManager);
         job = new IngestJob(vertx, reader, ingester, ingestConfig);
         job.start();
     }

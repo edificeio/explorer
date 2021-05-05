@@ -1,5 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
-import static com.opendigitaleducation.explorer.folders.FolderExplorerPlugin.ROOT_FOLDER_ID;
+import static com.opendigitaleducation.explorer.ExplorerConstants.ROOT_FOLDER_ID;
+
+import com.opendigitaleducation.explorer.ExplorerConstants;
 import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
@@ -23,7 +25,7 @@ public class FolderServiceElastic implements FolderService {
     final boolean waitFor = true;
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
-        this(aManager, plugin, MessageIngesterElastic.getDefaultIndexName(FolderExplorerPlugin.FOLDER_APPLICATION));
+        this(aManager, plugin, MessageIngesterElastic.getDefaultIndexName(ExplorerConstants.FOLDER_APPLICATION));
     }
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin, final String index) {
