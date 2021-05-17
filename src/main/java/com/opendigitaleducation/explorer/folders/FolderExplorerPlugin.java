@@ -1,6 +1,6 @@
 package com.opendigitaleducation.explorer.folders;
 
-import com.opendigitaleducation.explorer.ExplorerConstants;
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationRedis;
@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.function.Function;
@@ -33,14 +34,31 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         return new FolderExplorerPlugin(communication, postgres);
     }
 
+    public final Future<Void> update(final UserInfos user, final String id, final JsonObject source){
+        return ((FolderExplorerCrudSql)resourceCrud).update(id, source).compose(e->{
+            return notifyUpsert(user, source);
+        });
+    }
+
     @Override
     protected String getApplication() {
-        return ExplorerConstants.FOLDER_APPLICATION;
+        return ExplorerConfig.FOLDER_APPLICATION;
     }
 
     @Override
     protected String getResourceType() {
-        return ExplorerConstants.FOLDER_TYPE;
+        return ExplorerConfig.FOLDER_TYPE;
+    }
+
+    @Override
+    public Future<Void> notifyUpsert(UserInfos user, JsonObject source) {
+        //force one upsert to upsert multiple message (update parent with children
+        return super.notifyUpsert(user, Arrays.asList(source));
+    }
+    @Override
+    public Future<Void> notifyDelete(UserInfos user, JsonObject source) {
+        //force one upsert to upsert multiple message (update parent with children
+        return super.notifyDelete(user, Arrays.asList(source));
     }
 
     @Override
@@ -53,10 +71,15 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
     @Override
     protected Future<List<ExplorerMessage>> toMessage(final List<JsonObject> sources, final Function<JsonObject, ExplorerMessage> builder) {
         final Set<Integer> ids = sources.stream().map(e -> e.getInteger("id")).collect(Collectors.toSet());
+        //get parentIds
+        final Set<Integer> parentIds = sources.stream().filter(e->e.containsKey("parentId")).map(e->e.getInteger("parentId")).collect(Collectors.toSet());
+        final Set<Integer> idsAndParents = new HashSet<>();
+        idsAndParents.addAll(ids);
+        idsAndParents.addAll(parentIds);
         //get descendants
         final Future<Map<String, List<String>>> ancestorsF = getAncestors(ids);
         // get children ids....
-        final Future<Map<String, List<String>>> childrenF = getChildrenIds(ids);
+        final Future<Map<String, List<String>>> childrenF = getChildrenIds(idsAndParents);
         return CompositeFuture.all(ancestorsF, childrenF).map(e -> {
             final Map<String, List<String>> ancestors = ancestorsF.result();
             final Map<String, List<String>> children = childrenF.result();
@@ -66,15 +89,26 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
                 final String id = source.getInteger("id").toString();
                 source.put("childrenIds", new JsonArray(children.getOrDefault(id, new ArrayList<>())));
                 source.put("ancestors", new JsonArray(ancestors.getOrDefault(id, new ArrayList<>())));
-                final ExplorerMessage mess = ExplorerMessage.upsert(id, getCreatorForModel(source), isForSearch());
+                final ExplorerMessage mess = builder.apply(source);
                 messages.add(transform(mess, source));
+            }
+            //update parent (childrenIds)
+            for(final Integer parentId : parentIds){
+                final JsonObject source = new JsonObject();
+                setIdForModel(source, parentId.toString());
+                //set childrenIds
+                final JsonObject custom = new JsonObject();
+                custom.put("childrenIds", new JsonArray(children.getOrDefault(parentId.toString(), new ArrayList<>())));
+                final ExplorerMessage mess = builder.apply(source);
+                mess.withCustomFields(custom);
+                messages.add(mess);
             }
             return messages;
         });
     }
 
     protected Future<Map<String, List<String>>> getAncestors(final Set<Integer> ids) {
-        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 0);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final StringBuilder query = new StringBuilder();
         query.append("WITH RECURSIVE ancestors(id,name, parent_id) AS ( ");
@@ -94,15 +128,18 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
             //then get ancestors of each by recursion
             final Map<String, List<String>> map = new HashMap<>();
             for (final Integer id : ids) {
-                final List<Integer> all = getAncestors(parentById, id);
-                map.put(id.toString(), all.stream().map(e -> e.toString()).collect(Collectors.toList()));
+                if(id != null){
+                    final List<Integer> ancestorIds = getAncestors(parentById, id);
+                    final List<Integer> ancestorsSafe = ancestorIds.stream().filter(e -> e!= null).collect(Collectors.toList());
+                    map.put(id.toString(), ancestorsSafe.stream().map(e -> e.toString()).collect(Collectors.toList()));
+                }
             }
             return map;
         });
     }
 
     protected Future<Map<String, List<String>>> getChildrenIds(final Set<Integer> ids) {
-        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 0);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) ", inPlaceholder);
         return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
@@ -133,10 +170,23 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         message.withName(object.getString("name"));
         message.withTrashed(object.getBoolean("trashed", false));
         final JsonObject customFields = new JsonObject();
-        customFields.put("parentId", object.getString("parent_id", ExplorerConstants.ROOT_FOLDER_ID));
+        if(object.containsKey("parentId")){
+            customFields.put("parentId", object.getValue("parentId").toString());
+        }else{
+            customFields.put("parentId", ExplorerConfig.ROOT_FOLDER_ID);
+        }
         customFields.put("childrenIds", object.getJsonArray("childrenIds", new JsonArray()));
-        customFields.put("ancestors", object.getJsonArray("ancestors", new JsonArray()));
-        message.withCustomFields(customFields);
+        final JsonArray ancestors = object.getJsonArray("ancestors", new JsonArray());
+        if(!ancestors.contains(ExplorerConfig.ROOT_FOLDER_ID)){
+            //prepend root
+            final JsonArray newAncestors = new JsonArray();
+            newAncestors.add(ExplorerConfig.ROOT_FOLDER_ID);
+            newAncestors.addAll(ancestors.copy());
+            ancestors.clear();
+            ancestors.addAll(newAncestors);
+        }
+        customFields.put("ancestors", ancestors);
+        message.withOverrideFields(customFields);
         return message;
     }
 }

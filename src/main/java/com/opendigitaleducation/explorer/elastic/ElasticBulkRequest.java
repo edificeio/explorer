@@ -112,20 +112,20 @@ public class ElasticBulkRequest {
         actions.add("update");
     }
 
-    public void upsert(final JsonObject document, final JsonObject upsert) {
-        upsert(document, upsert, Optional.empty(), Optional.empty(), Optional.empty());
+    public void upsert(final JsonObject insert, final JsonObject update) {
+        upsert(insert, update, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
-    public void upsert(final JsonObject document, final JsonObject upsert, final String id) {
-        upsert(document, upsert, Optional.ofNullable(id), Optional.empty(), Optional.empty());
+    public void upsert(final JsonObject insert, final JsonObject update, final String id) {
+        upsert(insert, update, Optional.ofNullable(id), Optional.empty(), Optional.empty());
     }
 
-    public void upsert(final JsonObject document, final JsonObject upsert, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
+    public void upsert(final JsonObject insert, final JsonObject update, final Optional<String> id, final Optional<String> index, final Optional<String> routing) {
         final JsonObject metadata = new JsonObject();
         if (id.isPresent()) {
             metadata.put("_id", id.get());
-        } else if (document.containsKey("_id")) {
-            metadata.put("_id", document.getString("_id"));
+        } else if (insert.containsKey("_id")) {
+            metadata.put("_id", insert.getString("_id"));
         }
         if (index.isPresent()) {
             metadata.put("_index", index.get());
@@ -133,8 +133,8 @@ public class ElasticBulkRequest {
         if (routing.isPresent()) {
             metadata.put("routing", routing.get());
         }
-        document.remove("_id");
-        doWrite(Optional.of(new JsonObject().put("doc", document).put("upsert", upsert)), metadata, "update");
+        insert.remove("_id");
+        doWrite(Optional.of(new JsonObject().put("doc", update).put("upsert", insert)), metadata, "update");
         actions.add("update");
     }
 

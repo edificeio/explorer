@@ -1,8 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
-import static com.opendigitaleducation.explorer.ExplorerConstants.ROOT_FOLDER_ID;
+import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
 
-import com.opendigitaleducation.explorer.ExplorerConstants;
-import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
@@ -12,26 +11,22 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.StringUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class FolderServiceElastic implements FolderService {
     final ElasticClientManager manager;
     final FolderExplorerPlugin plugin;
-    final String index;
     final boolean waitFor = true;
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
-        this(aManager, plugin, MessageIngesterElastic.getDefaultIndexName(ExplorerConstants.FOLDER_APPLICATION));
+        this.manager = aManager;
+        this.plugin = plugin;
     }
 
-    public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin, final String index) {
-        this.manager = aManager;
-        this.index = index;
-        this.plugin = plugin;
+    protected String getIndex(){
+        return ExplorerConfig.getInstance().getIndex(ExplorerConfig.FOLDER_APPLICATION);
     }
 
     @Override
@@ -40,6 +35,7 @@ public class FolderServiceElastic implements FolderService {
         final String creatorId = creator.getUserId();
         final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withParentId(parentId);
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
+        final String index = getIndex();
         return manager.getClient().search(index, query.getSearchQuery(), options);
     }
 
@@ -58,6 +54,7 @@ public class FolderServiceElastic implements FolderService {
         if(search.getId() != null){
             query.withId(search.getId());
         }
+        final String index = getIndex();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
         return manager.getClient().search(index, query.getSearchQuery(), options);
     }
@@ -77,6 +74,7 @@ public class FolderServiceElastic implements FolderService {
         if(search.getId() != null){
             query.withId(search.getId());
         }
+        final String index = getIndex();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
         return manager.getClient().count(index, query.getSearchQuery(), options);
     }
@@ -88,121 +86,28 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<String> create(final UserInfos creator, final JsonObject folder) {
-        beforeCreate(creator, folder);
-        return plugin.create(creator, folder, false).compose(id ->{
-            folder.put("id", id);
-            return afterCreate(creator, Arrays.asList(folder)).map(id);
+        return plugin.create(creator, folder, false).map(id ->{
+            folder.put("_id", id);
+            return id;
         });
-    }
-
-    protected Future<Void> afterCreate(final UserInfos creator, final List<JsonObject> folders) {
-        //TODO do it in plugin? (update ChildrenIds of old parents and new parents)
-        //TODO custom routing for application?
-        //set children ids
-        final Map<String, Set<String>> childrenMap = new HashMap<>();
-        for (final JsonObject folder : folders) {
-            final String id = folder.getString("id");
-            final String parentId = folder.getString("parentId");
-            if (parentId != null && !ROOT_FOLDER_ID.equals(parentId)) {
-                //TODO UPDATE ROOT parent only if need to load all at root (generateRootId)
-                childrenMap.putIfAbsent(parentId, new HashSet<>());
-                childrenMap.get(parentId).add(id);
-            }
-        }
-        //if empty
-        if (childrenMap.isEmpty()) {
-            return Future.succeededFuture();
-        }
-        //bulk
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
-        final ElasticBulkRequest bulk = manager.getClient().bulk(index, options);
-        for (final Map.Entry<String, Set<String>> entry : childrenMap.entrySet()) {
-            final JsonArray childrenIds = new JsonArray(new ArrayList(entry.getValue()));
-            final JsonObject params = new JsonObject().put("children", childrenIds);
-            final JsonObject script = new JsonObject().put("lang", "painless").put("params", params);
-            final JsonObject payload = new JsonObject().put("script", script);
-            payload.put("upsert", new JsonObject().put("childrenIds", childrenIds));
-            script.put("source", "ctx._source.childrenIds.removeAll(params.children);ctx._source.childrenIds.addAll(params.children);");
-            bulk.script(payload, entry.getKey());
-        }
-        return bulk.end().mapEmpty();
     }
 
     @Override
     public Future<List<JsonObject>> create(final UserInfos creator, final List<JsonObject> folders) {
-        for(final JsonObject folder : folders){
-            beforeCreate(creator, folder);
+        if(folders.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
         }
-        return plugin.create(creator, folders, false).compose(prepare -> {
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(creator));
-            final ElasticBulkRequest bulk = manager.getClient().bulk(index, options);
-            for (final JsonObject folder : folders) {
-                bulk.create(folder);
+        return plugin.create(creator, folders, false).map(ids ->{
+            for(int i = 0; i < folders.size(); i++){
+                folders.get(i).put("_id", ids.get(i));
             }
-            //update counter
-            return bulk.end().compose(results -> {
-                boolean success = true;
-                String message = "";
-                for (int i = 0; i < folders.size(); i++) {
-                    final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
-                    final JsonObject folder = folders.get(i);
-                    if (res.isOk()) {
-                        folder.put("_id", res.getId());
-                        folder.put(SUCCESS_FIELD, true);
-                    } else {
-                        success = false;
-                        folder.put(ERROR_FIELD, res.getMessage());
-                        folder.put(SUCCESS_FIELD, false);
-                        message += " - " + res.getMessage();
-                    }
-                }
-                if (success) {
-                    return Future.succeededFuture(folders);
-                } else {
-                    return Future.failedFuture(message);
-                }
-            });
-        }).compose(e -> {
-            //TODO avoid wait for if multiple create query?
-            //TODO if predictible id merge request in bulk?
-            return afterCreate(creator, folders).map(e);
+            return folders;
         });
-    }
-
-    protected boolean hasParent(final JsonObject folder) {
-        final String parentId = folder.getString("parentId");
-        return hasParent(parentId);
-    }
-
-
-    protected boolean hasParent(final String parentId) {
-        return !ROOT_FOLDER_ID.equals(parentId) && !StringUtils.isEmpty(parentId);
-    }
-
-    protected void beforeCreate(final UserInfos creator, JsonObject folder) {
-        folder.put("creatorId", creator.getUserId());
-        folder.put("creatorName", creator.getUsername());
-        folder.put("createdAt", new Date().getTime());
-        folder.put("updatedAt", new Date().getTime());
-        if (!folder.containsKey("parentId")) {
-            folder.put("parentId", ROOT_FOLDER_ID);
-        }
-        if (!folder.containsKey("ancestors")) {
-            folder.put("ancestors", new JsonArray().add(ROOT_FOLDER_ID));
-        }
-        if (!folder.containsKey("trashed")) {
-            folder.put("trashed", false);
-        }
-        if (!folder.containsKey("childrenIds")) {
-            folder.put("childrenIds", new JsonArray());
-        }
     }
 
     @Override
     public Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder) {
-        final ElasticClient client = manager.getClient();
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator)).withRefresh(waitFor);
-        return client.updateDocument(this.index, id, folder, options).map(e->{
+        return plugin.update(creator, id, folder).map(e->{
             folder.put("_id", id);
             folder.put("updatedAt", new Date().getTime());
             return folder;
@@ -210,19 +115,12 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
-    public Future<List<JsonObject>> delete(final UserInfos creator, final Set<String> ids) {
+    public Future<List<String>> delete(final UserInfos creator, final Set<String> ids) {
         if(ids.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-        final ElasticClient client = manager.getClient();
-        final ElasticBulkRequest bulk = client.bulk(this.index, options);
-        for(final String id : ids){
-            bulk.delete(id);
-        }
-        return bulk.end().map(e -> {
-            return e.stream().map(ee -> new JsonObject().put("id", ee.getId()).put("success", ee.isOk())).collect(Collectors.toList());
-        });
+        final List<String> idList = new ArrayList<>(ids);
+        return plugin.delete(creator, idList).map(idList);
     }
 
     @Override
@@ -234,7 +132,8 @@ public class FolderServiceElastic implements FolderService {
             //root to root
             return Future.succeededFuture(document);
         }
-        return client.search(this.index, query.getSearchQuery(), options).compose(fetched -> {
+        final String index = getIndex();
+        return client.search(index, query.getSearchQuery(), options).compose(fetched -> {
             final Optional<JsonArray> oldIds = fetched.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals(source.orElse(null))).map(e -> e.getJsonArray("ancestors")).findFirst();
             final Optional<JsonArray> newIds = fetched.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals(dest.orElse(null))).map(e -> e.getJsonArray("ancestors")).findFirst();
             //params
@@ -255,7 +154,7 @@ public class FolderServiceElastic implements FolderService {
             sourceScript.append("if(ctx._source.parentId==params.oldParent)ctx._source.parentId=params.newParent;");
             script.put("source", sourceScript);
             final ElasticClient.ElasticOptions options2 = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator)).withRefresh(waitFor);
-            return manager.getClient().updateByQuery(this.index, payload, options2).map(document);
+            return manager.getClient().updateByQuery(index, payload, options2).map(document);
         });
     }
 }

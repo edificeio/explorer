@@ -25,7 +25,7 @@ public interface FolderService {
 
     Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder);
 
-    Future<List<JsonObject>> delete(final UserInfos creator, final Set<String> ids);
+    Future<List<String>> delete(final UserInfos creator, final Set<String> ids);
 
     Future<JsonObject> move(final UserInfos user, final JsonObject document, final Optional<String> source, final Optional<String> dest);
 

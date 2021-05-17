@@ -60,7 +60,7 @@ public class ExplorerControllerTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
-        final String index = ExplorerConstants.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
+        final String index = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);

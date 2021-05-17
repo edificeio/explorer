@@ -1,10 +1,9 @@
 package com.opendigitaleducation.explorer.services.impl;
 
-import com.opendigitaleducation.explorer.ExplorerConstants;
-import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
-import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
@@ -16,81 +15,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ResourceServiceElastic implements ResourceService {
-    private static final String VISIBLE_BY_CREATOR = "creator:";
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
     final String index;
     final boolean waitFor = true;
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
-        this(aManager, shareTableManager, ExplorerConstants.DEFAULT_RESOURCE_INDEX);
+        this(aManager, shareTableManager, ExplorerConfig.DEFAULT_RESOURCE_INDEX);
     }
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final String index) {
         this.manager = aManager;
         this.index = index;
         this.shareTableManager = shareTableManager;
-    }
-
-    static String getVisibleByCreator(String creatorId) {
-        return VISIBLE_BY_CREATOR + creatorId;
-    }
-
-    public static JsonObject beforeCreate(final JsonObject document) {
-        if (!document.containsKey("trashed")) {
-            document.put("trashed", false);
-        }
-        if (!document.containsKey("public")) {
-            document.put("public", false);
-        }
-        if (!document.containsKey("createdAt")) {
-            document.put("createdAt", new Date().getTime());
-        }
-        if (document.containsKey("creatorId")) {
-            document.put("visibleBy", new JsonArray().add(getVisibleByCreator(document.getString("creatorId"))));
-        }
-        if (!document.containsKey("visibleBy")) {
-            document.put("visibleBy", new JsonArray());
-        }
-        if (!document.containsKey("folderIds")) {
-            document.put("folderIds", new JsonArray().add(ExplorerConstants.ROOT_FOLDER_ID));
-        }
-        if (!document.containsKey("usersForFolderIds")) {
-            document.put("usersForFolderIds", new JsonArray());
-        }
-        //custom field should not override existing fields
-        final JsonObject custom = document.getJsonObject("custom", new JsonObject());
-        for (final String key : custom.fieldNames()) {
-            if (!document.containsKey(key)) {
-                document.put(key, custom.getValue(key));
-            }
-        }
-        document.remove("custom");
-        return document;
-    }
-
-    public static JsonObject beforeUpdate(final JsonObject document) {
-        //upsert should remove createdAt
-        document.remove("createdAt");
-        document.remove("creatorId");
-        document.remove("creatorName");
-        //
-        if (!document.containsKey("trashed")) {
-            document.put("trashed", false);
-        }
-        if (!document.containsKey("public")) {
-            document.put("public", false);
-        }
-        document.put("updatedAt", new Date().getTime());
-        //custom field should not override existing fields
-        final JsonObject custom = document.getJsonObject("custom", new JsonObject());
-        for (final String key : custom.fieldNames()) {
-            if (!document.containsKey(key)) {
-                document.put(key, custom.getValue(key));
-            }
-        }
-        document.remove("custom");
-        return document;
     }
 
     @Override
@@ -155,7 +92,7 @@ public class ResourceServiceElastic implements ResourceService {
         script.put("source", scriptSource.toString());
         //set params
         params.put("oldFolderId", source.orElse(""));
-        params.put("newFolderId", dest.orElse(ExplorerConstants.ROOT_FOLDER_ID));
+        params.put("newFolderId", dest.orElse(ExplorerConfig.ROOT_FOLDER_ID));
         params.put("userid", user.getUserId());
         //update
         return manager.getClient().updateDocument(index, resource.getString("_id"), payload, options).map(resource);
@@ -183,7 +120,7 @@ public class ResourceServiceElastic implements ResourceService {
                 final JsonObject payload = new JsonObject().put("script", script);
                 //build update script
                 scriptSource.append("ctx._source.shared=params.shared;");
-                scriptSource.append(String.format("ctx._source.visibleBy.removeIf(item -> item.indexOf('%s')==-1);", VISIBLE_BY_CREATOR));
+                scriptSource.append(String.format("ctx._source.visibleBy.removeIf(item -> item.indexOf('%s')==-1);", MessageIngesterElastic.VISIBLE_BY_CREATOR));
                 scriptSource.append("if(!ctx._source.visibleBy.contains(params.hash))ctx._source.visibleBy.add(params.hash);");
                 script.put("source", scriptSource.toString());
                 //set params
