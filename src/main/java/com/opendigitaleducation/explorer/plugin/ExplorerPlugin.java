@@ -220,13 +220,35 @@ public abstract class ExplorerPlugin {
     }
 
     public final Future<String> create(final UserInfos user, final JsonObject source, final boolean isCopy){
-        return doCreate(user, Arrays.asList(source), isCopy).map(e -> e.get(0));
+        return doCreate(user, Arrays.asList(source), isCopy).compose(ids->{
+            setIdForModel(source, ids.get(0));
+            return notifyUpsert(user, source).map(ids);
+        }).map(ids -> ids.get(0));
     }
 
     public final Future<List<String>> create(final UserInfos user, final List<JsonObject> sources, final boolean isCopy){
-        return doCreate(user, sources, isCopy);
+        return doCreate(user, sources, isCopy).compose(ids->{
+            for(int i = 0 ; i < ids.size(); i++){
+                setIdForModel(sources.get(i), ids.get(i));
+            }
+            return notifyUpsert(user, sources).map(ids);
+        }).map(ids -> ids);
     }
 
+    public final Future<Boolean> delete(final UserInfos user, final String id){
+        return delete(user, Arrays.asList(id)).map(e-> e.get(0));
+    }
+
+    public final Future<List<Boolean>> delete(final UserInfos user, final List<String> ids){
+        return doDelete(user, ids).compose(oks->{
+            final List<JsonObject> sources = ids.stream().map(id -> {
+                final JsonObject source = new JsonObject();
+                setIdForModel(source, id);
+                return source;
+            }).collect(Collectors.toList());
+            return notifyDelete(user, sources).map(oks);
+        });
+    }
     //abstract
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
 

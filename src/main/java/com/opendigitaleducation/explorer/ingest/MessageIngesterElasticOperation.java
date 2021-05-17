@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
 import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
@@ -13,7 +14,6 @@ abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
     protected final MessageIngester.ExplorerMessageDetails message;
     protected final String idQueue;
-    protected JsonObject esIndexes = new JsonObject();
 
     public ExplorerMessage getMessage() {
         return message;
@@ -22,17 +22,6 @@ abstract class MessageIngesterElasticOperation {
     public MessageIngesterElasticOperation(final MessageIngester.ExplorerMessageDetails message) {
         this.message = message;
         this.idQueue = message.getIdQueue();
-    }
-
-    public MessageIngesterElasticOperation setEsIndexes(JsonObject esIndexes) {
-        this.esIndexes = esIndexes;
-        return this;
-    }
-
-    protected String getIndex(final String application){
-        //TODO one index per application?
-        final String key = MessageIngesterElastic.getDefaultIndexName(application);
-        return esIndexes.getString(application, key);
     }
 
     static  MessageIngesterElasticOperation create(final String idQueue, final MessageIngester.ExplorerMessageDetails message) {
@@ -63,7 +52,8 @@ abstract class MessageIngesterElasticOperation {
             final String id = message.getId();
             //TODO implement audience
             final JsonObject audience = message.getMessage().getJsonObject("audience", new JsonObject());
-            bulk.update(audience, Optional.ofNullable(id), Optional.of(getIndex(application)), Optional.ofNullable(routing));
+            final String index = ExplorerConfig.getInstance().getIndex(application);
+            bulk.update(audience, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
         }
     }
 
@@ -77,7 +67,8 @@ abstract class MessageIngesterElasticOperation {
             //TODO create id predictible
             final String id = message.getId();
             final String routing = ResourceServiceElastic.getRoutingKey(application);
-            bulk.delete(id, Optional.of(getIndex(application)), Optional.ofNullable(routing));
+            final String index = ExplorerConfig.getInstance().getIndex(application);
+            bulk.delete(id, Optional.of(index), Optional.ofNullable(routing));
         }
     }
 
@@ -92,12 +83,13 @@ abstract class MessageIngesterElasticOperation {
             //prepare custom fields
             final JsonObject original = message.getMessage();
             //copy for upsert
-            final JsonObject doc = ResourceServiceElastic.beforeCreate(original.copy());
-            final JsonObject upsert = ResourceServiceElastic.beforeUpdate(original.copy());
+            final JsonObject insert = MessageIngesterElastic.beforeCreate(original.copy());
+            final JsonObject update = MessageIngesterElastic.beforeUpdate(original.copy());
             //TODO create id predictible
             final String id = message.getId();
             final String routing = ResourceServiceElastic.getRoutingKey(application);
-            bulk.upsert(doc, upsert, Optional.ofNullable(id), Optional.of(getIndex(application)), Optional.ofNullable(routing));
+            final String index = ExplorerConfig.getInstance().getIndex(application);
+            bulk.upsert(insert, update, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
         }
     }
 

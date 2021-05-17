@@ -41,13 +41,13 @@ public class ExplorerMessage {
     private final String id;
     private final String action;
     private final JsonObject message = new JsonObject();
-    private final int priority;
+    private final ExplorerPriority priority;
     private String idQueue;
 
     public ExplorerMessage(final String id, final ExplorerAction action, final boolean search) {
         this.id = id;
         this.action = action.name();
-        this.priority = action.getPriority(search).getValue();
+        this.priority = action.getPriority(search);
     }
 
     public static ExplorerMessage upsert(final String id, final UserInfos user, final boolean forSearch) {
@@ -101,6 +101,11 @@ public class ExplorerMessage {
         return this;
     }
 
+    public ExplorerMessage withOverrideFields(final JsonObject values) {
+        message.put("override", values);
+        return this;
+    }
+
     public ExplorerMessage withSubResourceContent(final String id, final String content, final ExplorerContentType type) {
         final JsonObject subResources = message.getJsonObject("subresources", new JsonObject());
         final JsonObject subResource = subResources.getJsonObject(id, new JsonObject());
@@ -136,7 +141,7 @@ public class ExplorerMessage {
         return action;
     }
 
-    public int getPriority() {
+    public ExplorerPriority getPriority() {
         return priority;
     }
 

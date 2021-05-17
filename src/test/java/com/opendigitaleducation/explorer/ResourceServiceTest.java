@@ -47,7 +47,7 @@ public abstract class ResourceServiceTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
-        esIndex = ExplorerConstants.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + esIndex);
         createMapping(context, esIndex).onComplete(r -> async.complete());
     }

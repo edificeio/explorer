@@ -24,6 +24,22 @@ public class PostgresClient {
         this.config = config;
     }
 
+    public static String updatePlaceholders(final JsonObject row, final int startAt, final List<String> columns, final Tuple tuple) {
+        int placeholderCounter = startAt;
+        final List<String> placeholders = new ArrayList<>();
+        final List<String> group = new ArrayList<>();
+        for (final String col : columns) {
+            final Object value = row.getValue(col);
+            if(value != null){
+                group.add(col+"=$" + placeholderCounter);
+                tuple.addValue(value);
+            }
+            placeholderCounter++;
+        }
+        placeholders.add(String.format("(%s)", String.join(",", group)));
+        return String.join(",", placeholders);
+    }
+
     public static String insertPlaceholders(final List<JsonObject> rows, final int startAt, final List<String> columns) {
         return insertPlaceholders(rows, startAt, columns.toArray(new String[columns.size()]));
     }
@@ -72,7 +88,8 @@ public class PostgresClient {
     public static Tuple insertValuesWithDefault(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
-                tuple.addValue(row.getValue(col, defaultValues.get(col)));
+                final Object val = row.getValue(col, defaultValues.get(col));
+                tuple.addValue(val);
             }
         }
         return tuple;

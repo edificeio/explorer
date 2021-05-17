@@ -42,9 +42,9 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
         final Map<String, Object> map = new HashMap<>();
         map.put(getCreatorIdColumn(), user.getUserId());
         map.put(getCreatorNameColumn(), user.getUsername());
-        final String inPlaceholder = PostgresClient.insertPlaceholders(sources, 0, getColumns());
-        final Tuple inValues = PostgresClient.insertValuesWithDefault(sources, Tuple.tuple(), map, getColumns());
-        final String queryTpl = "INSERT INTO %s(%s) VALUES (%s) returning id";
+        final String inPlaceholder = PostgresClient.insertPlaceholders(sources, 1, getColumns());
+        final Tuple inValues = PostgresClient.insertValuesWithDefault(sources, Tuple.tuple(), map, getMessageFields());
+        final String queryTpl = "INSERT INTO %s(%s) VALUES %s returning id";
         final String columns = String.join(",", getColumns());
         final String query = String.format(queryTpl,getTableName(),columns, inPlaceholder);
         return pgPool.preparedQuery(query, inValues).map(result -> {
@@ -59,7 +59,7 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
     @Override
     public Future<List<Boolean>> deleteById(final List<String> ids) {
         final String queryTpl = String.format("DELETE FROM %s WHERE id IN (%s);");
-        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 0);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String query = String.format(queryTpl, getTableName(),inPlaceholder);
         final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         return pgPool.preparedQuery(query, tuple).map(result -> {
@@ -94,5 +94,9 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
     protected abstract String getTableName();
 
     protected abstract List<String> getColumns();
+
+    protected List<String> getMessageFields(){
+        return getColumns();
+    }
 
 }
