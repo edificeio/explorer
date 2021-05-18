@@ -15,7 +15,7 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.*;
 
 public class FakeExplorerPluginResource extends ExplorerPluginResourceCrud {
-    public static final String FFAKE_APPLICATION = "test";
+    public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     static Logger log = LoggerFactory.getLogger(FakeExplorerPluginResource.class);
 
@@ -34,7 +34,7 @@ public class FakeExplorerPluginResource extends ExplorerPluginResourceCrud {
     }
 
     @Override
-    protected String getApplication() { return FFAKE_APPLICATION; }
+    protected String getApplication() { return FAKE_APPLICATION; }
 
     @Override
     protected String getResourceType() { return FAKE_TYPE; }
@@ -53,10 +53,10 @@ public class FakeExplorerPluginResource extends ExplorerPluginResourceCrud {
         }
 
         @Override
-        protected String getTableName() { return "explorer.folders"; }
+        protected String getTableName() { return "explorer.test_fake"; }
 
         @Override
-        protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "creator_id", "creator_name", "content"); }
+        protected List<String> getColumns() { return Arrays.asList("name", "creator_id", "creator_name"); }
 
     }
 

@@ -8,7 +8,7 @@ CREATE TABLE explorer.resource_queue (
     id SERIAL PRIMARY KEY,
     id_resource VARCHAR(128) NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    resource_action VARCHAR(16) NOT NULL CHECK (resource_action IN ('create', 'update', 'delete')),
+    resource_action VARCHAR(16) NOT NULL CHECK (resource_action IN ('Upsert', 'Delete', 'Audience')),
     payload JSONB NOT NULL,
     attempted_at TIMESTAMP WITHOUT TIME ZONE,
     attempted_count INTEGER NOT NULL DEFAULT 0,

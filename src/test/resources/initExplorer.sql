@@ -1,10 +1,14 @@
 DROP SCHEMA IF EXISTS explorer CASCADE;
 CREATE SCHEMA explorer;
+CREATE TABLE explorer.scripts (
+	filename VARCHAR(255) NOT NULL PRIMARY KEY,
+	passed TIMESTAMP NOT NULL DEFAULT NOW()
+);
 CREATE TABLE explorer.resource_queue (
     id SERIAL PRIMARY KEY,
     id_resource VARCHAR(128) NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    resource_action VARCHAR(16) NOT NULL CHECK (resource_action IN ('create', 'update', 'delete')),
+    resource_action VARCHAR(16) NOT NULL CHECK (resource_action IN ('Upsert', 'Delete', 'Audience')),
     payload JSONB NOT NULL,
     attempted_at TIMESTAMP WITHOUT TIME ZONE,
     attempted_count INTEGER NOT NULL DEFAULT 0,
@@ -73,3 +77,15 @@ CREATE TABLE explorer.folder_resources (
 );
 CREATE INDEX idx_folder_resources_folderid ON explorer.folder_resources(folder_id);
 CREATE INDEX idx_folder_resources_resourceid ON explorer.folder_resources(resource_id);
+
+-- for tests
+CREATE TABLE explorer.test_fake (
+    id SERIAL,
+    name TEXT,
+    content TEXT,
+    creator_id VARCHAR(100) NOT NULL,
+    creator_name TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY(id)
+);

@@ -50,7 +50,7 @@ public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommun
                 map.put("created_at", now);
                 map.put("resource_action", e.getAction());
                 map.put("payload", Json.create(e.getMessage()));
-                map.put("priority", e.getPriority());
+                map.put("priority", e.getPriority().getValue());
                 return map;
             }).collect(Collectors.toList());
             final String placeholder = PostgresClient.insertPlaceholdersFromMap(rows, 1, "id_resource", "created_at", "resource_action", "payload", "priority");

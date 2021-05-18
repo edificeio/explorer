@@ -17,22 +17,21 @@ import java.util.stream.Collectors;
 public class ResourceServiceElastic implements ResourceService {
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
-    final String index;
     final boolean waitFor = true;
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
-        this(aManager, shareTableManager, ExplorerConfig.DEFAULT_RESOURCE_INDEX);
+        this.manager = aManager;
+        this.shareTableManager = shareTableManager;
     }
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final String index) {
-        this.manager = aManager;
-        this.index = index;
-        this.shareTableManager = shareTableManager;
+    protected String getIndex(final String application){
+        return ExplorerConfig.getInstance().getIndex(application);
     }
 
     @Override
     public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation) {
         return shareTableManager.findHashes(user).compose(hashes -> {
+            final String index = getIndex(application);
             final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
             if (operation.getParentId().isPresent()) {
                 query.withFolderId(operation.getParentId().get());
@@ -47,13 +46,14 @@ public class ResourceServiceElastic implements ResourceService {
             }
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
-            return manager.getClient().search(this.index, queryJson, options);
+            return manager.getClient().search(index, queryJson, options);
         });
     }
 
     @Override
-    public Future<Integer> count(UserInfos user, String application, SearchOperation operation) {
+    public Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation) {
         return shareTableManager.findHashes(user).compose(hashes -> {
+            final String index = getIndex(application);
             final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
             if (operation.getParentId().isPresent()) {
                 query.withFolderId(operation.getParentId().get());
@@ -68,17 +68,19 @@ public class ResourceServiceElastic implements ResourceService {
             }
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
-            return manager.getClient().count(this.index, queryJson, options);
+            return manager.getClient().count(index, queryJson, options);
         });
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos user, final JsonObject resource, final Optional<String> source, final Optional<String> dest) {
+    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<String> dest) {
+        final String index = getIndex(application);
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(resource));
         final StringBuilder scriptSource = new StringBuilder();
         final JsonObject params = new JsonObject();
         final JsonObject script = new JsonObject().put("lang", "painless").put("params", params);
         final JsonObject payload = new JsonObject().put("script", script);
+        //TODO
         //build update script
         scriptSource.append("ctx._source.folderIds.removeIf(item -> item==params.oldFolderId);");
         scriptSource.append("if(!ctx._source.folderIds.contains(params.newFolderId)) ctx._source.folderIds.add(params.newFolderId);");
@@ -91,7 +93,7 @@ public class ResourceServiceElastic implements ResourceService {
         }
         script.put("source", scriptSource.toString());
         //set params
-        params.put("oldFolderId", source.orElse(""));
+        params.put("oldFolderId", "");
         params.put("newFolderId", dest.orElse(ExplorerConfig.ROOT_FOLDER_ID));
         params.put("userid", user.getUserId());
         //update
@@ -99,12 +101,12 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<JsonObject> share(UserInfos user, JsonObject resource, List<ShareOperation> operation) throws Exception {
-        return share(user, Arrays.asList(resource), operation).map(e -> e.iterator().next());
+    public Future<JsonObject> share(final UserInfos user, final String application, final JsonObject resource, final List<ShareOperation> operation) throws Exception {
+        return share(user, application, Arrays.asList(resource), operation).map(e -> e.iterator().next());
     }
 
     @Override
-    public Future<List<JsonObject>> share(UserInfos user, List<JsonObject> resources, List<ShareOperation> operation) throws Exception {
+    public Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> resources, final List<ShareOperation> operation) throws Exception {
         //TODO make a loop to avoid multiple loop
         final Set<String> groupIds = operation.stream().filter(e -> e.isGroup()).map(e -> e.getId()).collect(Collectors.toSet());
         final Set<String> userIds = operation.stream().filter(e -> !e.isGroup()).map(e -> e.getId()).collect(Collectors.toSet());
@@ -126,7 +128,8 @@ public class ResourceServiceElastic implements ResourceService {
                 //set params
                 params.put("hash", hash.get());
                 params.put("shared", new JsonArray(rights));
-                return manager.getClient().updateDocument(this.index, ids, payload, options);
+                final String index = getIndex(application);
+                return manager.getClient().updateDocument(index, ids, payload, options);
             } else {
                 //user and groups are empty
                 return Future.succeededFuture();
