@@ -40,6 +40,33 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         });
     }
 
+    public final Future<Optional<JsonObject>> get(final UserInfos user, final String id){
+        return resourceCrud.getByIds(new HashSet<>(Arrays.asList(id))).map(e->{
+            if(e.isEmpty()){
+                return Optional.empty();
+            }else{
+                return Optional.of(e.get(0));
+            }
+        });
+    }
+
+
+    public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
+        return ((FolderExplorerCrudSql)resourceCrud).move(id, newParent).compose(oldParent->{
+            final List<JsonObject> sources = new ArrayList<>();
+            sources.add(setIdForModel(new JsonObject(), id));
+            //update children of oldParent
+            if(oldParent.isPresent()){
+                sources.add(setIdForModel(new JsonObject(), oldParent.get().toString()));
+            }
+            //update children of newParent
+            if(newParent.isPresent()){
+                sources.add(setIdForModel(new JsonObject(), newParent.get().toString()));
+            }
+            return notifyUpsert(user, sources);
+        });
+    }
+
     @Override
     protected String getApplication() {
         return ExplorerConfig.FOLDER_APPLICATION;
@@ -76,32 +103,49 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         final Set<Integer> idsAndParents = new HashSet<>();
         idsAndParents.addAll(ids);
         idsAndParents.addAll(parentIds);
-        //get descendants
+        //get ancestors of each documents
         final Future<Map<String, List<String>>> ancestorsF = getAncestors(ids);
-        // get children ids....
-        final Future<Map<String, List<String>>> childrenF = getChildrenIds(idsAndParents);
-        return CompositeFuture.all(ancestorsF, childrenF).map(e -> {
+        // get parent/child relationship for folder and their parents
+        final Future<Map<String, FolderRelationship>> relationsF = getRelationships(idsAndParents);
+        return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
             final Map<String, List<String>> ancestors = ancestorsF.result();
-            final Map<String, List<String>> children = childrenF.result();
+            final Map<String, FolderRelationship> relations = relationsF.result();
             //Transform all
             final List<ExplorerMessage> messages = new ArrayList<>();
             for (final JsonObject source : sources) {
                 final String id = source.getInteger("id").toString();
-                source.put("childrenIds", new JsonArray(children.getOrDefault(id, new ArrayList<>())));
+                final FolderRelationship relation = relations.get(id);
+                source.put("childrenIds", new JsonArray(relation.childrenIds));
+                if(relation.parentId.isPresent()){
+                    source.put("parentId", relation.parentId.get());
+                }
                 source.put("ancestors", new JsonArray(ancestors.getOrDefault(id, new ArrayList<>())));
                 final ExplorerMessage mess = builder.apply(source);
                 messages.add(transform(mess, source));
             }
             //update parent (childrenIds)
             for(final Integer parentId : parentIds){
-                final JsonObject source = new JsonObject();
-                setIdForModel(source, parentId.toString());
+                final String parentIdStr = parentId.toString();
+                final JsonObject source = setIdForModel(new JsonObject(), parentId.toString());
                 //set childrenIds
-                final JsonObject custom = new JsonObject();
-                custom.put("childrenIds", new JsonArray(children.getOrDefault(parentId.toString(), new ArrayList<>())));
-                final ExplorerMessage mess = builder.apply(source);
-                mess.withCustomFields(custom);
-                messages.add(mess);
+                final FolderRelationship relation = relations.get(parentIdStr);
+                source.put("childrenIds", new JsonArray(relation.childrenIds));
+                if(relation.parentId.isPresent()){
+                    source.put("parentId", relation.parentId.get());
+                }
+                //recompute ancestors from child ancestors
+                if(!relation.childrenIds.isEmpty()){
+                    //get child ancestors
+                    final String child = relation.childrenIds.get(0);
+                    final List<String> parentAncestors = new ArrayList<>(ancestors.getOrDefault(child, new ArrayList<>()));
+                    //remove self from child ancestors
+                    parentAncestors.remove(parentIdStr);
+                    source.put("ancestors", new JsonArray(parentAncestors));
+                    //add parent to list of updated folders
+                    final ExplorerMessage mess = builder.apply(source);
+                    //update parent only if childrenids has changed
+                    messages.add(transform(mess, source));
+                }
             }
             return messages;
         });
@@ -138,20 +182,27 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         });
     }
 
-    protected Future<Map<String, List<String>>> getChildrenIds(final Set<Integer> ids) {
+    protected Future<Map<String, FolderRelationship>> getRelationships(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
-        final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) ", inPlaceholder);
-        return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
-            final Map<String, List<String>> childrenById = new HashMap<>();
+        final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) OR f1.id IN (%s) ", inPlaceholder,inPlaceholder);
+        return pgPool.preparedQuery(query, inTuple).map(ancestors -> {
+            final Map<String, FolderRelationship> relationShips = new HashMap<>();
             for (final Row row : ancestors) {
                 //get parent of each
-                final Integer id = row.getInteger("id");
+                final String id = row.getInteger("id").toString();
                 final Integer parent_id = row.getInteger("parent_id");
-                childrenById.putIfAbsent(parent_id.toString(), new ArrayList<>());
-                childrenById.get(parent_id.toString()).add(id.toString());
+                relationShips.putIfAbsent(id, new FolderRelationship(id));
+                if(parent_id != null){
+                    final String parentIdStr = parent_id.toString();
+                    relationShips.putIfAbsent(parentIdStr, new FolderRelationship(parentIdStr));
+                    //add to children
+                    relationShips.get(parentIdStr).childrenIds.add(id);
+                    //set parent
+                    relationShips.get(id).parentId = Optional.of(parentIdStr);
+                }
             }
-            return childrenById;
+            return relationShips;
         });
     }
 
@@ -188,5 +239,15 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
         customFields.put("ancestors", ancestors);
         message.withOverrideFields(customFields);
         return message;
+    }
+
+    static class FolderRelationship{
+        final String id;
+        Optional<String> parentId = Optional.empty();
+        final List<String> childrenIds = new ArrayList<>();
+
+        public FolderRelationship(String id) {
+            this.id = id;
+        }
     }
 }

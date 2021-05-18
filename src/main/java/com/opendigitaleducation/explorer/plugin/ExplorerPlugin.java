@@ -254,7 +254,7 @@ public abstract class ExplorerPlugin {
 
     protected abstract String getIdForModel(final JsonObject json);
 
-    protected abstract void setIdForModel(final JsonObject json, final String id);
+    protected abstract JsonObject setIdForModel(final JsonObject json, final String id);
 
     protected abstract String getApplication();
 

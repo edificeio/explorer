@@ -11,6 +11,7 @@ import org.entcore.common.user.UserInfos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class FolderExplorerCrudSql extends ExplorerResourceCrudSql {
 
@@ -45,9 +46,27 @@ public class FolderExplorerCrudSql extends ExplorerResourceCrudSql {
         return pgPool.preparedQuery(query, tuple).mapEmpty();
     }
 
+    public Future<Optional<Integer>> move(final String id, final Optional<String> newParent){
+        final StringBuilder query = new StringBuilder();
+        final Integer numId = Integer.valueOf(id);
+        final Integer numParentId = newParent.map(e->Integer.valueOf(e)).orElse(null);
+        final Tuple tuple = Tuple.of(numId, numParentId,numId);
+        query.append("WITH old AS (SELECT parent_id FROM explorer.folders WHERE id = $1) ");
+        query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id FROM old);");
+        return pgPool.preparedQuery(query.toString(), tuple).map(e->{
+            final Row row = e.iterator().next();
+            final Integer parentId = row.getInteger("parent_id");
+            return Optional.ofNullable(parentId);
+        });
+    }
+
     protected void beforeCreateOrUpdate(final JsonObject source){
         if(source.getValue("parentId") instanceof String){
             source.put("parentId", Integer.valueOf(source.getValue("parentId").toString()));
         }
+    }
+
+    protected Object toSqlId(final String id) {
+        return Integer.valueOf(id);
     }
 }
