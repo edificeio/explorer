@@ -60,7 +60,7 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
     @Override
     public ResourceService getResourceService() {
         if(resourceService == null){
-            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), esIndex);
+            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager());
         }
         return resourceService;
     }

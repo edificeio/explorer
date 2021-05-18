@@ -54,9 +54,11 @@ public class Explorer extends BaseServer {
     @Override
     public void start() throws Exception {
         super.start();
+        //TODO auto create elastic schema
         //TODO start ingestjob in worker?
         //TODO move config to infra (or reuse)
         //TODO create ES mapping and check why folders not diplsaying
+        ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
         final JsonObject elastic = config.getJsonObject("elastic");
         final JsonArray esUri = elastic.getJsonArray("uris");
         final List<URI> uriList = new ArrayList<>();
@@ -74,14 +76,14 @@ public class Explorer extends BaseServer {
         final JsonObject ingestConfig = config.getJsonObject("ingest");
         final RedisClient redisClient = new RedisClient(vertx , redisConfig);
         //end move to infra
-        final String esIndex = elastic.getString("index", "explorer");
+        final String s = elastic.getString("index", "explorer");
         final URI[] uris = uriList.toArray(new URI[uriList.size()]);
         final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
         final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
         final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(vertx, redisClient, postgresClient);
         final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
-        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, esIndex);
+        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager);
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
         ResourceFilter.setResourceService(resourceService);

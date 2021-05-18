@@ -20,11 +20,11 @@ public interface ResourceService {
 
     Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
 
-    Future<JsonObject> move(final UserInfos user, final JsonObject document, final Optional<String> source, final Optional<String> dest);
+    Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<String> dest);
 
-    Future<JsonObject> share(final UserInfos user, final JsonObject document, final List<ShareOperation> operation) throws Exception;
+    Future<JsonObject> share(final UserInfos user, final String application, final JsonObject document, final List<ShareOperation> operation) throws Exception;
 
-    Future<List<JsonObject>> share(final UserInfos user, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
+    Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
 
     class ShareOperation {
         final String id;

@@ -112,7 +112,7 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
 
     @Override
     public String getIdForModel(final JsonObject json) {
-        return json.getInteger(getIdColumn()) + "";
+        return json.getValue(getIdColumn()).toString();
     }
 
     @Override

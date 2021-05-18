@@ -27,6 +27,7 @@ import java.util.Optional;
 public abstract class ResourceServiceTest {
     protected static final TestHelper test = TestHelper.helper();
     protected static String esIndex;
+    protected static final String application = FakeExplorerPluginResource.FAKE_APPLICATION;
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     static ElasticClientManager elasticClientManager;
@@ -48,6 +49,7 @@ public abstract class ResourceServiceTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        ExplorerConfig.getInstance().setEsIndex(FakeExplorerPluginResource.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
         createMapping(context, esIndex).onComplete(r -> async.complete());
     }
@@ -111,6 +113,12 @@ public abstract class ResourceServiceTest {
     //TODO tester api http puis faire folder dans PG (call direct messageingest?)
     //TODO redis test + folder (ingest) + share (without hash) + complex search
     //TODO http layer (finish owner check + ingestjob start)
+    //TODO ingest pipeline
+    //TODO html content + compound text content
+    //TODO mongo application example
+    //TODO before upsert resource => upsert (resource,resource_folder) in postgres and get predictible id (increment)
+    //TODO before delete resource => delete in postgres (cascade resource_folders)
+    //TODO explore by folder and by share failed
     @Test
     public void testShouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();
@@ -130,7 +138,7 @@ public abstract class ResourceServiceTest {
                         exPlugin.notifyUpsert(user, message2).onComplete(context.asyncAssertSuccess(push2 -> {
                             fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
                                 context.assertEquals(1, results2.getSucceed().size());
-                                getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                                     context.assertEquals(1, fetch1.size());
                                     //delete
                                     final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
@@ -138,7 +146,7 @@ public abstract class ResourceServiceTest {
                                     exPlugin.notifyDeleteById(user, "id1").onComplete(context.asyncAssertSuccess(push3 -> {
                                         fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
                                             context.assertEquals(1, results3.getSucceed().size());
-                                            getResourceService().fetch(user, "blog", new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                            getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
                                                 context.assertEquals(0, fetch2.size());
                                             }));
                                         }));
@@ -189,25 +197,25 @@ public abstract class ResourceServiceTest {
         getExplorerPlugin().notifyUpsert(user, Arrays.asList(message1, message2, message3, message2_1)).onComplete(context.asyncAssertSuccess(push -> {
             getIngestJob().execute(true).onComplete(context.asyncAssertSuccess(load -> {
                 //user1 see 3 resource at root
-                getResourceService().fetch(user, "blog", new ResourceService.SearchOperation().setTrashed(false)).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                getResourceService().fetch(user, application, new ResourceService.SearchOperation().setTrashed(false)).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(3, fetch1.size());
                     final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals("idexplore2_1")).findFirst().get();
                     //user1 move 1 resource to folder1
-                    getResourceService().move(user, json, Optional.empty(), Optional.of("folder1")).onComplete(context.asyncAssertSuccess(move -> {
+                    getResourceService().move(user, application, json, Optional.of("folder1")).onComplete(context.asyncAssertSuccess(move -> {
                         //user1 see 1 resource at folder1
-                        getResourceService().fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.of("folder1"))).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                        getResourceService().fetch(user, application, new ResourceService.SearchOperation().setParentId(Optional.of("folder1"))).onComplete(context.asyncAssertSuccess(fetch2 -> {
                             context.assertEquals(1, fetch2.size());
                             async.countDown();
                         }));
                         //user1 see 2 resource at root
-                        getResourceService().fetch(user, "blog", new ResourceService.SearchOperation().setParentId(Optional.empty())).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                        getResourceService().fetch(user, application, new ResourceService.SearchOperation().setParentId(Optional.empty())).onComplete(context.asyncAssertSuccess(fetch2 -> {
                             context.assertEquals(2, fetch2.size());
                             async.countDown();
                         }));
                     }));
                 }));
                 //user1 has 1 resource with text -> text2
-                getResourceService().fetch(user, "blog", new ResourceService.SearchOperation().setSearch("text2")).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                getResourceService().fetch(user, application, new ResourceService.SearchOperation().setSearch("text2")).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(1, fetch1.size());
                 }));
             }));
@@ -227,13 +235,13 @@ public abstract class ResourceServiceTest {
         getExplorerPlugin().notifyUpsert(user1, Arrays.asList(message1, message2, message3)).compose((push -> {
             return getIngestJob().execute(true).compose((load -> {
                 //user1 see 3 resources
-                return getResourceService().fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch1 -> {
+                return getResourceService().fetch(user1, application, new ResourceService.SearchOperation()).compose((fetch1 -> {
                     context.assertEquals(3, fetch1.size());
                     return Future.succeededFuture();
                 }));
             })).compose(r -> {
                 //user2 see 0 resources
-                return getResourceService().fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch1 -> {
+                return getResourceService().fetch(user2, application, new ResourceService.SearchOperation()).compose((fetch1 -> {
                     context.assertEquals(0, fetch1.size());
                     return Future.succeededFuture();
                 }));
@@ -241,17 +249,17 @@ public abstract class ResourceServiceTest {
         })).compose(rr -> {
             //share doc1 to user2
             try {
-                final JsonObject doc1 = new JsonObject().put("application", "blog").put("_id", "idshare1");
+                final JsonObject doc1 = new JsonObject().put("application", application).put("_id", "idshare1");
                 final List<ResourceService.ShareOperation> shares1 = shareTo(rights, user2);
-                return getResourceService().share(user1, doc1, shares1).compose((share1 -> {
+                return getResourceService().share(user1, application, doc1, shares1).compose((share1 -> {
                     //user1 see 3 resources
-                    return getResourceService().fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch2 -> {
+                    return getResourceService().fetch(user1, application, new ResourceService.SearchOperation()).compose((fetch2 -> {
                         context.assertEquals(3, fetch2.size());
                         return Future.succeededFuture();
                     }));
                 })).compose((r -> {
                     //user2 see 1 resources
-                    return getResourceService().fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch2 -> {
+                    return getResourceService().fetch(user2, application, new ResourceService.SearchOperation()).compose((fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         return Future.succeededFuture();
                     }));
@@ -264,17 +272,17 @@ public abstract class ResourceServiceTest {
             //share doc2 to group2
             try {
                 final List<ResourceService.ShareOperation> shares2 = shareToGroup(rights, "group_share1", "group_share2", "group_share3", "group_share4", "group_share5", "group_share6");
-                final JsonObject doc2 = new JsonObject().put("application", "blog").put("_id", "idshare2");
-                return getResourceService().share(user1, doc2, shares2).compose((share2 -> {
+                final JsonObject doc2 = new JsonObject().put("application", application).put("_id", "idshare2");
+                return getResourceService().share(user1, application, doc2, shares2).compose((share2 -> {
                     //user1 see 3 resources
-                    return getResourceService().fetch(user1, "blog", new ResourceService.SearchOperation()).compose((fetch3 -> {
+                    return getResourceService().fetch(user1, application, new ResourceService.SearchOperation()).compose((fetch3 -> {
                         context.assertEquals(3, fetch3.size());
                         async.countDown();
                         return Future.succeededFuture();
                     }));
                 })).compose(rrrr -> {
                     //user2 see 2 resources
-                    return getResourceService().fetch(user2, "blog", new ResourceService.SearchOperation()).compose((fetch3 -> {
+                    return getResourceService().fetch(user2, application, new ResourceService.SearchOperation()).compose((fetch3 -> {
                         context.assertEquals(2, fetch3.size());
                         async.countDown();
                         return Future.succeededFuture();

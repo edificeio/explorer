@@ -18,7 +18,6 @@ import java.util.*;
 public class FolderServiceElastic implements FolderService {
     final ElasticClientManager manager;
     final FolderExplorerPlugin plugin;
-    final boolean waitFor = true;
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
         this.manager = aManager;
