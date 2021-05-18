@@ -124,37 +124,15 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos creator, final JsonObject document, final Optional<String> source, final Optional<String> dest) {
-        final ElasticClient client = manager.getClient();
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creator.getUserId()).withId(source.orElse(null)).withId(dest.orElse(null));
-        if (query.getId().isEmpty()) {
-            //root to root
-            return Future.succeededFuture(document);
-        }
-        final String index = getIndex();
-        return client.search(index, query.getSearchQuery(), options).compose(fetched -> {
-            final Optional<JsonArray> oldIds = fetched.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals(source.orElse(null))).map(e -> e.getJsonArray("ancestors")).findFirst();
-            final Optional<JsonArray> newIds = fetched.stream().map(e -> (JsonObject) e).filter(e -> e.getString("_id").equals(dest.orElse(null))).map(e -> e.getJsonArray("ancestors")).findFirst();
-            //params
-            final JsonObject params = new JsonObject();
-            params.put("oldIds", oldIds.orElse(new JsonArray()).add(source.orElse(ROOT_FOLDER_ID)));
-            params.put("newIds", newIds.orElse(new JsonArray()).add(dest.orElse(ROOT_FOLDER_ID)));
-            params.put("oldParent", source.orElse(ROOT_FOLDER_ID)).put("newParent", dest.orElse(ROOT_FOLDER_ID));
-            //script
-            final JsonObject script = new JsonObject().put("lang", "painless").put("params", params);
-            final JsonObject payload = new JsonObject().put("script", script);
-            final FolderQueryElastic query2 = new FolderQueryElastic().withCreatorId(creator.getUserId()).withAncestors(source.orElse(null));
-            //TODO avoid search by ancestor (if root match all) => get by id=document.id or ancestors=document.id + conditional update using script
-            payload.put("query", query2.getSearchQuery().getJsonObject("query"));
-            //remove all ancestor of new parent
-            final StringBuilder sourceScript = new StringBuilder();
-            sourceScript.append("ctx._source.ancestors.removeAll(params.oldIds);");
-            sourceScript.append("ctx._source.ancestors.addAll(params.newIds);");
-            sourceScript.append("if(ctx._source.parentId==params.oldParent)ctx._source.parentId=params.newParent;");
-            script.put("source", sourceScript);
-            final ElasticClient.ElasticOptions options2 = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator)).withRefresh(waitFor);
-            return manager.getClient().updateByQuery(index, payload, options2).map(document);
+    public Future<JsonObject> move(final UserInfos creator, final String id, final Optional<String> dest) {
+        return plugin.move(creator, id, dest).compose(e->{
+            return plugin.get(creator, id).compose(found->{
+                if(found.isPresent()){
+                    return Future.succeededFuture(found.get());
+                }else{
+                    return Future.failedFuture("folder.notfound");
+                }
+            });
         });
     }
 }

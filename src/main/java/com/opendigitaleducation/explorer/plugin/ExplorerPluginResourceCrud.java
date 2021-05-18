@@ -21,7 +21,10 @@ public abstract class ExplorerPluginResourceCrud extends ExplorerPluginResource 
     }
 
     @Override
-    protected void setIdForModel(final JsonObject json, final String id) { resourceCrud.setIdForModel(json,id); }
+    protected JsonObject setIdForModel(final JsonObject json, final String id) {
+        resourceCrud.setIdForModel(json,id);
+        return json;
+    }
 
     @Override
     protected UserInfos getCreatorForModel(final JsonObject json) { return this.resourceCrud.getCreatorForModel(json); }

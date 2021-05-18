@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 //TODO merge with entcore common
@@ -141,6 +142,8 @@ public class PostgresClient {
             if (value instanceof Json) {
                 json.put(key, ((Json) value).value());
             } else if (value instanceof UUID) {
+                json.put(key, value.toString());
+            } else if (value instanceof LocalDateTime) {
                 json.put(key, value.toString());
             } else {
                 json.put(key, value);

@@ -150,17 +150,22 @@ public class FolderServiceTest {
             folderService.create(user, f2_1.put("parentId", f2_id)).onComplete(context.asyncAssertSuccess(r2 -> {
                 f2.put("_id", r2);
                 folderService.create(user, f2_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
-                    folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch0 -> {
-                        context.assertEquals(1, fetch0.size());
-                        folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch -> {
-                            context.assertEquals(0, fetch.size());
-                            folderService.move(user, f2, source, dest).onComplete(context.asyncAssertSuccess(move -> {
-                                folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch2 -> {
-                                    folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch3 -> {
-                                        context.assertEquals(1, fetch2.size());
-                                        context.assertEquals(0, fetch3.size());
-                                        context.assertEquals(dest.get(), fetch2.getJsonObject(0).getJsonArray("ancestors").getString(1));
-                                        System.out.println("end testShouldMoveSubTree");
+                    job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
+                        folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch0 -> {
+                            context.assertEquals(1, fetch0.size());
+                            folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch -> {
+                                context.assertEquals(0, fetch.size());
+                                final String f2Id = f2.getString("_id");
+                                folderService.move(user, f2Id, dest).onComplete(context.asyncAssertSuccess(move -> {
+                                    job.execute(true).onComplete(context.asyncAssertSuccess(r5 -> {
+                                        folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                            folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch3 -> {
+                                                context.assertEquals(1, fetch2.size());
+                                                context.assertEquals(0, fetch3.size());
+                                                context.assertEquals(dest.get(), fetch2.getJsonObject(0).getJsonArray("ancestors").getString(1));
+                                                System.out.println("end testShouldMoveSubTree");
+                                            }));
+                                        }));
                                     }));
                                 }));
                             }));
