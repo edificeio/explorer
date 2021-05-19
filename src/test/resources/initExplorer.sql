@@ -60,23 +60,28 @@ CREATE INDEX idx_folder_parent_id ON explorer.folders(parent_id);
 CREATE TABLE explorer.resources (
     id SERIAL,
     name TEXT,
+    creator_id VARCHAR(100) NOT NULL,
+    application VARCHAR(100) NOT NULL,
+    resource_type VARCHAR(100) NOT NULL,
     ent_id VARCHAR(100) NOT NULL,
+    resource_unique_id TEXT NOT NULL,
     trashed BOOLEAN DEFAULT FALSE,
     trashedAt TIMESTAMP,
     PRIMARY KEY(id)
 );
-CREATE INDEX idx_resources_ent_id ON explorer.resources(ent_id);
+CREATE UNIQUE INDEX idx_resources_ent_id ON explorer.resources(resource_unique_id);
 
 CREATE TABLE explorer.folder_resources (
     folder_id BIGINT NULL,
     resource_id BIGINT NOT NULL,
     user_id VARCHAR(100) NOT NULL,
     PRIMARY KEY(folder_id, resource_id, user_id),
-    CONSTRAINT fk_folder_resources_folderid FOREIGN KEY(folder_id) REFERENCES explorer.folders(id) ON DELETE SET NULL INITIALLY DEFERRED,
+    CONSTRAINT fk_folder_resources_folderid FOREIGN KEY(folder_id) REFERENCES explorer.folders(id) ON DELETE CASCADE INITIALLY DEFERRED,
     CONSTRAINT fk_folders_resources_resourceid FOREIGN KEY(resource_id) REFERENCES explorer.resources(id) ON DELETE CASCADE INITIALLY DEFERRED
 );
 CREATE INDEX idx_folder_resources_folderid ON explorer.folder_resources(folder_id);
 CREATE INDEX idx_folder_resources_resourceid ON explorer.folder_resources(resource_id);
+CREATE UNIQUE INDEX idx_folder_resources_resourceid_userid ON explorer.folder_resources(user_id,resource_id);
 
 -- for tests
 CREATE TABLE explorer.test_fake (

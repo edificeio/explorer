@@ -4,9 +4,6 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,14 +33,13 @@ public class MessageIngesterElastic implements MessageIngester {
     //TODO if 429 retry and set maxBatchSize less than
     //TODO if payload greater than max reduce maxPayload
     @Override
-    public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageDetails> messages) {
+    public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
         final List<MessageIngesterElasticOperation> operations = messages.stream().map(mess->{
             return MessageIngesterElasticOperation.create(mess.getIdQueue(), mess);
         }).collect(Collectors.toList());
-        //TODO upsert or get id for resources (non folders)
         final ElasticBulkRequest bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
         for(final MessageIngesterElasticOperation op : operations){
             op.execute(bulk);
@@ -53,8 +49,8 @@ public class MessageIngesterElastic implements MessageIngester {
                 return new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>());
             }
             //categorise
-            final List<ExplorerMessageDetails> succeed = new ArrayList<>();
-            final List<ExplorerMessageDetails> failed = new ArrayList<>();
+            final List<ExplorerMessageForIngest> succeed = new ArrayList<>();
+            final List<ExplorerMessageForIngest> failed = new ArrayList<>();
             //
             for (int i = 0; i < results.size(); i++) {
                 final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);

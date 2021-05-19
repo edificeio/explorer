@@ -87,7 +87,7 @@ public class FolderServiceTest {
     }
 
     @Test
-    public void testShouldCreateFolderTree(TestContext context) {
+    public void shouldCreateFolderTree(TestContext context) {
         final JsonObject f1 = folder("folder1");
         final JsonObject f2 = folder("folder2");
         final JsonObject f3 = folder("folder3");
@@ -137,7 +137,7 @@ public class FolderServiceTest {
     }
 
     @Test
-    public void testShouldMoveSubTree(TestContext context) {
+    public void shouldMoveSubTree(TestContext context) {
         final JsonObject f1 = folder("move1");
         final JsonObject f2 = folder("move2");
         final JsonObject f2_1 = folder("folder2_1");
@@ -163,7 +163,7 @@ public class FolderServiceTest {
                                                 context.assertEquals(1, fetch2.size());
                                                 context.assertEquals(0, fetch3.size());
                                                 context.assertEquals(dest.get(), fetch2.getJsonObject(0).getJsonArray("ancestors").getString(1));
-                                                System.out.println("end testShouldMoveSubTree");
+                                                System.out.println("end shouldMoveSubTree");
                                             }));
                                         }));
                                     }));

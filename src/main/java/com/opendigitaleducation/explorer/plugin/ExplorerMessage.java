@@ -133,8 +133,15 @@ public class ExplorerMessage {
         return id;
     }
 
+    public String getCreatorId() {
+        return message.getString("creatorId");
+    }
     public String getApplication() {
         return message.getString("application");
+    }
+
+    public String getResourceType() {
+        return message.getString("resourceType");
     }
 
     public String getAction() {
@@ -143,6 +150,10 @@ public class ExplorerMessage {
 
     public ExplorerPriority getPriority() {
         return priority;
+    }
+
+    public String getResourceUniqueId() {
+        return getApplication()+":"+getResourceType()+":"+getResourceType();
     }
 
     public void setIdQueue(String idQueue) {

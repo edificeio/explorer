@@ -118,9 +118,9 @@ public abstract class ResourceServiceTest {
     //TODO mongo application example
     //TODO before upsert resource => upsert (resource,resource_folder) in postgres and get predictible id (increment)
     //TODO before delete resource => delete in postgres (cascade resource_folders)
-    //TODO explore by folder and by share failed
+    //TODO explore by folder and by share failed + explorercontrollertest + refacto resourceservice (move...)
     @Test
-    public void testShouldIntegrateNewResource(TestContext context) {
+    public void shouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();
         final ExplorerPlugin exPlugin = getExplorerPlugin();
         final UserInfos user = test.directory().generateUser("intergrate_res");
@@ -160,7 +160,7 @@ public abstract class ResourceServiceTest {
     }
 
     @Test
-    public void testShouldIntegrateResourceOnRestart(TestContext context) {
+    public void shouldIntegrateResourceOnRestart(TestContext context) {
         final UserInfos user = test.http().sessionUser();
         final JsonObject message1 = create(user, "id_restart1", "name1", "text1");
         getExplorerPlugin().notifyUpsert(user, message1).compose((push -> {
@@ -185,7 +185,7 @@ public abstract class ResourceServiceTest {
 
 
     @Test
-    public void testShouldExploreResourceByFolder(TestContext context) {
+    public void shouldExploreResourceByFolder(TestContext context) {
         final Async async = context.async(2);
         final UserInfos user2 = test.directory().generateUser("user2");
         final UserInfos user = test.http().sessionUser();
@@ -223,7 +223,7 @@ public abstract class ResourceServiceTest {
     }
 
     @Test
-    public void testShouldExploreResourceByShare(TestContext context) {
+    public void shouldExploreResourceByShare(TestContext context) {
         final JsonObject rights = new JsonObject().put("read", true).put("contrib", true).put("manage", true);
         final Async async = context.async(2);
         final UserInfos user1 = test.directory().generateUser("user_share1", "group_share1");
@@ -293,17 +293,17 @@ public abstract class ResourceServiceTest {
                 return Future.failedFuture(e);
             }
         }).onComplete(context.asyncAssertSuccess(r -> {
-            System.out.println("end of testShouldExploreResourceByShare");
+            System.out.println("end of shouldExploreResourceByShare");
         }));
     }
 
     @Test
-    public void testShouldSearchResourceWithComplexContent(TestContext context) {
+    public void shouldSearchResourceWithComplexContent(TestContext context) {
         //TODO
     }
 
     @Test
-    public void testShouldSearchResourceWithComplexCriteria(TestContext context) {
+    public void shouldSearchResourceWithComplexCriteria(TestContext context) {
         //TODO
     }
 

@@ -12,19 +12,19 @@ import java.util.Optional;
 
 abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
-    protected final MessageIngester.ExplorerMessageDetails message;
+    protected final ExplorerMessageForIngest message;
     protected final String idQueue;
 
     public ExplorerMessage getMessage() {
         return message;
     }
 
-    public MessageIngesterElasticOperation(final MessageIngester.ExplorerMessageDetails message) {
+    public MessageIngesterElasticOperation(final ExplorerMessageForIngest message) {
         this.message = message;
         this.idQueue = message.getIdQueue();
     }
 
-    static  MessageIngesterElasticOperation create(final String idQueue, final MessageIngester.ExplorerMessageDetails message) {
+    static  MessageIngesterElasticOperation create(final String idQueue, final ExplorerMessageForIngest message) {
         final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
         switch (a) {
             case Delete:
@@ -41,15 +41,14 @@ abstract class MessageIngesterElasticOperation {
 
 
     static class MessageIngesterElasticOperationAudience extends MessageIngesterElasticOperation {
-        MessageIngesterElasticOperationAudience(final MessageIngester.ExplorerMessageDetails message) {
+        MessageIngesterElasticOperationAudience(final ExplorerMessageForIngest message) {
             super(message);
         }
         @Override
         void execute(final ElasticBulkRequest bulk) {
             final String application = message.getApplication();
             final String routing = ResourceServiceElastic.getRoutingKey(application);
-            //TODO create id predictible
-            final String id = message.getId();
+            final String id = message.getPredictibleId().orElse(message.getId());
             //TODO implement audience
             final JsonObject audience = message.getMessage().getJsonObject("audience", new JsonObject());
             final String index = ExplorerConfig.getInstance().getIndex(application);
@@ -58,14 +57,13 @@ abstract class MessageIngesterElasticOperation {
     }
 
     static class MessageIngesterElasticOperationDelete extends MessageIngesterElasticOperation {
-        MessageIngesterElasticOperationDelete(final MessageIngester.ExplorerMessageDetails message) {
+        MessageIngesterElasticOperationDelete(final ExplorerMessageForIngest message) {
             super(message);
         }
         @Override
         void execute(final ElasticBulkRequest bulk) {
             final String application = message.getApplication();
-            //TODO create id predictible
-            final String id = message.getId();
+            final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String index = ExplorerConfig.getInstance().getIndex(application);
             bulk.delete(id, Optional.of(index), Optional.ofNullable(routing));
@@ -73,7 +71,7 @@ abstract class MessageIngesterElasticOperation {
     }
 
     static class MessageIngesterElasticOperationUpsert extends MessageIngesterElasticOperation {
-        MessageIngesterElasticOperationUpsert(final MessageIngester.ExplorerMessageDetails message) {
+        MessageIngesterElasticOperationUpsert(final ExplorerMessageForIngest message) {
             super(message);
         }
 
@@ -85,8 +83,7 @@ abstract class MessageIngesterElasticOperation {
             //copy for upsert
             final JsonObject insert = MessageIngesterElastic.beforeCreate(original.copy());
             final JsonObject update = MessageIngesterElastic.beforeUpdate(original.copy());
-            //TODO create id predictible
-            final String id = message.getId();
+            final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String index = ExplorerConfig.getInstance().getIndex(application);
             bulk.upsert(insert, update, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
@@ -94,7 +91,7 @@ abstract class MessageIngesterElasticOperation {
     }
 
     static class MessageIngesterElasticOperationNoop extends MessageIngesterElasticOperation {
-        public MessageIngesterElasticOperationNoop(final MessageIngester.ExplorerMessageDetails message) {
+        public MessageIngesterElasticOperationNoop(final ExplorerMessageForIngest message) {
             super(message);
         }
 
