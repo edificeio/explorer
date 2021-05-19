@@ -1,10 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationPostgres;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.postgres.PostgresClientChannel;
-import com.opendigitaleducation.explorer.services.FolderService;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
@@ -63,14 +61,14 @@ public class MessageReaderPostgres implements MessageReader {
     }
 
     @Override
-    public Future<List<MessageIngester.ExplorerMessageDetails>> getIncomingMessages(final int maxBatchSize) {
+    public Future<List<ExplorerMessageForIngest>> getIncomingMessages(final int maxBatchSize) {
         final String attemptFilter = " AND attempted_count = 0 ";
         return fetch(maxBatchSize, Optional.empty(), attemptFilter);
     }
 
 
     @Override
-    public Future<List<MessageIngester.ExplorerMessageDetails>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
+    public Future<List<ExplorerMessageForIngest>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
         final String attemptFilter = String.format(" AND attempted_count > 0 AND attempted_count <= %s ", maxAttempt);
         return fetch(maxBatchSize, Optional.of(maxAttempt), attemptFilter);
     }
@@ -102,18 +100,18 @@ public class MessageReaderPostgres implements MessageReader {
         this.pendingNotifications = 0;
     }
 
-    Future<List<MessageIngester.ExplorerMessageDetails>> fetch(final int maxBatchSize, final Optional<Integer> maxAttempt, final String attemptFilter) {
+    Future<List<ExplorerMessageForIngest>> fetch(final int maxBatchSize, final Optional<Integer> maxAttempt, final String attemptFilter) {
         // use modulo to split between different thread
         final String modulo = this.modulo == 1 ? "" : String.format(" AND MOD(id,%s)=0 ", this.modulo);
         final String query = String.format("SELECT * FROM explorer.resource_queue WHERE attempt_status=$1 %s %s ORDER BY priority DESC, created_at ASC LIMIT $2", modulo, attemptFilter);
         return this.pgClient.preparedQuery(query, Tuple.of(STATUS_PENDING, maxBatchSize)).map(result -> {
-            final List<MessageIngester.ExplorerMessageDetails> all = new ArrayList<>();
+            final List<ExplorerMessageForIngest> all = new ArrayList<>();
             for (final Row row : result) {
                 final String resourceAction = row.getString("resource_action");
                 final Long idQueue = row.getLong("id");
                 final String idResource = row.getString("id_resource");
                 final JsonObject json = (JsonObject) (row.getJson("payload")).value();
-                final MessageIngester.ExplorerMessageDetails message = new MessageIngester.ExplorerMessageDetails(resourceAction, idQueue + "", idResource, json);
+                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(resourceAction, idQueue + "", idResource, json);
                 all.add(message);
             }
             //metrics
@@ -131,8 +129,8 @@ public class MessageReaderPostgres implements MessageReader {
 
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult result, final int maxAttempt) {
-        final List<MessageIngester.ExplorerMessageDetails> succeed = result.succeed;
-        final List<MessageIngester.ExplorerMessageDetails> failed = result.failed;
+        final List<ExplorerMessageForIngest> succeed = result.succeed;
+        final List<ExplorerMessageForIngest> failed = result.failed;
         final List<JsonObject> failedJson = result.failed.stream().map(e -> e.getMessage().put("_idQueue", Long.valueOf(e.getIdQueue())).put("_idResource", e.getId()).put("_error", e.getError())).collect(Collectors.toList());
         //save
         return this.pgClient.transaction().compose(transaction -> {

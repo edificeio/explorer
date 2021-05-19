@@ -1,8 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
@@ -117,8 +115,8 @@ public class IngestJob {
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 final long tmpIdExecution = idExecution;
-                final Future<List<MessageIngester.ExplorerMessageDetails>> newMessage = this.messageReader.getIncomingMessages(batchSize);
-                final Future<List<MessageIngester.ExplorerMessageDetails>> failedMessage = this.messageReader.getFailedMessages(batchSize, maxAttempt);
+                final Future<List<ExplorerMessageForIngest>> newMessage = this.messageReader.getIncomingMessages(batchSize);
+                final Future<List<ExplorerMessageForIngest>> failedMessage = this.messageReader.getFailedMessages(batchSize, maxAttempt);
                 //load new message
                 newMessage.compose(result -> {
                     return this.messageIngester.ingest(result);
@@ -255,10 +253,10 @@ public class IngestJob {
     }
 
     public static class IngestJobResult {
-        final List<MessageIngester.ExplorerMessageDetails> succeed;
-        final List<MessageIngester.ExplorerMessageDetails> failed;
+        final List<ExplorerMessageForIngest> succeed;
+        final List<ExplorerMessageForIngest> failed;
 
-        public IngestJobResult(final List<MessageIngester.ExplorerMessageDetails> succeed, final List<MessageIngester.ExplorerMessageDetails> failed) {
+        public IngestJobResult(final List<ExplorerMessageForIngest> succeed, final List<ExplorerMessageForIngest> failed) {
             this.succeed = succeed;
             this.failed = failed;
         }
@@ -267,11 +265,11 @@ public class IngestJob {
             return new IngestJobResult(new ArrayList<>(), new ArrayList<>());
         }
 
-        public List<MessageIngester.ExplorerMessageDetails> getSucceed() {
+        public List<ExplorerMessageForIngest> getSucceed() {
             return succeed;
         }
 
-        public List<MessageIngester.ExplorerMessageDetails> getFailed() {
+        public List<ExplorerMessageForIngest> getFailed() {
             return failed;
         }
 

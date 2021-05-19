@@ -91,7 +91,7 @@ public class ExplorerControllerTest {
     }
 
     @Test
-    public void testShouldCrudFolder(final TestContext context) throws Exception {
+    public void shouldCrudFolder(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
         //create folder
         final JsonObject folder = FolderServiceTest.folder("folder1");
@@ -190,7 +190,7 @@ public class ExplorerControllerTest {
     }
 
     @Test
-    public void testShouldCrudResource(final TestContext context) throws Exception {
+    public void shouldCrudResource(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
         final JsonObject doc1 = ResourceServiceTest.create(user, "id1", "name1", "text1");
         fakePlugin.notifyUpsert(user, doc1).compose(e -> {
@@ -253,12 +253,12 @@ public class ExplorerControllerTest {
     }
 
     @Test
-    public void testShouldMoveResource(final TestContext context) throws Exception {
+    public void shouldMoveResource(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
     }
 
     @Test
-    public void testShouldAuthorizeFolder(final TestContext context) throws Exception {
+    public void shouldAuthorizeFolder(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
         //create folder
         final JsonObject folder = FolderServiceTest.folder("folder1");

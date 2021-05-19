@@ -148,7 +148,7 @@ public class MessageReaderRedis implements MessageReader {
         });
     }
 
-    protected Future<List<MessageIngester.ExplorerMessageDetails>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
+    protected Future<List<ExplorerMessageForIngest>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
         //iterate over streams by priority and fill results list
         final Iterator<String> it = streams.iterator();
         Future<List<JsonObject>> futureIt = Future.succeededFuture(new ArrayList<>());
@@ -186,8 +186,8 @@ public class MessageReaderRedis implements MessageReader {
         });
     }
 
-    protected List<MessageIngester.ExplorerMessageDetails> toMessage(final List<JsonObject> result) {
-        final List<MessageIngester.ExplorerMessageDetails> messages = new ArrayList<>();
+    protected List<ExplorerMessageForIngest> toMessage(final List<JsonObject> result) {
+        final List<ExplorerMessageForIngest> messages = new ArrayList<>();
         for (final JsonObject row : result) {
             final String resourceAction = row.getString("resource_action");
             final String idQueue = row.getString(RedisClient.ID_STREAM);
@@ -195,7 +195,7 @@ public class MessageReaderRedis implements MessageReader {
             final String idResource = row.getString("id_resource");
             final Integer attemptCount = row.getInteger("attempt_count", 0);
             final JsonObject json = new JsonObject(row.getString("payload"));
-            final MessageIngester.ExplorerMessageDetails message = new MessageIngester.ExplorerMessageDetails(resourceAction, idQueue, idResource, json);
+            final ExplorerMessageForIngest message = new ExplorerMessageForIngest(resourceAction, idQueue, idResource, json);
             message.getMetadata().put(RedisClient.NAME_STREAM, nameStream);
             message.getMetadata().put(ATTEMPT_COUNT, attemptCount);
             messages.add(message);
@@ -203,7 +203,7 @@ public class MessageReaderRedis implements MessageReader {
         return messages;
     }
 
-    protected JsonObject toJson(final MessageIngester.ExplorerMessageDetails message) {
+    protected JsonObject toJson(final ExplorerMessageForIngest message) {
         final JsonObject json = new JsonObject();
         json.put("resource_action", message.getAction());
         json.put("id_resource", message.getId());
@@ -212,12 +212,12 @@ public class MessageReaderRedis implements MessageReader {
     }
 
     @Override
-    public Future<List<MessageIngester.ExplorerMessageDetails>> getIncomingMessages(final int maxBatchSize) {
+    public Future<List<ExplorerMessageForIngest>> getIncomingMessages(final int maxBatchSize) {
         return fetchAllStreams(new ArrayList<>(), maxBatchSize, Optional.empty(), Optional.empty());
     }
 
     @Override
-    public Future<List<MessageIngester.ExplorerMessageDetails>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
+    public Future<List<ExplorerMessageForIngest>> getFailedMessages(final int maxBatchSize, final int maxAttempt) {
         return fetchAllStreams(new ArrayList<>(), maxBatchSize, Optional.of(this.streamFailSuffix), Optional.of(maxAttempt));
     }
 
@@ -227,7 +227,7 @@ public class MessageReaderRedis implements MessageReader {
         final RedisBatch batch = redisClient.batch();
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
-        for (final MessageIngester.ExplorerMessageDetails mess : ingestResult.succeed) {
+        for (final ExplorerMessageForIngest mess : ingestResult.succeed) {
             final String idQueue = mess.getIdQueue();
             final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
             batch.beginTransaction();
@@ -236,7 +236,7 @@ public class MessageReaderRedis implements MessageReader {
             batch.commitTransaction();
         }
         //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
-        for (final MessageIngester.ExplorerMessageDetails mess : ingestResult.failed) {
+        for (final ExplorerMessageForIngest mess : ingestResult.failed) {
             final String idQueue = mess.getIdQueue();
             final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
             final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT);
