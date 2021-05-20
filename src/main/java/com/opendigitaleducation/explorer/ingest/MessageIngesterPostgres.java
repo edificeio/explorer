@@ -26,18 +26,23 @@ public class MessageIngesterPostgres implements MessageIngester {
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
+        final List<ExplorerMessageForIngest> folderMessages = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteResources = new ArrayList<>();
         for (final ExplorerMessageForIngest message : messages) {
             final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
             switch (a) {
                 case Delete:
-                    if(!message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)){
+                    if(message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)){
+                        folderMessages.add(message);
+                    }else{
                         deleteResources.add(message);
                     }
                     break;
                 case Upsert:
-                    if(!message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)){
+                    if(message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)){
+                        folderMessages.add(message);
+                    }else{
                         upsertResources.add(message);
                     }
                     break;
@@ -51,7 +56,8 @@ public class MessageIngesterPostgres implements MessageIngester {
         return CompositeFuture.all(beforeUpsertFuture, beforeDeleteFuture).compose(all->{
             //ingest only resources created or deleted successfully in postgres
             final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
-            toIngest.addAll(beforeUpsertFuture.result());
+            toIngest.addAll(folderMessages);
+            toIngest.addAll(beforeDeleteFuture.result());
             toIngest.addAll(beforeDeleteFuture.result());
             return ingester.ingest(toIngest).map(ingestResult->{
                 //add to failed all resources that cannot be deleted or created into postgres
@@ -125,7 +131,7 @@ public class MessageIngesterPostgres implements MessageIngester {
 
     @Override
     public Future<JsonObject> getMetrics() {
-        return Future.succeededFuture(new JsonObject());
+        return (ingester.getMetrics());
     }
 
 }

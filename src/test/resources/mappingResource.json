@@ -64,7 +64,7 @@
       },
       "shared": {
         "type": "object",
-        "index": false
+        "enabled": false
       }
     }
   }

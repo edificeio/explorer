@@ -66,10 +66,10 @@ public abstract class ResourceServiceTest {
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(FakeExplorerPluginResource.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
-        createMapping(context, esIndex).onComplete(r -> async.complete());
+        createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());
     }
 
-    static Future<Void> createMapping(TestContext context, String index) {
+    static Future<Void> createMapping(ElasticClientManager elasticClientManager,TestContext context, String index) {
         final Buffer mapping = test.vertx().fileSystem().readFileBlocking("mappingResource.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }

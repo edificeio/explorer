@@ -37,7 +37,7 @@ public class PostgresClient {
             }
             placeholderCounter++;
         }
-        placeholders.add(String.format("(%s)", String.join(",", group)));
+        placeholders.add(String.join(",", group));
         return String.join(",", placeholders);
     }
 

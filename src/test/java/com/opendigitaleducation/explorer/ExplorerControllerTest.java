@@ -53,6 +53,7 @@ public class ExplorerControllerTest {
     static IngestJob job;
     static FakeExplorerPluginResource fakePlugin;
     static FolderFilter folderFilter = new FolderFilter();
+    static final String application = FakeExplorerPluginResource.FAKE_APPLICATION;
 
     @BeforeClass
     public static void setUp(final TestContext context) throws Exception {
@@ -66,7 +67,7 @@ public class ExplorerControllerTest {
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeExplorerPluginResource.FAKE_APPLICATION, resourceIndex);
-        System.out.println("Using index: " + folderIndex+ " / "+resourceIndex);
+        System.out.println("Using index: " + folderIndex + " / " + resourceIndex);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
@@ -79,6 +80,8 @@ public class ExplorerControllerTest {
         test.http().mockJsonValidator();
         test.directory().mockUserPreferences(new JsonObject());
         FolderFilter.setFolderService(folderService);
+        FolderServiceTest.createMapping(esClientManager, context, folderIndex).onComplete(context.asyncAssertSuccess());
+        ResourceServiceTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
         //flush redis
         final Async async = context.async();
         redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
@@ -107,8 +110,22 @@ public class ExplorerControllerTest {
             promiseCreate.complete(e);
         });
         controller.createFolder(createReq.withSession(user));
-        //list folders
-        promiseCreate.future().compose(createE -> {
+        //trigger job
+        promiseCreate.future().compose(e -> {
+            final Promise<JsonObject> promiseTrigger = Promise.promise();
+            try {
+                final JsonObject params = new JsonObject().put("timeout", "180000");
+                final HttpTestHelper.TestHttpServerRequest triggerReq = test.http().post("/folders", params, folder);
+                triggerReq.response().endJsonHandler(ee -> {
+                    promiseTrigger.complete(ee);
+                });
+                controller.triggerJob(triggerReq.withSession(user));
+            } catch (Exception exception) {
+                context.fail(exception);
+            }
+            return promiseTrigger.future();
+        }).compose(createE -> {
+            //list folders
             final Promise<Void> promiseList = Promise.promise();
             try {
                 //list folder
@@ -157,11 +174,25 @@ public class ExplorerControllerTest {
                 promiseUpdate.fail(exception);
             }
             return promiseUpdate.future();
+        }).compose(e->{
+            //trigger job
+            final Promise<JsonObject> promiseTrigger = Promise.promise();
+            try {
+                final JsonObject params = new JsonObject().put("timeout", "180000");
+                final HttpTestHelper.TestHttpServerRequest triggerReq = test.http().post("/folders", params, folder);
+                triggerReq.response().endJsonHandler(ee -> {
+                    promiseTrigger.complete(ee);
+                });
+                controller.triggerJob(triggerReq.withSession(user));
+            } catch (Exception exception) {
+                context.fail(exception);
+            }
+            return promiseTrigger.future();
         }).compose(update -> {
             //get context
             final Promise<Void> promiseContext = Promise.promise();
             try {
-                final HttpTestHelper.TestHttpServerRequest contextReq = test.http().get("/context", new JsonObject().put("application", "blog"));
+                final HttpTestHelper.TestHttpServerRequest contextReq = test.http().get("/context", new JsonObject().put("application", application));
                 contextReq.response().endJsonHandler(e -> {
                     final JsonArray folders = e.getJsonArray("folders");
                     context.assertEquals(1, folders.size());
@@ -210,7 +241,7 @@ public class ExplorerControllerTest {
                 promiseMetrics.fail(ex);
             }
             return promiseMetrics.future();
-        }).compose(e->{
+        }).compose(e -> {
             //trigger job
             final Promise<Void> promiseTrigger = Promise.promise();
             try {
@@ -224,11 +255,11 @@ public class ExplorerControllerTest {
                 promiseTrigger.fail(ex);
             }
             return promiseTrigger.future();
-        }).compose(e->{
+        }).compose(e -> {
             //fetch resources
             final Promise<Void> promiseFetch = Promise.promise();
             try {
-                final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().get("/resources", new JsonObject().put("application", "blog"));
+                final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().get("/resources", new JsonObject().put("application", application));
                 fetchReq.response().endJsonHandler(json -> {
                     context.assertEquals(1, json.getJsonArray("resources").size());
                     promiseFetch.complete();
@@ -238,11 +269,11 @@ public class ExplorerControllerTest {
                 promiseFetch.fail(ex);
             }
             return promiseFetch.future();
-        }).compose(e->{
+        }).compose(e -> {
             //get contexts
             final Promise<Void> promiseFetch = Promise.promise();
             try {
-                final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().get("/context", new JsonObject().put("application", "blog"));
+                final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().get("/context", new JsonObject().put("application", application));
                 fetchReq.response().endJsonHandler(json -> {
                     context.assertEquals(1, json.getJsonArray("resources").size());
                     promiseFetch.complete();
@@ -280,7 +311,7 @@ public class ExplorerControllerTest {
             final String id = create.getString("_id");
             final Binding binding = test.http().binding(HttpMethod.POST, ExplorerController.class, "updateFolder");
             final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().put("/folder", new JsonObject().put("id", id));
-            folderFilter.authorize(fetchReq,binding, user, e->{
+            folderFilter.authorize(fetchReq, binding, user, e -> {
                 context.assertTrue(e);
                 async.complete();
             });
