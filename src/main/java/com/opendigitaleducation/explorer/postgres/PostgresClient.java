@@ -41,11 +41,11 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
-    public static String insertPlaceholders(final List<JsonObject> rows, final int startAt, final List<String> columns) {
+    public static String insertPlaceholders(final Collection<JsonObject> rows, final int startAt, final List<String> columns) {
         return insertPlaceholders(rows, startAt, columns.toArray(new String[columns.size()]));
     }
 
-    public static String insertPlaceholders(final List<JsonObject> rows, final int startAt, final String... column) {
+    public static String insertPlaceholders(final Collection<JsonObject> rows, final int startAt, final String... column) {
         int placeholderCounter = startAt;
         final List<String> placeholders = new ArrayList<>();
         for (final JsonObject row : rows) {
@@ -59,7 +59,7 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
-    public static String insertPlaceholdersFromMap(final List<Map<String, Object>> rows, final int startAt, final String... column) {
+    public static String insertPlaceholdersFromMap(final Collection<Map<String, Object>> rows, final int startAt, final String... column) {
         int placeholderCounter = startAt;
         final List<String> placeholders = new ArrayList<>();
         for (final Map<String, Object> row : rows) {
@@ -73,7 +73,7 @@ public class PostgresClient {
         return String.join(",", placeholders);
     }
 
-    public static Tuple insertValues(final List<JsonObject> rows, final Tuple tuple, final String... column) {
+    public static Tuple insertValues(final Collection<JsonObject> rows, final Tuple tuple, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 tuple.addValue(row.getValue(col));
@@ -82,11 +82,11 @@ public class PostgresClient {
         return tuple;
     }
 
-    public static Tuple insertValuesWithDefault(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final List<String> column) {
+    public static Tuple insertValuesWithDefault(final Collection<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final List<String> column) {
         return insertValuesWithDefault(rows, tuple, defaultValues, column.toArray(new String[column.size()]));
     }
 
-    public static Tuple insertValuesWithDefault(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
+    public static Tuple insertValuesWithDefault(final Collection<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 final Object val = row.getValue(col, defaultValues.get(col));
@@ -96,7 +96,7 @@ public class PostgresClient {
         return tuple;
     }
 
-    public static Tuple insertValuesFromMap(final List<Map<String, Object>> rows, final Tuple tuple, final String... column) {
+    public static Tuple insertValuesFromMap(final Collection<Map<String, Object>> rows, final Tuple tuple, final String... column) {
         for (final Map<String, Object> row : rows) {
             for (final String col : column) {
                 tuple.addValue(row.get(col));
@@ -105,7 +105,7 @@ public class PostgresClient {
         return tuple;
     }
 
-    public static Tuple insertValues(final List<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
+    public static Tuple insertValues(final Collection<JsonObject> rows, final Tuple tuple, final Map<String, Object> defaultValues, final String... column) {
         for (final JsonObject row : rows) {
             for (final String col : column) {
                 Object value = row.getValue(col, defaultValues.get(col));

@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MessageIngesterElastic implements MessageIngester {
-    public static final String VISIBLE_BY_CREATOR = "creator:";
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
 
     private final ElasticClientManager elasticClient;
@@ -95,10 +94,6 @@ public class MessageIngesterElastic implements MessageIngester {
         return Future.succeededFuture(metrics);
     }
 
-    public static String getVisibleByCreator(String creatorId) {
-        return VISIBLE_BY_CREATOR + creatorId;
-    }
-
     static JsonObject beforeCreate(final JsonObject document) {
         if (!document.containsKey("trashed")) {
             document.put("trashed", false);
@@ -109,14 +104,15 @@ public class MessageIngesterElastic implements MessageIngester {
         if (!document.containsKey("createdAt")) {
             document.put("createdAt", new Date().getTime());
         }
-        if (document.containsKey("creatorId")) {
-            document.put("visibleBy", new JsonArray().add(getVisibleByCreator(document.getString("creatorId"))));
-        }
         if (!document.containsKey("visibleBy")) {
             document.put("visibleBy", new JsonArray());
         }
+        if (document.containsKey("creatorId")) {
+            final String tagCreator = ExplorerConfig.getVisibleByCreator(document.getString("creatorId"));
+            document.put("visibleBy", new JsonArray().add(tagCreator));
+        }
         if (!document.containsKey("folderIds")) {
-            document.put("folderIds", new JsonArray().add(ExplorerConfig.ROOT_FOLDER_ID));
+            document.put("folderIds", new JsonArray());
         }
         if (!document.containsKey("usersForFolderIds")) {
             document.put("usersForFolderIds", new JsonArray());

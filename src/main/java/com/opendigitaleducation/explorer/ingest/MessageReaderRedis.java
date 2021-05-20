@@ -193,7 +193,7 @@ public class MessageReaderRedis implements MessageReader {
             final String idQueue = row.getString(RedisClient.ID_STREAM);
             final String nameStream = row.getString(RedisClient.NAME_STREAM);
             final String idResource = row.getString("id_resource");
-            final Integer attemptCount = row.getInteger("attempt_count", 0);
+            final Integer attemptCount = Integer.valueOf(row.getString("attempt_count", "0"));
             final JsonObject json = new JsonObject(row.getString("payload"));
             final ExplorerMessageForIngest message = new ExplorerMessageForIngest(resourceAction, idQueue, idResource, json);
             message.getMetadata().put(RedisClient.NAME_STREAM, nameStream);

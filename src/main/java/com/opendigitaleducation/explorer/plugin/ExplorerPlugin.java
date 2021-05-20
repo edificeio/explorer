@@ -249,6 +249,11 @@ public abstract class ExplorerPlugin {
             return notifyDelete(user, sources).map(oks);
         });
     }
+
+    public ExplorerPluginCommunication getCommunication() {
+        return communication;
+    }
+
     //abstract
     protected abstract UserInfos getCreatorForModel(final JsonObject json);
 

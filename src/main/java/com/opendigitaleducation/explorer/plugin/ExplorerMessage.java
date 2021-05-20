@@ -153,7 +153,7 @@ public class ExplorerMessage {
     }
 
     public String getResourceUniqueId() {
-        return getApplication()+":"+getResourceType()+":"+getResourceType();
+        return getId()+":"+getApplication()+":"+getResourceType();
     }
 
     public void setIdQueue(String idQueue) {
