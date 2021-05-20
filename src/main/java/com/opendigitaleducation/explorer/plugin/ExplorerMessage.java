@@ -44,6 +44,11 @@ public class ExplorerMessage {
     private final ExplorerPriority priority;
     private String idQueue;
 
+    public ExplorerMessage(final String id, final String action, final ExplorerPriority priority) {
+        this.id = id;
+        this.action = action;
+        this.priority = priority;
+    }
     public ExplorerMessage(final String id, final ExplorerAction action, final boolean search) {
         this.id = id;
         this.action = action.name();
@@ -142,6 +147,9 @@ public class ExplorerMessage {
 
     public String getResourceType() {
         return message.getString("resourceType");
+    }
+    public JsonObject getOverride() {
+        return message.getJsonObject("override");
     }
 
     public String getAction() {

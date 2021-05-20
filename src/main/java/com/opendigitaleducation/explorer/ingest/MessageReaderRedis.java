@@ -228,29 +228,33 @@ public class MessageReaderRedis implements MessageReader {
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
         for (final ExplorerMessageForIngest mess : ingestResult.succeed) {
-            final String idQueue = mess.getIdQueue();
-            final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
-            batch.beginTransaction();
-            batch.xAck(stream, consumerGroup, idQueue);
-            batch.xDel(stream, idQueue);
-            batch.commitTransaction();
+            if(mess.getIdQueue().isPresent()) {
+                final String idQueue = mess.getIdQueue().get();
+                final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
+                batch.beginTransaction();
+                batch.xAck(stream, consumerGroup, idQueue);
+                batch.xDel(stream, idQueue);
+                batch.commitTransaction();
+            }
         }
         //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
         for (final ExplorerMessageForIngest mess : ingestResult.failed) {
-            final String idQueue = mess.getIdQueue();
-            final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
-            final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT);
-            final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
-            batch.beginTransaction();
-            //if already failed => do not add suffix to stream name
-            if (stream.contains(streamFailSuffix)) {
-                batch.xAdd(stream, json);
-            } else {
-                batch.xAdd(stream + streamFailSuffix, json);
+            if(mess.getIdQueue().isPresent()) {
+                final String idQueue = mess.getIdQueue().get();
+                final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
+                final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT);
+                final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
+                batch.beginTransaction();
+                //if already failed => do not add suffix to stream name
+                if (stream.contains(streamFailSuffix)) {
+                    batch.xAdd(stream, json);
+                } else {
+                    batch.xAdd(stream + streamFailSuffix, json);
+                }
+                batch.xAck(stream, consumerGroup, idQueue);
+                batch.xDel(stream, idQueue);
+                batch.commitTransaction();
             }
-            batch.xAck(stream, consumerGroup, idQueue);
-            batch.xDel(stream, idQueue);
-            batch.commitTransaction();
         }
         //execute batch
         return batch.end().onFailure(e -> {

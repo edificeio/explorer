@@ -37,7 +37,7 @@ public class MessageIngesterElastic implements MessageIngester {
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
         final List<MessageIngesterElasticOperation> operations = messages.stream().map(mess->{
-            return MessageIngesterElasticOperation.create(mess.getIdQueue(), mess);
+            return MessageIngesterElasticOperation.create(mess);
         }).collect(Collectors.toList());
         final ElasticBulkRequest bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
         for(final MessageIngesterElasticOperation op : operations){

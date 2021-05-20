@@ -84,7 +84,7 @@ public class FolderExplorerCrudSql extends ExplorerResourceCrudSql {
     }
 
 
-    protected Future<Map<String, List<String>>> getAncestors(final Set<Integer> ids) {
+    public Future<Map<String, List<String>>> getAncestors(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final StringBuilder query = new StringBuilder();
@@ -115,7 +115,7 @@ public class FolderExplorerCrudSql extends ExplorerResourceCrudSql {
         });
     }
 
-    protected Future<Map<String, FolderRelationship>> getRelationships(final Set<Integer> ids) {
+    public Future<Map<String, FolderRelationship>> getRelationships(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) OR f1.id IN (%s) ", inPlaceholder,inPlaceholder);

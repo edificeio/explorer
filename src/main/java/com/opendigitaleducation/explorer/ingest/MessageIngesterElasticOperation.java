@@ -13,7 +13,6 @@ import java.util.Optional;
 abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
     protected final ExplorerMessageForIngest message;
-    protected final String idQueue;
 
     public ExplorerMessage getMessage() {
         return message;
@@ -21,10 +20,9 @@ abstract class MessageIngesterElasticOperation {
 
     public MessageIngesterElasticOperation(final ExplorerMessageForIngest message) {
         this.message = message;
-        this.idQueue = message.getIdQueue();
     }
 
-    static  MessageIngesterElasticOperation create(final String idQueue, final ExplorerMessageForIngest message) {
+    static  MessageIngesterElasticOperation create(final ExplorerMessageForIngest message) {
         final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
         switch (a) {
             case Delete:
