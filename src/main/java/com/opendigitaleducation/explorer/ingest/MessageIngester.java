@@ -16,7 +16,7 @@ public interface MessageIngester {
     }
     static MessageIngester elasticWithPgBackup(final ElasticClientManager elasticClient, final PostgresClient sql) {
         final MessageIngester ingester = elastic(elasticClient);
-        return new MessageIngesterPostgres(new ResourceExplorerCrudSql(sql), ingester);
+        return new MessageIngesterPostgres(sql, ingester);
     }
 
     Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages);

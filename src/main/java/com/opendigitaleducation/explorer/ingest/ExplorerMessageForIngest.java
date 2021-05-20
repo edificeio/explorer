@@ -6,16 +6,22 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 public class ExplorerMessageForIngest extends ExplorerMessage {
-    private final String idQueue;
+    private final Optional<String> idQueue;
     private String error = "";
     private String errorDetails = "";
     private Optional<String> predictibleId = Optional.empty();
     private final JsonObject metadata = new JsonObject();
 
+    public ExplorerMessageForIngest(ExplorerMessage message){
+        super(message.getId(), message.getAction(), message.getPriority());
+        this.getMessage().mergeIn(message.getMessage());
+        this.idQueue = Optional.empty();
+    }
+
     public ExplorerMessageForIngest(final String resourceAction, final String idQueue, final String idResource, final JsonObject json) {
         super(idResource, ExplorerAction.valueOf(resourceAction), false);
         this.getMessage().mergeIn(json);
-        this.idQueue = idQueue;
+        this.idQueue = Optional.of(idQueue);
     }
 
     public void setPredictibleId(final String predictibleId) {
@@ -42,7 +48,7 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
         return error;
     }
 
-    public String getIdQueue() {
+    public Optional<String> getIdQueue() {
         return idQueue;
     }
 

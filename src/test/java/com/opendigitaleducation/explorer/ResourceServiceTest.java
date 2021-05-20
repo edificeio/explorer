@@ -136,30 +136,34 @@ public abstract class ResourceServiceTest {
         final IngestJob job = getIngestJob();
         final ExplorerPlugin exPlugin = getExplorerPlugin();
         final UserInfos user = test.directory().generateUser("intergrate_res");
-        job.start().onComplete(context.asyncAssertSuccess(r -> {
-            final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
-            job.onEachExecutionEnd(fCreate);
-            final JsonObject message1 = create(user, "id1", "name1", "text1");
-            exPlugin.notifyUpsert(user, message1).onComplete(context.asyncAssertSuccess(push -> {
-                fCreate.future().onComplete(context.asyncAssertSuccess(results -> {
-                    context.assertEquals(1, results.getSucceed().size());
-                    //update
-                    final Promise<IngestJob.IngestJobResult> fUpdate = Promise.promise();
-                    job.onEachExecutionEnd(fUpdate);
-                    final JsonObject message2 = create(user, "id1", "name1_1", "text1_1");
-                    exPlugin.notifyUpsert(user, message2).onComplete(context.asyncAssertSuccess(push2 -> {
-                        fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
-                            context.assertEquals(1, results2.getSucceed().size());
-                            getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
-                                context.assertEquals(1, fetch1.size());
-                                //delete
-                                final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
-                                job.onEachExecutionEnd(fDelete);
-                                exPlugin.notifyDeleteById(user, "id1").onComplete(context.asyncAssertSuccess(push3 -> {
-                                    fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
-                                        context.assertEquals(1, results3.getSucceed().size());
-                                        getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
-                                            context.assertEquals(0, fetch2.size());
+        final Async async = context.async();
+        job.waitPending().onComplete(e-> {
+            job.start().onComplete(context.asyncAssertSuccess(r -> {
+                final Promise<IngestJob.IngestJobResult> fCreate = Promise.promise();
+                job.onEachExecutionEnd(fCreate);
+                final JsonObject message1 = create(user, "id1", "name1", "text1");
+                exPlugin.notifyUpsert(user, message1).onComplete(context.asyncAssertSuccess(push -> {
+                    fCreate.future().onComplete(context.asyncAssertSuccess(results -> {
+                        context.assertEquals(1, results.getSucceed().size());
+                        //update
+                        final Promise<IngestJob.IngestJobResult> fUpdate = Promise.promise();
+                        job.onEachExecutionEnd(fUpdate);
+                        final JsonObject message2 = create(user, "id1", "name1_1", "text1_1");
+                        exPlugin.notifyUpsert(user, message2).onComplete(context.asyncAssertSuccess(push2 -> {
+                            fUpdate.future().onComplete(context.asyncAssertSuccess(results2 -> {
+                                context.assertEquals(1, results2.getSucceed().size());
+                                getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                    context.assertEquals(1, fetch1.size());
+                                    //delete
+                                    final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
+                                    job.onEachExecutionEnd(fDelete);
+                                    exPlugin.notifyDeleteById(user, "id1").onComplete(context.asyncAssertSuccess(push3 -> {
+                                        fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
+                                            context.assertEquals(1, results3.getSucceed().size());
+                                            getResourceService().fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                                context.assertEquals(0, fetch2.size());
+                                                async.complete();
+                                            }));
                                         }));
                                     }));
                                 }));
@@ -168,7 +172,7 @@ public abstract class ResourceServiceTest {
                     }));
                 }));
             }));
-        }));
+        });
     }
 
     @Test

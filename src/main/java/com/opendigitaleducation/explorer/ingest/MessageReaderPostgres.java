@@ -131,11 +131,19 @@ public class MessageReaderPostgres implements MessageReader {
     public Future<Void> updateStatus(final IngestJob.IngestJobResult result, final int maxAttempt) {
         final List<ExplorerMessageForIngest> succeed = result.succeed;
         final List<ExplorerMessageForIngest> failed = result.failed;
-        final List<JsonObject> failedJson = result.failed.stream().map(e -> e.getMessage().put("_idQueue", Long.valueOf(e.getIdQueue())).put("_idResource", e.getId()).put("_error", e.getError())).collect(Collectors.toList());
+        final List<JsonObject> failedJson = result.failed.stream().filter(e->{
+            return e.getIdQueue().isPresent();
+        }).map(e -> {
+            return e.getMessage()
+                    .put("_idQueue", Long.valueOf(e.getIdQueue().get()))
+                    .put("_idResource", e.getId()).put("_error", e.getError());
+        }).collect(Collectors.toList());
         //save
         return this.pgClient.transaction().compose(transaction -> {
             if (succeed.size() > 0) {
-                final List<Long> ids = succeed.stream().map(e -> Long.valueOf(e.getIdQueue())).collect(Collectors.toList());
+                final List<Long> ids = succeed.stream().filter(e->{
+                    return e.getIdQueue().isPresent();
+                }).map(e -> Long.valueOf(e.getIdQueue().get())).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(STATUS_SUCCESS), ids);
                 final String placeholder = PostgresClient.inPlaceholder(succeed, 2);
                 final String query = String.format("UPDATE explorer.resource_queue SET  attempt_status=$1, attempted_count=attempted_count+1, attempted_at=NOW() WHERE id IN (%s)", placeholder);
@@ -146,7 +154,9 @@ public class MessageReaderPostgres implements MessageReader {
                 final Map<String, Object> defaultValues = new HashMap<>();
                 defaultValues.put("_attemptat", now);
                 defaultValues.put("_error", "");
-                final List<Long> ids = failed.stream().map(e -> Long.valueOf(e.getIdQueue())).collect(Collectors.toList());
+                final List<Long> ids = failed.stream().filter(e->{
+                    return e.getIdQueue().isPresent();
+                }).map(e -> Long.valueOf(e.getIdQueue().get())).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(now), ids);
                 final String placeholder = PostgresClient.inPlaceholder(failed, 2);
                 final String query = String.format("UPDATE explorer.resource_queue SET  attempted_count=attempted_count+1, attempted_at=$1 WHERE id IN (%s)", placeholder);
