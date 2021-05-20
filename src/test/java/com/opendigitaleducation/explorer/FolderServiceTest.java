@@ -59,7 +59,7 @@ public class FolderServiceTest {
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         final Async async = context.async();
-        createMapping(context, index).onComplete(r -> async.complete());
+        createMapping(elasticClientManager, context, index).onComplete(r -> async.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager,postgresClient, new JsonObject(), reader);
     }
@@ -80,7 +80,7 @@ public class FolderServiceTest {
         return folder;
     }
 
-    static Future<Void> createMapping(TestContext context, String index) {
+    static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
         final Buffer mapping = test.vertx().fileSystem().readFileBlocking("mappingFolder.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }

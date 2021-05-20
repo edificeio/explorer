@@ -293,6 +293,10 @@ public class ExplorerController extends BaseController {
     @ResourceFilter(SuperAdminFilter.class)
     public void triggerJob(final HttpServerRequest request) {
         final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_JOB_TRIGGER);
+        if(request.params().contains("timeout")){
+            final long timeout = Long.valueOf(request.params().get("timeout"));
+            opt.setSendTimeout(timeout);
+        }
         eb.request(IngestJob.INGESTOR_JOB_ADDRESS, new JsonObject(), opt, e -> {
             if (e.succeeded()) {
                 renderJson(request, (JsonObject) e.result().body());

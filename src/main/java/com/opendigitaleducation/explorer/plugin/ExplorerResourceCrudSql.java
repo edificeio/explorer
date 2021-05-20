@@ -101,10 +101,11 @@ public abstract class ExplorerResourceCrudSql implements ExplorerResourceCrud {
 
     @Override
     public Future<List<Boolean>> deleteById(final List<String> ids) {
-        final String queryTpl = String.format("DELETE FROM %s WHERE id IN (%s);");
+        final Set<Integer> safeIds = ids.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet());
+        final String queryTpl = "DELETE FROM %s WHERE id IN (%s);";
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String query = String.format(queryTpl, getTableName(), inPlaceholder);
-        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), safeIds);
         return pgPool.preparedQuery(query, tuple).map(result -> {
             return ids.stream().map(e -> true).collect(Collectors.toList());
         });
