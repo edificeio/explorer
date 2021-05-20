@@ -3,7 +3,13 @@ package com.opendigitaleducation.explorer.services.impl;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.elastic.ElasticClient;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
+import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
+import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
@@ -17,10 +23,17 @@ import java.util.stream.Collectors;
 public class ResourceServiceElastic implements ResourceService {
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
+    final ResourceExplorerCrudSql sql;
+    final ExplorerPluginCommunication communication;
     final boolean waitFor = true;
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final ExplorerPluginCommunication communication, final PostgresClient sql) {
+        this(aManager, shareTableManager, communication, new ResourceExplorerCrudSql(sql));
+    }
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final ExplorerPluginCommunication communication, final ResourceExplorerCrudSql sql) {
         this.manager = aManager;
+        this.sql = sql;
+        this.communication = communication;
         this.shareTableManager = shareTableManager;
     }
 
@@ -73,31 +86,25 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<String> dest) {
-        final String index = getIndex(application);
-        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(getRoutingKey(resource));
-        final StringBuilder scriptSource = new StringBuilder();
-        final JsonObject params = new JsonObject();
-        final JsonObject script = new JsonObject().put("lang", "painless").put("params", params);
-        final JsonObject payload = new JsonObject().put("script", script);
-        //TODO
-        //build update script
-        scriptSource.append("ctx._source.folderIds.removeIf(item -> item==params.oldFolderId);");
-        scriptSource.append("if(!ctx._source.folderIds.contains(params.newFolderId)) ctx._source.folderIds.add(params.newFolderId);");
-        if (dest.isPresent()) {
-            //move to folder
-            scriptSource.append("if(!ctx._source.usersForFolderIds.contains(params.userid)) ctx._source.usersForFolderIds.add(params.userid);");
-        } else {
-            //move to root
-            scriptSource.append("ctx._source.usersForFolderIds.removeIf(item -> item == params.userid);");
+    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<Integer> dest) {
+        final Integer id = Integer.valueOf(resource.getString("_id"));
+        final Set<Integer> ids = new HashSet<>();
+        ids.add(id);
+        if(dest.isPresent()){
+            return sql.moveTo(ids, dest.get(), user).compose(resources -> {
+                final List<ExplorerMessage> messages = resources.stream().map(e -> {
+                    return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                }).collect(Collectors.toList());
+                return communication.pushMessage(messages);
+            }).map(resource);
+        }else{
+            return sql.moveToRoot(ids, user).compose(entIds -> {
+                final List<ExplorerMessage> messages = entIds.stream().map(e -> {
+                    return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                }).collect(Collectors.toList());
+                return communication.pushMessage(messages);
+            }).map(resource);
         }
-        script.put("source", scriptSource.toString());
-        //set params
-        params.put("oldFolderId", "");
-        params.put("newFolderId", dest.orElse(ExplorerConfig.ROOT_FOLDER_ID));
-        params.put("userid", user.getUserId());
-        //update
-        return manager.getClient().updateDocument(index, resource.getString("_id"), payload, options).map(resource);
     }
 
     @Override
@@ -107,33 +114,14 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> resources, final List<ShareOperation> operation) throws Exception {
-        //TODO make a loop to avoid multiple loop
-        final Set<String> groupIds = operation.stream().filter(e -> e.isGroup()).map(e -> e.getId()).collect(Collectors.toSet());
-        final Set<String> userIds = operation.stream().filter(e -> !e.isGroup()).map(e -> e.getId()).collect(Collectors.toSet());
         final List<JsonObject> rights = operation.stream().map(o -> o.toJsonRight()).collect(Collectors.toList());
-        final Set<String> ids = resources.stream().map(e -> e.getString("_id")).collect(Collectors.toSet());
-        final Set<String> routings = resources.stream().map(e -> getRoutingKey(e)).collect(Collectors.toSet());
-        return shareTableManager.getOrCreateNewShare(userIds, groupIds).compose(hash -> {
-            if (hash.isPresent()) {
-                final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withWaitFor(waitFor).withRouting(routings);
-                final StringBuilder scriptSource = new StringBuilder();
-                final JsonObject params = new JsonObject();
-                final JsonObject script = new JsonObject().put("lang", "painless").put("params", params);
-                final JsonObject payload = new JsonObject().put("script", script);
-                //build update script
-                scriptSource.append("ctx._source.shared=params.shared;");
-                scriptSource.append(String.format("ctx._source.visibleBy.removeIf(item -> item.indexOf('%s')==-1);", MessageIngesterElastic.VISIBLE_BY_CREATOR));
-                scriptSource.append("if(!ctx._source.visibleBy.contains(params.hash))ctx._source.visibleBy.add(params.hash);");
-                script.put("source", scriptSource.toString());
-                //set params
-                params.put("hash", hash.get());
-                params.put("shared", new JsonArray(rights));
-                final String index = getIndex(application);
-                return manager.getClient().updateDocument(index, ids, payload, options);
-            } else {
-                //user and groups are empty
-                return Future.succeededFuture();
-            }
+        final Set<Integer> ids = resources.stream().map(e -> Integer.valueOf(e.getString("_id"))).collect(Collectors.toSet());
+        final JsonArray shared = new JsonArray(rights);
+        return sql.updateShareById(ids, shared).compose(entIds -> {
+            final List<ExplorerMessage> messages = entIds.stream().map(e -> {
+                return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+            }).collect(Collectors.toList());
+            return communication.pushMessage(messages);
         }).map(resources);
     }
 

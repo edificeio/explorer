@@ -3,10 +3,12 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
+import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.json.JsonObject;
@@ -37,7 +39,7 @@ public class ResourceServiceTestRedis extends ResourceServiceTest {
     public static GenericContainer redisContainer = new GenericContainer(("redis:5.0.3-alpine")).withReuse(true);
 
     @BeforeClass
-    public static void setup(TestContext context){
+    public static void setupAll(TestContext context){
         final Async async = context.async();
         new RedisClient(test.vertx(),getRedisConfig()).getClient().send(Request.cmd(Command.FLUSHALL), e -> {
             async.complete();
@@ -75,7 +77,7 @@ public class ResourceServiceTestRedis extends ResourceServiceTest {
     protected synchronized IngestJob getIngestJob() {
         if (job == null) {
             final MessageReader reader = MessageReader.redis(getRedisClient(), new JsonObject());
-            job = IngestJob.create(test.vertx(), elasticClientManager, new JsonObject(), reader);
+            job = IngestJob.create(test.vertx(), elasticClientManager,getPostgresClient(), new JsonObject(), reader);
         }
         return job;
     }
@@ -91,7 +93,8 @@ public class ResourceServiceTestRedis extends ResourceServiceTest {
     @Override
     public ResourceService getResourceService() {
         if(resourceService == null){
-            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager());
+            final ExplorerPluginCommunication comm = getExplorerPlugin().getCommunication();
+            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), comm, getPostgresClient());
         }
         return resourceService;
     }
@@ -99,7 +102,7 @@ public class ResourceServiceTestRedis extends ResourceServiceTest {
     @Override
     public ShareTableManager getShareTableManager() {
         if(shareTableManager == null){
-            shareTableManager = new PostgresShareTableManager(getPostgresClient());
+            shareTableManager = new DefaultShareTableManager();
         }
         return shareTableManager;
     }

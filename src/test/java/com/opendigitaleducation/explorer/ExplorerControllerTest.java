@@ -6,12 +6,14 @@ import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
+import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import fr.wseduc.webutils.http.Binding;
@@ -59,7 +61,7 @@ public class ExplorerControllerTest {
         final RedisClient redisClient = new RedisClient(test.vertx(), redisConfig);
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
-        final ShareTableManager shareTableManager = new PostgresShareTableManager(postgresClient);
+        final ShareTableManager shareTableManager = new DefaultShareTableManager();
         final String folderIndex = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
@@ -68,8 +70,9 @@ public class ExplorerControllerTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
+        final ExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin);
-        final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager);
+        final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient);
         controller = new ExplorerController(folderService, resourceService);
         controller.init(test.vertx(), new JsonObject(), null, null);
         fakePlugin = FakeExplorerPluginResource.withRedisStream(test.vertx(), redisClient, postgresClient);
@@ -80,7 +83,7 @@ public class ExplorerControllerTest {
         final Async async = context.async();
         redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-            job = IngestJob.create(test.vertx(), esClientManager, new JsonObject(), reader);
+            job = IngestJob.create(test.vertx(), esClientManager, postgresClient, new JsonObject(), reader);
             //start job too create streams
             job.start().compose(ee -> {
                 return job.stop();

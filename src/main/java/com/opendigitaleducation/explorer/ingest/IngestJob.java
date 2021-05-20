@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
@@ -73,8 +74,8 @@ public class IngestJob {
         });
     }
 
-    public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final JsonObject config, final MessageReader reader) {
-        final MessageIngester ingester = new MessageIngesterElastic(manager);
+    public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final PostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
+        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient);
         return new IngestJob(vertx, reader, ingester, config);
     }
 

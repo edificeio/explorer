@@ -3,9 +3,11 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
+import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.json.JsonObject;
@@ -44,7 +46,7 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
     protected IngestJob getIngestJob() {
         if (job == null) {
             final MessageReader reader = MessageReader.postgres(getPostgresClient(), new JsonObject());
-            job = IngestJob.create(test.vertx(), elasticClientManager, new JsonObject(), reader);
+            job = IngestJob.create(test.vertx(), elasticClientManager,getPostgresClient(), new JsonObject(), reader);
         }
         return job;
     }
@@ -60,7 +62,8 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
     @Override
     public ResourceService getResourceService() {
         if(resourceService == null){
-            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager());
+            final ExplorerPluginCommunication comm = getExplorerPlugin().getCommunication();
+            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), comm, getPostgresClient());
         }
         return resourceService;
     }
@@ -68,7 +71,7 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
     @Override
     public ShareTableManager getShareTableManager() {
         if(shareTableManager == null){
-            shareTableManager = new PostgresShareTableManager(getPostgresClient());
+            shareTableManager = new DefaultShareTableManager();
         }
         return shareTableManager;
     }

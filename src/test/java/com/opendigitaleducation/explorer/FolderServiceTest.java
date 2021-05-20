@@ -10,8 +10,6 @@ import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -35,6 +33,7 @@ import java.util.Optional;
 public class FolderServiceTest {
     private static final TestHelper test = TestHelper.helper();
     //TODO api doc
+    //TODO on delete folder => delete resources and sub folders
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     @ClassRule
@@ -62,7 +61,7 @@ public class FolderServiceTest {
         final Async async = context.async();
         createMapping(context, index).onComplete(r -> async.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager, new JsonObject(), reader);
+        job = IngestJob.create(test.vertx(), elasticClientManager,postgresClient, new JsonObject(), reader);
     }
 
     static JsonObject folder(final String name) {

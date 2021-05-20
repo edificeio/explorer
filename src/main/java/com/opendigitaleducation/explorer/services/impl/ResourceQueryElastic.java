@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.services.impl;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -124,7 +125,8 @@ public class ResourceQueryElastic {
         //by visible
         {
             final List<String> visibles = new ArrayList<>();
-            visibles.add(MessageIngesterElastic.getVisibleByCreator(user.getUserId()));
+            visibles.add(ExplorerConfig.getVisibleByCreator(user.getUserId()));
+            visibles.add(ExplorerConfig.getVisibleByUser(user.getUserId()));
             visibles.addAll(this.visibleIds);
             final Optional<JsonObject> visibleTerm = createTerm("visibleBy", visibles);
             filter.add(visibleTerm.get());

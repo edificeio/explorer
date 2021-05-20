@@ -67,6 +67,8 @@ CREATE TABLE explorer.resources (
     resource_unique_id TEXT NOT NULL,
     trashed BOOLEAN DEFAULT FALSE,
     trashedAt TIMESTAMP,
+    deleted BOOLEAN DEFAULT FALSE,
+    shared JSONB,
     PRIMARY KEY(id)
 );
 CREATE UNIQUE INDEX idx_resources_ent_id ON explorer.resources(resource_unique_id);
