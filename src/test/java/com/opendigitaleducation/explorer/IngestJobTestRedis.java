@@ -5,28 +5,45 @@ import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
-import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.redis.client.Command;
+import io.vertx.redis.client.Request;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @RunWith(VertxUnitRunner.class)
-public class ResourceServiceTestPostgres extends ResourceServiceTest {
+public class IngestJobTestRedis extends IngestJobTest {
+    private static JsonObject redisConfig;
     private IngestJob job;
     private PostgresClient postgresClient;
     private ExplorerPlugin explorerPlugin;
     private ShareTableManager shareTableManager;
     private ResourceService resourceService;
     private JsonObject postgresqlConfig;
+    private RedisClient redisClient;
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
+    @ClassRule
+    public static GenericContainer redisContainer = new GenericContainer(("redis:5.0.3-alpine")).withReuse(true);
 
+    @BeforeClass
+    public static void setupAll(TestContext context){
+        final Async async = context.async();
+        new RedisClient(test.vertx(),getRedisConfig()).getClient().send(Request.cmd(Command.FLUSHALL), e -> {
+            async.complete();
+        });
+    }
 
     protected JsonObject getPostgresConfig(){
         if(postgresqlConfig == null){
@@ -41,11 +58,24 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
         }
         return postgresClient;
     }
+    protected static JsonObject getRedisConfig(){
+        if(redisConfig == null){
+            redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
+        }
+        return redisConfig;
+    }
+
+    protected RedisClient getRedisClient(){
+        if(redisClient == null) {
+            redisClient = new RedisClient(test.vertx(), getRedisConfig());
+        }
+        return redisClient;
+    }
 
     @Override
-    protected IngestJob getIngestJob() {
+    protected synchronized IngestJob getIngestJob() {
         if (job == null) {
-            final MessageReader reader = MessageReader.postgres(getPostgresClient(), new JsonObject());
+            final MessageReader reader = MessageReader.redis(getRedisClient(), new JsonObject());
             job = IngestJob.create(test.vertx(), elasticClientManager,getPostgresClient(), new JsonObject(), reader);
         }
         return job;
@@ -54,7 +84,7 @@ public class ResourceServiceTestPostgres extends ResourceServiceTest {
     @Override
     protected ExplorerPlugin getExplorerPlugin() {
         if(explorerPlugin == null){
-            explorerPlugin = FakeExplorerPluginResource.withPostgresChannel(test.vertx(), getPostgresClient());
+            explorerPlugin = FakePostgresPlugin.withRedisStream(test.vertx(), getRedisClient(), getPostgresClient());
         }
         return explorerPlugin;
     }

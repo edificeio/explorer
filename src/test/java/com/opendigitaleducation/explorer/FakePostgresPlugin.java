@@ -2,10 +2,7 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.plugin.*;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
 import com.opendigitaleducation.explorer.redis.RedisClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -14,23 +11,23 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 
-public class FakeExplorerPluginResource extends ExplorerPluginResourceCrud {
+public class FakePostgresPlugin extends ExplorerPluginResourceCrud {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
-    static Logger log = LoggerFactory.getLogger(FakeExplorerPluginResource.class);
+    static Logger log = LoggerFactory.getLogger(FakePostgresPlugin.class);
 
-    protected FakeExplorerPluginResource(final ExplorerPluginCommunication communication, final PostgresClient pgClient) {
+    protected FakePostgresPlugin(final ExplorerPluginCommunication communication, final PostgresClient pgClient) {
         super(communication, new FakeExplorerCrud(pgClient));
     }
 
-    public static FakeExplorerPluginResource withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
+    public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
         final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
-        return new FakeExplorerPluginResource(communication, postgres);
+        return new FakePostgresPlugin(communication, postgres);
     }
 
-    public static FakeExplorerPluginResource withPostgresChannel(final Vertx vertx, final PostgresClient postgres) {
+    public static FakePostgresPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgres) {
         final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
-        return new FakeExplorerPluginResource(communication, postgres);
+        return new FakePostgresPlugin(communication, postgres);
     }
 
     @Override
