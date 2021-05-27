@@ -14,7 +14,6 @@ import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
-import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
@@ -51,9 +50,9 @@ public class ExplorerControllerTest {
     public static GenericContainer redisContainer = new GenericContainer(("redis:5.0.3-alpine")).withReuse(true);
     static ExplorerController controller;
     static IngestJob job;
-    static FakeExplorerPluginResource fakePlugin;
+    static FakePostgresPlugin fakePlugin;
     static FolderFilter folderFilter = new FolderFilter();
-    static final String application = FakeExplorerPluginResource.FAKE_APPLICATION;
+    static final String application = FakePostgresPlugin.FAKE_APPLICATION;
 
     @BeforeClass
     public static void setUp(final TestContext context) throws Exception {
@@ -66,7 +65,7 @@ public class ExplorerControllerTest {
         final String folderIndex = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
-        ExplorerConfig.getInstance().setEsIndex(FakeExplorerPluginResource.FAKE_APPLICATION, resourceIndex);
+        ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, resourceIndex);
         System.out.println("Using index: " + folderIndex + " / " + resourceIndex);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);
@@ -76,12 +75,12 @@ public class ExplorerControllerTest {
         final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient);
         controller = new ExplorerController(folderService, resourceService);
         controller.init(test.vertx(), new JsonObject(), null, null);
-        fakePlugin = FakeExplorerPluginResource.withRedisStream(test.vertx(), redisClient, postgresClient);
+        fakePlugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         test.http().mockJsonValidator();
         test.directory().mockUserPreferences(new JsonObject());
         FolderFilter.setFolderService(folderService);
         FolderServiceTest.createMapping(esClientManager, context, folderIndex).onComplete(context.asyncAssertSuccess());
-        ResourceServiceTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
+        IngestJobTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
         //flush redis
         final Async async = context.async();
         redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
@@ -226,7 +225,7 @@ public class ExplorerControllerTest {
     @Test
     public void shouldCrudResource(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
-        final JsonObject doc1 = ResourceServiceTest.create(user, "id1", "name1", "text1");
+        final JsonObject doc1 = IngestJobTest.create(user, "id1", "name1", "text1");
         fakePlugin.notifyUpsert(user, doc1).compose(e -> {
             //get metrics
             final Promise<Void> promiseMetrics = Promise.promise();

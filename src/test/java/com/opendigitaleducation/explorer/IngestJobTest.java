@@ -28,10 +28,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class ResourceServiceTest {
+public abstract class IngestJobTest {
     protected static final TestHelper test = TestHelper.helper();
     protected static String esIndex;
-    protected static final String application = FakeExplorerPluginResource.FAKE_APPLICATION;
+    protected static final String application = FakePostgresPlugin.FAKE_APPLICATION;
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     static ElasticClientManager elasticClientManager;
@@ -64,7 +64,7 @@ public abstract class ResourceServiceTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
-        ExplorerConfig.getInstance().setEsIndex(FakeExplorerPluginResource.FAKE_APPLICATION, esIndex);
+        ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
         createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());
     }

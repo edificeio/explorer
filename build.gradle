@@ -60,7 +60,11 @@ dependencies {
     compileOnly "io.vertx:vertx-core:$vertxVersion"
     compile "org.entcore:common:$entCoreVersion"
     compile "io.vertx:vertx-redis-client:$vertxVersion"
+    compile "io.vertx:vertx-mongo-client:$vertxVersion"
     testCompile "org.entcore:test:$entCoreVersion:fat"
+    implementation ("org.mongodb:mongo-java-driver:3.10.1") {
+        force = true
+    }
 }
 
 jar {
