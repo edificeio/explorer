@@ -63,15 +63,8 @@ public class ExplorerPluginCommunicationRedis implements ExplorerPluginCommunica
     }
 
     @Override
-    public Function<Void, Void> listen(final String id, final Handler<Message<JsonObject>> onMessage) {
-        //persistence not need
-        //request / reply pattern needed
-        //only one consumer should take this (could be on same job host...)
-        final MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(id, onMessage);
-        return e->{
-            consumer.unregister();
-            return null;
-        };
+    public Vertx vertx() {
+        return vertx;
     }
 
     protected JsonObject toRedisJson(final ExplorerMessage message) {
