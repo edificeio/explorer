@@ -40,6 +40,7 @@ public class FakePostgresPlugin extends ExplorerPluginResourceCrud {
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
+        message.withContent(source.getString("html"), ExplorerMessage.ExplorerContentType.Html);
         return Future.succeededFuture(message);
     }
 

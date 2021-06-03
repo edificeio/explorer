@@ -152,7 +152,7 @@ public class ResourceQueryElastic {
         }
         //search text
         if (text != null) {
-            final JsonArray fields = new JsonArray().add("application").add("name").add("content");
+            final JsonArray fields = new JsonArray().add("application").add("name").add("contentAll");
             must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text).put("fields", fields)));
         }
         if (trashed != null) {

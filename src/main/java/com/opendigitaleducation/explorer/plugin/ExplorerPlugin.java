@@ -184,6 +184,18 @@ public abstract class ExplorerPlugin {
         });
     }
 
+    public Future<Void> notifyUpsert(final ExplorerMessage m) {
+        m.withType(getApplication(), getResourceType());
+        return communication.pushMessage(Arrays.asList(m));
+    }
+
+    public Future<Void> notifyUpsert(final List<ExplorerMessage> messages) {
+        for(final ExplorerMessage m : messages){
+            m.withType(getApplication(), getResourceType());
+        }
+        return communication.pushMessage(messages);
+    }
+
     public Future<Void> notifyDeleteById(final UserInfos user, final String id) {
         final ExplorerMessage message = ExplorerMessage.delete(id, user, isForSearch()).withType(getApplication(), getResourceType());
         return communication.pushMessage(message);

@@ -36,10 +36,6 @@ public abstract class IngestJobTest {
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     static ElasticClientManager elasticClientManager;
 
-    //TODO persist predictible ID in bus to skip one step (optim)
-    //TODO test failed case (ingest failed, ingest too many error, ingest too big payload, message read failed, message update status failed...)
-    //TODO test metrics
-    //TODO add more logs
     protected abstract IngestJob getIngestJob();
 
     protected abstract ExplorerPlugin getExplorerPlugin();
@@ -125,12 +121,6 @@ public abstract class IngestJobTest {
         });
     }
 
-    //TODO tester api http puis faire folder dans PG (call direct messageingest?)
-    //TODO http layer (finish owner check + ingestjob start)
-    //TODO ingest pipeline
-    //TODO html content + compound text content
-    //TODO mongo application example
-    //TODO before delete resource => delete in postgres (cascade resource_folders)
     @Test
     public void shouldIntegrateNewResource(TestContext context) {
         final IngestJob job = getIngestJob();
@@ -326,16 +316,6 @@ public abstract class IngestJobTest {
             System.out.println("end of shouldExploreResourceByShare");
             async.countDown();
         }));
-    }
-
-    @Test
-    public void shouldSearchResourceWithComplexContent(TestContext context) {
-        //TODO
-    }
-
-    @Test
-    public void shouldSearchResourceWithComplexCriteria(TestContext context) {
-        //TODO
     }
 
 }

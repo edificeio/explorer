@@ -32,8 +32,6 @@ import java.util.Optional;
 @RunWith(VertxUnitRunner.class)
 public class FolderServiceTest {
     private static final TestHelper test = TestHelper.helper();
-    //TODO api doc
-    //TODO on delete folder => delete resources and sub folders
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
     @ClassRule

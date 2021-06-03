@@ -1,9 +1,11 @@
 package com.opendigitaleducation.explorer.plugin;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 import java.util.Date;
+import java.util.Optional;
 
 public class ExplorerMessage {
     public enum ExplorerContentType{
@@ -96,8 +98,21 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withContent(final String text, final ExplorerContentType type) {
-        message.put("content", text);
-        message.put("contentType", type.name());
+        if(text== null){
+            return this;
+        }
+        switch(type){
+            case Pdf:
+                message.put("contentPdf", text);
+                break;
+            case Html:
+                message.put("contentHtml", text);
+                break;
+            case Text:
+            default:
+                message.put("content", text);
+                break;
+        }
         return this;
     }
 
@@ -112,11 +127,22 @@ public class ExplorerMessage {
     }
 
     public ExplorerMessage withSubResourceContent(final String id, final String content, final ExplorerContentType type) {
-        final JsonObject subResources = message.getJsonObject("subresources", new JsonObject());
-        final JsonObject subResource = subResources.getJsonObject(id, new JsonObject());
-        subResource.put("content", content);
-        subResource.put("contentType", type.name());
-        subResources.put(id, subResource);
+        final JsonArray subResources = message.getJsonArray("subresources", new JsonArray());
+        final Optional<JsonObject> subResourceOpt = subResources.stream().map(e -> (JsonObject)e).filter(e-> e.getString("id","").equals(id)).findFirst();
+        final JsonObject subResource = subResourceOpt.orElse(new JsonObject().put("id", id));
+        switch(type){
+            case Pdf:
+                subResource.put("contentPdf", content);
+                break;
+            case Html:
+                subResource.put("contentHtml", content);
+                break;
+            case Text:
+            default:
+                subResource.put("content", content);
+                break;
+        }
+        subResources.add(subResource);
         message.put("subresources", subResources);
         return this;
     }
