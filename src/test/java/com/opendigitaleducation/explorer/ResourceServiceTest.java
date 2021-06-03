@@ -99,6 +99,7 @@ public class ResourceServiceTest {
     //TODO tester api http
     //TODO http layer (finish owner check + ingestjob start)
     //TODO before delete resource => delete in postgres (cascade resource_folders)
+    //TODO test explorercontroller reindex
     @Test
     public void shouldSearchResourceWithHtml(TestContext context) {
         final UserInfos user = test.directory().generateUser("userhtml");

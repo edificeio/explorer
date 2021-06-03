@@ -95,12 +95,8 @@ public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommun
     }
 
     @Override
-    public Function<Void, Void> listen(String id, Handler<Message<JsonObject>> onMessage) {
-        final MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(id, onMessage);
-        return e->{
-            consumer.unregister();
-            return null;
-        };
+    public Vertx vertx() {
+        return vertx;
     }
 
     class PostgresExplorerFailed {

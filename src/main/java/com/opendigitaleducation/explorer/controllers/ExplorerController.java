@@ -3,6 +3,8 @@ package com.opendigitaleducation.explorer.controllers;
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import fr.wseduc.rs.Delete;
@@ -30,6 +32,8 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -210,7 +214,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix+"createFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
                 folderService.create(user, body).onSuccess(e -> {
                     body.put("id", e);
                     body.put("childNumber", 0);
@@ -238,7 +242,7 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix+"moveFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix + "moveFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
                     //TODO response details?
                     body.mergeIn(e);
@@ -251,10 +255,10 @@ public class ExplorerController extends BaseController {
         });
     }
 
-        @Put("folders/:id")
-        @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
-        @ResourceFilter(FolderFilter.class)
-        public void updateFolder(final HttpServerRequest request) {
+    @Put("folders/:id")
+    @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
+    @ResourceFilter(FolderFilter.class)
+    public void updateFolder(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
@@ -265,7 +269,7 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix+"createFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
                     //TODO response details?
                     body.mergeIn(e);
@@ -287,7 +291,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix+"deleteFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix + "deleteFolder", body -> {
                 //TODO resource delete
                 final Set<String> ids = body.getJsonArray("folderIds").stream().map(e -> e.toString()).collect(Collectors.toSet());
                 folderService.delete(user, ids).onSuccess(e -> {
@@ -320,7 +324,7 @@ public class ExplorerController extends BaseController {
     @ResourceFilter(SuperAdminFilter.class)
     public void triggerJob(final HttpServerRequest request) {
         final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_JOB_TRIGGER);
-        if(request.params().contains("timeout")){
+        if (request.params().contains("timeout")) {
             final long timeout = Long.valueOf(request.params().get("timeout"));
             opt.setSendTimeout(timeout);
         }
@@ -333,8 +337,39 @@ public class ExplorerController extends BaseController {
         });
     }
 
+    @Get("reindex/:application/:type")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void reindex(final HttpServerRequest request) {
+        final String app = request.params().get("application");
+        final String type = request.params().get("type");
+        final ExplorerPluginClient client =  ExplorerPluginClient.withBus(vertx, app, type);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                unauthorized(request);
+                return;
+            }
+            final SimpleDateFormat format = new SimpleDateFormat("HHmm-ddMMyyyy");
+            final Optional<String> from = Optional.ofNullable(request.params().get("from"));
+            final Optional<String> to = Optional.ofNullable(request.params().get("to"));
+            try {
+                final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
+                final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();
+                client.getForIndexation(user, fromDate, toDate).onComplete(e->{
+                   if(e.succeeded()){
+                       renderJson(request, e.result().toJson());
+                   }else{
+                       renderError(request, new JsonObject().put("error", e.cause().getMessage()));
+                   }
+                });
+            } catch (ParseException e) {
+                badRequest(request, e.getMessage());
+            }
+        });
+    }
+
     //TODO on batch delete / update / return list of succeed and list of failed
-    protected ResourceService.SearchOperation toResourceSearch(final JsonObject queryParams) {
+    private ResourceService.SearchOperation toResourceSearch(final JsonObject queryParams) {
         //TODO all criterias
         final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
         final ResourceService.SearchOperation op = new ResourceService.SearchOperation();
@@ -342,7 +377,7 @@ public class ExplorerController extends BaseController {
         return op;
     }
 
-    protected JsonArray adaptFolder(final JsonArray folders) {
+    private JsonArray adaptFolder(final JsonArray folders) {
         final JsonArray res = new JsonArray();
         for (final Object o : folders) {
             res.add(adaptFolder((JsonObject) o));
@@ -350,12 +385,12 @@ public class ExplorerController extends BaseController {
         return res;
     }
 
-    protected JsonObject adaptFolder(final JsonObject folder) {
+    private JsonObject adaptFolder(final JsonObject folder) {
         folder.put("childNumber", folder.getJsonArray("childrenIds", new JsonArray()).size());
         return folder;
     }
 
-    protected JsonArray adaptResource(final JsonArray folders) {
+    private JsonArray adaptResource(final JsonArray folders) {
         final JsonArray res = new JsonArray();
         for (final Object o : folders) {
             res.add(adaptResource((JsonObject) o));
@@ -363,12 +398,12 @@ public class ExplorerController extends BaseController {
         return res;
     }
 
-    protected JsonObject adaptResource(final JsonObject folder) {
+    private JsonObject adaptResource(final JsonObject folder) {
         return folder;
     }
 
     //TODO move to userutils?
-    protected Future<JsonObject> getUserPref(final HttpServerRequest request, final String application) {
+    private Future<JsonObject> getUserPref(final HttpServerRequest request, final String application) {
         final Promise<JsonObject> promise = Promise.promise();
         final JsonObject params = new JsonObject().put("action", "get.currentuser")
                 .put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
@@ -389,7 +424,7 @@ public class ExplorerController extends BaseController {
     }
 
     //TODO move to webutils? RequestUtils.getQueryParams
-    protected Future<JsonObject> getQueryParams(final String schema, final MultiMap queryParams) {
+    private Future<JsonObject> getQueryParams(final String schema, final MultiMap queryParams) {
         final JsonObject json = new JsonObject();
         for (final String name : queryParams.names()) {
             final List<String> values = queryParams.getAll(name);
@@ -401,7 +436,7 @@ public class ExplorerController extends BaseController {
         }
         //validate
         final Promise<JsonObject> promise = Promise.promise();
-        validator.validate(pathPrefix+schema, json, res -> {
+        validator.validate(pathPrefix + schema, json, res -> {
             if (res.succeeded()) {
                 final JsonObject body = res.result().body();
                 if ("ok".equals(body.getString("status"))) {

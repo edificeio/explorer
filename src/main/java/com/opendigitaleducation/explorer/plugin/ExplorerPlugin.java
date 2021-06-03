@@ -47,8 +47,13 @@ public abstract class ExplorerPlugin {
         this.communication = communication;
     }
 
+    public static String addressFor(final String application, final String resourceType){
+        final String id = String.format("explorer.application.%s.%s", application, resourceType);
+        return id;
+    }
+
     public void start() {
-        final String id = String.format("explorer.application.%s.%s", getApplication(), getResourceType());
+        final String id = addressFor(getApplication(), getResourceType());
         this.listener = communication.listen(id, message -> {
             onExplorerQuery(message);
         });
