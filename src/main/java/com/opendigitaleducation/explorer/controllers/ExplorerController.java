@@ -224,10 +224,37 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Put("folders/:id")
+    @Put("folders/:id/move")
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
     @ResourceFilter(FolderFilter.class)
-    public void updateFolder(final HttpServerRequest request) {
+    public void moveToFolder(final HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                unauthorized(request);
+                return;
+            }
+            final String id = request.params().get("id");
+            if (StringUtils.isEmpty(id)) {
+                badRequest(request, "missing.id");
+                return;
+            }
+            RequestUtils.bodyToJson(request, pathPrefix+"moveFolder", body -> {
+                folderService.update(user, id, body).onSuccess(e -> {
+                    //TODO response details?
+                    body.mergeIn(e);
+                    renderJson(request, body);
+                }).onFailure(e -> {
+                    renderError(request);
+                    log.error("Failed to create folders:", e);
+                });
+            });
+        });
+    }
+
+        @Put("folders/:id")
+        @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
+        @ResourceFilter(FolderFilter.class)
+        public void updateFolder(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
