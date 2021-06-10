@@ -102,6 +102,8 @@ public class ResourceServiceTest {
     //TODO test pdf
     //TODO chargement automatique du mapping au démarrage
     //TODO config pf recette (redis stream, config du module...)
+    //TODO adaptative maxbatch size (according to max payload size, previous error?...)
+    //TODO better redis stream ID? "application-date"
     //https://docs.google.com/presentation/d/1xtPS--PhtBSGmTAYl74BIqDIbZE0v99p253W9GKFQJA/edit#slide=id.gc52769f62b_0_63
     @Test
     public void shouldSearchResourceWithHtml(TestContext context) {
