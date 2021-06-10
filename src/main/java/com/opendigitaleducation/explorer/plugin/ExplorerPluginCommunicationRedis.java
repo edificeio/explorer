@@ -1,10 +1,7 @@
 package com.opendigitaleducation.explorer.plugin;
 
 import com.opendigitaleducation.explorer.redis.RedisClient;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
@@ -14,11 +11,13 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ExplorerPluginCommunicationRedis implements ExplorerPluginCommunication {
     public static final JsonArray DEFAULT_STREAMS = new JsonArray().add("explorer_high").add("explorer_medium").add("explorer_low");
     static Logger log = LoggerFactory.getLogger(ExplorerPluginCommunicationRedis.class);
     static Map<ExplorerMessage.ExplorerPriority, String> STREAMS = new HashMap<>();
+    private final List<Promise> pending = new ArrayList<>();
 
     static {
         STREAMS.put(ExplorerMessage.ExplorerPriority.Low, "explorer_low");
@@ -59,12 +58,24 @@ public class ExplorerPluginCommunicationRedis implements ExplorerPluginCommunica
                 log.error("Failed to push resources to stream " + stream, e.getCause());
             }));
         }
-        return CompositeFuture.all(futures).mapEmpty();
+        final Promise promise = Promise.promise();
+        pending.add(promise);
+        return CompositeFuture.all(futures).onComplete(e->{
+            pending.remove(promise);
+            promise.complete();
+        }).mapEmpty();
     }
 
     @Override
     public Vertx vertx() {
         return vertx;
+    }
+
+
+    @Override
+    public Future<Void> waitPending() {
+        final List<Future> futures = pending.stream().map(e->e.future()).collect(Collectors.toList());
+        return CompositeFuture.all(futures).mapEmpty();
     }
 
     protected JsonObject toRedisJson(final ExplorerMessage message) {

@@ -84,6 +84,10 @@ public class ResourceServiceTest {
         json.put("name", name);
         return json;
     }
+    //TODO tester api http
+    //TODO http layer (finish owner check + ingestjob start)
+    //TODO test explorercontroller reindex => test blog sur recette
+    //TODO integrate blog
 
     //TODO api doc
     //TODO on delete folder => delete resources and sub folders
@@ -91,10 +95,7 @@ public class ResourceServiceTest {
     //TODO test failed case (ingest failed, ingest too many error, ingest too big payload, message read failed, message update status failed...)
     //TODO test metrics
     //TODO add more logs
-    //TODO tester api http
-    //TODO http layer (finish owner check + ingestjob start)
     //TODO before delete resource => delete in postgres (cascade resource_folders)
-    //TODO test explorercontroller reindex => test blog sur recette
     //TODO tester audience
     //TODO tester reindexation gros volume (workspace ou conversation) + test charge
     //TODO tester api en lot / recursive
