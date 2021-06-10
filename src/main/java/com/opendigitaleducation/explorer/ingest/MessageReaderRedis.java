@@ -85,6 +85,10 @@ public class MessageReaderRedis implements MessageReader {
             //only new messages
             final String startFrom = ">";
             redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom)).onComplete(res -> {
+                if(res.failed()){
+                    log.error("Could not read xstream ",res.cause());
+                    return;
+                }
                 this.listening = false;
                 if (res.result().size() > 0) {
                     this.pendingNotifications++;

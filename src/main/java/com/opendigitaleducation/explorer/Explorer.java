@@ -61,8 +61,9 @@ public class Explorer extends BaseServer {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
 
     @Override
-    public void start(final Promise<Void> startPromise) throws Exception {
-        super.start(startPromise);
+    public void start() throws Exception {
+        log.info("Starting explorer...");
+        super.start();
         final List<Future> futures = new ArrayList<>();
         //create redis client
         final RedisClient redisClient = RedisClient.create(vertx, config);
@@ -106,12 +107,11 @@ public class Explorer extends BaseServer {
         //deploy ingest worker
         final Promise<String> onWorkerDeploy = Promise.promise();
         final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
-        vertx.deployVerticle(new IngestJobWorker(elasticClientManager, postgresClient, redisClient),dep, onWorkerDeploy);
+        vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
         futures.add(onWorkerDeploy.future());
         //call start promise
         CompositeFuture.all(futures).onComplete(e -> {
             log.info("Explorer application started -> " + e.succeeded());
-            startPromise.handle(e.mapEmpty());
         });
     }
 

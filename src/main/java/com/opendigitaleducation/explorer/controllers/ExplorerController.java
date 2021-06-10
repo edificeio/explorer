@@ -442,7 +442,7 @@ public class ExplorerController extends BaseController {
                 if ("ok".equals(body.getString("status"))) {
                     promise.complete(json);
                 } else {
-                    promise.fail(body.getString("error"));
+                    promise.fail(body.getString("message"));
                 }
             } else {
                 log.error("Validate async error.", res.cause());

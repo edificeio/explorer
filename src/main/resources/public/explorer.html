@@ -15,36 +15,8 @@
     <a class="btn btn-secondary d-none d-md-none d-lg-block" href="/timeline/timeline" title="Accueil">
         <img class="logo" src="/assets/images/logo.png" alt="Logo de l'ENT">
     </a>
-    <div class="sidebar__mobile">
-      <input type="checkbox" />
-      <i class="ic-burger"></i> <span class="text-truncate">Blog</span>
-      <aside class="sidebar">
-        <ul class="sidebar__tree">
-          <li><a class="active" href="">Mes blogs</a>
-            <ul>
-              <li><a href="">Dossier 1</a></li>
-              <li><a href="">Dossier 2</a>
-                <ul>
-                  <li><a href="">Sous-dossier 1</a></li>
-                  <li><a href="">Sous-dossier 2</a></li>
-                  <li><a href="">Sous-dossier 3</a></li>
-                  <li><a href="">Sous-dossier avec un nom très long</a></li>
-                </ul>
-              </li>
-              <li><a href="">Dossier 3</a>
-                <ul>
-                  <li><a href="">Sous-dossier 1</a></li>
-                  <li><a href="">Sous-dossier 2</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li><a href="">Ma corbeille</a></li>
-        </ul>
-        <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
-        <a class="btn btn-outline-secondary btn-block">Importer</a>
-      </aside>
-    </div>
+    <span class="d-block d-lg-none text-truncate mr-auto text-white">Blog</span>
+
     <button class="btn btn-secondary" title="Accueil">
       <i class="ic-home"></i>
     </button>
@@ -115,8 +87,7 @@
         <section class="explorer__header">
 
           <form class="row justify-content-between mb-2 d-none d-sm-none d-md-none d-lg-flex">
-            <div class="col-lg-7 input-searchbar">
-              <!-- <label for="" class="visually-hidden">Taper votre recherche ici</label> -->
+            <div class="col-lg-6 input-searchbar">
               <i class="ic-search form-control-feedback"></i>
               <input type="search" class="form-control" id="" placeholder="Rechercher un blog">
             </div>
@@ -125,10 +96,50 @@
             </div>
           </form>
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2 class="text-truncate">Mes blogs</h2>
+            <h2 class="text-truncate">
+              <div class="d-none d-lg-block">
+                Mes blogs
+                <small>(76 éléments)</small>
+              </div>
+              <div class="sidebar__mobile">
+                <input type="checkbox" uncheck />
+                <i class="ic-burger"></i> Mes blogs
+                <aside class="sidebar">
+                  <ul class="sidebar__tree">
+                    <a href="" class="sidebar__close">
+                      <!-- <i class="ic-close"></i> -->
+                      <i class="fas fa-times"></i>
+                    </a>
+                    <li><a class="active" href="">Mes blogs</a>
+                      <ul>
+                        <li><a href="">Dossier 1</a></li>
+                        <li><a href="">Dossier 2</a>
+                          <ul>
+                            <li><a href="">Sous-dossier 1</a></li>
+                            <li><a href="">Sous-dossier 2</a></li>
+                            <li><a href="">Sous-dossier 3</a></li>
+                            <li><a href="">Sous-dossier avec un nom très long</a></li>
+                          </ul>
+                        </li>
+                        <li><a href="">Dossier 3</a>
+                          <ul>
+                            <li><a href="">Sous-dossier 1</a></li>
+                            <li><a href="">Sous-dossier 2</a></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a href="">Ma corbeille</a></li>
+                  </ul>
+                  <a class="btn btn-secondary btn-block">Créer un blog</a>
+                  <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
+                  <a class="btn btn-outline-secondary btn-block">Importer</a>
+                </aside>
+              </div>
+            </h2>
             <div class="filters d-flex">
               <div class="dropdown">
-                <button class="btn d-none d-sm-block d-md-block d-lg-none" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn d-block d-lg-none" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="ic-search"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
@@ -172,23 +183,13 @@
                   <a class="dropdown-item active" href="#">Dernière modification</a>
                 </div>
               </div>
-              <a class="btn d-none d-sm-block" href="explorer.html"><i class="fas fa-th-large"></i></a>
-              <a class="btn inactive d-none d-sm-block" href="explorer-list.html"><i class="fa fa-list" aria-hidden="true"></i></a>
+              <a class="btn d-none d-sm-block" title="Passer en vue liste" href="explorer-list.html"><i class="fa fa-list" aria-hidden="true"></i></a>
 
               <div class="dropdown d-block d-sm-none">
                 <button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                  <form class="px-3 py-2">
-                    <div class="input-group">
-                      <input type="text" class="form-control" placeholder="Rechercher un blog" aria-label="Rechercher un blog" aria-describedby="basic-addon2">
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-gray" type="button" id="button-addon2"><i class="ic-search"></i></button>
-                      </div>
-                    </div>
-                  </form>
-                  <div class="dropdown-divider"></div>
                   <h6 class="dropdown-header">Choix de la vue :</h6>
                   <div class="text-center">
                     <a class="btn" href="explorer.html">
@@ -230,19 +231,105 @@
           </div>
         </section>
         <section class="explorer__view dominos dominos--square">
-
+          <!-- Folder -->
           <article class="domino folder">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
             <div class="domino__image">
               <i class="fas ic-folder text-secondary"></i>
             </div>
             <div class="domino__infos">
-              <h2 class="domino__title">Titre du dossier</h2>
+              <h2 class="domino__title">Dossier 1</h2>
               <span class="domino__info">Il y a 2 heures</span>
             </div>
           </article>
-
-          <article class="domino item active">
+          <article class="domino folder">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
             <div class="domino__image">
+              <i class="fas ic-folder text-secondary"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Dossier 2</h2>
+              <span class="domino__info">Il y a 2 heures</span>
+            </div>
+          </article>
+          <article class="domino folder">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
+            <div class="domino__image">
+              <i class="fas ic-folder text-secondary"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Dossier 3</h2>
+              <span class="domino__info">Il y a 2 heures</span>
+            </div>
+          </article>
+          <!-- Ressource - image par défaut -->
+          <article class="domino item blog">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
+            <div class="domino__image">
+              <i class="fas ic-app blog"></i>
+              <div class="domino__overlay transition-hover">
+                <div class="domino__overlay--left">
+                  <span title="Ressource partagée"><i class="ic-users"></i>73</span>
+                </div>
+                <div class="domino__overlay--right">
+                  <span title="Nombre de vues"><i class="ic-view"></i>28</span>
+                  <span title="Nombre de commentaires"><i class="ic-comment"></i>3</span>
+                </div>
+              </div>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource - Blog</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino__info">Il y a 23 heures</span>
+            </div>
+          </article>
+          <!-- Ressource - exemple de couleur des image par défaut
+          <article class="domino item exercizer">
+            <div class="domino__image">
+              <i class="fas ic-app exercizer"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource - Exercizer</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino__info">Il y a 23 heures</span>
+            </div>
+          </article>
+          <article class="domino item timelinegenerator">
+            <div class="domino__image">
+              <i class="fas ic-app timelinegenerator"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource - Timeline</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino__info">Il y a 23 heures</span>
+            </div>
+          </article>
+          <article class="domino item rack">
+            <div class="domino__image">
+              <i class="fas ic-app rack"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource - Casier</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino__info">Il y a 23 heures</span>
+            </div>
+          </article>
+          <article class="domino item homeworks">
+            <div class="domino__image">
+              <i class="fas ic-app cahier-de-texte"></i>
+            </div>
+            <div class="domino__infos">
+              <h2 class="domino__title">Titre de la ressource - Cahier de texte</h2>
+              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino__info">Il y a 23 heures</span>
+            </div>
+          </article> -->
+
+          <!-- Ressource - image personnelle -->
+          <article class="domino item thumbnail active">
+            <a class="toaster__open checked" title="Sélectionner la ressource"></a> <!-- Open the toaster on click -->
+            <div class="domino__image">
+              <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource partagée"><i class="ic-users"></i>73</span>
@@ -259,8 +346,10 @@
               <span class="domino__info">Il y a 23 heures</span>
             </div>
           </article>
-          <article class="domino item" data-toggle="modal" data-target="#editProperty">
+          <article class="domino item thumbnail" data-toggle="modal" data-target="#editProperty">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
             <div class="domino__image">
+              <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
@@ -278,8 +367,10 @@
               <span class="domino__info">Il y a 2 semaines</span>
             </div>
           </article>
-          <article class="domino item">
+          <article class="domino item thumbnail">
+            <a class="toaster__open"></a> <!-- Open the toaster on click -->
             <div class="domino__image">
+              <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
               <div class="domino__overlay transition-hover">
                 <div class="domino__overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
@@ -297,147 +388,36 @@
               <span class="domino__info">Il y a 1 mois</span>
             </div>
           </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                  <span title="Ressource partagée"><i class="ic-users"></i>1286</span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>758</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>56</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Alex Terrieur</a></span>
-              <span class="domino__info">Il y a 4 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource partagée"><i class="ic-users"></i>106</span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>2</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 5 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource partagée"><i class="ic-users"></i>359</span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>263</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>587</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Brigitte Fontaine</a></span>
-              <span class="domino__info">Il y a 5 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <strong>Moi</strong></span>
-              <span class="domino__info">Il y a 7 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <strong>Moi</strong></span>
-              <span class="domino__info">Il y a 7 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <strong>Moi</strong></span>
-              <span class="domino__info">Il y a 7 mois</span>
-            </div>
-          </article>
-          <article class="domino item">
-            <div class="domino__image">
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
-                  <span title="Ressource public"><i class="ic-public"></i></span>
-                </div>
-                <div class="domino__overlay--right">
-                  <span title="Nombre de vues"><i class="ic-view"></i>48</span>
-                  <span title="Nombre de commentaires"><i class="ic-comment"></i>0</span>
-                </div>
-              </div>
-            </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <strong>Moi</strong></span>
-              <span class="domino__info">Il y a 7 mois</span>
-            </div>
-          </article>
+
+          <div class="d-flex justify-content-center" style="flex-basis: 100%;">
+            <a class="m-3 btn btn-outline-secondary">Charger plus de ressources (20)</a>
+          </div>
         </section>
 
         <!-- TOASTER -->
-        <div class="toaster d-none">
-          <a class="d-mobile-none" href="">Ouvrir</a>
+        <div class="toaster d-nne">
           <a href="">Propriétés</a>
           <a href="">Déplacer</a>
-          <a href="">Dupliquer</a>
+          <a class="d-mobile-none" href="">Dupliquer</a>
           <a class="d-mobile-none" href="">Exporter</a>
           <a href="">Partager</a>
           <a class="d-mobile-none" href="">Commenter</a>
           <a class="d-mobile-none" href="">Imprimer</a>
           <a class="d-mobile-none" href="">Publier dans la bibliothèque</a>
-          <a href="">Supprimer</a>
+          <a class="d-mobile-none" href="">Supprimer</a>
+
+          <div class="dropdown d-inline-block d-desktop-none">
+            <a class="btn" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Actions supplémentaires">
+              <i class="fas fa-ellipsis-v text-white"></i></a>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+              <a class="dropdown-item" href="#">Dupliquer</a>
+              <a class="dropdown-item" href="#">Exporter</a>
+              <a class="dropdown-item" href="#">Commenter</a>
+              <a class="dropdown-item" href="#">Partager dans la bibliothèque</a>
+              <a class="dropdown-item" href="#">Supprimer</a>
+            </div>
+          </div>
         </div>
       </section>
     </main>

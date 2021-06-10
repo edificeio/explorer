@@ -3,6 +3,8 @@ package com.opendigitaleducation.explorer.redis;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.client.*;
 import org.entcore.common.utils.StringUtils;
 
@@ -18,6 +20,7 @@ public class RedisClient {
     public static final String NAME_STREAM = "$name_stream";
     protected final Redis client;
     protected final RedisOptions redisOptions;
+    protected Logger log = LoggerFactory.getLogger(RedisClient.class);
 
     public static RedisClient create(final Vertx vertx, final JsonObject config) throws Exception{
         if (config.getJsonObject("redisConfig") != null) {
