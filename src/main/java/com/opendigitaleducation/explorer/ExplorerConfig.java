@@ -3,6 +3,8 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Set;
+
 public class ExplorerConfig {
     private static ExplorerConfig instance = new ExplorerConfig();
 
@@ -46,5 +48,9 @@ public class ExplorerConfig {
         //TODO one index per application?
         final String key = getDefaultIndexName(application);
         return esIndexes.getString(application, key);
+    }
+
+    public Set<String> getApplications() {
+        return esIndexes.fieldNames();
     }
 }

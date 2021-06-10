@@ -79,7 +79,7 @@ public class FolderServiceTest {
     }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("mappingFolder.json");
+        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingFolder.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 

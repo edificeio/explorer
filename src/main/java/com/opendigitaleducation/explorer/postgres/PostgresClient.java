@@ -20,6 +20,22 @@ public class PostgresClient {
     private final JsonObject config;
     private PostgresClientPool pool;
 
+    public static PostgresClient create(final Vertx vertx, final JsonObject config) throws Exception{
+        if (config.getJsonObject("postgresConfig") != null) {
+            final JsonObject postgresqlConfig = config.getJsonObject("postgresConfig");
+            final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
+            return postgresClient;
+        }else{
+            final String postgresConfig = (String) vertx.sharedData().getLocalMap("server").get("postgresConfig");
+            if(postgresConfig!=null){
+                final PostgresClient postgresClient = new PostgresClient(vertx, new JsonObject(postgresConfig));
+                return postgresClient;
+            }else{
+                throw new Exception("Missing postgresConfig config");
+            }
+        }
+    }
+
     public PostgresClient(final Vertx vertx, final JsonObject config) {
         this.vertx = vertx;
         this.config = config;

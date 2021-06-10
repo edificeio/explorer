@@ -1,15 +1,12 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
-import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.redis.RedisClient;
-import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -17,7 +14,6 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -34,7 +30,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
 public class ResourceServiceTest {
@@ -76,7 +71,7 @@ public class ResourceServiceTest {
     }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager,TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("mappingResource.json");
+        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
@@ -99,7 +94,15 @@ public class ResourceServiceTest {
     //TODO tester api http
     //TODO http layer (finish owner check + ingestjob start)
     //TODO before delete resource => delete in postgres (cascade resource_folders)
-    //TODO test explorercontroller reindex
+    //TODO test explorercontroller reindex => test blog sur recette
+    //TODO tester audience
+    //TODO tester reindexation gros volume (workspace ou conversation) + test charge
+    //TODO tester api en lot / recursive
+    //TODO test recherche multi critere complexe
+    //TODO test pdf
+    //TODO chargement automatique du mapping au démarrage
+    //TODO config pf recette (redis stream, config du module...)
+    //https://docs.google.com/presentation/d/1xtPS--PhtBSGmTAYl74BIqDIbZE0v99p253W9GKFQJA/edit#slide=id.gc52769f62b_0_63
     @Test
     public void shouldSearchResourceWithHtml(TestContext context) {
         final UserInfos user = test.directory().generateUser("userhtml");

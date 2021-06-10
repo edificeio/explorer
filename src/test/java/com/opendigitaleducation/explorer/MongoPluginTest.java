@@ -70,7 +70,7 @@ public class MongoPluginTest {
 
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("mappingResource.json");
+        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
