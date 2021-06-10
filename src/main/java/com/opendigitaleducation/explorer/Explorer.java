@@ -29,6 +29,7 @@ import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.filters.ResourceFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobWorker;
 import com.opendigitaleducation.explorer.ingest.MessageIngester;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
@@ -41,6 +42,11 @@ import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -52,49 +58,66 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Explorer extends BaseServer {
-    private IngestJob job;
+    static Logger log = LoggerFactory.getLogger(Explorer.class);
+
     @Override
-    public void start() throws Exception {
-        super.start();
-        //TODO auto create elastic schema
-        //TODO start ingestjob in worker?
-        //TODO move config to infra (or reuse)
-        //TODO create ES mapping and check why folders not diplsaying
+    public void start(final Promise<Void> startPromise) throws Exception {
+        super.start(startPromise);
+        final List<Future> futures = new ArrayList<>();
+        //create redis client
+        final RedisClient redisClient = RedisClient.create(vertx, config);
+        //create postgres client
+        final PostgresClient postgresClient = PostgresClient.create(vertx, config);
+        //create es client
+        final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
+        //init indexes
         ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
-        final JsonObject elastic = config.getJsonObject("elastic");
-        final JsonArray esUri = elastic.getJsonArray("uris");
-        final List<URI> uriList = new ArrayList<>();
-        for ( int i = 0 ; i < esUri.size() ; i++) {
-            final Object uri = esUri.getValue(i);
-            if(uri instanceof String) {
-                uriList.add(new URI(uri.toString()));
-            }else{
-                throw new Exception("Bad uri for elastic search: "+ uri);
+        if(config.getBoolean("create-index", true)) {
+            //create elastic schema if needed
+            final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
+            for (final String app : ExplorerConfig.getInstance().getApplications()) {
+                if (!ExplorerConfig.FOLDER_APPLICATION.equals(app)) {
+                    final String index = ExplorerConfig.getInstance().getIndex(app);
+                    final Future future = elasticClientManager.getClient().createMapping(index, mappingRes);
+                    futures.add(future);
+                    log.info("Creating ES Resource Mapping for application : " + app + " -> using index" + index);
+                }
             }
+            //create mapping folder
+            final Buffer mappingFolder = vertx.fileSystem().readFileBlocking("es/mappingFolder.json");
+            final String index = ExplorerConfig.getInstance().getIndex(ExplorerConfig.FOLDER_APPLICATION);
+            final Future future = elasticClientManager.getClient().createMapping(index, mappingFolder);
+            log.info("Creating ES Resource Folder using index" + index);
+            futures.add(future);
         }
-        final JsonObject postgresqlConfig = config.getJsonObject("postgres");
-        //
-        final JsonObject redisConfig = config.getJsonObject("redisConfig");
-        final JsonObject ingestConfig = config.getJsonObject("ingest");
-        final RedisClient redisClient = new RedisClient(vertx , redisConfig);
-        //end move to infra
-        final String s = elastic.getString("index", "explorer");
-        final URI[] uris = uriList.toArray(new URI[uriList.size()]);
-        final ElasticClientManager elasticClientManager = new ElasticClientManager(vertx, uris);
-        final PostgresClient postgresClient = new PostgresClient(vertx, postgresqlConfig);
-        final ShareTableManager shareTableManager = new DefaultShareTableManager();
+        //create folder service
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(vertx, redisClient, postgresClient);
-        final ExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+        //create resources service
+        final ShareTableManager shareTableManager = new DefaultShareTableManager();
+        final ExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
+        //create controller
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
+        //configure filter
         ResourceFilter.setResourceService(resourceService);
         FolderFilter.setFolderService(folderService);
-        final MessageReader reader = MessageReader.redis(redisClient, ingestConfig);
-        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient);
-        job = new IngestJob(vertx, reader, ingester, ingestConfig);
-        job.start();
+        //deploy ingest worker
+        final Promise<String> onWorkerDeploy = Promise.promise();
+        final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
+        vertx.deployVerticle(new IngestJobWorker(elasticClientManager, postgresClient, redisClient),dep, onWorkerDeploy);
+        futures.add(onWorkerDeploy.future());
+        //call start promise
+        CompositeFuture.all(futures).onComplete(e -> {
+            log.info("Explorer application started -> " + e.succeeded());
+            startPromise.handle(e.mapEmpty());
+        });
     }
 
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        log.info("Explorer application stopped ");
+    }
 }

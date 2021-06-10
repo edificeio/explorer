@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.redis;
 
+import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.redis.client.*;
@@ -17,6 +18,22 @@ public class RedisClient {
     public static final String NAME_STREAM = "$name_stream";
     protected final Redis client;
     protected final RedisOptions redisOptions;
+
+    public static RedisClient create(final Vertx vertx, final JsonObject config) throws Exception{
+        if (config.getJsonObject("redisConfig") != null) {
+            final JsonObject redisConfig = config.getJsonObject("redisConfig");
+            final RedisClient redisClient = new RedisClient(vertx, redisConfig);
+            return redisClient;
+        }else{
+            final String redisConfig = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
+            if(redisConfig!=null){
+                final RedisClient redisClient = new RedisClient(vertx, new JsonObject(redisConfig));
+                return redisClient;
+            }else{
+                throw new Exception("Missing redisConfig config");
+            }
+        }
+    }
 
     public RedisClient(final Redis redis, final RedisOptions redisOptions) {
         this.client = redis;
