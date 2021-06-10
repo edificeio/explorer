@@ -4,10 +4,7 @@ import com.opendigitaleducation.explorer.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Json;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -24,6 +21,7 @@ public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommun
     static Logger log = LoggerFactory.getLogger(ExplorerPluginCommunicationPostgres.class);
     private final PostgresClientPool pgPool;
     private final List<PostgresExplorerFailed> pendingFailed = new ArrayList<>();
+    private final List<Promise> pending = new ArrayList<>();
     private final Vertx vertx;
     private final int retryUntil = 30000;
 
@@ -42,6 +40,8 @@ public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommun
         if (messages.isEmpty()) {
             return Future.succeededFuture();
         }
+        final Promise promise = Promise.promise();
+        pending.add(promise);
         return pgPool.transaction().compose(transaction -> {
             final LocalDateTime now = LocalDateTime.now();
             final List<Map<String, Object>> rows = messages.stream().map(e -> {
@@ -91,12 +91,21 @@ public class ExplorerPluginCommunicationPostgres implements ExplorerPluginCommun
                 }
             });
             return future.future();
+        }).onComplete(e->{
+            promise.complete();
+            pending.remove(promise);
         });
     }
 
     @Override
     public Vertx vertx() {
         return vertx;
+    }
+
+    @Override
+    public Future<Void> waitPending() {
+        final List<Future> futures = pending.stream().map(e->e.future()).collect(Collectors.toList());
+        return CompositeFuture.all(futures).mapEmpty();
     }
 
     class PostgresExplorerFailed {

@@ -16,13 +16,14 @@ public class ExplorerStream<T> {
     public ExplorerStream(final Function<List<T>,Future<Void>> h, final Handler<JsonObject> onEnd){
         this.handler = h;
         this.onEnd = onEnd;
+        metrics.put("nb_batch", 0);
+        metrics.put("nb_message", 0);
     }
 
     public Future<Void> add(List<T> batch){
-        return this.handler.apply(batch).onComplete(e->{
-            metrics.put("nb_batch", metrics.getInteger("nb_batch", 0)+1);
-            metrics.put("nb_message", metrics.getInteger("nb_message", 0)+batch.size());
-        });
+        metrics.put("nb_batch", metrics.getInteger("nb_batch", 0)+1);
+        metrics.put("nb_message", metrics.getInteger("nb_message", 0)+batch.size());
+        return this.handler.apply(batch);
     }
 
     public Future<Void> end(List<T> lastBatch){

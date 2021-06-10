@@ -10,23 +10,24 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 
-public class FakeMongoExplorerPlugin extends ExplorerPluginResourceCrud {
+public class FakeMongoPlugin extends ExplorerPluginResourceCrud {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
-    static Logger log = LoggerFactory.getLogger(FakeMongoExplorerPlugin.class);
+    public static final String COLLECTION = "explorer.test_fake";
+    static Logger log = LoggerFactory.getLogger(FakeMongoPlugin.class);
 
-    protected FakeMongoExplorerPlugin(final ExplorerPluginCommunication communication, final MongoClient mongoClient) {
+    protected FakeMongoPlugin(final ExplorerPluginCommunication communication, final MongoClient mongoClient) {
         super(communication, new FakeMongoExplorerCrud(mongoClient));
     }
 
-    public static FakeMongoExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {
+    public static FakeMongoPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {
         final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
-        return new FakeMongoExplorerPlugin(communication, mongoClient);
+        return new FakeMongoPlugin(communication, mongoClient);
     }
 
-    public static FakeMongoExplorerPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgresClient, final MongoClient mongoClient) {
+    public static FakeMongoPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgresClient, final MongoClient mongoClient) {
         final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient);
-        return new FakeMongoExplorerPlugin(communication, mongoClient);
+        return new FakeMongoPlugin(communication, mongoClient);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class FakeMongoExplorerPlugin extends ExplorerPluginResourceCrud {
         }
 
         @Override
-        protected String getCollectionName() { return "explorer.test_fake"; }
+        protected String getCollectionName() { return COLLECTION; }
 
     }
 

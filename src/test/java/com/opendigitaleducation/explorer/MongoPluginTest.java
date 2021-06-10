@@ -3,6 +3,8 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginClient;
+import com.opendigitaleducation.explorer.plugin.ExplorerPluginClientDefault;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
 import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationPostgres;
 import com.opendigitaleducation.explorer.postgres.PostgresClient;
@@ -10,7 +12,9 @@ import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -29,6 +33,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
 public class MongoPluginTest {
@@ -42,9 +47,11 @@ public class MongoPluginTest {
 
     static ElasticClientManager elasticClientManager;
     static ResourceService resourceService;
-    static FakeMongoExplorerPlugin plugin;
+    static FakeMongoPlugin plugin;
     static String application;
     static IngestJob job;
+    static MongoClient mongoClient;
+    static ExplorerPluginClient pluginClient;
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
@@ -52,20 +59,21 @@ public class MongoPluginTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + resourceIndex);
-        ExplorerConfig.getInstance().setEsIndex(FakeMongoExplorerPlugin.FAKE_APPLICATION, resourceIndex);
+        ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
         final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
-        final MongoClient mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
+        ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
+        mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
-        plugin = FakeMongoExplorerPlugin.withPostgresChannel(test.vertx(), postgresClient, mongoClient);
+        plugin = FakeMongoPlugin.withPostgresChannel(test.vertx(), postgresClient, mongoClient);
         application = plugin.getApplication();
         final Async async = context.async();
         createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> async.complete());
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+        pluginClient = ExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
     }
 
 
@@ -84,12 +92,51 @@ public class MongoPluginTest {
         final JsonObject f2 = resource("folder2");
         final JsonObject f3 = resource("folder3");
         final UserInfos user = test.directory().generateUser("usermove");
+        final Async async = context.async();
         resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
             context.assertEquals(0, fetch0.size());
             plugin.create(user, Arrays.asList(f1, f2, f3), false).onComplete(context.asyncAssertSuccess(r -> {
                 job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
                     resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                         context.assertEquals(3, fetch1.size());
+                        async.complete();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+
+    @Test
+    public void shouldReindexResource(TestContext context) {
+        final UserInfos user = test.directory().generateUser("reindex");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("_id", "reindex1");
+        final JsonObject f2 = resource("reindex2").put("creatorId", user.getUserId()).put("_id", "reindex2");
+        final JsonObject f3 = resource("reindex3").put("creatorId", user.getUserId()).put("_id", "reindex3");
+        final Promise p1 = Promise.promise();
+        final Promise p2 = Promise.promise();
+        final Promise p3 = Promise.promise();
+        mongoClient.insert(FakeMongoPlugin.COLLECTION, f1, p1);
+        mongoClient.insert(FakeMongoPlugin.COLLECTION, f2, p2);
+        mongoClient.insert(FakeMongoPlugin.COLLECTION, f3, p3);
+        final Async async = context.async();
+        plugin.start();
+        CompositeFuture.all(p1.future(), p2.future(), p3.future()).onComplete(context.asyncAssertSuccess(r1 -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r0 -> {
+                resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+                    context.assertEquals(0, fetch0.size());
+                    pluginClient.getForIndexation(user, Optional.empty(), Optional.empty()).onComplete(context.asyncAssertSuccess(r2 -> {
+                        context.assertEquals(3, r2.nbMessage);
+                        plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r3 -> {
+                            job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
+                                job.waitPending().onComplete(context.asyncAssertSuccess(r5 -> {
+                                    resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                        context.assertEquals(3, fetch1.size());
+                                        async.complete();
+                                    }));
+                                }));
+                            }));
+                        }));
                     }));
                 }));
             }));

@@ -14,6 +14,8 @@ public interface ExplorerPluginCommunication {
 
     Vertx vertx();
 
+    Future<Void> waitPending();
+
     Future<Void> pushMessage(final ExplorerMessage message);
 
     Future<Void> pushMessage(final List<ExplorerMessage> messages);
