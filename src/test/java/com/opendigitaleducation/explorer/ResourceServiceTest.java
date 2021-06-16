@@ -84,7 +84,7 @@ public class ResourceServiceTest {
         json.put("name", name);
         return json;
     }
-    //TODO tester api http
+    //TODO tester api http (match contract?)
     //TODO http layer (finish owner check + ingestjob start)
     //TODO test explorercontroller reindex => test blog sur recette
     //TODO integrate blog
