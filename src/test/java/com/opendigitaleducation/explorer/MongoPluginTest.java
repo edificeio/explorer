@@ -126,7 +126,6 @@ public class MongoPluginTest {
                 resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
                     context.assertEquals(0, fetch0.size());
                     pluginClient.getForIndexation(user, Optional.empty(), Optional.empty()).onComplete(context.asyncAssertSuccess(r2 -> {
-                        context.assertEquals(3, r2.nbMessage);
                         plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r3 -> {
                             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
                                 job.waitPending().onComplete(context.asyncAssertSuccess(r5 -> {
