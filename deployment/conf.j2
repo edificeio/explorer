@@ -1,0 +1,49 @@
+{
+    "name": "{{ explorerVersion }}",
+    "config": {
+        "main" : "com.opendigitaleducation.explorer.Explorer",
+        {% if csrfToken %}"csrf-token": true,{% endif %}
+        "port" : 8068,
+        "auto-redeploy": false,
+        "ssl": true,
+        {% if overrideTheme %} "override-theme": {}, {% endif %}
+        "app-name" : "Explorer",
+        "app-address" : "/explorer",
+        "app-type" : "END_USER",
+        "host": "https://{{ host }}",
+        "userbook-host": "https://{{ host }}",
+        "mode": "prod",
+        "max-workertime-minutes":15,
+        "postgresConfig":{
+            {% if ipPostgresMaster is defined %}
+            "host": "{{ ipPostgresMaster }}",
+            {% else %}
+                {% if ipPostgres is defined %}
+            "host": "{{ ipPostgres[0] }}",
+                {% else %}
+            "host": "{{ dbip[0] }}",
+                {% endif %}
+            {% endif %}
+            "database": "{{dbName}}",
+            "port": {{postgresPort | default(5432)}},
+            "user": "{{ userPostgres }}",
+            "password": "{{ passwordPostgres }}",
+            "pool-size": {{postgresPoolSize | default(50)}}
+        },
+        "create-index": {{explorerCreateIndex | default(false)}},
+        "elasticsearchConfig":{
+            "uris": {{explorerEsUris}},
+            "index": "{{explorerEsIndex}}"
+        },
+        "publicConf": {
+            "xiti": {
+                "ID_SERVICE": {
+                    "default": 2
+                },
+                "LIBELLE_SERVICE": {
+                    "default": "PRODUCTION_COLLABORATIVE"
+                }
+            }
+        }
+    }
+}
