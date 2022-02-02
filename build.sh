@@ -117,7 +117,7 @@ do
       buildGradle
       ;;
     install)
-      buildStatic && buildGradle
+      buildGradle
       ;;
     watch)
       watch
