@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" class="ode-bootstrap-neo">
+<html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
 
 	<head>
 		<title>[[app.lang.translate('explorer.title')]]</title>
@@ -14,51 +14,11 @@
 		<script>if(typeof window!=='undefined'){window.entcore=window.entcore||{};window.entcore["deploymentTag"]='{{#modVersion}}deployment-tag{{/modVersion}}';}</script>
 		<script src="/assets/js/ode-ts-client/ode-ts-client.js?version={{#modVersion}}ode-ts-client{{/modVersion}}" type="text/javascript"></script>
 		<script src="/assets/js/ode-ngjs-front/ode-ngjs-front.js?version={{#modVersion}}ode-ngjs-front{{/modVersion}}" type="text/javascript"></script>
-		<script type="text/javascript" src="/timeline/public/dist/timeline2/application.js"></script>
+		<script type="text/javascript" src="/explorer/public/dist/application.js"></script>
 	</head>
 
 <body id="explorer">
-  <header class="no-1d navbar navbar-dark bg-secondary">
-    <a class="btn btn-secondary d-none d-md-none d-lg-block" href="/timeline/timeline" title="Accueil">
-        <img class="logo" src="/assets/images/logo.png" alt="Logo de l'ENT">
-    </a>
-    <span class="d-block d-lg-none text-truncate mr-auto text-white">Blog</span>
-
-    <button class="btn btn-secondary" title="Accueil">
-      <i class="ic-home"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Communautés">
-      <i class="ic-community"></i>
-    </button>
-    <button class="btn btn-secondary" title="Mes applis">
-      <i class="ic-apps"></i>
-    </button>
-    <button class="btn btn-secondary" title="Messagerie">
-      <i class="ic-conversation"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Recherche transverse">
-      <i class="ic-search"></i>
-    </button>
-    <button class="btn btn-secondary" title="Aide en ligne">
-      <i class="ic-help"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Mon compte">
-      <i class="fas fa-user-circle"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Déconnexion">
-      <i class="ic-disconnect"></i>
-    </button>
-    <div class="nav-item dropdown d-block d-sm-none">
-      <a class="dropdown-toggle btn btn-secondary" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="#"><i class="ic-community"></i> Communautés</a>
-        <a class="dropdown-item" href="#"><i class="ic-search"></i> Recherche transverse</a>
-        <a class="dropdown-item" href="#"><i class="ic-user"></i> Mon compte</a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="#"><i class="ic-disconnect"></i> Déconnexion</a>
-      </div>
-    </div>
-  </header>
+  <ode-portal app="explorer" name="[[app.lang.translate('explorer.title')]]" ode-modal-container>
   <div class="container d-flex">
     <!-- SIDEBAR -->
     <aside class="sidebar sidebar--left">
@@ -91,7 +51,7 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
       <section class="explorer">
-        <section class="explorer__header">
+        <section class="explorer-header">
 
           <form class="row justify-content-between mb-2 d-none d-sm-none d-md-none d-lg-flex">
             <div class="col-lg-6 input-searchbar">
@@ -237,162 +197,162 @@
             </div>
           </div>
         </section>
-        <section class="explorer__view dominos dominos--square">
+        <section class="explorer-view explorer__view dominos dominos--square">
           <!-- Folder -->
           <article class="domino folder">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-folder text-secondary"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Dossier 1</h2>
-              <span class="domino__info">Il y a 2 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Dossier 1</h2>
+              <span class="domino-info">Il y a 2 heures</span>
             </div>
           </article>
           <article class="domino folder">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-folder text-secondary"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Dossier 2</h2>
-              <span class="domino__info">Il y a 2 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Dossier 2</h2>
+              <span class="domino-info">Il y a 2 heures</span>
             </div>
           </article>
           <article class="domino folder">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-folder text-secondary"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Dossier 3</h2>
-              <span class="domino__info">Il y a 2 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Dossier 3</h2>
+              <span class="domino-info">Il y a 2 heures</span>
             </div>
           </article>
           <!-- Ressource - image par défaut -->
           <article class="domino item blog">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-app blog"></i>
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
+              <div class="domino-overlay transition-hover">
+                <div class="domino-overlay--left">
                   <span title="Ressource partagée"><i class="ic-users"></i>73</span>
                 </div>
-                <div class="domino__overlay--right">
+                <div class="domino-overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>28</span>
                   <span title="Nombre de commentaires"><i class="ic-comment"></i>3</span>
                 </div>
               </div>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource - Blog</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource - Blog</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article>
           <!-- Ressource - exemple de couleur des image par défaut
           <article class="domino item exercizer">
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-app exercizer"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource - Exercizer</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource - Exercizer</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article>
           <article class="domino item timelinegenerator">
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-app timelinegenerator"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource - Timeline</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource - Timeline</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article>
           <article class="domino item rack">
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-app rack"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource - Casier</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource - Casier</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article>
           <article class="domino item homeworks">
-            <div class="domino__image">
+            <div class="domino-image">
               <i class="fas ic-app cahier-de-texte"></i>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource - Cahier de texte</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource - Cahier de texte</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article> -->
 
           <!-- Ressource - image personnelle -->
           <article class="domino item thumbnail active">
             <a class="toaster__open checked" title="Sélectionner la ressource"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
+              <div class="domino-overlay transition-hover">
+                <div class="domino-overlay--left">
                   <span title="Ressource partagée"><i class="ic-users"></i>73</span>
                 </div>
-                <div class="domino__overlay--right">
+                <div class="domino-overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>28</span>
                   <span title="Nombre de commentaires"><i class="ic-comment"></i>3</span>
                 </div>
               </div>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
-              <span class="domino__info">Il y a 23 heures</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Isabelle Polonio</a></span>
+              <span class="domino-info">Il y a 23 heures</span>
             </div>
           </article>
           <article class="domino item thumbnail" data-toggle="modal" data-target="#editProperty">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
+              <div class="domino-overlay transition-hover">
+                <div class="domino-overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
                   <span title="Ressource partagée"><i class="ic-users"></i>1006</span>
                 </div>
-                <div class="domino__overlay--right">
+                <div class="domino-overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>484</span>
                   <span title="Nombre de commentaires"><i class="ic-comment"></i>27</span>
                 </div>
               </div>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title" title="Titre de la ressource - modale propriétés">Titre de la ressource - modale propriétés</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Alain Terrieur</a></span>
-              <span class="domino__info">Il y a 2 semaines</span>
+            <div class="domino-infos">
+              <h2 class="domino-title" title="Titre de la ressource - modale propriétés">Titre de la ressource - modale propriétés</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Alain Terrieur</a></span>
+              <span class="domino-info">Il y a 2 semaines</span>
             </div>
           </article>
           <article class="domino item thumbnail">
             <a class="toaster__open"></a> <!-- Open the toaster on click -->
-            <div class="domino__image">
+            <div class="domino-image">
               <img src="https://loremflickr.com/240/160/" alt="Image de couverture" />
-              <div class="domino__overlay transition-hover">
-                <div class="domino__overlay--left">
+              <div class="domino-overlay transition-hover">
+                <div class="domino-overlay--left">
                   <span title="Ressource public"><i class="ic-public"></i></span>
                   <span title="Ressource partagée"><i class="ic-users"></i>127</span>
                 </div>
-                <div class="domino__overlay--right">
+                <div class="domino-overlay--right">
                   <span title="Nombre de vues"><i class="ic-view"></i>104</span>
                   <span title="Nombre de commentaires"><i class="ic-comment"></i>35</span>
                 </div>
               </div>
             </div>
-            <div class="domino__infos">
-              <h2 class="domino__title">Titre de la ressource</h2>
-              <span class="domino__info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Brigitte Fontaine</a></span>
-              <span class="domino__info">Il y a 1 mois</span>
+            <div class="domino-infos">
+              <h2 class="domino-title">Titre de la ressource</h2>
+              <span class="domino-info">Modifié par <a><img class="avatar avatar--20" src="https://oasys.ch/wp-content/uploads/2019/03/photo-avatar-profil.png" /> Brigitte Fontaine</a></span>
+              <span class="domino-info">Il y a 1 mois</span>
             </div>
           </article>
 
@@ -434,7 +394,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Créer un blog</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -475,7 +435,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Propriétés du blog "Titre de la ressource"</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -521,7 +481,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Créer un dossier</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -542,6 +502,9 @@
     </div>
 
   </div>
+
+  <ode-infotips></ode-infotips>
+  </ode-portal>
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>

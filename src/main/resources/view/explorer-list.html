@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" class="ode-bootstrap-neo">
+<html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
 
 	<head>
 		<title>[[app.lang.translate('explorer.title')]]</title>
@@ -14,79 +14,12 @@
 		<script>if(typeof window!=='undefined'){window.entcore=window.entcore||{};window.entcore["deploymentTag"]='{{#modVersion}}deployment-tag{{/modVersion}}';}</script>
 		<script src="/assets/js/ode-ts-client/ode-ts-client.js?version={{#modVersion}}ode-ts-client{{/modVersion}}" type="text/javascript"></script>
 		<script src="/assets/js/ode-ngjs-front/ode-ngjs-front.js?version={{#modVersion}}ode-ngjs-front{{/modVersion}}" type="text/javascript"></script>
-		<script type="text/javascript" src="/timeline/public/dist/timeline2/application.js"></script>
+		<script type="text/javascript" src="/explorer/public/dist/application.js"></script>
 	</head>
 
 <body id="explorer">
-  <header class="no-1d navbar navbar-dark bg-secondary">
-    <a class="btn btn-secondary d-none d-md-none d-lg-block" href="/timeline/timeline" title="Accueil">
-        <img class="logo" src="/assets/images/logo.png" alt="Logo de l'ENT">
-    </a>
-    <div class="sidebar__mobile">
-      <input type="checkbox" />
-      <i class="ic-burger"></i> Blog
-      <aside class="sidebar">
-        <ul class="sidebar__tree">
-          <li><a class="active" href="">Mes blogs</a>
-            <ul>
-              <li><a href="">Dossier 1</a></li>
-              <li><a href="">Dossier 2</a>
-                <ul>
-                  <li><a href="">Sous-dossier 1</a></li>
-                  <li><a href="">Sous-dossier 2</a></li>
-                  <li><a href="">Sous-dossier 3</a></li>
-                  <li><a href="">Sous-dossier avec un nom très long</a></li>
-                </ul>
-              </li>
-              <li><a href="">Dossier 3</a>
-                <ul>
-                  <li><a href="">Sous-dossier 1</a></li>
-                  <li><a href="">Sous-dossier 2</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li><a href="">Ma corbeille</a></li>
-        </ul>
-        <a class="btn btn-outline-secondary btn-block">Créer un dossier</a>
-        <a class="btn btn-outline-secondary btn-block">Importer</a>
-      </aside>
-    </div>
-    <button class="btn btn-secondary" title="Accueil">
-      <i class="ic-home"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Communautés">
-      <i class="ic-community"></i>
-    </button>
-    <button class="btn btn-secondary" title="Mes applis">
-      <i class="ic-apps"></i>
-    </button>
-    <button class="btn btn-secondary" title="Messagerie">
-      <i class="ic-conversation"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Recherche transverse">
-      <i class="ic-search"></i>
-    </button>
-    <button class="btn btn-secondary" title="Aide en ligne">
-      <i class="ic-help"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Mon compte">
-      <i class="fas fa-user-circle"></i>
-    </button>
-    <button class="btn btn-secondary d-none d-sm-block" title="Déconnexion">
-      <i class="ic-disconnect"></i>
-    </button>
-    <div class="nav-item dropdown d-block d-sm-none">
-      <a class="dropdown-toggle btn btn-secondary" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="#"><i class="ic-community"></i> Communautés</a>
-        <a class="dropdown-item" href="#"><i class="ic-search"></i> Recherche transverse</a>
-        <a class="dropdown-item" href="#"><i class="ic-user"></i> Mon compte</a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="#"><i class="ic-disconnect"></i> Déconnexion</a>
-      </div>
-    </div>
-  </header>
+  <ode-portal app="explorer" name="[[app.lang.translate('explorer.title')]]" ode-modal-container>
+
   <div class="container d-flex">
     <!-- SIDEBAR -->
     <aside class="sidebar sidebar--left">
@@ -119,7 +52,7 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
       <section class="explorer">
-        <section class="explorer__header">
+        <section class="explorer-header">
 
           <form class="row justify-content-between mb-2 d-none d-sm-none d-md-none d-lg-flex">
             <div class="col-lg-6 input-searchbar">
@@ -171,7 +104,7 @@
           </div>
         </section>
         
-        <section class="explorer__view list">
+        <section class="explorer-view explorer__view list">
           <section class="list__header">
             <span class="list__item--preview"></span>
             <span class="list__title"><i class="fas fa-sort"></i> Titre</span>
@@ -390,6 +323,8 @@
       </section>
     </main>
   </div>
+  <ode-infotips></ode-infotips>
+  </ode-portal>
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
