@@ -4642,21 +4642,21 @@ readers do not read off random characters that represent icons */
   /* DOCUMENTATION
 <section class="dominos dominos--square">
     <article class="domino">
-        <div class="domino__overlay">
+        <div class="domino-overlay">
         	<img src="imageDomino" />
-            <div class="domino__overlay--left">
+            <div class="domino-overlay--left">
                 <i>Icone public</i>
                 <i>Icone partage</i>
             </div>
-            <div class="domino__overlay--right">
+            <div class="domino-overlay--right">
                 <i>Icone nombre de vues</i>
                 <i>Icone commentaires</i>
             </div>
         </div>
-        <div class="domino__infos">
-            <h2 class="domino__title">Titre de la ressource</h2>
-            <p class="domino__info">Modifié par <a>Isabelle Polonio</a></p>
-            <p class="domino__info">Il y a 23 heures</p>
+        <div class="domino-infos">
+            <h2 class="domino-title">Titre de la ressource</h2>
+            <p class="domino-info">Modifié par <a>Isabelle Polonio</a></p>
+            <p class="domino-info">Il y a 23 heures</p>
         </div>
 	</article>
 </section>
@@ -12365,7 +12365,7 @@ END DOCUMENTATION */
     white-space: normal !important; }
   .ode-bootstrap-neo .text-nowrap {
     white-space: nowrap !important; }
-  .ode-bootstrap-neo .text-truncate, .ode-bootstrap-neo .domino__infos .domino__title, .ode-bootstrap-neo .domino__infos .domino__info {
+  .ode-bootstrap-neo .text-truncate, .ode-bootstrap-neo .domino-infos .domino-title, .ode-bootstrap-neo .domino-infos .domino-info {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
@@ -12959,7 +12959,7 @@ END DOCUMENTATION */
     transition-property: all;
     transition-duration: 0.25s;
     transition-timing-function: ease; }
-  .ode-bootstrap-neo .transition-hover, .ode-bootstrap-neo .domino, .ode-bootstrap-neo .domino:hover .domino__overlay--left, .ode-bootstrap-neo .domino:hover .domino__overlay--right, .ode-bootstrap-neo .list__item, .ode-bootstrap-neo .sidebar__mobile .sidebar, .ode-bootstrap-neo .sidebar__mobile input[type=checkbox]:checked ~ .sidebar {
+  .ode-bootstrap-neo .transition-hover, .ode-bootstrap-neo .domino, .ode-bootstrap-neo .domino:hover .domino-overlay--left, .ode-bootstrap-neo .domino:hover .domino-overlay--right, .ode-bootstrap-neo .list__item, .ode-bootstrap-neo .sidebar__mobile .sidebar, .ode-bootstrap-neo .sidebar__mobile input[type=checkbox]:checked ~ .sidebar {
     transition-property: all;
     transition-duration: 0.5s;
     transition-timing-function: ease; }
@@ -12999,19 +12999,19 @@ END DOCUMENTATION */
     margin: 10px;
     cursor: pointer;
     position: relative; }
-    .ode-bootstrap-neo .domino__image {
+    .ode-bootstrap-neo .domino-image {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       height: 120px;
       position: relative;
       border-radius: 10px 10px 0 0; }
-      .ode-bootstrap-neo .domino__image img {
+      .ode-bootstrap-neo .domino-image img {
         border-radius: 10px 10px 0 0;
         width: 100%;
         height: 100%;
         object-fit: cover; }
-    .ode-bootstrap-neo .domino__overlay {
+    .ode-bootstrap-neo .domino-overlay {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -13021,74 +13021,74 @@ END DOCUMENTATION */
       color: #fff;
       padding: 5px 10px;
       position: absolute; }
-      .ode-bootstrap-neo .domino__overlay span {
+      .ode-bootstrap-neo .domino-overlay span {
         font-weight: bold;
         font-size: 0.75rem; }
-      .ode-bootstrap-neo .domino__overlay i {
+      .ode-bootstrap-neo .domino-overlay i {
         font-weight: normal;
         margin: 3px; }
-      .ode-bootstrap-neo .domino__overlay--left, .ode-bootstrap-neo .domino__overlay--right {
+      .ode-bootstrap-neo .domino-overlay--left, .ode-bootstrap-neo .domino-overlay--right {
         opacity: 0; }
-    .ode-bootstrap-neo .domino.folder .domino__image,
-    .ode-bootstrap-neo .domino.item .domino__image {
+    .ode-bootstrap-neo .domino.folder .domino-image,
+    .ode-bootstrap-neo .domino.item .domino-image {
       background-color: rgba(75, 175, 213, 0.1);
       justify-content: center;
       align-items: center; }
-      .ode-bootstrap-neo .domino.folder .domino__image > i,
-      .ode-bootstrap-neo .domino.item .domino__image > i {
+      .ode-bootstrap-neo .domino.folder .domino-image > i,
+      .ode-bootstrap-neo .domino.item .domino-image > i {
         font-size: 4rem; }
-    .ode-bootstrap-neo .domino.item.thumbnail .domino__image {
+    .ode-bootstrap-neo .domino.item.thumbnail .domino-image {
       align-items: flex-start; }
-      .ode-bootstrap-neo .domino.item.thumbnail .domino__image__overlay {
+      .ode-bootstrap-neo .domino.item.thumbnail .domino-image__overlay {
         background-color: rgba(0, 0, 0, 0.3); }
-    .ode-bootstrap-neo .domino__infos {
+    .ode-bootstrap-neo .domino-infos {
       display: flex;
       flex-direction: column;
       justify-content: center;
       height: calc(240px - 160px);
       padding: 10px; }
-      .ode-bootstrap-neo .domino__infos .domino__title {
+      .ode-bootstrap-neo .domino-infos .domino-title {
         color: #5b6472;
         font-size: 0.875rem;
         font-weight: bold;
         margin-bottom: 5px; }
-      .ode-bootstrap-neo .domino__infos .domino__info {
+      .ode-bootstrap-neo .domino-infos .domino-info {
         color: #8c939e;
         font-size: .75rem; }
-        .ode-bootstrap-neo .domino__infos .domino__info a {
+        .ode-bootstrap-neo .domino-infos .domino-info a {
           font-weight: bold;
           color: #4bafd5;
           cursor: pointer; }
-          .ode-bootstrap-neo .domino__infos .domino__info a:hover {
+          .ode-bootstrap-neo .domino-infos .domino-info a:hover {
             color: #FF8500; }
     .ode-bootstrap-neo .domino:hover {
       border-color: #4bafd5; }
-      .ode-bootstrap-neo .domino:hover .domino__overlay {
+      .ode-bootstrap-neo .domino:hover .domino-overlay {
         background-color: rgba(0, 0, 0, 0.5); }
-        .ode-bootstrap-neo .domino:hover .domino__overlay--left, .ode-bootstrap-neo .domino:hover .domino__overlay--right {
+        .ode-bootstrap-neo .domino:hover .domino-overlay--left, .ode-bootstrap-neo .domino:hover .domino-overlay--right {
           opacity: 1; }
       .ode-bootstrap-neo .domino:hover .toaster2 {
         display: block; }
     .ode-bootstrap-neo .domino:active, .ode-bootstrap-neo .domino.active {
       background-color: rgba(75, 175, 213, 0.1);
       border-color: #4bafd5; }
-    .ode-bootstrap-neo .domino.active .domino__overlay {
+    .ode-bootstrap-neo .domino.active .domino-overlay {
       background-color: rgba(0, 0, 0, 0.5); }
-      .ode-bootstrap-neo .domino.active .domino__overlay--left, .ode-bootstrap-neo .domino.active .domino__overlay--right {
+      .ode-bootstrap-neo .domino.active .domino-overlay--left, .ode-bootstrap-neo .domino.active .domino-overlay--right {
         opacity: 1; }
-  .ode-bootstrap-neo .domino.blog .domino__image {
+  .ode-bootstrap-neo .domino.blog .domino-image {
     background-color: rgba(26, 34, 162, 0.1);
     color: #1a22a2; }
-  .ode-bootstrap-neo .domino.exercizer .domino__image {
+  .ode-bootstrap-neo .domino.exercizer .domino-image {
     background-color: rgba(118, 50, 148, 0.1);
     color: #763294; }
-  .ode-bootstrap-neo .domino.timelinegenerator .domino__image {
+  .ode-bootstrap-neo .domino.timelinegenerator .domino-image {
     background-color: rgba(236, 190, 48, 0.1);
     color: #ecbe30; }
-  .ode-bootstrap-neo .domino.rack .domino__image {
+  .ode-bootstrap-neo .domino.rack .domino-image {
     background-color: rgba(225, 58, 58, 0.1);
     color: #e13a3a; }
-  .ode-bootstrap-neo .domino.homeworks .domino__image {
+  .ode-bootstrap-neo .domino.homeworks .domino-image {
     background-color: rgba(70, 191, 175, 0.1);
     color: #46bfaf; }
   .ode-bootstrap-neo .dominos--square .domino {
@@ -13107,9 +13107,9 @@ END DOCUMENTATION */
     .ode-bootstrap-neo .dominos--square .domino {
       margin: 5px;
       width: calc(25% - 10px); }
-      .ode-bootstrap-neo .dominos--square .domino:hover .domino__overlay, .ode-bootstrap-neo .dominos--square .domino.active .domino__overlay {
+      .ode-bootstrap-neo .dominos--square .domino:hover .domino-overlay, .ode-bootstrap-neo .dominos--square .domino.active .domino-overlay {
         background-color: transparent; }
-        .ode-bootstrap-neo .dominos--square .domino:hover .domino__overlay--left, .ode-bootstrap-neo .dominos--square .domino:hover .domino__overlay--right, .ode-bootstrap-neo .dominos--square .domino.active .domino__overlay--left, .ode-bootstrap-neo .dominos--square .domino.active .domino__overlay--right {
+        .ode-bootstrap-neo .dominos--square .domino:hover .domino-overlay--left, .ode-bootstrap-neo .dominos--square .domino:hover .domino-overlay--right, .ode-bootstrap-neo .dominos--square .domino.active .domino-overlay--left, .ode-bootstrap-neo .dominos--square .domino.active .domino-overlay--right {
           opacity: 0; } }
   @media (max-width: 820px) {
     .ode-bootstrap-neo .dominos--square .domino {
@@ -13119,17 +13119,17 @@ END DOCUMENTATION */
       width: calc(50% - 10px); } }
   .ode-bootstrap-neo .dropdown-item input[type="checkbox"] {
     vertical-align: middle; }
-  .ode-bootstrap-neo .explorer__header {
+  .ode-bootstrap-neo .explorer-header {
     padding: 20px 20px 0; }
-    .ode-bootstrap-neo .explorer__header h2 {
+    .ode-bootstrap-neo .explorer-header h2 {
       position: relative;
       color: #5b6472;
       font-size: 1.375rem;
       margin-bottom: 0; }
-      .ode-bootstrap-neo .explorer__header h2 small {
+      .ode-bootstrap-neo .explorer-header h2 small {
         font-size: 70%;
         color: #8c939e; }
-  .ode-bootstrap-neo .explorer__view {
+  .ode-bootstrap-neo .explorer-view {
     padding: 10px;
     height: calc(100vh - 220px);
     overflow-x: auto;
@@ -13137,11 +13137,11 @@ END DOCUMENTATION */
     scrollbar-color: #b1b6bf #e9ebef;
     border-top: 1px solid #e9ebef; }
   @media (max-width: 991.98px) {
-    .ode-bootstrap-neo .explorer__header {
+    .ode-bootstrap-neo .explorer-header {
       padding: 15px 15px 0; }
-      .ode-bootstrap-neo .explorer__header h2 {
+      .ode-bootstrap-neo .explorer-header h2 {
         font-size: 1.125rem; }
-    .ode-bootstrap-neo .explorer__view {
+    .ode-bootstrap-neo .explorer-view {
       height: calc(100vh - 110px); } }
   .ode-bootstrap-neo .filters .btn, .ode-bootstrap-neo .filters .toaster__open {
     color: #8c939e;
@@ -13219,7 +13219,7 @@ END DOCUMENTATION */
   .ode-bootstrap-neo .list__modification {
     width: 175px; }
   @media (max-width: 767.98px) {
-    .ode-bootstrap-neo .explorer__view.list {
+    .ode-bootstrap-neo .explorer-view.list {
       padding: 5px;
       border-left-color: transparent;
       border-right-color: transparent;
@@ -13466,21 +13466,21 @@ END DOCUMENTATION */
   /* DOCUMENTATION
 <section class="dominos dominos--square">
     <article class="domino">
-        <div class="domino__overlay">
+        <div class="domino-overlay">
         	<img src="imageDomino" />
-            <div class="domino__overlay--left">
+            <div class="domino-overlay--left">
                 <i>Icone public</i>
                 <i>Icone partage</i>
             </div>
-            <div class="domino__overlay--right">
+            <div class="domino-overlay--right">
                 <i>Icone nombre de vues</i>
                 <i>Icone commentaires</i>
             </div>
         </div>
-        <div class="domino__infos">
-            <h2 class="domino__title">Titre de la ressource</h2>
-            <p class="domino__info">Modifié par <a>Isabelle Polonio</a></p>
-            <p class="domino__info">Il y a 23 heures</p>
+        <div class="domino-infos">
+            <h2 class="domino-title">Titre de la ressource</h2>
+            <p class="domino-info">Modifié par <a>Isabelle Polonio</a></p>
+            <p class="domino-info">Il y a 23 heures</p>
         </div>
 	</article>
 </section>
@@ -13759,7 +13759,7 @@ END DOCUMENTATION */
     transition-property: all;
     transition-duration: 0.25s;
     transition-timing-function: ease; }
-  .ode-bootstrap-neo .transition-hover, .ode-bootstrap-neo .domino, .ode-bootstrap-neo .domino:hover .domino__overlay--left, .ode-bootstrap-neo .domino:hover .domino__overlay--right, .ode-bootstrap-neo .list__item, .ode-bootstrap-neo .sidebar__mobile .sidebar, .ode-bootstrap-neo .sidebar__mobile input[type=checkbox]:checked ~ .sidebar {
+  .ode-bootstrap-neo .transition-hover, .ode-bootstrap-neo .domino, .ode-bootstrap-neo .domino:hover .domino-overlay--left, .ode-bootstrap-neo .domino:hover .domino-overlay--right, .ode-bootstrap-neo .list__item, .ode-bootstrap-neo .sidebar__mobile .sidebar, .ode-bootstrap-neo .sidebar__mobile input[type=checkbox]:checked ~ .sidebar {
     transition-property: all;
     transition-duration: 0.5s;
     transition-timing-function: ease; }
@@ -13802,8 +13802,8 @@ END DOCUMENTATION */
       border-color: #8c939e;
       color: rgba(255, 255, 255, 0.8);
       opacity: .8; }
-  .ode-bootstrap-neo .domino.folder .domino__image,
-  .ode-bootstrap-neo .domino.item .domino__image {
+  .ode-bootstrap-neo .domino.folder .domino-image,
+  .ode-bootstrap-neo .domino.item .domino-image {
     background-color: rgba(75, 175, 213, 0.1); }
   .ode-bootstrap-neo .domino:hover {
     border-color: #4bafd5; }
@@ -13821,7 +13821,7 @@ END DOCUMENTATION */
   @media (max-width: 1100px) {
     .ode-bootstrap-neo .dominos--square .domino {
       width: calc(33% - 20px); } }
-  .ode-bootstrap-neo .explorer__view {
+  .ode-bootstrap-neo .explorer-view {
     height: calc(100vh - 220px); }
   .ode-bootstrap-neo .filters:hover {
     color: #4bafd5;

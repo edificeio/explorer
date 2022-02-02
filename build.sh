@@ -117,7 +117,7 @@ do
       buildGradle
       ;;
     install)
-      buildGradle
+      buildNode && buildGradle
       ;;
     watch)
       watch
