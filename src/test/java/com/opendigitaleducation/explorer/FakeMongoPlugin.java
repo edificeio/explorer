@@ -1,8 +1,8 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.plugin.*;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.*;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -16,17 +16,17 @@ public class FakeMongoPlugin extends ExplorerPluginResourceCrud {
     public static final String COLLECTION = "explorer.test_fake";
     static Logger log = LoggerFactory.getLogger(FakeMongoPlugin.class);
 
-    protected FakeMongoPlugin(final ExplorerPluginCommunication communication, final MongoClient mongoClient) {
+    protected FakeMongoPlugin(final IExplorerPluginCommunication communication, final MongoClient mongoClient) {
         super(communication, new FakeMongoExplorerCrud(mongoClient));
     }
 
     public static FakeMongoPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {
-        final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
         return new FakeMongoPlugin(communication, mongoClient);
     }
 
     public static FakeMongoPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgresClient, final MongoClient mongoClient) {
-        final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient);
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient);
         return new FakeMongoPlugin(communication, mongoClient);
     }
 

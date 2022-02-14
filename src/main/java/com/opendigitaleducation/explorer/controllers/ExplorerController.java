@@ -3,8 +3,8 @@ package com.opendigitaleducation.explorer.controllers;
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginClient;
+import org.entcore.common.explorer.ExplorerPlugin;
+import org.entcore.common.explorer.ExplorerPluginClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import fr.wseduc.rs.Delete;
@@ -27,6 +27,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
@@ -343,7 +344,7 @@ public class ExplorerController extends BaseController {
     public void reindex(final HttpServerRequest request) {
         final String app = request.params().get("application");
         final String type = request.params().get("type");
-        final ExplorerPluginClient client =  ExplorerPluginClient.withBus(vertx, app, type);
+        final IExplorerPluginClient client =  IExplorerPluginClient.withBus(vertx, app, type);
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);

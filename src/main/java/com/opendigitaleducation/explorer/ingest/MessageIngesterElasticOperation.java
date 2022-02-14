@@ -1,8 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
+import org.entcore.common.elasticsearch.ElasticBulkBuilder;
+import org.entcore.common.explorer.ExplorerMessage;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -35,7 +35,7 @@ abstract class MessageIngesterElasticOperation {
         return new MessageIngesterElasticOperationNoop(message);
     }
 
-    abstract void execute(final ElasticBulkRequest request);
+    abstract void execute(final ElasticBulkBuilder request);
 
 
     static class MessageIngesterElasticOperationAudience extends MessageIngesterElasticOperation {
@@ -43,7 +43,7 @@ abstract class MessageIngesterElasticOperation {
             super(message);
         }
         @Override
-        void execute(final ElasticBulkRequest bulk) {
+        void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String id = message.getPredictibleId().orElse(message.getId());
@@ -59,7 +59,7 @@ abstract class MessageIngesterElasticOperation {
             super(message);
         }
         @Override
-        void execute(final ElasticBulkRequest bulk) {
+        void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
@@ -74,7 +74,7 @@ abstract class MessageIngesterElasticOperation {
         }
 
         @Override
-        void execute(final ElasticBulkRequest bulk) {
+        void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
             //prepare custom fields
             final JsonObject original = message.getMessage();
@@ -94,7 +94,7 @@ abstract class MessageIngesterElasticOperation {
         }
 
         @Override
-        void execute(final ElasticBulkRequest request) {
+        void execute(final ElasticBulkBuilder request) {
             log.error("Should not execute noop operation for message:" + message.getId() + "->" + message.getAction());
         }
     }

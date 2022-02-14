@@ -1,14 +1,14 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
@@ -43,7 +43,7 @@ import java.net.URI;
 public class ExplorerControllerTest {
     protected static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
+    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule
@@ -70,7 +70,7 @@ public class ExplorerControllerTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
-        final ExplorerPluginCommunication communication = folderPlugin.getCommunication();
+        final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin);
         final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient);
         controller = new ExplorerController(folderService, resourceService);

@@ -1,8 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationRedis;
-import com.opendigitaleducation.explorer.redis.RedisBatch;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.ExplorerPluginCommunicationRedis;
+import org.entcore.common.redis.RedisBatch;
+import org.entcore.common.redis.RedisClient;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

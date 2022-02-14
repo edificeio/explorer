@@ -24,7 +24,6 @@ package com.opendigitaleducation.explorer;
 
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.filters.ResourceFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
@@ -32,9 +31,6 @@ import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobWorker;
 import com.opendigitaleducation.explorer.ingest.MessageIngester;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
@@ -51,7 +47,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class Explorer extends BaseServer {
         final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         //create resources service
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        final ExplorerPluginCommunication communication = folderPlugin.getCommunication();
+        final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         //create controller
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);

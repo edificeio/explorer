@@ -1,13 +1,10 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginClient;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginClientDefault;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationPostgres;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.explorer.*;
+import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -39,7 +36,7 @@ import java.util.Optional;
 public class MongoPluginTest {
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
+    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule
@@ -64,7 +61,7 @@ public class MongoPluginTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        ExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
+        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withPostgresChannel(test.vertx(), postgresClient, mongoClient);
@@ -73,7 +70,7 @@ public class MongoPluginTest {
         createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> async.complete());
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
-        pluginClient = ExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
+        pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
     }
 
 

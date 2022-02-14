@@ -1,9 +1,9 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.elastic.ElasticBulkRequest;
-import com.opendigitaleducation.explorer.elastic.ElasticClient;
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticBulkBuilder;
+import org.entcore.common.elasticsearch.ElasticClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -39,7 +39,7 @@ public class MessageIngesterElastic implements MessageIngester {
         final List<MessageIngesterElasticOperation> operations = messages.stream().map(mess->{
             return MessageIngesterElasticOperation.create(mess);
         }).collect(Collectors.toList());
-        final ElasticBulkRequest bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
+        final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
         for(final MessageIngesterElasticOperation op : operations){
             op.execute(bulk);
         }
@@ -52,7 +52,7 @@ public class MessageIngesterElastic implements MessageIngester {
             final List<ExplorerMessageForIngest> failed = new ArrayList<>();
             //
             for (int i = 0; i < results.size(); i++) {
-                final ElasticBulkRequest.ElasticBulkRequestResult res = results.get(i);
+                final ElasticBulkBuilder.ElasticBulkRequestResult res = results.get(i);
                 final MessageIngesterElasticOperation op = operations.get(i);
                 if (res.isOk()) {
                     succeed.add(op.message);
