@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.PostgresClient;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;

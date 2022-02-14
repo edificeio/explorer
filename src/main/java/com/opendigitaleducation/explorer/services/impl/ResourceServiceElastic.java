@@ -1,15 +1,15 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.elastic.ElasticClient;
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
@@ -24,13 +24,13 @@ public class ResourceServiceElastic implements ResourceService {
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
     final ResourceExplorerCrudSql sql;
-    final ExplorerPluginCommunication communication;
+    final IExplorerPluginCommunication communication;
     final boolean waitFor = true;
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final ExplorerPluginCommunication communication, final PostgresClient sql) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final PostgresClient sql) {
         this(aManager, shareTableManager, communication, new ResourceExplorerCrudSql(sql));
     }
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final ExplorerPluginCommunication communication, final ResourceExplorerCrudSql sql) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final ResourceExplorerCrudSql sql) {
         this.manager = aManager;
         this.sql = sql;
         this.communication = communication;

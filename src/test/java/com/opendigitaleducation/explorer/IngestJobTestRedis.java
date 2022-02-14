@@ -2,10 +2,10 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.ExplorerPlugin;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -92,7 +92,7 @@ public class IngestJobTestRedis extends IngestJobTest {
     @Override
     public ResourceService getResourceService() {
         if(resourceService == null){
-            final ExplorerPluginCommunication comm = getExplorerPlugin().getCommunication();
+            final IExplorerPluginCommunication comm = getExplorerPlugin().getCommunication();
             resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), comm, getPostgresClient());
         }
         return resourceService;

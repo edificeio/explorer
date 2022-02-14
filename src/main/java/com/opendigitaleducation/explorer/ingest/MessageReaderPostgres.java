@@ -1,8 +1,8 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationPostgres;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.postgres.PostgresClientChannel;
+import org.entcore.common.explorer.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClientChannel;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;

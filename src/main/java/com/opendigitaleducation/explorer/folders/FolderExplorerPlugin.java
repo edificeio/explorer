@@ -1,13 +1,13 @@
 package com.opendigitaleducation.explorer.folders;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunication;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginCommunicationRedis;
-import com.opendigitaleducation.explorer.plugin.ExplorerPluginResourceCrud;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.ExplorerPluginCommunicationRedis;
+import org.entcore.common.explorer.ExplorerPluginResourceCrud;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClientPool;
+import org.entcore.common.redis.RedisClient;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -21,13 +21,13 @@ import java.util.stream.Collectors;
 public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
     protected final PostgresClientPool pgPool;
 
-    public FolderExplorerPlugin(final ExplorerPluginCommunication communication, final PostgresClient pgClient) {
+    public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
         super(communication, new FolderExplorerCrudSql(pgClient));
         this.pgPool = pgClient.getClientPool();
     }
 
     public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
-        final ExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
         return new FolderExplorerPlugin(communication, postgres);
     }
 

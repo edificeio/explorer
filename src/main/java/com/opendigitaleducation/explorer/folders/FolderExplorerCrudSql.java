@@ -2,9 +2,9 @@ package com.opendigitaleducation.explorer.folders;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.ingest.MessageIngester;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.plugin.ExplorerResourceCrudSql;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerResourceCrudSql;
+import org.entcore.common.postgres.PostgresClient;
 import fr.wseduc.webutils.security.Md5;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;

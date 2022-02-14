@@ -1,9 +1,9 @@
 package com.opendigitaleducation.explorer.folders;
 
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.plugin.ExplorerResourceCrudSql;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerResourceCrudSql;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClientPool;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;

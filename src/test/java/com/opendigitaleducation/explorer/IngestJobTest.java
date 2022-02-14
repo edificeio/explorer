@@ -1,10 +1,10 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import com.opendigitaleducation.explorer.plugin.ExplorerPlugin;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.explorer.ExplorerPlugin;
+import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
@@ -33,7 +33,7 @@ public abstract class IngestJobTest {
     protected static String esIndex;
     protected static final String application = FakePostgresPlugin.FAKE_APPLICATION;
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
+    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     static ElasticClientManager elasticClientManager;
 
     protected abstract IngestJob getIngestJob();

@@ -1,9 +1,9 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClient;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 

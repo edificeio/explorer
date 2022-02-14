@@ -1,11 +1,11 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.elastic.ElasticClientManager;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.plugin.ExplorerMessage;
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.redis.RedisClient;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -35,7 +35,7 @@ import java.util.Arrays;
 public class ResourceServiceTest {
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0").withReuse(true);
+    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule

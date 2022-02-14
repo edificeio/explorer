@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.share;
 
-import com.opendigitaleducation.explorer.postgres.PostgresClient;
-import com.opendigitaleducation.explorer.postgres.PostgresClientPool;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClientPool;
 import fr.wseduc.webutils.security.Md5;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
