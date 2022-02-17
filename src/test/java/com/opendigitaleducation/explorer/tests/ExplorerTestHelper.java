@@ -32,9 +32,9 @@ import java.net.URI;
 
 public class ExplorerTestHelper implements TestRule {
     static final Logger logger = LoggerFactory.getLogger(ExplorerTestHelper.class);
-    private static final TestHelper test = TestHelper.helper();
+    private static final TestHelper testHelper = TestHelper.helper();
     public ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
-    public PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
+    public PostgreSQLContainer<?> pgContainer = testHelper.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     private final String application;
     private IngestJob job;
     private String resourceIndex;
@@ -45,27 +45,32 @@ public class ExplorerTestHelper implements TestRule {
     public ExplorerTestHelper(final String application) {
         this.application = application;
     }
+
+    public TestHelper getTestHelper() {
+        return testHelper;
+    }
+
     public void init(){
         try {
             final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
-            elasticClientManager = new ElasticClientManager(test.vertx(), uris);
+            elasticClientManager = new ElasticClientManager(testHelper.vertx(), uris);
             resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
             logger.info("Using index: " + resourceIndex);
             ExplorerConfig.getInstance().setEsIndex(application, resourceIndex);
             final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
-            final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
+            final PostgresClient postgresClient = new PostgresClient(testHelper.vertx(), postgresqlConfig);
             final ShareTableManager shareTableManager = new DefaultShareTableManager();
-            communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
+            communication = new ExplorerPluginCommunicationPostgres(testHelper.vertx(), postgresClient);
             resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
-            job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+            job = IngestJob.create(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
         }catch(Exception e){
             throw new RuntimeException(e);
         }
     }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
+        final Buffer mapping = testHelper.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
