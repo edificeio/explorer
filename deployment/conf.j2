@@ -35,6 +35,12 @@
             "uris": {{explorerEsUris}},
             "index": "{{explorerEsIndex}}"
         },
+        "ingest":{
+            "consumer-block-ms": 0,
+            "max-attempt": 10,
+            "batch-size": 100,
+            "max-delay-ms": 45000
+        },
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {

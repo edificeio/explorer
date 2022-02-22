@@ -112,6 +112,9 @@ public class Explorer extends BaseServer {
         //call start promise
         CompositeFuture.all(futures).onComplete(e -> {
             log.info("Explorer application started -> " + e.succeeded());
+            if(e.failed()){
+                log.error("Explorer application failed to start", e.cause());
+            }
         });
     }
 
