@@ -62,6 +62,7 @@ public class Explorer extends BaseServer {
 
     @Override
     public void start() throws Exception {
+        //TODO move postgresConfig (j2) to infra
         log.info("Starting explorer...");
         super.start();
         final List<Future> futures = new ArrayList<>();

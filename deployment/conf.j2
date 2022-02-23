@@ -19,9 +19,9 @@
             "host": "{{ ipPostgresMaster }}",
             {% else %}
                 {% if ipPostgres is defined %}
-            "host": "{{ ipPostgres[0] }}",
+            "host": "{{ ipPostgres | first }}",
                 {% else %}
-            "host": "{{ dbip[0] }}",
+            "host": "{{ dbip | first }}",
                 {% endif %}
             {% endif %}
             "database": "{{dbName}}",
