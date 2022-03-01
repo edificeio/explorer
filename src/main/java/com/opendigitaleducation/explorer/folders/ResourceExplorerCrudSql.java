@@ -59,7 +59,7 @@ public class ResourceExplorerCrudSql  {
             final String resourceUniqueId = e.getResourceUniqueId();
             return new JsonObject().put("ent_id", e.getId()).put("application",e.getApplication())
                     .put("resource_type", e.getResourceType()).put("resource_unique_id", resourceUniqueId)
-                    .put("creator_id", e.getCreatorId());
+                    .put("creator_id", e.getCreatorId()).put("shared", e.getShared());
         }).collect(Collectors.toList());
         //(only one upsert per resource_uniq_id)
         final Map<String, JsonObject> resourcesMap = new HashMap<>();
@@ -69,12 +69,12 @@ public class ResourceExplorerCrudSql  {
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
         final Collection<JsonObject> resourcesColl = resourcesMap.values();
-        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name","application","resource_type","resource_unique_id", "creator_id");
-        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name","application","resource_type", "resource_unique_id", "creator_id");
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name","application","resource_type","resource_unique_id", "creator_id", "shared");
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name","application","resource_type", "resource_unique_id", "creator_id", "shared");
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
-        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=r.name RETURNING * ");
+        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, shared) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, shared=COALESCE(EXCLUDED.shared, COALESCE(r.shared, '[]')) RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,ent_id,resource_unique_id, creator_id, ");
         queryTpl.append("       application, resource_type, shared, ");
@@ -106,6 +106,61 @@ public class ResourceExplorerCrudSql  {
                 }
             }
             return new ArrayList<>(results.values());
+        });
+    }
+
+    public Future<Set<ResouceSql>> getSharedByEntIds(final Set<String> ids) {
+        if (ids.isEmpty()) {
+            return Future.succeededFuture(new HashSet<>());
+        }
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final String queryTpl = "SELECT * FROM explorer.resources WHERE ent_id IN (%s)";
+        final String query = String.format(queryTpl, inPlaceholder);
+        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+        return pgPool.preparedQuery(query, tuple).map(rows ->{
+            final Set<ResouceSql> resources = new HashSet<>();
+            for(final Row row : rows){ ;
+                final Integer id = row.getInteger("id");
+                final String entId = row.getString("ent_id");
+                final String creatorId = row.getString("creator_id");
+                final String resourceUniqueId = row.getString("resource_unique_id");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                final Json shared = row.getJson("shared");
+                final ResouceSql res = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type);
+                if(shared != null){
+                    final Object value = shared.value();
+                    if(value instanceof JsonArray){
+                        res.shared.addAll((JsonArray) value);
+                    }
+                }
+                resources.add(res);
+            }
+            return  resources;
+        });
+    }
+
+    public Future<Set<ResouceSql>> getModelByIds(final Set<Integer> ids){
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new HashSet<>());
+        }
+        final Tuple tuple = Tuple.tuple();
+        PostgresClient.inTuple(tuple, ids);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final String queryTpl = "SELECT * FROM explorer.resources WHERE id IN (%s)";
+        final String query = String.format(queryTpl, inPlaceholder);
+        return pgPool.preparedQuery(query, tuple).map(rows ->{
+            final Set<ResouceSql> resources = new HashSet<>();
+            for(final Row row : rows){ ;
+                final Integer id = row.getInteger("id");
+                final String entId = row.getString("ent_id");
+                final String creatorId = row.getString("creator_id");
+                final String resourceUniqueId = row.getString("resource_unique_id");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                resources.add(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type));
+            }
+            return  resources;
         });
     }
 
