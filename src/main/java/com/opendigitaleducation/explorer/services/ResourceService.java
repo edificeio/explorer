@@ -11,9 +11,6 @@ import java.util.Optional;
 //TODO add log profile
 //TODO add metrics
 public interface ResourceService {
-    String CUSTOM_IDENTIFIER = "_identifier";
-    String SUCCESS_FIELD = "_success";
-    String ERROR_FIELD = "_error";
 
     //TODO fetch by other criterias...
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
@@ -25,6 +22,8 @@ public interface ResourceService {
     Future<JsonObject> share(final UserInfos user, final String application, final JsonObject document, final List<ShareOperation> operation) throws Exception;
 
     Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
+
+    void stopConsumer();
 
     class ShareOperation {
         final String id;

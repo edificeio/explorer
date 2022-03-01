@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.eventbus.MessageConsumer;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
@@ -8,6 +9,7 @@ import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
@@ -26,6 +28,7 @@ public class ResourceServiceElastic implements ResourceService {
     final ResourceExplorerCrudSql sql;
     final IExplorerPluginCommunication communication;
     final boolean waitFor = true;
+    final MessageConsumer messageConsumer;
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final PostgresClient sql) {
         this(aManager, shareTableManager, communication, new ResourceExplorerCrudSql(sql));
@@ -35,6 +38,34 @@ public class ResourceServiceElastic implements ResourceService {
         this.sql = sql;
         this.communication = communication;
         this.shareTableManager = shareTableManager;
+        this.messageConsumer = communication.vertx().eventBus().consumer(ExplorerPlugin.RESOURCES_ADDRESS, message->{
+            final String action = message.headers().get("action");
+            switch (action) {
+                case ExplorerPlugin.RESOURCES_GETSHARE:
+                    final JsonArray ids = (JsonArray)message.body();
+                    final Set<String> idSet = ids.stream().map(e->e.toString()).collect(Collectors.toSet());
+                    this.sql.getSharedByEntIds(idSet).onComplete(e->{
+                       if(e.succeeded()){
+                           final JsonObject results = new JsonObject();
+                           for(final ResourceExplorerCrudSql.ResouceSql res : e.result()){
+                               results.put(res.entId, res.shared);
+                           }
+                           message.reply(results);
+                       }else{
+                           message.fail(500, e.cause().getMessage());
+                       }
+                    });
+                    break;
+                default:
+                    message.fail(500, "Action not found");
+                    break;
+            }
+        });
+    }
+
+    @Override
+    public void stopConsumer() {
+        this.messageConsumer.unregister();
     }
 
     protected String getIndex(final String application){
@@ -117,9 +148,9 @@ public class ResourceServiceElastic implements ResourceService {
         final List<JsonObject> rights = operation.stream().map(o -> o.toJsonRight()).collect(Collectors.toList());
         final Set<Integer> ids = resources.stream().map(e -> Integer.valueOf(e.getString("_id"))).collect(Collectors.toSet());
         final JsonArray shared = new JsonArray(rights);
-        return sql.updateShareById(ids, shared).compose(entIds -> {
+        return sql.getModelByIds(ids).compose(entIds -> {
             final List<ExplorerMessage> messages = entIds.stream().map(e -> {
-                return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType).withShared(shared);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);

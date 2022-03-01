@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import io.vertx.core.eventbus.MessageConsumer;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.PostgresClient;
 import fr.wseduc.webutils.DefaultAsyncResult;
@@ -34,6 +35,7 @@ public class IngestJob {
     private Handler<AsyncResult<IngestJob.IngestJobResult>> onExecutionEnd = e -> {
     };
     private boolean pendingNotification = false;
+    private final MessageConsumer messageConsumer;
 
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
         this.vertx = vertx;
@@ -42,7 +44,7 @@ public class IngestJob {
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
-        vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
+        messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
                 case INGESTOR_JOB_TRIGGER:
@@ -72,6 +74,10 @@ public class IngestJob {
                     break;
             }
         });
+    }
+
+    public void stopConsumer(){
+        this.messageConsumer.unregister();
     }
 
     public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final PostgresClient postgresClient, final JsonObject config, final MessageReader reader) {

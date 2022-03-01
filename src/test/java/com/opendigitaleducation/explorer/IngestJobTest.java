@@ -23,10 +23,7 @@ import org.junit.*;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class IngestJobTest {
     protected static final TestHelper test = TestHelper.helper();
@@ -314,7 +311,12 @@ public abstract class IngestJobTest {
             }
         }).onComplete(context.asyncAssertSuccess(r -> {
             System.out.println("end of shouldExploreResourceByShare");
-            async.countDown();
+            getExplorerPlugin().getShareInfo(new HashSet<>(Arrays.asList("idshare1","idshare2","idshare3"))).onComplete(context.asyncAssertSuccess(e->{
+                context.assertEquals(1, e.get("idshare1").size());
+                context.assertEquals(6, e.get("idshare2").size());
+                context.assertEquals(0, e.get("idshare3").size());
+                async.countDown();
+            }));
         }));
     }
 
