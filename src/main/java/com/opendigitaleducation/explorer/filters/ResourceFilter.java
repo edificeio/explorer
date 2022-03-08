@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.filters;
 
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.http.filter.ResourcesProvider;
@@ -21,7 +22,7 @@ public class ResourceFilter implements ResourcesProvider {
         final String application = request.params().get("application");
         if (!StringUtils.isEmpty(id) && !StringUtils.isEmpty(application)) {
             //TODO check the right
-            resourceService.count(user, application, new ResourceService.SearchOperation().setSearchEverywhere(true).setId(id)).onComplete(e -> {
+            resourceService.count(user, application, new SearchOperation().setSearchEverywhere(true).setId(id)).onComplete(e -> {
                 if (e.succeeded()) {
                     handler.handle(e.result().equals(1));
                 } else {

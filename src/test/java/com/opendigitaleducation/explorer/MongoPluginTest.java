@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer;
 
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
@@ -90,11 +91,11 @@ public class MongoPluginTest {
         final JsonObject f3 = resource("folder3");
         final UserInfos user = test.directory().generateUser("usermove");
         final Async async = context.async();
-        resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+        resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
             context.assertEquals(0, fetch0.size());
             plugin.create(user, Arrays.asList(f1, f2, f3), false).onComplete(context.asyncAssertSuccess(r -> {
                 job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                    resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                         context.assertEquals(3, fetch1.size());
                         async.complete();
                     }));
@@ -120,13 +121,13 @@ public class MongoPluginTest {
         plugin.start();
         CompositeFuture.all(p1.future(), p2.future(), p3.future()).onComplete(context.asyncAssertSuccess(r1 -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r0 -> {
-                resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+                resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
                     context.assertEquals(0, fetch0.size());
                     pluginClient.getForIndexation(user, Optional.empty(), Optional.empty()).onComplete(context.asyncAssertSuccess(r2 -> {
                         plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r3 -> {
                             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
                                 job.waitPending().onComplete(context.asyncAssertSuccess(r5 -> {
-                                    resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                    resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                                         context.assertEquals(3, fetch1.size());
                                         async.complete();
                                     }));

@@ -50,6 +50,31 @@
                     "default": "PRODUCTION_COLLABORATIVE"
                 }
             }
+        },
+        "applications": {
+            "blog": {
+                "filters": [
+                    {
+                        "id":"visibility",
+                        "defaultValue": "owner",
+                        "values":[
+                            {"value":"owner", "i18n":"explorer.visibility.owner"},
+                            {"value":"public", "i18n":"explorer.visibility.public"},
+                            {"value":"shared", "i18n":"explorer.visibility.shared"}
+                        ]
+                    }
+                ],
+                "orders": [
+                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
+                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
+                ],
+                "actions": [
+                    {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
+                    {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
+                    {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish"},
+                    {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print"}
+                ]
+            }
         }
     }
 }

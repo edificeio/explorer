@@ -2,27 +2,30 @@ package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ResourceQueryElastic {
     private final UserInfos user;
+    private final List<Map.Entry<String, Boolean>> sorts = new ArrayList<>();
+    private final List<String> resourceType = new ArrayList<>();
     private final List<String> application = new ArrayList<>();
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> folderId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
     private final List<String> visibleIds = new ArrayList<>();
-    private Integer from;
-    private Integer size;
+    private Optional<Long> from = Optional.empty();
+    private Optional<Long> size = Optional.empty();
     private boolean onlyRoot = false;
-    private Boolean trashed;
-    private String text;
+    private Optional<Boolean> trashed = Optional.empty();
+    private Optional<Boolean> favorite = Optional.empty();
+    private Optional<Boolean> shared = Optional.empty();
+    private Optional<Boolean> pub = Optional.empty();
+    private Optional<String> text = Optional.empty();
 
     public ResourceQueryElastic(final UserInfos u) {
         this.user = u;
@@ -38,8 +41,28 @@ public class ResourceQueryElastic {
         }
     }
 
+    public ResourceQueryElastic withOrder(String name, Boolean asc) {
+        this.sorts.add(new AbstractMap.SimpleEntry<>(name, asc));
+        return this;
+    }
+
+    public ResourceQueryElastic withShared(Boolean shared) {
+        this.shared = Optional.ofNullable(shared);
+        return this;
+    }
+
+    public ResourceQueryElastic withFavorite(Boolean favorite) {
+        this.favorite = Optional.ofNullable(favorite);
+        return this;
+    }
+
+    public ResourceQueryElastic withPub(Boolean pub) {
+        this.pub = Optional.ofNullable(pub);
+        return this;
+    }
+
     public ResourceQueryElastic withTrashed(Boolean trashed) {
-        this.trashed = trashed;
+        this.trashed = Optional.ofNullable(trashed);
         return this;
     }
 
@@ -54,7 +77,7 @@ public class ResourceQueryElastic {
     }
 
     public ResourceQueryElastic withTextSearch(String text) {
-        this.text = text;
+        this.text = Optional.ofNullable(text);
         return this;
     }
 
@@ -63,13 +86,18 @@ public class ResourceQueryElastic {
         return this;
     }
 
-    public ResourceQueryElastic withFrom(Integer from) {
-        this.from = from;
+    public ResourceQueryElastic withResourceType(String resourceType) {
+        this.resourceType.add(resourceType);
         return this;
     }
 
-    public ResourceQueryElastic withSize(Integer size) {
-        this.size = size;
+    public ResourceQueryElastic withFrom(Long from) {
+        this.from = Optional.ofNullable(from);
+        return this;
+    }
+
+    public ResourceQueryElastic withSize(Long size) {
+        this.size = Optional.ofNullable(size);
         return this;
     }
 
@@ -103,6 +131,42 @@ public class ResourceQueryElastic {
 
     public List<String> getId() {
         return id;
+    }
+
+    public ResourceQueryElastic withSearchOperation(final SearchOperation operation){
+        if (operation.getParentId().isPresent()) {
+            this.withFolderId(operation.getParentId().get());
+        } else if (!operation.isSearchEverywhere()) {
+            this.withOnlyRoot(true);
+        }
+        if (operation.getSearch().isPresent()) {
+            this.withTextSearch(operation.getSearch().get());
+        }
+        if (operation.getTrashed().isPresent()) {
+            this.withTrashed(operation.getTrashed().get());
+        }
+        if (operation.getResourceType().isPresent()) {
+            this.withResourceType(operation.getResourceType().get());
+        }
+        if (operation.getShared().isPresent()) {
+            this.withShared(operation.getShared().get());
+        }
+        if (operation.getFavorite().isPresent()) {
+            this.withFavorite(operation.getFavorite().get());
+        }
+        if (operation.getPub().isPresent()) {
+            this.withPub(operation.getPub().get());
+        }
+        if (operation.getStartIndex().isPresent()) {
+            this.withFrom(operation.getStartIndex().get());
+        }
+        if (operation.getPageSize().isPresent()) {
+            this.withSize(operation.getPageSize().get());
+        }
+        if (operation.getOrderField().isPresent()) {
+            this.withOrder(operation.getOrderField().get(), operation.getOrderAsc().orElse(true));
+        }
+        return this;
     }
 
     public JsonObject getSearchQuery() {
@@ -145,25 +209,47 @@ public class ResourceQueryElastic {
         if (idTerm.isPresent()) {
             filter.add(idTerm.get());
         }
+        //resourceType
+        final Optional<JsonObject> resourceTypeTerm = createTerm("resourceType", resourceType);
+        if (resourceTypeTerm.isPresent()) {
+            filter.add(resourceTypeTerm.get());
+        }
         //application
         final Optional<JsonObject> appTerm = createTerm("application", application);
         if (appTerm.isPresent()) {
             filter.add(appTerm.get());
         }
         //search text
-        if (text != null) {
+        if (text.isPresent()) {
             final JsonArray fields = new JsonArray().add("application").add("name").add("contentAll");
-            must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text).put("fields", fields)));
+            must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text.get()).put("fields", fields)));
         }
-        if (trashed != null) {
-            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed)));
+        if (trashed.isPresent()) {
+            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed.get())));
+        }
+        if (pub.isPresent()) {
+            filter.add(new JsonObject().put("term", new JsonObject().put("public", pub.get())));
+        }
+        if (favorite.isPresent()) {
+            if(favorite.get()){
+                filter.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.getUserId())));
+            }else{
+                mustNot.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.getUserId())));
+            }
+        }
+        if(shared.isPresent()){
+            if(shared.get()){
+                mustNot.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.getUserId())));
+            }else{
+                filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.getUserId())));
+            }
         }
         //from / size
-        if (from != null) {
-            payload.put("from", from);
+        if (from.isPresent()) {
+            payload.put("from", from.get());
         }
-        if (size != null) {
-            payload.put("size", size);
+        if (size.isPresent()) {
+            payload.put("size", size.get());
         }
         return payload;
     }

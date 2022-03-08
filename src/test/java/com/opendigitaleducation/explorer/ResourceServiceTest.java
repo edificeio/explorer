@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer;
 
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
@@ -114,19 +115,19 @@ public class ResourceServiceTest {
         final Async async = context.async(3);
         plugin.notifyUpsert(user, Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(2, fetch1.size());
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("MONHTML1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("MONHTML1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html1", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html2", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("content2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html2", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();
@@ -148,20 +149,20 @@ public class ResourceServiceTest {
         final Async async = context.async(3);
         plugin.notifyUpsert(Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                resourceService.fetch(user, application, new ResourceService.SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     System.out.println(fetch1);
                     context.assertEquals(2, fetch1.size());
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("html1_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("html1_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id1", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("content2_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id2", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new ResourceService.SearchOperation().setSearch("content2_2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2_2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id2", fetch2.getJsonObject(0).getString("entId"));
                         async.countDown();

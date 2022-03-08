@@ -15,6 +15,8 @@ public interface ResourceService {
     //TODO fetch by other criterias...
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
 
+    Future<FetchResult> fetchWithMeta(final UserInfos user, final String application, final SearchOperation operation);
+
     Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
 
     Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<Integer> dest);
@@ -24,6 +26,16 @@ public interface ResourceService {
     Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
 
     void stopConsumer();
+
+    class FetchResult{
+        public final Long count;
+        public final List<JsonObject> rows;
+
+        public FetchResult(Long count, List<JsonObject> rows) {
+            this.count = count;
+            this.rows = rows;
+        }
+    }
 
     class ShareOperation {
         final String id;
@@ -53,57 +65,4 @@ public interface ResourceService {
         }
     }
 
-    class SearchOperation {
-        //TODO redirect setter to ElasticResourceQuery
-        private Optional<String> parentId = Optional.empty();
-        private String search;
-        private Boolean trashed;
-        private boolean searchEverywhere = false;
-        private String id;
-
-        public SearchOperation setId(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public boolean isSearchEverywhere() {
-            return searchEverywhere;
-        }
-
-        public SearchOperation setSearchEverywhere(boolean searchEverywhere) {
-            this.searchEverywhere = searchEverywhere;
-            return this;
-        }
-
-        public Boolean getTrashed() {
-            return trashed;
-        }
-
-        public SearchOperation setTrashed(Boolean trashed) {
-            this.trashed = trashed;
-            return this;
-        }
-
-        public Optional<String> getParentId() {
-            return parentId;
-        }
-
-        public SearchOperation setParentId(Optional<String> parentId) {
-            this.parentId = parentId;
-            return this;
-        }
-
-        public String getSearch() {
-            return search;
-        }
-
-        public SearchOperation setSearch(String search) {
-            this.search = search;
-            return this;
-        }
-    }
 }

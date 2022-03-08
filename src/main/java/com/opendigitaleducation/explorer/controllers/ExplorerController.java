@@ -3,8 +3,7 @@ package com.opendigitaleducation.explorer.controllers;
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import org.entcore.common.explorer.ExplorerPlugin;
-import org.entcore.common.explorer.ExplorerPluginClient;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import fr.wseduc.rs.Delete;
@@ -30,6 +29,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
@@ -48,6 +48,7 @@ public class ExplorerController extends BaseController {
     private final EventHelper eventHelper;
     private final FolderService folderService;
     private final ResourceService resourceService;
+    static long DEFAULT_PAGESIZE = 20l;
 
     public ExplorerController(final FolderService folderService, final ResourceService resourceService) {
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Explorer.class.getSimpleName());
@@ -95,39 +96,52 @@ public class ExplorerController extends BaseController {
                 });
                 //load user preferences from neo4j
                 final String application = queryParams.getString("application");
-                final Future<JsonArray> preferences = getUserPref(request, application).compose(pref -> {
+                final JsonObject applications = this.config.getJsonObject("applications", new JsonObject());
+                final JsonObject config = applications.getJsonObject(application, new JsonObject());
+                final Future<ResourceService.FetchResult> preferences = getUserPref(request, application).compose(pref -> {
                     //load filters from conf and pref
                     final JsonArray filters = config.getJsonArray("filters", new JsonArray());
+                    final JsonArray newFilter = new JsonArray();
                     for (final Object filterO : filters) {
-                        final JsonObject filter = (JsonObject) filterO;
+                        final JsonObject filter = ((JsonObject) filterO).copy();
                         final String id = filter.getString("id");
                         filter.put("defaultValue", pref.getValue("filters." + id, filter.getValue("defaultValue")));
+                        newFilter.add(filter);
                     }
-                    json.put("filters", filters);
+                    json.put("filters", newFilter);
                     //load orders from conf and pref
                     final JsonArray orders = config.getJsonArray("orders", new JsonArray());
+                    final JsonArray newOrders = new JsonArray();
                     for (final Object ordersO : orders) {
-                        final JsonObject order = (JsonObject) ordersO;
+                        final JsonObject order = ((JsonObject) ordersO).copy();
                         final String id = order.getString("id");
                         order.put("defaultValue", pref.getValue("orders." + id, order.getValue("defaultValue")));
+                        newOrders.add(order);
                     }
-                    json.put("orders", orders);
+                    json.put("orders", newOrders);
                     //load actions from conf
                     final JsonArray actions = config.getJsonArray("actions", new JsonArray());
+                    final JsonArray newActions = new JsonArray();
                     for (final Object actionsO : actions) {
-                        final JsonObject action = (JsonObject) actionsO;
+                        final JsonObject action = ((JsonObject) actionsO).copy();
                         final String workflow = action.getString("workflow");
-                        final boolean available = user.getAuthorizedActions().stream().noneMatch(a -> a.getName().equals(workflow));
+                        final boolean available = user.getAuthorizedActions().stream().filter(a -> a.getName().equalsIgnoreCase(workflow)).count()>0;
                         action.put("available", available);
+                        newActions.add(action);
                     }
-                    json.put("actions", actions);
+                    json.put("actions", newActions);
                     json.put("preferences", pref);
                     //load root resource using filters
-                    return resourceService.fetch(user, application, toResourceSearch(queryParams)).onSuccess(e -> {
-                        json.put("resources", adaptResource(e));
+                    final SearchOperation searchOperation = toResourceSearch(queryParams);
+                    return resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
+                        json.put("resources", adaptResource(e.rows));
+                        //pagination details
+                        final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0l));
+                        pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
+                        pagination.put("maxIdx", e.count);
+                        json.put("pagination", pagination);
                     });
                 });
-                //TODO pagination details
                 //wait all
                 CompositeFuture.all(folders, preferences).onComplete(e -> {
                     if (e.succeeded()) {
@@ -159,10 +173,15 @@ public class ExplorerController extends BaseController {
                     json.put("folders", adaptFolder(e));
                 });
                 final String application = queryParams.getString("application");
-                final Future<JsonArray> resourcesF = resourceService.fetch(user, application, toResourceSearch(queryParams)).onSuccess(e -> {
-                    json.put("resources", adaptResource(e));
+                final SearchOperation searchOperation = toResourceSearch(queryParams);
+                final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
+                    json.put("resources", adaptResource(e.rows));
+                    //pagination details
+                    final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0l));
+                    pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
+                    pagination.put("maxIdx", e.count);
+                    json.put("pagination", pagination);
                 });
-                //TODO pagination details
                 //wait all
                 CompositeFuture.all(folders, resourcesF).onComplete(e -> {
                     if (e.succeeded()) {
@@ -320,6 +339,63 @@ public class ExplorerController extends BaseController {
         });
     }
 
+    @Get("simulate/resources")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void getSimulatedResources(final HttpServerRequest request) {
+        final UserInfos user = new UserInfos();
+        user.setUserId(request.params().get("userid"));
+        getQueryParams("getContext", request.params()).onSuccess(queryParams -> {
+            final JsonObject json = new JsonObject();
+            final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
+            final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
+                json.put("folders", adaptFolder(e));
+            });
+            final String application = queryParams.getString("application");
+            final SearchOperation searchOperation = toResourceSearch(queryParams);
+            final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
+                json.put("resources", adaptResource(e.rows));
+                //pagination details
+                final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0l));
+                pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
+                pagination.put("maxIdx", e.count);
+                json.put("pagination", pagination);
+            });
+            //wait all
+            CompositeFuture.all(folders, resourcesF).onComplete(e -> {
+                if (e.succeeded()) {
+                    renderJson(request, json);
+                } else {
+                    renderError(request);
+                    log.error("Failed to fetch resources:", e.cause());
+                }
+            });
+        }).onFailure(e -> {
+            badRequest(request, e.getMessage());
+        });
+    }
+
+    @Get("simulate/folders/:id")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void getSimulateFoldersById(final HttpServerRequest request) {
+        final UserInfos user = new UserInfos();
+        user.setUserId(request.params().get("userid"));
+        final JsonObject json = new JsonObject();
+        final Optional<String> folderId = Optional.ofNullable(request.params().get("id"));
+        folderService.fetch(user, folderId).onSuccess(e -> {
+            json.put("folders", adaptFolder(e));
+        }).onComplete(e -> {
+            if (e.succeeded()) {
+                renderJson(request, json);
+            } else {
+                renderError(request);
+                log.error("Failed to fetch folders:", e.cause());
+            }
+        });
+    }
+
+
     @Get("job/trigger")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(SuperAdminFilter.class)
@@ -370,11 +446,23 @@ public class ExplorerController extends BaseController {
     }
 
     //TODO on batch delete / update / return list of succeed and list of failed
-    private ResourceService.SearchOperation toResourceSearch(final JsonObject queryParams) {
-        //TODO all criterias
-        final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
-        final ResourceService.SearchOperation op = new ResourceService.SearchOperation();
-        op.setParentId(folderId);
+    private SearchOperation toResourceSearch(final JsonObject queryParams) {
+        ///application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y
+        final Optional<String[]> order = Optional.ofNullable(queryParams.getString("order_by")).map(e-> e.split(":")).map(e -> e.length==2? e: null);
+        final Optional<Boolean> orderAsc = order.map(e-> "asc".equalsIgnoreCase(e[1]));
+        final Optional<String> orderField = order.map(e-> e[0]);
+        final SearchOperation op = new SearchOperation();
+        op.setResourceType(queryParams.getString("resource_type"));
+        op.setId(queryParams.getString("id"));
+        op.setOrder(orderField, orderAsc);
+        op.setOwner(queryParams.getBoolean("owner"));
+        op.setPub(queryParams.getBoolean("public"));
+        op.setShared(queryParams.getBoolean("shared"));
+        op.setFavorite(queryParams.getBoolean("favorite"));
+        op.setParentId(queryParams.getString("folder"));
+        op.setSearch(queryParams.getString("search"));
+        op.setPageSize(queryParams.getLong("page_size"));
+        op.setStartIndex(queryParams.getLong("start_idx"));
         return op;
     }
 
@@ -391,7 +479,7 @@ public class ExplorerController extends BaseController {
         return folder;
     }
 
-    private JsonArray adaptResource(final JsonArray folders) {
+    private JsonArray adaptResource(final List<JsonObject> folders) {
         final JsonArray res = new JsonArray();
         for (final Object o : folders) {
             res.add(adaptResource((JsonObject) o));

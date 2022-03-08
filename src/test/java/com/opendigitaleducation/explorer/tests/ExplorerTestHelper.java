@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.tests;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.FakeMongoPlugin;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -92,8 +92,8 @@ public class ExplorerTestHelper implements TestRule {
         pgContainer.close();
     }
 
-    public Future<JsonArray> fetch(final UserInfos user, final String application, final ResourceService.SearchOperation operation){
-        return resourceService.fetch(user, application, new ResourceService.SearchOperation());
+    public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation){
+        return resourceService.fetch(user, application, new SearchOperation());
     }
 
     public Future<Void> ingestJobExecute(boolean force) {
@@ -104,8 +104,8 @@ public class ExplorerTestHelper implements TestRule {
         return job.waitPending();
     }
 
-    public ResourceService.SearchOperation createSearch(){
-        return new ResourceService.SearchOperation();
+    public SearchOperation createSearch(){
+        return new SearchOperation();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
+import org.entcore.common.elasticsearch.ElasticBulkBuilder;
+import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
@@ -51,6 +53,7 @@ public class ExplorerControllerTest {
     static ExplorerController controller;
     static IngestJob job;
     static FakePostgresPlugin fakePlugin;
+    static ElasticClientManager esClientManager;
     static FolderFilter folderFilter = new FolderFilter();
     static final String application = FakePostgresPlugin.FAKE_APPLICATION;
 
@@ -68,7 +71,7 @@ public class ExplorerControllerTest {
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, resourceIndex);
         System.out.println("Using index: " + folderIndex + " / " + resourceIndex);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
-        final ElasticClientManager esClientManager = new ElasticClientManager(test.vertx(), uris);
+        esClientManager = new ElasticClientManager(test.vertx(), uris);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin);
