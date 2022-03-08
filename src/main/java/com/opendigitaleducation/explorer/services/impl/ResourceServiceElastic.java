@@ -1,13 +1,11 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import io.vertx.core.eventbus.MessageConsumer;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
-import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
-import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
-import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
@@ -76,18 +74,7 @@ public class ResourceServiceElastic implements ResourceService {
     public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation) {
         return shareTableManager.findHashes(user).compose(hashes -> {
             final String index = getIndex(application);
-            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
-            if (operation.getParentId().isPresent()) {
-                query.withFolderId(operation.getParentId().get());
-            } else if (!operation.isSearchEverywhere()) {
-                query.withOnlyRoot(true);
-            }
-            if (operation.getSearch() != null) {
-                query.withTextSearch(operation.getSearch());
-            }
-            if (operation.getTrashed() != null) {
-                query.withTrashed(operation.getTrashed());
-            }
+            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
             return manager.getClient().search(index, queryJson, options);
@@ -95,21 +82,23 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
+    public Future<FetchResult> fetchWithMeta(UserInfos user, String application, SearchOperation operation) {
+        return shareTableManager.findHashes(user).compose(hashes -> {
+            final String index = getIndex(application);
+            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
+            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+            final JsonObject queryJson = query.getSearchQuery();
+            return manager.getClient().searchWithMeta(index, queryJson, options);
+        }).map(e -> {
+            return new FetchResult(e.getCount(), e.getRows());
+        });
+    }
+
+    @Override
     public Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation) {
         return shareTableManager.findHashes(user).compose(hashes -> {
             final String index = getIndex(application);
-            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes);
-            if (operation.getParentId().isPresent()) {
-                query.withFolderId(operation.getParentId().get());
-            } else if (!operation.isSearchEverywhere()) {
-                query.withOnlyRoot(true);
-            }
-            if (operation.getSearch() != null) {
-                query.withTextSearch(operation.getSearch());
-            }
-            if (operation.getTrashed() != null) {
-                query.withTrashed(operation.getTrashed());
-            }
+            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
             return manager.getClient().count(index, queryJson, options);
