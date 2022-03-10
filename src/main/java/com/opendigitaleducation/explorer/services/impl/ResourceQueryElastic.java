@@ -1,7 +1,6 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import com.opendigitaleducation.explorer.services.SearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -37,7 +36,8 @@ public class ResourceQueryElastic {
         } else if (values.size() == 1) {
             return Optional.of(new JsonObject().put("term", new JsonObject().put(key, values.iterator().next())));
         } else {
-            return Optional.of(new JsonObject().put("terms", new JsonObject().put(key, new JsonArray(values))));
+            final JsonArray uniq = new JsonArray(new ArrayList(new HashSet<>(values)));
+            return Optional.of(new JsonObject().put("terms", new JsonObject().put(key, uniq)));
         }
     }
 
@@ -184,7 +184,7 @@ public class ResourceQueryElastic {
         //by creator
         final Optional<JsonObject> creatorIdTerm = createTerm("creatorId", creatorId);
         if (creatorIdTerm.isPresent()) {
-            filter.add(creatorIdTerm.get());
+            must.add(creatorIdTerm.get());
         }
         //by visible
         {

@@ -1,13 +1,14 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import io.vertx.core.eventbus.MessageConsumer;
-import org.entcore.common.elasticsearch.ElasticClientManager;
-import org.entcore.common.postgres.PostgresClient;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.function.Function;
 
 public class IngestJob {
     public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
+    public static final String INGESTOR_STATUS = "status";
     public static final String INGESTOR_JOB_METRICS = "metrics";
     public static final String INGESTOR_JOB_TRIGGER = "trigger";
     static final int DEFAULT_BATCH_SIZE = 100;
@@ -47,6 +49,19 @@ public class IngestJob {
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
+                case INGESTOR_STATUS:
+                    final String method = message.headers().get("method");
+                    final Future<Void> future = "stop".equalsIgnoreCase(method)? this.stop(): ("start".equalsIgnoreCase(method))?this.start(): Future.succeededFuture();
+                    future.onComplete(e->{
+                        if (e.succeeded()) {
+                            message.reply(new JsonObject().put("running", this.isRunning()));
+                            log.info("Ingest job has been "+method);
+                        } else {
+                            message.fail(500, e.cause().getMessage());
+                            log.error("Ingest job failed to "+method, e.cause());
+                        }
+                    });
+                    break;
                 case INGESTOR_JOB_TRIGGER:
                     execute(true).onComplete(ee -> {
                         if (ee.succeeded()) {
@@ -55,10 +70,12 @@ public class IngestJob {
                                     message.reply(e.result());
                                 } else {
                                     message.fail(500, e.cause().getMessage());
+                                    log.error("Ingest job failed to get metrics for trigger", e.cause());
                                 }
                             });
                         } else {
                             message.fail(500, ee.cause().getMessage());
+                            log.error("Ingest job failed to trigger", ee.cause());
                         }
                     });
                     break;
@@ -69,6 +86,7 @@ public class IngestJob {
                             message.reply(e.result());
                         } else {
                             message.fail(500, e.cause().getMessage());
+                            log.error("Ingest job failed to get metrics", e.cause());
                         }
                     });
                     break;

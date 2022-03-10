@@ -1,8 +1,5 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import org.entcore.common.explorer.ExplorerPluginCommunicationRedis;
-import org.entcore.common.redis.RedisBatch;
-import org.entcore.common.redis.RedisClient;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -11,6 +8,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
+import org.entcore.common.redis.RedisBatch;
+import org.entcore.common.redis.RedisClient;
 
 import java.util.*;
 import java.util.function.Function;
@@ -84,7 +84,7 @@ public class MessageReaderRedis implements MessageReader {
         onReady.onSuccess(e -> {
             //only new messages
             final String startFrom = ">";
-            redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom)).onComplete(res -> {
+            redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom),false).onComplete(res -> {
                 if(res.failed()){
                     log.error("Could not read xstream ",res.cause());
                     return;
@@ -141,11 +141,11 @@ public class MessageReaderRedis implements MessageReader {
         return onReady.compose(e->{
             final Promise<List<JsonObject>> promise = Promise.promise();
             final String startAt = pending ? "0" : ">";
-            redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt)).onComplete(res -> {
+            redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt), false).onComplete(res -> {
                 if (res.succeeded()) {
                     promise.complete(res.result());
                 } else {
-                    log.error(String.format("Could not xread (%s,%s) from streams: %s", consumerGroup, consumerName, stream), res.cause());
+                    log.error(String.format("Could not xread (%s,%s) from streams: %s | index=%s", consumerGroup, consumerName, stream, startAt), res.cause());
                 }
             });
             return promise.future();
@@ -237,7 +237,7 @@ public class MessageReaderRedis implements MessageReader {
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
                 batch.beginTransaction();
                 batch.xAck(stream, consumerGroup, idQueue);
-                batch.xDel(stream, idQueue);
+                //batch.xDel(stream, idQueue);
                 batch.commitTransaction();
             }
         }
@@ -256,7 +256,7 @@ public class MessageReaderRedis implements MessageReader {
                     batch.xAdd(stream + streamFailSuffix, json);
                 }
                 batch.xAck(stream, consumerGroup, idQueue);
-                batch.xDel(stream, idQueue);
+                //batch.xDel(stream, idQueue);
                 batch.commitTransaction();
             }
         }

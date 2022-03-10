@@ -30,7 +30,7 @@
             "password": "{{ passwordPostgres }}",
             "pool-size": {{postgresPoolSize | default(50)}}
         },
-        "create-index": {{explorerCreateIndex | default(false)}},
+        "create-index": {{explorerCreateIndex | default(true)}},
         "elasticsearchConfig":{
             "uris": {{explorerEsUris}},
             "index": "{{explorerEsIndex}}"

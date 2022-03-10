@@ -1,6 +1,5 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Set;

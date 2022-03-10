@@ -1,16 +1,21 @@
 package com.opendigitaleducation.explorer;
 
-import org.entcore.common.explorer.*;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerDbMongo;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
+import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 
-public class FakeMongoPlugin extends ExplorerPluginResourceCrud {
+public class FakeMongoPlugin extends ExplorerPluginResourceDb {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     public static final String COLLECTION = "explorer.test_fake";
@@ -43,7 +48,7 @@ public class FakeMongoPlugin extends ExplorerPluginResourceCrud {
         return Future.succeededFuture(message);
     }
 
-    static class FakeMongoExplorerCrud extends ExplorerResourceCrudMongo{
+    static class FakeMongoExplorerCrud extends ExplorerDbMongo {
 
         public FakeMongoExplorerCrud(final MongoClient mongoClient) {
             super(mongoClient);

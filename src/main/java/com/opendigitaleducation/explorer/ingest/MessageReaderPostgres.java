@@ -1,8 +1,5 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import org.entcore.common.explorer.ExplorerPluginCommunicationPostgres;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientChannel;
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
@@ -12,6 +9,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.PostgresClientChannel;
 
 import java.time.LocalDateTime;
 import java.util.*;

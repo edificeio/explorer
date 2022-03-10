@@ -3,9 +3,9 @@ package com.opendigitaleducation.explorer.controllers;
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -14,10 +14,9 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
-import fr.wseduc.webutils.validation.JsonSchemaValidator;
-import io.vertx.core.*;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -31,6 +30,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.HttpUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.text.ParseException;
@@ -42,8 +42,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExplorerController extends BaseController {
-    private static final JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
-    private static final String USERBOOK_ADDRESS = "userbook.preferences";
     private static final Logger log = LoggerFactory.getLogger(ExplorerController.class);
     private final EventHelper eventHelper;
     private final FolderService folderService;
@@ -80,7 +78,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            getQueryParams("getContext", request.params()).onSuccess(queryParams -> {
+            HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final JsonObject json = new JsonObject();
                 json.put("preferences", new JsonObject());
                 json.put("folders", new JsonArray());
@@ -98,7 +96,7 @@ public class ExplorerController extends BaseController {
                 final String application = queryParams.getString("application");
                 final JsonObject applications = this.config.getJsonObject("applications", new JsonObject());
                 final JsonObject config = applications.getJsonObject(application, new JsonObject());
-                final Future<ResourceService.FetchResult> preferences = getUserPref(request, application).compose(pref -> {
+                final Future<ResourceService.FetchResult> preferences = UserUtils.getUserPreferences(eb, request, application).compose(pref -> {
                     //load filters from conf and pref
                     final JsonArray filters = config.getJsonArray("filters", new JsonArray());
                     final JsonArray newFilter = new JsonArray();
@@ -166,7 +164,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            getQueryParams("getContext", request.params()).onSuccess(queryParams -> {
+            HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final JsonObject json = new JsonObject();
                 final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
                 final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
@@ -345,7 +343,7 @@ public class ExplorerController extends BaseController {
     public void getSimulatedResources(final HttpServerRequest request) {
         final UserInfos user = new UserInfos();
         user.setUserId(request.params().get("userid"));
-        getQueryParams("getContext", request.params()).onSuccess(queryParams -> {
+        HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
             final JsonObject json = new JsonObject();
             final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
             final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
@@ -412,6 +410,26 @@ public class ExplorerController extends BaseController {
                 renderError(request, new JsonObject().put("error", e.cause().getMessage()));
             }
         });
+    }
+
+
+    @Get("job/status/:method")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void jobStatus(final HttpServerRequest request) {
+        final String method = request.params().get("method");
+        final DeliveryOptions opt = new DeliveryOptions().addHeader("action", IngestJob.INGESTOR_STATUS).addHeader("method", method);
+        if("start".equalsIgnoreCase(method) || "stop".equalsIgnoreCase(method) || "get".equalsIgnoreCase(method)) {
+            eb.request(IngestJob.INGESTOR_JOB_ADDRESS, new JsonObject(), opt, e -> {
+                if (e.succeeded()) {
+                    renderJson(request, (JsonObject) e.result().body());
+                } else {
+                    renderError(request, new JsonObject().put("error", e.cause().getMessage()));
+                }
+            });
+        }else{
+            badRequest(request);
+        }
     }
 
     @Get("reindex/:application/:type")
@@ -489,55 +507,5 @@ public class ExplorerController extends BaseController {
 
     private JsonObject adaptResource(final JsonObject folder) {
         return folder;
-    }
-
-    //TODO move to userutils?
-    private Future<JsonObject> getUserPref(final HttpServerRequest request, final String application) {
-        final Promise<JsonObject> promise = Promise.promise();
-        final JsonObject params = new JsonObject().put("action", "get.currentuser")
-                .put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
-                .put("application", "theme");
-        eb.request(USERBOOK_ADDRESS, params, (final AsyncResult<Message<JsonObject>> event) -> {
-            if (event.succeeded()) {
-                final JsonObject body = event.result().body();
-                if ("error".equals(body.getString("status"))) {
-                    promise.fail(body.getString("error"));
-                } else {
-                    promise.complete(body.getJsonObject("value", new JsonObject()));
-                }
-            } else {
-                promise.fail(event.cause());
-            }
-        });
-        return promise.future();
-    }
-
-    //TODO move to webutils? RequestUtils.getQueryParams
-    private Future<JsonObject> getQueryParams(final String schema, final MultiMap queryParams) {
-        final JsonObject json = new JsonObject();
-        for (final String name : queryParams.names()) {
-            final List<String> values = queryParams.getAll(name);
-            if (values.size() == 1) {
-                json.put(name, values.iterator().next());
-            } else {
-                json.put(name, new JsonArray(values));
-            }
-        }
-        //validate
-        final Promise<JsonObject> promise = Promise.promise();
-        validator.validate(pathPrefix + schema, json, res -> {
-            if (res.succeeded()) {
-                final JsonObject body = res.result().body();
-                if ("ok".equals(body.getString("status"))) {
-                    promise.complete(json);
-                } else {
-                    promise.fail(body.getString("message"));
-                }
-            } else {
-                log.error("Validate async error.", res.cause());
-                promise.fail(res.cause());
-            }
-        });
-        return promise.future();
     }
 }

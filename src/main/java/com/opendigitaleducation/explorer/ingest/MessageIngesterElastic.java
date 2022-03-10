@@ -1,14 +1,14 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import org.entcore.common.elasticsearch.ElasticBulkBuilder;
-import org.entcore.common.elasticsearch.ElasticClient;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.elasticsearch.ElasticBulkBuilder;
+import org.entcore.common.elasticsearch.ElasticClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 
 import java.util.*;
 import java.util.stream.Collectors;

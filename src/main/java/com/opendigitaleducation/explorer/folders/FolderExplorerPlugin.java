@@ -1,28 +1,27 @@
 package com.opendigitaleducation.explorer.folders;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
-import org.entcore.common.explorer.ExplorerPluginCommunicationRedis;
-import org.entcore.common.explorer.ExplorerPluginResourceCrud;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
+import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.redis.RedisClient;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
+public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     protected final PostgresClientPool pgPool;
 
     public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, new FolderExplorerCrudSql(pgClient));
+        super(communication, new FolderExplorerSql(pgClient));
         this.pgPool = pgClient.getClientPool();
     }
 
@@ -32,14 +31,14 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
     }
 
     public final Future<Void> update(final UserInfos user, final String id, final JsonObject source){
-        return ((FolderExplorerCrudSql)resourceCrud).update(id, source).compose(e->{
+        return ((FolderExplorerSql)explorerDb).update(id, source).compose(e->{
             setIdForModel(source, e.id.toString());
             return notifyUpsert(user, source);
         });
     }
 
     public final Future<Optional<JsonObject>> get(final UserInfos user, final String id){
-        return resourceCrud.getByIds(new HashSet<>(Arrays.asList(id))).map(e->{
+        return explorerDb.getByIds(new HashSet<>(Arrays.asList(id))).map(e->{
             if(e.isEmpty()){
                 return Optional.empty();
             }else{
@@ -50,7 +49,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceCrud {
 
 
     public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
-        return ((FolderExplorerCrudSql)resourceCrud).move(id, newParent).compose(oldParent->{
+        return ((FolderExplorerSql)explorerDb).move(id, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             sources.add(setIdForModel(new JsonObject(), id));
             //update children of oldParent

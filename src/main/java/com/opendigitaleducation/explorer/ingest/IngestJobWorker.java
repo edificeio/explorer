@@ -1,14 +1,16 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.Explorer;
-import org.entcore.common.elasticsearch.ElasticClientManager;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.vertx.java.busmods.BusModBase;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;
 import java.util.List;

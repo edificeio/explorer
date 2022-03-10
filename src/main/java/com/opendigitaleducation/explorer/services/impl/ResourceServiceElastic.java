@@ -1,20 +1,20 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.services.SearchOperation;
-import io.vertx.core.eventbus.MessageConsumer;
-import org.entcore.common.elasticsearch.ElasticClient;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.explorer.ExplorerPlugin;
-import org.entcore.common.explorer.IExplorerPluginCommunication;
-import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.elasticsearch.ElasticClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;

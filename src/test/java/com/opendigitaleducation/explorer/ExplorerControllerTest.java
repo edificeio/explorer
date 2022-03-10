@@ -1,16 +1,10 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
-import org.entcore.common.elasticsearch.ElasticBulkBuilder;
-import org.entcore.common.elasticsearch.ElasticClient;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import org.entcore.common.explorer.IExplorerPluginCommunication;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
@@ -27,7 +21,11 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Request;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.HttpTestHelper;
 import org.entcore.test.TestHelper;
@@ -40,6 +38,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RunWith(VertxUnitRunner.class)
 public class ExplorerControllerTest {
@@ -228,6 +227,7 @@ public class ExplorerControllerTest {
     @Test
     public void shouldCrudResource(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
+        user.setUserId(UUID.randomUUID().toString());
         final JsonObject doc1 = IngestJobTest.create(user, "id1", "name1", "text1");
         fakePlugin.notifyUpsert(user, doc1).compose(e -> {
             //get metrics
