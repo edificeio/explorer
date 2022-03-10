@@ -1,10 +1,10 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 
 import java.util.List;
 import java.util.function.Function;

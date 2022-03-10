@@ -1,14 +1,14 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.folders.FolderExplorerCrudSql;
+import com.opendigitaleducation.explorer.folders.FolderExplorerSql;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.postgres.PostgresClient;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 
 public class MessageIngesterPostgres implements MessageIngester {
     private final ResourceExplorerCrudSql sql;
-    private final FolderExplorerCrudSql folderSql;
+    private final FolderExplorerSql folderSql;
     private final MessageIngester ingester;
 
     public MessageIngesterPostgres(final PostgresClient sql, final MessageIngester ingester) {
         this.ingester = ingester;
         this.sql = new ResourceExplorerCrudSql(sql);
-        this.folderSql = new FolderExplorerCrudSql(sql);
+        this.folderSql = new FolderExplorerSql(sql);
     }
 
     @Override
@@ -157,16 +157,16 @@ public class MessageIngesterPostgres implements MessageIngester {
         //get ancestors of each documents
         final Future<Map<String, List<String>>> ancestorsF = folderSql.getAncestors(ids);
         // get parent/child relationship for folder and their parents
-        final Future<Map<String, FolderExplorerCrudSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
+        final Future<Map<String, FolderExplorerSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
         return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
             final Map<String, List<String>> ancestors = ancestorsF.result();
-            final Map<String, FolderExplorerCrudSql.FolderRelationship> relations = relationsF.result();
+            final Map<String, FolderExplorerSql.FolderRelationship> relations = relationsF.result();
             //Transform all
             for (final ExplorerMessageForIngest message : messages) {
                 //add children ids and ancestors (reuse existing override)
                 final JsonObject override = message.getOverride();
                 final String id = message.getId();
-                final FolderExplorerCrudSql.FolderRelationship relation = relations.get(id);
+                final FolderExplorerSql.FolderRelationship relation = relations.get(id);
                 override.put("childrenIds", new JsonArray(relation.childrenIds));
                 if (relation.parentId.isPresent()) {
                     override.put("parentId", relation.parentId.get());
@@ -182,7 +182,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                 final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
                 final JsonObject override = new JsonObject();
                 //set childrenIds
-                final FolderExplorerCrudSql.FolderRelationship relation = relations.get(parentIdStr);
+                final FolderExplorerSql.FolderRelationship relation = relations.get(parentIdStr);
                 override.put("childrenIds", new JsonArray(relation.childrenIds));
                 if (relation.parentId.isPresent()) {
                     override.put("parentId", relation.parentId.get());

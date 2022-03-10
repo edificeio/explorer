@@ -1,12 +1,9 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.services.SearchOperation;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import org.entcore.common.explorer.*;
-import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -19,6 +16,12 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerPluginClient;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;

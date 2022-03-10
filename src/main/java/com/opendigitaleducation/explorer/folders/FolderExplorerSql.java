@@ -1,26 +1,19 @@
 package com.opendigitaleducation.explorer.folders;
 
-import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.ingest.MessageIngester;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.explorer.ExplorerResourceCrudSql;
-import org.entcore.common.postgres.PostgresClient;
-import fr.wseduc.webutils.security.Md5;
-import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.impl.ExplorerDbSql;
+import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FolderExplorerCrudSql extends ExplorerResourceCrudSql {
+public class FolderExplorerSql extends ExplorerDbSql {
 
-    public FolderExplorerCrudSql(final PostgresClient pool) {
+    public FolderExplorerSql(final PostgresClient pool) {
         super(pool.getClientPool());
     }
 

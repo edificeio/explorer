@@ -27,23 +27,18 @@ import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.filters.ResourceFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
-import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobWorker;
-import com.opendigitaleducation.explorer.ingest.MessageIngester;
-import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
-import com.opendigitaleducation.explorer.share.PostgresShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -53,9 +48,9 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Explorer extends BaseServer {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
@@ -77,8 +72,20 @@ public class Explorer extends BaseServer {
         if(config.getBoolean("create-index", true)) {
             //create elastic schema if needed
             final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
-            for (final String app : ExplorerConfig.getInstance().getApplications()) {
+            //create custom indexs
+            final Set<String> customApps = ExplorerConfig.getInstance().getApplications();
+            for (final String app : customApps) {
                 if (!ExplorerConfig.FOLDER_APPLICATION.equals(app)) {
+                    final String index = ExplorerConfig.getInstance().getIndex(app);
+                    final Future future = elasticClientManager.getClient().createMapping(index, mappingRes);
+                    futures.add(future);
+                    log.info("Creating ES Resource Mapping for application : " + app + " -> using index" + index);
+                }
+            }
+            //create default index apps
+            final Set<String> apps = config.getJsonObject("applications").fieldNames();
+            for (final String app : apps) {
+                if (!customApps.contains(app) && !ExplorerConfig.FOLDER_APPLICATION.equals(app)) {
                     final String index = ExplorerConfig.getInstance().getIndex(app);
                     final Future future = elasticClientManager.getClient().createMapping(index, mappingRes);
                     futures.add(future);

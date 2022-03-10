@@ -2,15 +2,15 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import org.entcore.common.explorer.ExplorerPlugin;
-import org.entcore.common.explorer.IExplorerPluginCommunication;
-import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.PostgresClient;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;

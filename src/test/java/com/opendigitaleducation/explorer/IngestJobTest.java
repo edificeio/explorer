@@ -1,13 +1,10 @@
 package com.opendigitaleducation.explorer;
 
-import com.opendigitaleducation.explorer.services.SearchOperation;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
-import org.entcore.common.explorer.ExplorerPlugin;
-import org.entcore.common.postgres.PostgresClient;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
@@ -18,6 +15,9 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;

@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import org.entcore.common.explorer.ExplorerMessage;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.Optional;
 

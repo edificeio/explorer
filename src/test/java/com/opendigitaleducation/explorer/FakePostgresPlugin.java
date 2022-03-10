@@ -1,17 +1,23 @@
 package com.opendigitaleducation.explorer;
 
-import org.entcore.common.explorer.*;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerDbSql;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
+import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
+import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.redis.RedisClient;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-public class FakePostgresPlugin extends ExplorerPluginResourceCrud {
+public class FakePostgresPlugin extends ExplorerPluginResourceDb {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     static Logger log = LoggerFactory.getLogger(FakePostgresPlugin.class);
@@ -44,7 +50,7 @@ public class FakePostgresPlugin extends ExplorerPluginResourceCrud {
         return Future.succeededFuture(message);
     }
 
-    static class FakeExplorerCrud extends ExplorerResourceCrudSql{
+    static class FakeExplorerCrud extends ExplorerDbSql {
 
         public FakeExplorerCrud(final PostgresClient pgClient) {
             super(pgClient.getClientPool());

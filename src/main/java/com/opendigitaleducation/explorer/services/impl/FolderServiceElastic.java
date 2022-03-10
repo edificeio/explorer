@@ -1,18 +1,18 @@
 package com.opendigitaleducation.explorer.services.impl;
-import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import org.entcore.common.elasticsearch.ElasticClient;
-import org.entcore.common.elasticsearch.ElasticClientManager;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
-import com.opendigitaleducation.explorer.ingest.MessageIngesterElastic;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.elasticsearch.ElasticClient;
+import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+
+import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
 
 
 public class FolderServiceElastic implements FolderService {
