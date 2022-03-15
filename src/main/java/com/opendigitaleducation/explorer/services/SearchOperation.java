@@ -13,6 +13,7 @@ public class SearchOperation {
     private Optional<Boolean> trashed = Optional.empty();
     private Optional<Boolean> pub = Optional.empty();
     private Optional<Boolean> shared = Optional.empty();
+    private Optional<Boolean> owner = Optional.empty();
     private Optional<Boolean> favorite = Optional.empty();
     private Optional<String> id = Optional.empty();
     private boolean searchEverywhere = false;
@@ -57,21 +58,32 @@ public class SearchOperation {
 
     public Optional<Boolean> getShared() {return shared;}
 
+    public Optional<Boolean> getOwner() {return owner;}
+
     public SearchOperation setOwner(final Boolean owner) {
         if(owner == null){
-            this.shared = Optional.empty();
+            this.owner = Optional.empty();
         }else{
-            this.shared = Optional.ofNullable(!owner);
+            this.owner = Optional.ofNullable(owner);
         }
         return this;
     }
     public SearchOperation setShared(final Boolean shared) {
-        this.shared = Optional.ofNullable(shared);
+        if(shared == null){
+            this.shared = Optional.empty();
+        }else{
+            this.shared = Optional.ofNullable(shared);
+        }
         return this;
     }
 
     public SearchOperation setId(final String id) {
         this.id = Optional.ofNullable(id);
+        return this;
+    }
+
+    public SearchOperation setId(final Object id) {
+        this.id = Optional.ofNullable(id).map(e->e.toString());
         return this;
     }
 

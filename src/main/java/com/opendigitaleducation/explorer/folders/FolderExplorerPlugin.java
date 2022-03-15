@@ -22,7 +22,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     protected final PostgresClientPool pgPool;
 
     public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, new FolderExplorerSql(pgClient));
+        super(communication, new FolderExplorerDbSql(pgClient));
         this.pgPool = pgClient.getClientPool();
     }
 
@@ -46,7 +46,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     }
 
     public final Future<Void> update(final UserInfos user, final String id, final JsonObject source){
-        return ((FolderExplorerSql)explorerDb).update(id, source).compose(e->{
+        return ((FolderExplorerDbSql)explorerDb).update(id, source).compose(e->{
             setIdForModel(source, e.id.toString());
             return notifyUpsert(user, source);
         });
@@ -64,7 +64,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
 
 
     public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
-        return ((FolderExplorerSql)explorerDb).move(id, newParent).compose(oldParent->{
+        return ((FolderExplorerDbSql)explorerDb).move(id, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             sources.add(setIdForModel(new JsonObject(), id));
             //update children of oldParent

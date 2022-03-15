@@ -14,9 +14,9 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ResourceExplorerCrudSql  {
+public class ResourceExplorerDbSql {
     final PostgresClientPool pgPool;
-    public ResourceExplorerCrudSql(final PostgresClient pool) {
+    public ResourceExplorerDbSql(final PostgresClient pool) {
         this.pgPool = pool.getClientPool();
     }
 
@@ -55,9 +55,13 @@ public class ResourceExplorerCrudSql  {
         //must do update to return
         final List<JsonObject> resourcesList = resources.stream().map(e->{
             final String resourceUniqueId = e.getResourceUniqueId();
-            return new JsonObject().put("ent_id", e.getId()).put("application",e.getApplication())
+            final JsonObject params = new JsonObject().put("ent_id", e.getId()).put("application",e.getApplication())
                     .put("resource_type", e.getResourceType()).put("resource_unique_id", resourceUniqueId)
-                    .put("creator_id", e.getCreatorId()).put("shared", e.getShared());
+                    .put("creator_id", e.getCreatorId());
+            if(e.getShared() != null &&  !e.getShared().isEmpty()){
+                params.put("shared", e.getShared());
+            }
+            return params;
         }).collect(Collectors.toList());
         //(only one upsert per resource_uniq_id)
         final Map<String, JsonObject> resourcesMap = new HashMap<>();

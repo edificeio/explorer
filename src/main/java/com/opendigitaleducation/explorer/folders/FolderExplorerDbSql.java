@@ -11,9 +11,9 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FolderExplorerSql extends ExplorerDbSql {
+public class FolderExplorerDbSql extends ExplorerDbSql {
 
-    public FolderExplorerSql(final PostgresClient pool) {
+    public FolderExplorerDbSql(final PostgresClient pool) {
         super(pool.getClientPool());
     }
 
@@ -34,7 +34,7 @@ public class FolderExplorerSql extends ExplorerDbSql {
         return super.createAll(user, sources);
     }
 
-    public final Future<ResourceExplorerCrudSql.FolderSql> update(final String id, final JsonObject source){
+    public final Future<ResourceExplorerDbSql.FolderSql> update(final String id, final JsonObject source){
         beforeCreateOrUpdate(source);
         final Tuple tuple = Tuple.tuple();
         tuple.addValue(Integer.valueOf(id));
@@ -45,7 +45,7 @@ public class FolderExplorerSql extends ExplorerDbSql {
            for(final Row row : rows){
                final Integer idDb = row.getInteger("id");
                final String creator_id = row.getString("creator_id");
-               final ResourceExplorerCrudSql.FolderSql sql = new ResourceExplorerCrudSql.FolderSql(idDb,creator_id);
+               final ResourceExplorerDbSql.FolderSql sql = new ResourceExplorerDbSql.FolderSql(idDb,creator_id);
                return Future.succeededFuture(sql);
            }
            return Future.failedFuture("folder.notfound");

@@ -134,6 +134,9 @@ public class ResourceQueryElastic {
     }
 
     public ResourceQueryElastic withSearchOperation(final SearchOperation operation){
+        if(operation.getId().isPresent()){
+            this.withId(operation.getId().get());
+        }
         if (operation.getParentId().isPresent()) {
             this.withFolderId(operation.getParentId().get());
         } else if (!operation.isSearchEverywhere()) {
@@ -150,6 +153,9 @@ public class ResourceQueryElastic {
         }
         if (operation.getShared().isPresent()) {
             this.withShared(operation.getShared().get());
+        }
+        if (operation.getOwner().isPresent()) {
+            this.withShared(!operation.getOwner().get());
         }
         if (operation.getFavorite().isPresent()) {
             this.withFavorite(operation.getFavorite().get());
@@ -171,11 +177,13 @@ public class ResourceQueryElastic {
 
     public JsonObject getSearchQuery() {
         final JsonObject payload = new JsonObject();
+        final JsonArray sort = new JsonArray();
         final JsonObject query = new JsonObject();
         final JsonObject bool = new JsonObject();
         final JsonArray filter = new JsonArray();
         final JsonArray mustNot = new JsonArray();
         final JsonArray must = new JsonArray();
+        payload.put("sort", sort);
         payload.put("query", query);
         query.put("bool", bool);
         bool.put("filter", filter);
@@ -221,7 +229,7 @@ public class ResourceQueryElastic {
         }
         //search text
         if (text.isPresent()) {
-            final JsonArray fields = new JsonArray().add("application").add("name").add("contentAll");
+            final JsonArray fields = new JsonArray().add("application").add("contentAll");
             must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text.get()).put("fields", fields)));
         }
         if (trashed.isPresent()) {
@@ -243,6 +251,10 @@ public class ResourceQueryElastic {
             }else{
                 filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.getUserId())));
             }
+        }
+        //sort
+        for(final Map.Entry<String, Boolean> s : this.sorts){
+            sort.add(new JsonObject().put(s.getKey(), s.getValue()?"asc":"desc"));
         }
         //from / size
         if (from.isPresent()) {

@@ -14,14 +14,6 @@
         "mode" : "${mode}",
         "max-workertime-minutes":15,
         "stream": "postgres",
-        "postgresConfig":{
-            "host": "${sqlIp}",
-            "database": "${sqlDb}",
-            "port": 5432,
-            "user": "${sqlUsername}",
-            "password": "${sqlPassword}",
-            "pool-size": 50
-        },
         "create-index": true,
         "elasticsearchConfig":{
             "uris": ["${explorerEsUrl}"],

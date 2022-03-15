@@ -1,14 +1,18 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.folders.ResourceExplorerCrudSql;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.SearchOperation;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
@@ -21,17 +25,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ResourceServiceElastic implements ResourceService {
+    static Logger log = LoggerFactory.getLogger(ResourceServiceElastic.class);
     final ElasticClientManager manager;
     final ShareTableManager shareTableManager;
-    final ResourceExplorerCrudSql sql;
+    final ResourceExplorerDbSql sql;
     final IExplorerPluginCommunication communication;
     final boolean waitFor = true;
     final MessageConsumer messageConsumer;
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final PostgresClient sql) {
-        this(aManager, shareTableManager, communication, new ResourceExplorerCrudSql(sql));
+        this(aManager, shareTableManager, communication, new ResourceExplorerDbSql(sql));
     }
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final ResourceExplorerCrudSql sql) {
+
+    @Override
+    public Future<Void> dropAll(final String application) {
+        final String index = getIndex(application);
+        log.info("Drop mapping for application="+application+", index="+index);
+        return manager.getClient().deleteMapping(index);
+    }
+
+    @Override
+    public Future<Void> init(final String application) {
+        final String index = getIndex(application);
+        log.info("Create mapping for application="+application+", index="+index);
+        final Vertx vertx = communication.vertx();
+        final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
+        return manager.getClient().createMapping(index,mappingRes);
+    }
+
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final ResourceExplorerDbSql sql) {
         this.manager = aManager;
         this.sql = sql;
         this.communication = communication;
@@ -45,7 +67,7 @@ public class ResourceServiceElastic implements ResourceService {
                     this.sql.getSharedByEntIds(idSet).onComplete(e->{
                        if(e.succeeded()){
                            final JsonObject results = new JsonObject();
-                           for(final ResourceExplorerCrudSql.ResouceSql res : e.result()){
+                           for(final ResourceExplorerDbSql.ResouceSql res : e.result()){
                                results.put(res.entId, res.shared);
                            }
                            message.reply(results);

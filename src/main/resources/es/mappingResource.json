@@ -20,7 +20,8 @@
     "dynamic": false,
     "properties": {
       "name": {
-        "type": "text"
+        "type": "keyword",
+        "copy_to": "contentAll"
       },
       "content": {
         "type": "text",
@@ -50,11 +51,11 @@
         "type": "keyword"
       },
       "creatorId": {
-        "type": "keyword",
-        "index": false
+        "type": "keyword"
       },
       "creatorName": {
-        "type": "text"
+        "type": "keyword",
+        "copy_to": "contentAll"
       },
       "createdAt": {
         "type": "date"
