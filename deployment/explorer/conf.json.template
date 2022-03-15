@@ -8,10 +8,31 @@
         "app-icon" : "explorer-large",
         "host": "${host}",
         "ssl" : $ssl,
+        "sql": true,
         "auto-redeploy": false,
         "userbook-host": "${host}",
         "mode" : "${mode}",
         "max-workertime-minutes":15,
+        "stream": "postgres",
+        "postgresConfig":{
+            "host": "${sqlIp}",
+            "database": "${sqlDb}",
+            "port": 5432,
+            "user": "${sqlUsername}",
+            "password": "${sqlPassword}",
+            "pool-size": 50
+        },
+        "create-index": true,
+        "elasticsearchConfig":{
+            "uris": ["${explorerEsUrl}"],
+            "index": "explorer-index"
+        },
+        "ingest":{
+            "consumer-block-ms": 0,
+            "max-attempt": 10,
+            "batch-size": 100,
+            "max-delay-ms": 45000
+        },
 	"projects" : [],
         "publicConf": {
           <% if ("true".equals(xitiSwitch)) { %>
@@ -21,6 +42,31 @@
               }
             }
           <% } %>
+        },
+        "applications": {
+            "blog": {
+                "filters": [
+                    {
+                        "id":"visibility",
+                        "defaultValue": "owner",
+                        "values":[
+                            {"value":"owner", "i18n":"explorer.visibility.owner"},
+                            {"value":"public", "i18n":"explorer.visibility.public"},
+                            {"value":"shared", "i18n":"explorer.visibility.shared"}
+                        ]
+                    }
+                ],
+                "orders": [
+                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
+                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
+                ],
+                "actions": [
+                    {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
+                    {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
+                    {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish"},
+                    {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print"}
+                ]
+            }
         }
       }
     }

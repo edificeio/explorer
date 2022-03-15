@@ -46,7 +46,6 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +60,6 @@ public class Explorer extends BaseServer {
         log.info("Starting explorer...");
         super.start();
         final List<Future> futures = new ArrayList<>();
-        //create redis client
-        final RedisClient redisClient = RedisClient.create(vertx, config);
         //create postgres client
         final PostgresClient postgresClient = PostgresClient.create(vertx, config);
         //create es client
@@ -100,7 +97,7 @@ public class Explorer extends BaseServer {
             futures.add(future);
         }
         //create folder service
-        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(vertx, redisClient, postgresClient);
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(vertx, config, postgresClient);
         final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         //create resources service
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
