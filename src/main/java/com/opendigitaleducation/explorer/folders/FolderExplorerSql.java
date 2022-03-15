@@ -1,9 +1,9 @@
 package com.opendigitaleducation.explorer.folders;
 
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.impl.ExplorerDbSql;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;

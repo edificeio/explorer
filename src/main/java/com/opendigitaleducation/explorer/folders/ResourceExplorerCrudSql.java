@@ -1,12 +1,11 @@
 package com.opendigitaleducation.explorer.folders;
 
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
@@ -92,15 +91,14 @@ public class ResourceExplorerCrudSql  {
                 final String resourceUniqueId = row.getString("resource_unique_id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
-                final Json shared = row.getJson("shared");
+                final Object shared = row.getJson("shared");
                 results.putIfAbsent(id, new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type));
                 if(folderId != null){
                     results.get(id).folders.add(new FolderSql(folderId, userId));
                 }
                 if(shared != null){
-                    final Object value = shared.value();
-                    if(value instanceof JsonArray){
-                        results.get(id).shared.addAll((JsonArray) value);
+                    if(shared instanceof JsonArray){
+                        results.get(id).shared.addAll((JsonArray) shared);
                     }
                 }
             }
@@ -125,12 +123,11 @@ public class ResourceExplorerCrudSql  {
                 final String resourceUniqueId = row.getString("resource_unique_id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
-                final Json shared = row.getJson("shared");
+                final Object shared = row.getJson("shared");
                 final ResouceSql res = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type);
                 if(shared != null){
-                    final Object value = shared.value();
-                    if(value instanceof JsonArray){
-                        res.shared.addAll((JsonArray) value);
+                    if(shared instanceof JsonArray){
+                        res.shared.addAll((JsonArray) shared);
                     }
                 }
                 resources.add(res);
@@ -167,7 +164,7 @@ public class ResourceExplorerCrudSql  {
         if(ids.isEmpty()){
             return Future.succeededFuture(new HashSet<>());
         }
-        final Tuple tuple = Tuple.tuple().addJson(Json.create(shared));
+        final Tuple tuple = Tuple.tuple().addValue((shared));
         PostgresClient.inTuple(tuple, ids);
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 2);
         final String queryTpl = "UPDATE explorer.resources SET shared = $1 WHERE id IN (%s) RETURNING * ";
@@ -244,7 +241,7 @@ public class ResourceExplorerCrudSql  {
         });
     }
 
-    private Map<Integer, ExplorerMessage> resourcesToMap(final Collection<? extends ExplorerMessage> resources, final PgRowSet rows){
+    private Map<Integer, ExplorerMessage> resourcesToMap(final Collection<? extends ExplorerMessage> resources, final RowSet<Row> rows){
         final Map<Integer,ExplorerMessage> newIds = new HashMap<>();
         for(final Row row : rows){
             final String resourceUniqueId = row.getString("resource_unique_id");

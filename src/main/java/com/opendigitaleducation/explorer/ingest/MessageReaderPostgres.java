@@ -1,14 +1,14 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientChannel;
@@ -110,7 +110,7 @@ public class MessageReaderPostgres implements MessageReader {
                 final String resourceAction = row.getString("resource_action");
                 final Long idQueue = row.getLong("id");
                 final String idResource = row.getString("id_resource");
-                final JsonObject json = (JsonObject) (row.getJson("payload")).value();
+                final JsonObject json = (JsonObject) (row.getJson("payload"));
                 final ExplorerMessageForIngest message = new ExplorerMessageForIngest(resourceAction, idQueue + "", idResource, json);
                 all.add(message);
             }
@@ -176,21 +176,21 @@ public class MessageReaderPostgres implements MessageReader {
     public Future<JsonObject> getMetrics() {
         final Integer lastMaxAtempt = metrics.getInteger("last_fetch_max_attempt", -1);
         final JsonObject metrics = this.metrics.copy();
-        final Future<PgRowSet> f1 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count = 0", Tuple.tuple()).onSuccess(result -> {
+        final Future<RowSet<Row>> f1 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count = 0", Tuple.tuple()).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_count", row.getValue("nb"));
                 metrics.put("pending_min", row.getValue("mindate"));
                 metrics.put("pending_max", row.getValue("maxdate"));
             }
         });
-        final Future<PgRowSet> f2 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count < $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
+        final Future<RowSet<Row>> f2 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count < $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_retry_count", row.getValue("nb"));
                 metrics.put("pending_retry_min", row.getValue("mindate"));
                 metrics.put("pending_retry_max", row.getValue("maxdate"));
             }
         });
-        final Future<PgRowSet> f3 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count > $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
+        final Future<RowSet<Row>> f3 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count > $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_failed_count", row.getValue("nb"));
                 metrics.put("pending_failed_min", row.getValue("mindate"));
