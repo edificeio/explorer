@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
 import org.entcore.common.postgres.PostgresClient;
@@ -23,6 +24,20 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
         super(communication, new FolderExplorerSql(pgClient));
         this.pgPool = pgClient.getClientPool();
+    }
+
+    public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final PostgresClient postgres) throws Exception {
+        if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
+            final RedisClient redis = RedisClient.create(vertx, config);
+            return withRedisStream(vertx, redis, postgres);
+        }else{
+            return withPgStream(vertx, postgres);
+        }
+    }
+
+    public static FolderExplorerPlugin withPgStream(final Vertx vertx, final PostgresClient postgres) {
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
+        return new FolderExplorerPlugin(communication, postgres);
     }
 
     public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
