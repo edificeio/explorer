@@ -15,22 +15,6 @@
         "mode": "prod",
         "max-workertime-minutes":15,
         "stream": "redis",
-        "postgresConfig":{
-            {% if ipPostgresMaster is defined %}
-            "host": "{{ ipPostgresMaster }}",
-            {% else %}
-                {% if ipPostgres is defined %}
-            "host": "{{ ipPostgres | first }}",
-                {% else %}
-            "host": "{{ dbip | first }}",
-                {% endif %}
-            {% endif %}
-            "database": "{{dbName}}",
-            "port": {{postgresPort | default(5432)}},
-            "user": "{{ userPostgres }}",
-            "password": "{{ passwordPostgres }}",
-            "pool-size": {{postgresPoolSize | default(50)}}
-        },
         "create-index": {{explorerCreateIndex | default(true)}},
         "elasticsearchConfig":{
             "uris": {{explorerEsUris}},

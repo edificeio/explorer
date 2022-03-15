@@ -12,6 +12,9 @@ import java.util.Optional;
 //TODO add metrics
 public interface ResourceService {
 
+    Future<Void> init(final String application);
+
+    Future<Void> dropAll(final String application);
     //TODO fetch by other criterias...
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
 

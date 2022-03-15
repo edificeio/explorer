@@ -438,6 +438,7 @@ public class ExplorerController extends BaseController {
     public void reindex(final HttpServerRequest request) {
         final String app = request.params().get("application");
         final String type = request.params().get("type");
+        final String drop = request.params().get("drop");
         final IExplorerPluginClient client =  IExplorerPluginClient.withBus(vertx, app, type);
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
@@ -448,9 +449,14 @@ public class ExplorerController extends BaseController {
             final Optional<String> from = Optional.ofNullable(request.params().get("from"));
             final Optional<String> to = Optional.ofNullable(request.params().get("to"));
             try {
+                final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropAll(app).compose(e->{
+                    return resourceService.init(app);
+                }) :  Future.succeededFuture();
                 final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
                 final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();
-                client.getForIndexation(user, fromDate, toDate).onComplete(e->{
+                dropFuture.compose(e -> {
+                    return client.getForIndexation(user, fromDate, toDate);
+                }).onComplete(e->{
                    if(e.succeeded()){
                        renderJson(request, e.result().toJson());
                    }else{
@@ -471,7 +477,7 @@ public class ExplorerController extends BaseController {
         final Optional<String> orderField = order.map(e-> e[0]);
         final SearchOperation op = new SearchOperation();
         op.setResourceType(queryParams.getString("resource_type"));
-        op.setId(queryParams.getString("id"));
+        op.setId(queryParams.getValue("id"));
         op.setOrder(orderField, orderAsc);
         op.setOwner(queryParams.getBoolean("owner"));
         op.setPub(queryParams.getBoolean("public"));
