@@ -22,12 +22,11 @@ public class IngestJobWorker extends AbstractVerticle {
 
     @Override
     public void start(final Promise<Void> startPromise) throws Exception {
-        final RedisClient redisClient = RedisClient.create(vertx, config());
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
         final PostgresClient postgresClient = PostgresClient.create(vertx, config());
         //create ingest job
         final JsonObject ingestConfig = config().getJsonObject("ingest");
-        final MessageReader reader = MessageReader.redis(redisClient, ingestConfig);
+        final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);
         final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient);
         log.info("Starting ingest job worker... ");
         job = new IngestJob(vertx, reader, ingester, ingestConfig);
