@@ -237,7 +237,7 @@ public class MessageReaderRedis implements MessageReader {
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
                 batch.beginTransaction();
                 batch.xAck(stream, consumerGroup, idQueue);
-                //batch.xDel(stream, idQueue);
+                batch.xDel(stream, idQueue);
                 batch.commitTransaction();
             }
         }
@@ -256,7 +256,7 @@ public class MessageReaderRedis implements MessageReader {
                     batch.xAdd(stream + streamFailSuffix, json);
                 }
                 batch.xAck(stream, consumerGroup, idQueue);
-                //batch.xDel(stream, idQueue);
+                batch.xDel(stream, idQueue);
                 batch.commitTransaction();
             }
         }
