@@ -33,7 +33,8 @@
         "copy_to": "contentAll"
       },
       "contentAll": {
-        "type": "text"
+        "type": "text",
+        "store": true
       },
       "application": {
         "type": "keyword"
@@ -89,6 +90,9 @@
               "type": "text",
               "analyzer": "html_analyzer",
               "copy_to": "contentAll"
+            },
+            "deleted": {
+              "type": "boolean"
             }
         }
       }
