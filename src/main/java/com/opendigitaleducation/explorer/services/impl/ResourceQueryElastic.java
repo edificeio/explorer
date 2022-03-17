@@ -17,6 +17,7 @@ public class ResourceQueryElastic {
     private final List<String> folderId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
     private final List<String> visibleIds = new ArrayList<>();
+    private final List<String> searchAfter = new ArrayList<>();
     private Optional<Long> from = Optional.empty();
     private Optional<Long> size = Optional.empty();
     private boolean onlyRoot = false;
@@ -43,6 +44,11 @@ public class ResourceQueryElastic {
 
     public ResourceQueryElastic withOrder(String name, Boolean asc) {
         this.sorts.add(new AbstractMap.SimpleEntry<>(name, asc));
+        return this;
+    }
+
+    public ResourceQueryElastic withSearchAfter(String searchAfter) {
+        this.searchAfter.add(searchAfter);
         return this;
     }
 
@@ -172,6 +178,9 @@ public class ResourceQueryElastic {
         if (operation.getOrderField().isPresent()) {
             this.withOrder(operation.getOrderField().get(), operation.getOrderAsc().orElse(true));
         }
+        if(operation.getSearchAfter().isPresent()){
+            this.withSearchAfter(operation.getSearchAfter().get());
+        }
         return this;
     }
 
@@ -256,8 +265,12 @@ public class ResourceQueryElastic {
         for(final Map.Entry<String, Boolean> s : this.sorts){
             sort.add(new JsonObject().put(s.getKey(), s.getValue()?"asc":"desc"));
         }
+        //search after
+        if(!searchAfter.isEmpty()){
+            payload.put("search_after", new JsonArray(searchAfter));
+        }
         //from / size
-        if (from.isPresent()) {
+        if (from.isPresent() && searchAfter.isEmpty()) {
             payload.put("from", from.get());
         }
         if (size.isPresent()) {

@@ -471,7 +471,7 @@ public class ExplorerController extends BaseController {
 
     //TODO on batch delete / update / return list of succeed and list of failed
     private SearchOperation toResourceSearch(final JsonObject queryParams) {
-        ///application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y
+        ///application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y&search_after=name|createdAt
         final Optional<String[]> order = Optional.ofNullable(queryParams.getString("order_by")).map(e-> e.split(":")).map(e -> e.length==2? e: null);
         final Optional<Boolean> orderAsc = order.map(e-> "asc".equalsIgnoreCase(e[1]));
         final Optional<String> orderField = order.map(e-> e[0]);
@@ -487,6 +487,7 @@ public class ExplorerController extends BaseController {
         op.setSearch(queryParams.getString("search"));
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));
+        op.setSearchAfter(queryParams.getValue("search_after"));
         return op;
     }
 

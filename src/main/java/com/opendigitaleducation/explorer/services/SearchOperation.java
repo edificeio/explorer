@@ -16,7 +16,15 @@ public class SearchOperation {
     private Optional<Boolean> owner = Optional.empty();
     private Optional<Boolean> favorite = Optional.empty();
     private Optional<String> id = Optional.empty();
+    private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
+
+    public SearchOperation setSearchAfter(final Object searchAfter) {
+        this.searchAfter = Optional.ofNullable(searchAfter).map(e->e.toString());
+        return this;
+    }
+
+    public Optional<String> getSearchAfter() {return searchAfter;}
 
     public Optional<Boolean> getOrderAsc() {return orderAsc;}
 

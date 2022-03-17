@@ -5,7 +5,10 @@
   "properties": {
     "application": { "type": "string"},
     "resource_type": { "type": "string"},
-    "order_by": { "type": "string"},
+    "order_by": {
+      "type": "string",
+      "pattern": "^(name|createdAt|updatedAt|application|resourceType):(asc|desc)$"
+    },
     "owner": { "type": "boolean"},
     "shared": { "type": "boolean"},
     "public": { "type": "boolean"},
@@ -14,6 +17,7 @@
     "search": { "type": "string"},
     "start_idx": { "type": "number"},
     "page_size": { "type": "number"},
+    "search_after": { "type": "string"},
     "id": { "type": "number"}
   },
   "required": [
