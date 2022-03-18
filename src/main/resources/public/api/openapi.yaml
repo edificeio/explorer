@@ -1,0 +1,622 @@
+openapi: 3.0.0
+info:
+  title: 'Explorer'
+  description: API to search among applications resources.
+  version: '1.0.0'
+
+servers:
+- url: http://localhost:8090
+  description: Optional dev mode server
+- url: https://rd.opendigitaleducation.com
+  description: Test server
+
+paths:
+  # ExplorerController
+  #-------------------------------------------------------------------------------
+  /explorer/context:
+    get:
+      # Droit requis : AUTHENTICATED
+      summary: 'Initialize a search context for your client application'
+      parameters:
+      - name: application
+        in: query
+        description: 'Client application which is searching resources'
+        required: true
+        schema:
+          type: string
+      - name: resource_type
+        in: query
+        description: 'Type of searched resource'
+        required: true
+        schema:
+          type: string
+      - name: order_by
+        in: query
+        description: 'Search field and order, for xample  "name:desc"'
+        required: true
+        schema:
+          type: string
+          pattern: '^([a-zA-Z0-9_\\-\\.]+):(asc|desc)$'
+      - name: start_idx
+        in: query
+        description: 'Skip this number of results from the beginning of the resultset'
+        required: false
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: 'Limit the number of returned results to this size'
+        required: false
+        schema:
+          type: integer
+      - name: owner
+        in: query
+        description: 'Filter on resources owned by this user ?'
+        required: false
+        schema:
+          type: boolean
+      - name: public
+        in: query
+        description: 'Filter on resources with public access ?'
+        required: false
+        schema:
+          type: boolean
+      - name: shared
+        in: query
+        description: 'Filter on shared resources ?'
+        required: false
+        schema:
+          type: boolean
+      - name: favorite
+        in: query
+        description: 'Filter on favorite resources ?'
+        required: false
+        schema:
+          type: boolean
+      - name: folder
+        in: query
+        description: 'Filter on resources from this folder ID'
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: 'Filter on resources containing this text'
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Search context to use'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetContextResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /explorer/resources:
+    get:
+      # Droit requis : AUTHENTICATED
+      summary: 'Search resources'
+      parameters:
+      - name: application
+        in: query
+        description: 'Client application which is searching resources'
+        required: true
+        schema:
+          type: string
+      - name: resource_type
+        in: query
+        description: 'Type of searched resource'
+        required: true
+        schema:
+          type: string
+      - name: order_by
+        in: query
+        description: 'Search field and order, for xample  "name:desc"'
+        required: true
+        schema:
+          type: string
+          pattern: '^([a-zA-Z0-9_\\-\\.]+):(asc|desc)$'
+      - name: start_idx
+        in: query
+        description: 'Skip this number of results from the beginning of the resultset'
+        required: false
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: 'Limit the number of returned results to this size'
+        required: false
+        schema:
+          type: integer
+      - name: owner
+        in: query
+        description: 'Filter on resources owned by this user ?'
+        required: false
+        schema:
+          type: boolean
+      - name: public
+        in: query
+        description: 'Filter on resources with public access ?'
+        required: false
+        schema:
+          type: boolean
+      - name: shared
+        in: query
+        description: 'Filter on shared resources ?'
+        required: false
+        schema:
+          type: boolean
+      - name: favorite
+        in: query
+        description: 'Filter on favorite resources ?'
+        required: false
+        schema:
+          type: boolean
+      - name: folder
+        in: query
+        description: 'Filter on resources from this folder ID'
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: 'Filter on resources containing this text'
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Search context to use'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResourcesResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /explorer/folders:
+    delete:
+      # Droit requis : AUTHENTICATED
+      summary: 'Delete resources and/or folders.'
+      requestBody:
+        description: 'IDs of resources and folders to delete'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteFoldersRequestBody'
+      responses:
+        '200':
+          description: 'Details of the created subfolder'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutFoldersResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /explorer/folders/{id}:
+    get:
+      # Droit requis : AUTHENTICATED
+      summary: 'List subfolders (but not resources) of a folder.'
+      parameters:
+      - name: id
+        in: path
+        description: 'ID of the parent folder'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'List of subfolders'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFoldersResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      # Droit requis : AUTHENTICATED
+      summary: 'Update a folder details.'
+      parameters:
+      - name: id
+        in: path
+        description: 'ID of the folder'
+        required: true
+        schema:
+          type: string
+      - name: application
+        in: query
+        description: 'Client application which is updating the folder'
+        required: true
+        schema:
+          type: string
+      - name: resource_type
+        in: query
+        description: 'Type of resource contained by the folder'
+        required: true
+        schema:
+          type: string
+      - name: parent_id
+        in: query
+        description: 'ID of the parent folder'
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name of the folder'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Details of the created subfolder'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutFoldersResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /explorer/folder:
+    post:
+      # Droit requis : AUTHENTICATED
+      summary: 'Add a new subfolder to a parent folder.'
+      parameters:
+      - name: application
+        in: query
+        description: 'Client application which is creating the subfolder'
+        required: true
+        schema:
+          type: string
+      - name: resource_type
+        in: query
+        description: 'Type of resource to be added to the created subfolder'
+        required: true
+        schema:
+          type: string
+      - name: parent_id
+        in: query
+        description: 'ID of the parent folder'
+        required: false
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name of the created subfolder'
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Details of the created subfolder'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostFolderResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /explorer/folder/{id}/move:
+    post:
+      # Droit requis : AUTHENTICATED
+      summary: 'Move resources and/or folders to another folder (target).'
+      requestBody:
+        description: 'IDs of resources and folders to move'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostFolderMoveRequestBody'
+      parameters:
+      - name: id
+        in: path
+        description: 'ID of the target folder'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Details of the created subfolder'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutFoldersResult'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+#-------------------------------------------------------------------------------
+components:
+  schemas:
+    Folder:
+      type: object
+      required:
+      - id
+      - name
+      - type
+      - childNumber
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          description: 'Type of folder'
+          pattern: '^(default|bin|[a-zA-Z0-9_\\-\\.]+)$'
+        childNumber:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    Filter:
+      type: object
+      required:
+      - id
+      - value
+      properties:
+        id:
+          type: string
+        defaultValue:
+          oneOf:
+          - type: string
+          - type: boolean
+        values:
+          type: array
+          items:
+            type: object
+            required:
+            - value
+            - i18n
+            properties:
+              value:
+                oneOf:
+                - type: string
+                - type: boolean
+              i18n:
+                type: string
+
+    SortOrder:
+      type: object
+      required:
+      - id
+      - i18n
+      properties:
+        id:
+          type: string
+        i18n:
+          type: string
+        defaultValue:
+          type: string
+          pattern: card|list'
+
+    Action:
+      type: object
+      required:
+      - id
+      - available
+      properties:
+        id:
+          type: string
+        available:
+          type: boolean
+
+    Pagination:
+      type: object
+      required:
+      - startIdx
+      - pageSize
+      properties:
+        startIdx:
+          type: integer
+          description: 'Index of the first returned result from the whole resultset'
+        pageSize:
+          type: integer
+          description: 'Default pagination size, or number of returned results'
+        maxIdx:
+          type: integer
+          description: 'Total size of the whole resultset (number of hits)'
+
+    Resource:
+      type: object
+      required:
+      - id
+      - name
+      - thumbnail
+      - application
+      - createdAt
+      - authorId
+      - authorName
+      - modifierId
+      - modifierName
+      - modifiedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        thumbnail: 
+          type: string
+        application: 
+          type: string
+        createdAt: 
+          type: string
+        authorId: 
+          type: string
+        authorName:
+          type: string
+        modifierId:
+          type: string
+        modifierName:
+          type: string
+        modifiedAt:
+          type: string
+        folderId:
+          type: string
+        public:
+          type: boolean
+        shared:
+          type: boolean
+        favorite:
+          type: boolean
+        views:
+          type: integer
+        comments:
+          type: integer
+
+    GetContextResult:
+      type: object
+      required:
+      - preferences
+      - filters
+      - orders
+      - actions
+      - pagination
+      - resources
+      properties:
+        preferences:
+          type: object
+          properties:
+            view:
+              type: string
+              pattern: 'card|list'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/SortOrder'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        folders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Folder'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+
+    GetResourcesResult:
+      type: object
+      required:
+      - pagination
+      - resources
+      properties:
+        folders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Folder'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+
+    GetFoldersResult:
+      type: object
+      required:
+      - folders
+      properties:
+        folders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Folder'
+
+    PostFolderResult:
+      $ref: '#/components/schemas/Folder'
+
+    PutFoldersResult:
+      $ref: '#/components/schemas/Folder'
+
+    PostFolderMoveRequestBody:
+      type: object
+      required:
+      - resourceIds
+      - folderIds
+      properties:
+        resourceIds:
+          type: array
+          items:
+            type: string
+        folderIds:
+          type: array
+          items:
+            type: string
+
+    DeleteRootRequestBody:
+      type: object
+      required:
+      - resourceIds
+      - folderIds
+      properties:
+        resourceIds:
+          type: array
+          items:
+            type: string
+        folderIds:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+security:
+  - BasicAuth: []
