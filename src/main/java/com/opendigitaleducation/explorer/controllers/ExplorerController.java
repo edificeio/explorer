@@ -500,6 +500,9 @@ public class ExplorerController extends BaseController {
     }
 
     private JsonObject adaptFolder(final JsonObject folder) {
+        final Object id = folder.remove("_id");
+        if( id != null ) folder.put( "id", id );
+        
         folder.put("childNumber", folder.getJsonArray("childrenIds", new JsonArray()).size());
         return folder;
     }
@@ -513,6 +516,8 @@ public class ExplorerController extends BaseController {
     }
 
     private JsonObject adaptResource(final JsonObject folder) {
+        final Object id = folder.remove("_id");
+        if( id != null ) folder.put( "id", id );
         return folder;
     }
 }
