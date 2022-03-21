@@ -11,6 +11,7 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
 
@@ -41,18 +42,7 @@ public class FolderServiceElastic implements FolderService {
     @Override
     public Future<JsonArray> fetch(final UserInfos creator, final SearchOperation search) {
         final String creatorId = creator.getUserId();
-        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId);
-        if (search.getParentId().isPresent()) {
-            query.withFolderId(search.getParentId().get());
-        } else if (!search.isSearchEverywhere()) {
-            query.withOnlyRoot(true);
-        }
-        if (search.getTrashed() != null) {
-            query.withTrashed(search.getTrashed());
-        }
-        if(search.getId() != null){
-            query.withId(search.getId());
-        }
+        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withSearch(search);
         final String index = getIndex();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
         return manager.getClient().search(index, query.getSearchQuery(), options);
@@ -61,18 +51,7 @@ public class FolderServiceElastic implements FolderService {
     @Override
     public Future<Integer> count(UserInfos creator, SearchOperation search) {
         final String creatorId = creator.getUserId();
-        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId);
-        if (search.getParentId().isPresent()) {
-            query.withFolderId(search.getParentId().get());
-        } else if (!search.isSearchEverywhere()) {
-            query.withOnlyRoot(true);
-        }
-        if (search.getTrashed() != null) {
-            query.withTrashed(search.getTrashed());
-        }
-        if(search.getId() != null){
-            query.withId(search.getId());
-        }
+        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withSearch(search);
         final String index = getIndex();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
         return manager.getClient().count(index, query.getSearchQuery(), options);
@@ -85,9 +64,8 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<String> create(final UserInfos creator, final JsonObject folder) {
-        return plugin.create(creator, folder, false).map(id ->{
-            folder.put("_id", id);
-            return id;
+        return create(creator, Arrays.asList(folder)).map(e->{
+            return e.get(0).getString("_id");
         });
     }
 
@@ -96,20 +74,46 @@ public class FolderServiceElastic implements FolderService {
         if(folders.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        return plugin.create(creator, folders, false).map(ids ->{
-            for(int i = 0; i < folders.size(); i++){
-                folders.get(i).put("_id", ids.get(i));
-            }
-            return folders;
+        final Set<String> parentIds = folders.stream().filter(e->e.getValue("parentId") !=null).filter(e->{
+            final String parentId = e.getValue("parentId").toString();
+            return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
+        }).map(e->{
+            return (e.getValue("parentId").toString());
+        }).collect(Collectors.toSet());
+        final SearchOperation search = new SearchOperation().setIds(parentIds).setSearchEverywhere(true);
+        final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,search);
+        return checkFuture.compose(e->{
+           if(e < parentIds.size()){
+               return Future.failedFuture("folder.create.parent.invalid");
+           }
+            return plugin.create(creator, folders, false).map(ids ->{
+                for(int i = 0; i < folders.size(); i++){
+                    folders.get(i).put("_id", ids.get(i));
+                }
+                return folders;
+            });
         });
     }
 
     @Override
     public Future<JsonObject> update(final UserInfos creator, final String id, final JsonObject folder) {
-        return plugin.update(creator, id, folder).map(e->{
+        final Set<String> parentIds = Arrays.asList(folder).stream().filter(e->e.getValue("parentId") !=null).filter(e->{
+            final String parentId = e.getValue("parentId").toString();
+            return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
+        }).map(e->{
+            return (e.getValue("parentId").toString());
+        }).collect(Collectors.toSet());
+        final SearchOperation search = new SearchOperation().setIds(parentIds).setSearchEverywhere(true);
+        final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,search);
+        return checkFuture.compose(ee->{
+            if(ee < parentIds.size()){
+                return Future.failedFuture("folder.create.parent.invalid");
+            }
+            return plugin.update(creator, id, folder).map(e->{
             folder.put("_id", id);
             folder.put("updatedAt", new Date().getTime());
             return folder;
+            });
         });
     }
 
@@ -119,28 +123,43 @@ public class FolderServiceElastic implements FolderService {
             return Future.succeededFuture(new ArrayList<>());
         }
         final List<String> idList = new ArrayList<>(ids);
-        return plugin.delete(creator, idList).map(idList);
+        final SearchOperation search = new SearchOperation().setIds(ids).setSearchEverywhere(true);
+        final Future<Integer> checkFuture = ids.isEmpty()?Future.succeededFuture(0):count(creator,search);
+        return checkFuture.compose(ee-> {
+            if (ee < ids.size()) {
+                return Future.failedFuture("folder.delete.id.invalid");
+            }
+            return plugin.delete(creator, idList).map(idList);
+        });
     }
 
     @Override
     public Future<List<JsonObject>> move(final UserInfos creator, final Set<String> id, final Optional<String> dest) {
-        return plugin.move(creator, id, dest).compose(e->{
-            return plugin.get(creator, id).map(found->{
-                return found;
+        if(id.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final SearchOperation search = new SearchOperation().setIds(id).setSearchEverywhere(true);
+        final Future<Integer> checkFuture = id.isEmpty()?Future.succeededFuture(0):count(creator,search);
+        return checkFuture.compose(ee-> {
+            if (ee < id.size()) {
+                return Future.failedFuture("folder.move.id.invalid");
+            }
+            return plugin.move(creator, id, dest).compose(e -> {
+                return plugin.get(creator, id).map(found -> {
+                    return found;
+                });
             });
         });
     }
 
     @Override
     public Future<JsonObject> move(final UserInfos creator, final String id, final Optional<String> dest) {
-        return plugin.move(creator, id, dest).compose(e->{
-            return plugin.get(creator, id).compose(found->{
-                if(found.isPresent()){
-                    return Future.succeededFuture(found.get());
-                }else{
-                    return Future.failedFuture("folder.notfound");
-                }
-            });
+        return move(creator, new HashSet<>(Arrays.asList(id)), dest).compose(e->{
+            if(e.isEmpty()){
+                return Future.failedFuture("folder.notfound");
+            }else{
+                return Future.succeededFuture(e.get(0));
+            }
         });
     }
 }

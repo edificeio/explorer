@@ -210,8 +210,8 @@ public class ExplorerControllerTest {
             final Promise<Void> promiseDelete = Promise.promise();
             try {
                 final String id = create.getString("_id");
-                final JsonObject payload = new JsonObject().put("folderIds", new JsonArray().add(id));
-                final HttpTestHelper.TestHttpServerRequest delReq = test.http().post("/folders", new JsonObject(), payload);
+                final JsonObject payload = new JsonObject().put("folderIds", new JsonArray().add(id)).put("resourceIds", new JsonArray());
+                final HttpTestHelper.TestHttpServerRequest delReq = test.http().post("", new JsonObject(), payload);
                 delReq.response().endJsonHandler(e -> {
                     context.assertEquals(1, e.getJsonArray("details").size());
                     promiseDelete.complete();

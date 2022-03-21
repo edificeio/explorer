@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.filters;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -18,7 +19,9 @@ public class FolderFilter implements ResourcesProvider {
     @Override
     public void authorize(final HttpServerRequest request, final fr.wseduc.webutils.http.Binding binding, final UserInfos user, Handler<Boolean> handler) {
         final String id = request.params().get("id");
-        if (!StringUtils.isEmpty(id)) {
+        if(ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)){
+            handler.handle(true);
+        }else if (!StringUtils.isEmpty(id)) {
             //TODO check right
             request.pause();
             folderService.count(user, new FolderService.SearchOperation().setId(id).setSearchEverywhere(true)).onComplete(e -> {

@@ -47,11 +47,19 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<Void> init(final String application) {
-        final String index = getIndex(application);
-        log.info("Create mapping for application="+application+", index="+index);
-        final Vertx vertx = communication.vertx();
-        final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
-        return manager.getClient().createMapping(index,mappingRes);
+        if(application.equalsIgnoreCase(ExplorerConfig.FOLDER_APPLICATION)){
+            final String index = getIndex(application);
+            log.info("Create mapping for application="+application+", index="+index);
+            final Vertx vertx = communication.vertx();
+            final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingFolder.json");
+            return manager.getClient().createMapping(index,mappingRes);
+        }else{
+            final String index = getIndex(application);
+            log.info("Create mapping for application="+application+", index="+index);
+            final Vertx vertx = communication.vertx();
+            final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
+            return manager.getClient().createMapping(index,mappingRes);
+        }
     }
 
     public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final ResourceExplorerDbSql sql) {
@@ -139,27 +147,35 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> ids, final Optional<Integer> dest) {
-        if(dest.isPresent()){
-            return sql.moveTo(ids, dest.get(), user).compose(resources -> {
-                final List<ExplorerMessage> messages = resources.stream().map(e -> {
-                    return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
-                }).collect(Collectors.toList());
-                return communication.pushMessage(messages);
-            }).compose(e->{
-                final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
-                return fetch(user, application, search);
-            });
-        }else{
-            return sql.moveToRoot(ids, user).compose(entIds -> {
-                final List<ExplorerMessage> messages = entIds.stream().map(e -> {
-                    return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
-                }).collect(Collectors.toList());
-                return communication.pushMessage(messages);
-            }).compose(e->{
-                final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
-                return fetch(user, application, search);
-            });
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new JsonArray());
         }
+        return count(user, application, new SearchOperation().setIdsInt(ids).setSearchEverywhere(true)).compose(count->{
+            if(count < ids.size()){
+                return Future.failedFuture("resource.move.id.invalid");
+            }
+            if(dest.isPresent()){
+                return sql.moveTo(ids, dest.get(), user).compose(resources -> {
+                    final List<ExplorerMessage> messages = resources.stream().map(e -> {
+                        return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                    }).collect(Collectors.toList());
+                    return communication.pushMessage(messages);
+                }).compose(e->{
+                    final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                    return fetch(user, application, search);
+                });
+            }else{
+                return sql.moveToRoot(ids, user).compose(entIds -> {
+                    final List<ExplorerMessage> messages = entIds.stream().map(e -> {
+                        return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                    }).collect(Collectors.toList());
+                    return communication.pushMessage(messages);
+                }).compose(e->{
+                    final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                    return fetch(user, application, search);
+                });
+            }
+        });
     }
 
     @Override
@@ -174,15 +190,23 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<JsonArray> delete(final UserInfos user, final String application, final String resourceType,final Set<String> id) {
-        final String index = getIndex(application);
-        final JsonObject payload = new ResourceQueryElastic(user).withId(id).getSearchQuery();
-        final ElasticClient.ElasticOptions optios = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
-        return manager.getClient().search(index, payload, optios).compose(e->{
-            final List<JsonObject> jsons = e.stream().map(j -> (JsonObject)j).collect(Collectors.toList());
-            final Set<String> entIds = jsons.stream().map(j -> j.getString("entId")).collect(Collectors.toSet());
-            final IExplorerPluginClient client =  IExplorerPluginClient.withBus(communication.vertx(), application, resourceType);
-            return client.deleteById(user, entIds).map(ee->{
-                return new JsonArray(jsons);
+        if(id.isEmpty()){
+            return Future.succeededFuture(new JsonArray());
+        }
+        return count(user, application, new SearchOperation().setId(id).setSearchEverywhere(true)).compose(count-> {
+            if (count < id.size()) {
+                return Future.failedFuture("resource.delete.id.invalid");
+            }
+            final String index = getIndex(application);
+            final JsonObject payload = new ResourceQueryElastic(user).withId(id).getSearchQuery();
+            final ElasticClient.ElasticOptions optios = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+            return manager.getClient().search(index, payload, optios).compose(e -> {
+                final List<JsonObject> jsons = e.stream().map(j -> (JsonObject) j).collect(Collectors.toList());
+                final Set<String> entIds = jsons.stream().map(j -> j.getString("entId")).collect(Collectors.toSet());
+                final IExplorerPluginClient client = IExplorerPluginClient.withBus(communication.vertx(), application, resourceType);
+                return client.deleteById(user, entIds).map(ee -> {
+                    return new JsonArray(jsons);
+                });
             });
         });
     }
