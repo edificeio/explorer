@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.controllers;
 
 import com.opendigitaleducation.explorer.Explorer;
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.filters.FolderFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.services.FolderService;
@@ -85,7 +86,7 @@ public class ExplorerController extends BaseController {
                 json.put("pagination", new JsonArray());
                 json.put("resources", new JsonArray());
                 //load root folders
-                final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
+                final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e->e.toString());
                 final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
@@ -163,7 +164,7 @@ public class ExplorerController extends BaseController {
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final JsonObject json = new JsonObject();
-                final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
+                final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
                 final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
@@ -236,7 +237,7 @@ public class ExplorerController extends BaseController {
                     body.put("createdAt", new Date().getTime());
                     renderJson(request, body);
                 }).onFailure(e -> {
-                    renderError(request);
+                    badRequest(request, e.getMessage());
                     log.error("Failed to create folders:", e);
                 });
             });
@@ -259,18 +260,18 @@ public class ExplorerController extends BaseController {
                 return;
             }
             RequestUtils.bodyToJson(request, pathPrefix + "moveBatch", body -> {
-                final Optional<String> dest = "root".equalsIgnoreCase(id)? Optional.empty():Optional.ofNullable(id);
+                final Optional<String> dest = ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)? Optional.empty():Optional.ofNullable(id);
                 final Optional<Integer> destInt = dest.map(e-> Integer.valueOf(e));
                 final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
                 final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
                 final String application = body.getString("application");
                 final List<Future> futures = new ArrayList<>();
                 final List<JsonObject> moved = new ArrayList<>();
-                futures.add(folderService.move(user, folderIds, dest).onSuccess(e->{
-                    moved.addAll(e);
+                futures.add(folderService.move(user, folderIds, dest).onSuccess(all->{
+                    moved.addAll(all);
                 }));
-                futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(e->{
-                    moved.addAll(e.stream().map(s-> (JsonObject)s).collect(Collectors.toList()));
+                futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(all->{
+                    moved.addAll(all.stream().map(json-> (JsonObject)json).collect(Collectors.toList()));
                 }));
                 CompositeFuture.all(futures).onComplete(res->{
                     if(res.succeeded()){
@@ -297,22 +298,25 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
+            if (ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)) {
+                badRequest(request, "bad.id");
+                return;
+            }
             RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
                     //TODO response details?
                     body.mergeIn(e);
                     renderJson(request, body);
                 }).onFailure(e -> {
-                    renderError(request);
+                    badRequest(request, e.getMessage());
                     log.error("Failed to create folders:", e);
                 });
             });
         });
     }
 
-    @Delete("folders")
-    @ResourceFilter(FolderFilter.class)
-    @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
+    @Delete("")
+    @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
     public void deleteFolders(final HttpServerRequest request) {
         //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
@@ -327,12 +331,12 @@ public class ExplorerController extends BaseController {
                 final String resourceType = body.getString("resourceType", application);
                 final List<Future> futures = new ArrayList<>();
                 final List<JsonObject> moved = new ArrayList<>();
-                futures.add(folderService.delete(user, folderIds).onSuccess(e->{
-                    final Set<JsonObject> json = e.stream().map(j -> new JsonObject().put("id",e)).collect(Collectors.toSet());
+                futures.add(folderService.delete(user, folderIds).onSuccess(all->{
+                    final Set<JsonObject> json = all.stream().map(id -> new JsonObject().put("id",id)).collect(Collectors.toSet());
                     moved.addAll(json);
                 }));
-                futures.add(resourceService.delete(user, application, resourceType, resourceIds).onSuccess(e->{
-                    moved.addAll(e.stream().map(j->(JsonObject)j).collect(Collectors.toList()));
+                futures.add(resourceService.delete(user, application, resourceType, resourceIds).onSuccess(all->{
+                    moved.addAll(all.stream().map(json->(JsonObject)json).collect(Collectors.toList()));
                 }));
                 CompositeFuture.all(futures).onComplete(res->{
                     if(res.succeeded()){
@@ -367,7 +371,7 @@ public class ExplorerController extends BaseController {
         user.setUserId(request.params().get("userid"));
         HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
             final JsonObject json = new JsonObject();
-            final Optional<String> folderId = Optional.ofNullable(queryParams.getString("folder"));
+            final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
             final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
                 json.put("folders", adaptFolder(e));
             });
@@ -505,7 +509,7 @@ public class ExplorerController extends BaseController {
         op.setPub(queryParams.getBoolean("public"));
         op.setShared(queryParams.getBoolean("shared"));
         op.setFavorite(queryParams.getBoolean("favorite"));
-        op.setParentId(queryParams.getString("folder"));
+        op.setParentId(queryParams.getValue("folder"));
         op.setSearch(queryParams.getString("search"));
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));

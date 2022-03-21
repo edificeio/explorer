@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -50,6 +51,24 @@ public class FolderQueryElastic {
 
     public FolderQueryElastic withSize(Integer size) {
         this.size = size;
+        return this;
+    }
+
+    public FolderQueryElastic withSearch(final FolderService.SearchOperation search){
+        if (search.getParentId().isPresent()) {
+            this.withFolderId(search.getParentId().get());
+        } else if (!search.isSearchEverywhere()) {
+            this.withOnlyRoot(true);
+        }
+        if (search.getTrashed() != null) {
+            this.withTrashed(search.getTrashed());
+        }
+        if(search.getId() != null){
+            this.withId(search.getId());
+        }
+        if(!search.getIds().isEmpty()){
+            this.id.addAll(search.getIds());
+        }
         return this;
     }
 

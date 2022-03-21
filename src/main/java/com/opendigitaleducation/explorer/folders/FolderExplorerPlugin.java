@@ -86,8 +86,9 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
         });
     }
 
-    public final Future<Void> move(final UserInfos user, final Collection<String> id, final Optional<String> newParent){
-        return ((FolderExplorerDbSql)explorerDb).move(id, newParent).compose(oldParent->{
+    public final Future<Void> move(final UserInfos user, final Collection<String> idStr, final Optional<String> newParent){
+        final Collection<Integer> ids = idStr.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
+        return ((FolderExplorerDbSql)explorerDb).move(ids, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             for(final Integer key : oldParent.keySet()){
                 sources.add(setIdForModel(new JsonObject(), key.toString()));

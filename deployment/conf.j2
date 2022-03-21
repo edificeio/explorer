@@ -2,6 +2,7 @@
     "name": "{{ explorerVersion }}",
     "config": {
         "main" : "com.opendigitaleducation.explorer.Explorer",
+        "sql": true,
         {% if csrfToken %}"csrf-token": true,{% endif %}
         "port" : 8068,
         "auto-redeploy": false,

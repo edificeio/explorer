@@ -5,9 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 public interface FolderService {
@@ -39,6 +37,16 @@ public interface FolderService {
         private Boolean trashed;
         private boolean searchEverywhere = false;
         private String id;
+        private Set<String> ids = new HashSet<>();
+
+        public SearchOperation setIds(Set<String> ids) {
+            this.ids = ids;
+            return this;
+        }
+
+        public Set<String> getIds() {
+            return ids;
+        }
 
         public SearchOperation setId(String id) {
             this.id = id;

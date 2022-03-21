@@ -1,9 +1,12 @@
 package com.opendigitaleducation.explorer.folders;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.impl.ExplorerDbSql;
 import org.entcore.common.postgres.PostgresClient;
@@ -24,6 +27,8 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
     @Override
     protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name"); }
 
+    protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
+
     @Override
     protected List<String> getMessageFields() { return Arrays.asList("name", "application", "resourceType", "parentId", "creator_id", "creator_name"); }
 
@@ -39,7 +44,7 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
         beforeCreateOrUpdate(source);
         final Tuple tuple = Tuple.tuple();
         tuple.addValue(Integer.valueOf(id));
-        final String updatePlaceholder = PostgresClient.updatePlaceholders(source, 2, getColumns(),tuple);
+        final String updatePlaceholder = PostgresClient.updatePlaceholdersWithNull(source, 2, getUpdateColumns(),tuple);
         final String queryTpl = "UPDATE %s SET %s WHERE id = $1 RETURNING *";
         final String query = String.format(queryTpl, getTableName(), updatePlaceholder);
         return pgPool.preparedQuery(query, tuple).compose(rows->{
@@ -67,21 +72,29 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
         });
     }
 
-    public Future<Map<Integer, Optional<Integer>>> move(final Collection<String> ids, final Optional<String> newParent){
+    public Future<Map<Integer, Optional<Integer>>> move(final Collection<Integer> ids, final Optional<String> newParent){
         return pgPool.transaction().compose(transaction->{
             final List<Future> futures = new ArrayList<>();
-            for(final String id: ids){
+            for(final Integer numId: ids){
                 final StringBuilder query = new StringBuilder();
-                final Integer numId = Integer.valueOf(id);
-                final Integer numParentId = newParent.map(e->Integer.valueOf(e)).orElse(null);
-                final Tuple tuple = Tuple.of(numId, numParentId,numId);
-                query.append("WITH old AS (SELECT parent_id, id FROM explorer.folders WHERE id = $1) ");
-                query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id, id FROM old);");
+                final Integer numParentId = newParent.map(e->{
+                    if(ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(e)){
+                        return null;
+                    }
+                    return Integer.valueOf(e);
+                }).orElse(null);
+                final Tuple tuple = Tuple.of(numParentId,numId);
+                query.append("UPDATE explorer.folders SET parent_id=$1 WHERE id=$2");
                 futures.add(transaction.addPreparedQuery(query.toString(), tuple));
             }
+            final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+            final String placeholder = PostgresClient.inPlaceholder(ids, 1);
+            final String query = String.format("SELECT id, parent_id FROM explorer.folders WHERE id IN (%s) ", placeholder);
+            final Future<RowSet<Row>> promiseRows = transaction.addPreparedQuery(query.toString(), tuple);
+            futures.add(promiseRows);
             return transaction.commit().compose(e->{
                return  CompositeFuture.all(futures).map(results->{
-                   final List<Row> rows = results.list();
+                   final RowSet<Row> rows = promiseRows.result();
                    final Map<Integer, Optional<Integer>> mappingParentByChild = new HashMap<>();
                    for(final Row row : rows){
                        final Integer id = row.getInteger("id");
@@ -96,8 +109,13 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
     }
 
     protected void beforeCreateOrUpdate(final JsonObject source){
-        if(source.getValue("parentId") instanceof String){
-            source.put("parentId", Integer.valueOf(source.getValue("parentId").toString()));
+        final Object parentId = source.getValue("parentId");
+        if(parentId instanceof String){
+            if(ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(parentId.toString())){
+                source.remove("parentId");
+            }else{
+                source.put("parentId", Integer.valueOf(parentId.toString()));
+            }
         }
     }
 

@@ -1,8 +1,10 @@
 package com.opendigitaleducation.explorer.services;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SearchOperation {
     private Optional<String> orderField = Optional.empty();
@@ -22,6 +24,10 @@ public class SearchOperation {
     private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
 
+    public SearchOperation setIdsInt(Collection<Integer> ids) {
+        this.ids = ids.stream().map(e->e.toString()).collect(Collectors.toSet());
+        return this;
+    }
     public SearchOperation setIds(Set<String> ids) {
         this.ids = ids;
         return this;
@@ -142,6 +148,10 @@ public class SearchOperation {
 
     public SearchOperation setParentId(final String parentId) {
         this.parentId = Optional.ofNullable(parentId);
+        return this;
+    }
+    public SearchOperation setParentId(final Object parentId) {
+        this.parentId = Optional.ofNullable(parentId).map(e-> e.toString());
         return this;
     }
 

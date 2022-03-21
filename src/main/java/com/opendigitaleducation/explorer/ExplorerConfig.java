@@ -14,7 +14,7 @@ public class ExplorerConfig {
     private static final String VISIBLE_BY_CREATOR = "creator:";
     private static final String VISIBLE_BY_USER = "user:";
     private static final String VISIBLE_BY_GROUP = "group:";
-    public static final String ROOT_FOLDER_ID = "root";
+    public static final String ROOT_FOLDER_ID = "default";
     public static final String FOLDER_APPLICATION = "explorer";
     public static final String FOLDER_TYPE = "folder";
     public static final String DEFAULT_FOLDER_INDEX = "folder";
