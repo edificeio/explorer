@@ -1,5 +1,5 @@
 import http from 'axios';
-import { AbstractBusAgent, ACTION, CreateFolderParameters, CreateFolderResult, DeleteParameters, GetContextParameters, GetContextResult, GetSubFoldersResult, IActionParameters, IActionResult, IContext, ID, IHttp, ISearchResults, ManagePropertiesParameters, ManagePropertiesResult, MoveParameters, PROP_KEY, PROP_MODE, PROP_TYPE, RESOURCE, TransportFrameworkFactory } from 'ode-ts-client';
+import { AbstractBusAgent, ACTION, CreateFolderParameters, CreateFolderResult, DeleteParameters, GetContextParameters, GetContextResult, GetSubFoldersResult, IActionParameters, IActionResult, IContext, ID, IHttp, IHttpResponse, ISearchResults, ManagePropertiesParameters, ManagePropertiesResult, MoveParameters, PROP_KEY, PROP_MODE, PROP_TYPE, RESOURCE, TransportFrameworkFactory } from 'ode-ts-client';
 import { IHandler } from 'ode-ts-client/dist/ts/explore/Agent';
 declare var console:any;
 console.log("explorer agent loading....")
@@ -25,6 +25,12 @@ class ExplorerAgent extends AbstractBusAgent {
             }).join('&');
         },
     });
+    protected checkHttpResponse:<R>(result:R)=>R = result => {
+        if( this.http.latestResponse.status>=300 ) {
+            throw this.http.latestResponse.statusText;
+        }
+        return result;
+    }
 
     protected registerHandlers(): void {
         this.setHandler( ACTION.INITIALIZE, this.createContext as unknown as IHandler );
@@ -40,34 +46,40 @@ class ExplorerAgent extends AbstractBusAgent {
     createContext( parameters:GetContextParameters ): Promise<GetContextResult> {
         return this.http.get<GetContextResult>('/explorer/context', {
             queryParams: this.toQueryParams(parameters)
-        });
+        })
+        .then( this.checkHttpResponse );;
     }
 
     /** Search / paginate within a search context. */
     searchContext( parameters:GetContextParameters ): Promise<ISearchResults> {
         return this.http.get<GetContextResult>('/explorer/resources', {
             queryParams: this.toQueryParams(parameters)
-        });
+        })
+        .then( this.checkHttpResponse );;
     }
 
     /** Create a new folder. */
     createFolder( parameters:CreateFolderParameters ): Promise<CreateFolderResult> {
-        return this.http.post<CreateFolderResult>( '/explorer/folders', this.createFolderToBodyParams(parameters) );
+        return this.http.post<CreateFolderResult>( '/explorer/folders', this.createFolderToBodyParams(parameters) )
+        .then( this.checkHttpResponse );
     }
 
     /** Move a folder. */
     moveFolder( parameters:MoveParameters ): Promise<IActionResult> {
-        return this.http.post<IActionResult>( `/explorer/folders/${parameters.folderId}/move`, this.moveToBodyParams(parameters) );
+        return this.http.post<IActionResult>( `/explorer/folders/${parameters.folderId}/move`, this.moveToBodyParams(parameters) )
+        .then( this.checkHttpResponse );;
     }
 
     /** List subfolders of a parent folder. */
     listSubfolders( folderId:ID ): Promise<GetSubFoldersResult> {
-        return this.http.get<GetSubFoldersResult>( `/explorer/folders/${folderId}/move` );
+        return this.http.get<GetSubFoldersResult>( `/explorer/folders/${folderId}/move` )
+        .then( this.checkHttpResponse );;
     }
 
     /** Delete folders and/or resources. */
     deleteFolders( parameters:DeleteParameters ): Promise<IActionResult> {
-        return this.http.deleteJson<IActionResult>( `/explorer/folders`, parameters );
+        return this.http.deleteJson<IActionResult>( `/explorer/folders`, parameters )
+        .then( this.checkHttpResponse );;
     }
 
     onManage( parameters:ManagePropertiesParameters ): Promise<ManagePropertiesResult> {
