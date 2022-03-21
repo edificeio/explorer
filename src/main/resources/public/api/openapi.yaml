@@ -118,11 +118,11 @@ paths:
           type: string
       - name: order_by
         in: query
-        description: 'Search field and order, for xample  "name:desc"'
+        description: 'Search field and order, for example  "name:desc"'
         required: true
         schema:
           type: string
-          pattern: '^([a-zA-Z0-9_\\-\\.]+):(asc|desc)$'
+          pattern: '^(name|createdAt|updatedAt|application|resourceType):(asc|desc)$'
       - name: start_idx
         in: query
         description: 'Skip this number of results from the beginning of the resultset'
@@ -135,6 +135,14 @@ paths:
         required: false
         schema:
           type: integer
+      - name: search_after
+        in: query
+        description: 'Value of the sort field from the last known result, if and only if the sort order has not changed. This is a hint for the backend system, to better identify from which point it should resume the pagination, within the whole resultset. Actually required after 10000 paginated results'
+        required: false
+        schema:
+          oneOf: 
+          - type: string
+          - type: integer
       - name: owner
         in: query
         description: 'Filter on resources owned by this user ?'
@@ -381,9 +389,9 @@ components:
         childNumber:
           type: integer
         createdAt:
-          type: string
+          type: integer
         updatedAt:
-          type: string
+          type: integer
 
     Filter:
       type: object
@@ -476,7 +484,8 @@ components:
         application: 
           type: string
         createdAt: 
-          type: string
+          type: integer
+          description: 'Index of the first returned result from the whole resultset'
         authorId: 
           type: string
         authorName:
@@ -486,7 +495,7 @@ components:
         modifierName:
           type: string
         modifiedAt:
-          type: string
+          type: integer
         folderId:
           type: string
         public:
@@ -575,9 +584,12 @@ components:
     PostFolderMoveRequestBody:
       type: object
       required:
+      - application
       - resourceIds
       - folderIds
       properties:
+        application:
+          type: string
         resourceIds:
           type: array
           items:
@@ -587,7 +599,7 @@ components:
           items:
             type: string
 
-    DeleteRootRequestBody:
+    DeleteFoldersRequestBody:
       type: object
       required:
       - resourceIds
