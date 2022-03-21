@@ -122,7 +122,7 @@ public class ResourceQueryElastic {
         return this;
     }
 
-    public ResourceQueryElastic withId(final List<String> id) {
+    public ResourceQueryElastic withId(final Collection<String> id) {
         this.id.addAll(id);
         return this;
     }
@@ -142,6 +142,9 @@ public class ResourceQueryElastic {
     public ResourceQueryElastic withSearchOperation(final SearchOperation operation){
         if(operation.getId().isPresent()){
             this.withId(operation.getId().get());
+        }
+        if(!operation.getIds().isEmpty()){
+            this.withId(operation.getIds());
         }
         if (operation.getParentId().isPresent()) {
             this.withFolderId(operation.getParentId().get());

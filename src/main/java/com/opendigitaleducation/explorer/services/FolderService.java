@@ -29,6 +29,8 @@ public interface FolderService {
 
     Future<JsonObject> move(final UserInfos user, final String id, final Optional<String> dest);
 
+    Future<List<JsonObject>> move(final UserInfos user, final Set<String> id, final Optional<String> dest);
+
     Future<List<JsonObject>> create(final UserInfos creator, final List<JsonObject> folder);
 
     class SearchOperation {

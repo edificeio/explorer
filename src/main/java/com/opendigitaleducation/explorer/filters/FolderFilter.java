@@ -20,7 +20,9 @@ public class FolderFilter implements ResourcesProvider {
         final String id = request.params().get("id");
         if (!StringUtils.isEmpty(id)) {
             //TODO check right
-            folderService.count(user, new FolderService.SearchOperation().setId(id)).onComplete(e -> {
+            request.pause();
+            folderService.count(user, new FolderService.SearchOperation().setId(id).setSearchEverywhere(true)).onComplete(e -> {
+                request.resume();
                 if (e.succeeded()) {
                     handler.handle(e.result().equals(1));
                 } else {

@@ -19,6 +19,9 @@
     },
     "dynamic": false,
     "properties": {
+      "entId": {
+        "type": "keyword"
+      },
       "name": {
         "type": "keyword",
         "copy_to": "contentAll"

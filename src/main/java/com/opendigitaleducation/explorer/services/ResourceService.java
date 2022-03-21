@@ -7,6 +7,7 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 //TODO add log profile
 //TODO add metrics
@@ -23,6 +24,12 @@ public interface ResourceService {
     Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
 
     Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<Integer> dest);
+
+    Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<Integer> dest);
+
+    Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> id, final Optional<Integer> dest);
+
+    Future<JsonArray> delete(final UserInfos user, final String application, final String resourceType,final Set<String> id);
 
     Future<JsonObject> share(final UserInfos user, final String application, final JsonObject document, final List<ShareOperation> operation) throws Exception;
 

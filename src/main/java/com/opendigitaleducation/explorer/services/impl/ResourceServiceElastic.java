@@ -16,6 +16,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
@@ -128,25 +129,62 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<Integer> dest) {
-        final Integer id = Integer.valueOf(resource.getString("_id"));
+    public Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<Integer> dest) {
         final Set<Integer> ids = new HashSet<>();
         ids.add(id);
+        return move(user, application, ids, dest).map(e->{
+            return e.getJsonObject(0);
+        });
+    }
+
+    @Override
+    public Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> ids, final Optional<Integer> dest) {
         if(dest.isPresent()){
             return sql.moveTo(ids, dest.get(), user).compose(resources -> {
                 final List<ExplorerMessage> messages = resources.stream().map(e -> {
                     return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
-            }).map(resource);
+            }).compose(e->{
+                final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                return fetch(user, application, search);
+            });
         }else{
             return sql.moveToRoot(ids, user).compose(entIds -> {
                 final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                     return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
-            }).map(resource);
+            }).compose(e->{
+                final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                return fetch(user, application, search);
+            });
         }
+    }
+
+    @Override
+    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<Integer> dest) {
+        final Integer id = Integer.valueOf(resource.getString("_id"));
+        final Set<Integer> ids = new HashSet<>();
+        ids.add(id);
+        return move(user, application, ids, dest).map(e->{
+            return e.getJsonObject(0);
+        });
+    }
+
+    @Override
+    public Future<JsonArray> delete(final UserInfos user, final String application, final String resourceType,final Set<String> id) {
+        final String index = getIndex(application);
+        final JsonObject payload = new ResourceQueryElastic(user).withId(id).getSearchQuery();
+        final ElasticClient.ElasticOptions optios = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+        return manager.getClient().search(index, payload, optios).compose(e->{
+            final List<JsonObject> jsons = e.stream().map(j -> (JsonObject)j).collect(Collectors.toList());
+            final Set<String> entIds = jsons.stream().map(j -> j.getString("entId")).collect(Collectors.toSet());
+            final IExplorerPluginClient client =  IExplorerPluginClient.withBus(communication.vertx(), application, resourceType);
+            return client.deleteById(user, entIds).map(ee->{
+                return new JsonArray(jsons);
+            });
+        });
     }
 
     @Override

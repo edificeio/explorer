@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.folders;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -63,6 +64,34 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
             final Row row = e.iterator().next();
             final Integer parentId = row.getInteger("parent_id");
             return Optional.ofNullable(parentId);
+        });
+    }
+
+    public Future<Map<Integer, Optional<Integer>>> move(final Collection<String> ids, final Optional<String> newParent){
+        return pgPool.transaction().compose(transaction->{
+            final List<Future> futures = new ArrayList<>();
+            for(final String id: ids){
+                final StringBuilder query = new StringBuilder();
+                final Integer numId = Integer.valueOf(id);
+                final Integer numParentId = newParent.map(e->Integer.valueOf(e)).orElse(null);
+                final Tuple tuple = Tuple.of(numId, numParentId,numId);
+                query.append("WITH old AS (SELECT parent_id, id FROM explorer.folders WHERE id = $1) ");
+                query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id, id FROM old);");
+                futures.add(transaction.addPreparedQuery(query.toString(), tuple));
+            }
+            return transaction.commit().compose(e->{
+               return  CompositeFuture.all(futures).map(results->{
+                   final List<Row> rows = results.list();
+                   final Map<Integer, Optional<Integer>> mappingParentByChild = new HashMap<>();
+                   for(final Row row : rows){
+                       final Integer id = row.getInteger("id");
+                       final Integer parentId = row.getInteger("parent_id");
+                       final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
+                       mappingParentByChild.put(id, parentOpt);
+                   }
+                   return mappingParentByChild;
+               });
+            });
         });
     }
 
