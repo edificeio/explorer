@@ -35,10 +35,7 @@ import org.entcore.common.utils.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExplorerController extends BaseController {
@@ -246,10 +243,11 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Put("folders/:id/move")
+    @Post("folders/:id/move")
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
     @ResourceFilter(FolderFilter.class)
     public void moveToFolder(final HttpServerRequest request) {
+        //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
@@ -260,14 +258,26 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix + "moveFolder", body -> {
-                folderService.update(user, id, body).onSuccess(e -> {
-                    //TODO response details?
-                    body.mergeIn(e);
-                    renderJson(request, body);
-                }).onFailure(e -> {
-                    renderError(request);
-                    log.error("Failed to create folders:", e);
+            RequestUtils.bodyToJson(request, pathPrefix + "moveBatch", body -> {
+                final Optional<String> dest = "root".equalsIgnoreCase(id)? Optional.empty():Optional.ofNullable(id);
+                final Optional<Integer> destInt = dest.map(e-> Integer.valueOf(e));
+                final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
+                final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
+                final String application = body.getString("application");
+                final List<Future> futures = new ArrayList<>();
+                final List<JsonObject> moved = new ArrayList<>();
+                futures.add(folderService.move(user, folderIds, dest).onSuccess(e->{
+                    moved.addAll(e);
+                }));
+                futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(e->{
+                    moved.addAll(e.stream().map(s-> (JsonObject)s).collect(Collectors.toList()));
+                }));
+                CompositeFuture.all(futures).onComplete(res->{
+                    if(res.succeeded()){
+                        renderJson(request, new JsonArray(moved));
+                    }else{
+                        badRequest(request, res.cause().getMessage());
+                    }
                 });
             });
         });
@@ -304,20 +314,32 @@ public class ExplorerController extends BaseController {
     @ResourceFilter(FolderFilter.class)
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
     public void deleteFolders(final HttpServerRequest request) {
+        //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
                 return;
             }
-            RequestUtils.bodyToJson(request, pathPrefix + "deleteFolder", body -> {
-                //TODO resource delete
-                final Set<String> ids = body.getJsonArray("folderIds").stream().map(e -> e.toString()).collect(Collectors.toSet());
-                folderService.delete(user, ids).onSuccess(e -> {
-                    //TODO response details
-                    renderJson(request, new JsonObject().put("details", new JsonArray(e)));
-                }).onFailure(e -> {
-                    renderError(request);
-                    log.error("Failed to create folders:", e);
+            RequestUtils.bodyToJson(request, pathPrefix + "deleteBatch", body -> {
+                final Set<String> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).collect(Collectors.toSet());
+                final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
+                final String application = body.getString("application");
+                final String resourceType = body.getString("resourceType", application);
+                final List<Future> futures = new ArrayList<>();
+                final List<JsonObject> moved = new ArrayList<>();
+                futures.add(folderService.delete(user, folderIds).onSuccess(e->{
+                    final Set<JsonObject> json = e.stream().map(j -> new JsonObject().put("id",e)).collect(Collectors.toSet());
+                    moved.addAll(json);
+                }));
+                futures.add(resourceService.delete(user, application, resourceType, resourceIds).onSuccess(e->{
+                    moved.addAll(e.stream().map(j->(JsonObject)j).collect(Collectors.toList()));
+                }));
+                CompositeFuture.all(futures).onComplete(res->{
+                    if(res.succeeded()){
+                        renderJson(request, new JsonArray(moved));
+                    }else{
+                        badRequest(request, res.cause().getMessage());
+                    }
                 });
             });
         });

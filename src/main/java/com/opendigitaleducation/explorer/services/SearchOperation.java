@@ -1,6 +1,8 @@
 package com.opendigitaleducation.explorer.services;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class SearchOperation {
     private Optional<String> orderField = Optional.empty();
@@ -16,8 +18,18 @@ public class SearchOperation {
     private Optional<Boolean> owner = Optional.empty();
     private Optional<Boolean> favorite = Optional.empty();
     private Optional<String> id = Optional.empty();
+    private Set<String> ids = new HashSet<>();
     private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
+
+    public SearchOperation setIds(Set<String> ids) {
+        this.ids = ids;
+        return this;
+    }
+
+    public Set<String> getIds() {
+        return ids;
+    }
 
     public SearchOperation setSearchAfter(final Object searchAfter) {
         this.searchAfter = Optional.ofNullable(searchAfter).map(e->e.toString());

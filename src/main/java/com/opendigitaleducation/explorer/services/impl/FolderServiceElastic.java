@@ -123,6 +123,15 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
+    public Future<List<JsonObject>> move(final UserInfos creator, final Set<String> id, final Optional<String> dest) {
+        return plugin.move(creator, id, dest).compose(e->{
+            return plugin.get(creator, id).map(found->{
+                return found;
+            });
+        });
+    }
+
+    @Override
     public Future<JsonObject> move(final UserInfos creator, final String id, final Optional<String> dest) {
         return plugin.move(creator, id, dest).compose(e->{
             return plugin.get(creator, id).compose(found->{

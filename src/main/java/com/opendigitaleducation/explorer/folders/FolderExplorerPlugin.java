@@ -62,6 +62,13 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
         });
     }
 
+    public final Future<List<JsonObject>> get(final UserInfos user, final Collection<String> id){
+        final Set<String> ids = new HashSet<>(id);
+        return explorerDb.getByIds(ids).map(e->{
+            return e;
+        });
+    }
+
 
     public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
         return ((FolderExplorerDbSql)explorerDb).move(id, newParent).compose(oldParent->{
@@ -74,6 +81,25 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
             //update children of newParent
             if(newParent.isPresent()){
                 sources.add(setIdForModel(new JsonObject(), newParent.get().toString()));
+            }
+            return notifyUpsert(user, sources);
+        });
+    }
+
+    public final Future<Void> move(final UserInfos user, final Collection<String> id, final Optional<String> newParent){
+        return ((FolderExplorerDbSql)explorerDb).move(id, newParent).compose(oldParent->{
+            final List<JsonObject> sources = new ArrayList<>();
+            for(final Integer key : oldParent.keySet()){
+                sources.add(setIdForModel(new JsonObject(), key.toString()));
+                final Optional<Integer> parentOpt = oldParent.get(key);
+                //update children of oldParent
+                if(parentOpt.isPresent()){
+                    sources.add(setIdForModel(new JsonObject(), parentOpt.get().toString()));
+                }
+                //update children of newParent
+                if(newParent.isPresent()){
+                    sources.add(setIdForModel(new JsonObject(), newParent.get()));
+                }
             }
             return notifyUpsert(user, sources);
         });
