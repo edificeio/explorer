@@ -194,7 +194,7 @@ public class ResourceServiceElastic implements ResourceService {
         if(id.isEmpty()){
             return Future.succeededFuture(new JsonArray());
         }
-        return count(user, application, new SearchOperation().setId(id).setSearchEverywhere(true)).compose(count-> {
+        return count(user, application, new SearchOperation().setIds(id).setSearchEverywhere(true)).compose(count-> {
             if (count < id.size()) {
                 return Future.failedFuture("resource.delete.id.invalid");
             }
