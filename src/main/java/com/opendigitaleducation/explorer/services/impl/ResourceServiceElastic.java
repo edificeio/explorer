@@ -132,6 +132,7 @@ public class ResourceServiceElastic implements ResourceService {
             final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
+            queryJson.remove("sort");
             return manager.getClient().count(index, queryJson, options);
         });
     }

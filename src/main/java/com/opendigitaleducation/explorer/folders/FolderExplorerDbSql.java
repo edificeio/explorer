@@ -44,7 +44,11 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
         beforeCreateOrUpdate(source);
         final Tuple tuple = Tuple.tuple();
         tuple.addValue(Integer.valueOf(id));
-        final String updatePlaceholder = PostgresClient.updatePlaceholdersWithNull(source, 2, getUpdateColumns(),tuple);
+        final List<String> columnToUpdate = new ArrayList<>(getUpdateColumns());
+        if(!source.containsKey("name")){
+            columnToUpdate.remove("name");
+        }
+        final String updatePlaceholder = PostgresClient.updatePlaceholders(source, 2, columnToUpdate,tuple);
         final String queryTpl = "UPDATE %s SET %s WHERE id = $1 RETURNING *";
         final String query = String.format(queryTpl, getTableName(), updatePlaceholder);
         return pgPool.preparedQuery(query, tuple).compose(rows->{

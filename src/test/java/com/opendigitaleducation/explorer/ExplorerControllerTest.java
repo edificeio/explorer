@@ -213,7 +213,7 @@ public class ExplorerControllerTest {
                 final JsonObject payload = new JsonObject().put("folderIds", new JsonArray().add(id)).put("resourceIds", new JsonArray());
                 final HttpTestHelper.TestHttpServerRequest delReq = test.http().post("", new JsonObject(), payload);
                 delReq.response().endJsonHandler(e -> {
-                    context.assertEquals(1, e.getJsonArray("details").size());
+                    context.assertEquals(1, e.getJsonArray("folders").size());
                     promiseDelete.complete();
                 });
                 controller.deleteFolders(delReq.withSession(user));

@@ -59,7 +59,7 @@ public class FolderServiceTest {
         final Async async = context.async();
         createMapping(elasticClientManager, context, index).onComplete(r -> async.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager,postgresClient, new JsonObject(), reader);
+        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
     }
 
     static JsonObject folder(final String name) {
@@ -93,37 +93,41 @@ public class FolderServiceTest {
         final UserInfos user = test.directory().generateUser("usermove");
         folderService.create(user, Arrays.asList(f1, f2, f3)).onComplete(context.asyncAssertSuccess(r -> {
             final String f3_id = r.get(2).getString("_id");
-            folderService.create(user, f3_1.put("parentId", f3_id)).onComplete(context.asyncAssertSuccess(r2 -> {
-                folderService.create(user, f3_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
-                    job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                        folderService.fetch(user, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch1 -> {
-                            context.assertEquals(3, fetch1.size());
-                            final JsonArray a3 = fetch1.getJsonObject(2).getJsonArray("ancestors");
-                            final JsonArray ch3 = fetch1.getJsonObject(2).getJsonArray("childrenIds");
-                            context.assertEquals(1, a3.size());
-                            context.assertEquals(1, ch3.size());
-                            context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3.getString(0));
-                            folderService.fetch(user, Optional.of(f3_id)).onComplete(context.asyncAssertSuccess(fetch2 -> {
-                                context.assertEquals(1, fetch2.size());
-                                final String id3_1 = fetch2.getJsonObject(0).getString("_id");
-                                final JsonArray a3_1 = fetch2.getJsonObject(0).getJsonArray("ancestors");
-                                final JsonArray ch3_1 = fetch2.getJsonObject(0).getJsonArray("childrenIds");
-                                context.assertEquals(r2, id3_1);
-                                context.assertEquals(2, a3_1.size());
-                                context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3_1.getString(0));
-                                context.assertEquals(f3_id, a3_1.getString(1));
-                                context.assertEquals(1, ch3_1.size());
-                                folderService.fetch(user, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch3 -> {
-                                    context.assertEquals(1, fetch3.size());
-                                    final String id3_1_1 = fetch3.getJsonObject(0).getString("_id");
-                                    final JsonArray a3_1_1 = fetch3.getJsonObject(0).getJsonArray("ancestors");
-                                    final JsonArray ch3_1_1 = fetch3.getJsonObject(0).getJsonArray("childrenIds");
-                                    context.assertEquals(r3, id3_1_1);
-                                    context.assertEquals(3, a3_1_1.size());
-                                    context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3_1_1.getString(0));
-                                    context.assertEquals(f3_id, a3_1_1.getString(1));
-                                    context.assertEquals(id3_1, a3_1_1.getString(2));
-                                    context.assertEquals(0, ch3_1_1.size());
+            job.execute(true).onComplete(context.asyncAssertSuccess(ra1 -> {
+                folderService.create(user, f3_1.put("parentId", f3_id)).onComplete(context.asyncAssertSuccess(r2 -> {
+                    job.execute(true).onComplete(context.asyncAssertSuccess(ra2 -> {
+                        folderService.create(user, f3_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
+                            job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
+                                folderService.fetch(user, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                                    context.assertEquals(3, fetch1.size());
+                                    final JsonArray a3 = fetch1.getJsonObject(2).getJsonArray("ancestors");
+                                    final JsonArray ch3 = fetch1.getJsonObject(2).getJsonArray("childrenIds");
+                                    context.assertEquals(1, a3.size());
+                                    context.assertEquals(1, ch3.size());
+                                    context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3.getString(0));
+                                    folderService.fetch(user, Optional.of(f3_id)).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                        context.assertEquals(1, fetch2.size());
+                                        final String id3_1 = fetch2.getJsonObject(0).getString("_id");
+                                        final JsonArray a3_1 = fetch2.getJsonObject(0).getJsonArray("ancestors");
+                                        final JsonArray ch3_1 = fetch2.getJsonObject(0).getJsonArray("childrenIds");
+                                        context.assertEquals(r2, id3_1);
+                                        context.assertEquals(2, a3_1.size());
+                                        context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3_1.getString(0));
+                                        context.assertEquals(f3_id, a3_1.getString(1));
+                                        context.assertEquals(1, ch3_1.size());
+                                        folderService.fetch(user, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch3 -> {
+                                            context.assertEquals(1, fetch3.size());
+                                            final String id3_1_1 = fetch3.getJsonObject(0).getString("_id");
+                                            final JsonArray a3_1_1 = fetch3.getJsonObject(0).getJsonArray("ancestors");
+                                            final JsonArray ch3_1_1 = fetch3.getJsonObject(0).getJsonArray("childrenIds");
+                                            context.assertEquals(r3, id3_1_1);
+                                            context.assertEquals(3, a3_1_1.size());
+                                            context.assertEquals(ExplorerConfig.ROOT_FOLDER_ID, a3_1_1.getString(0));
+                                            context.assertEquals(f3_id, a3_1_1.getString(1));
+                                            context.assertEquals(id3_1, a3_1_1.getString(2));
+                                            context.assertEquals(0, ch3_1_1.size());
+                                        }));
+                                    }));
                                 }));
                             }));
                         }));
@@ -144,23 +148,27 @@ public class FolderServiceTest {
             final String f2_id = r.get(1).getString("_id");
             final Optional<String> source = Optional.of(f2_id);
             final Optional<String> dest = Optional.of(r.get(0).getString("_id"));
-            folderService.create(user, f2_1.put("parentId", f2_id)).onComplete(context.asyncAssertSuccess(r2 -> {
-                f2.put("_id", r2);
-                folderService.create(user, f2_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
-                    job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                        folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch0 -> {
-                            context.assertEquals(1, fetch0.size());
-                            folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch -> {
-                                context.assertEquals(0, fetch.size());
-                                final String f2Id = f2.getString("_id");
-                                folderService.move(user, f2Id, dest).onComplete(context.asyncAssertSuccess(move -> {
-                                    job.execute(true).onComplete(context.asyncAssertSuccess(r5 -> {
-                                        folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch2 -> {
-                                            folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch3 -> {
-                                                context.assertEquals(1, fetch2.size());
-                                                context.assertEquals(0, fetch3.size());
-                                                context.assertEquals(dest.get(), fetch2.getJsonObject(0).getJsonArray("ancestors").getString(1));
-                                                System.out.println("end shouldMoveSubTree");
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                folderService.create(user, f2_1.put("parentId", f2_id)).onComplete(context.asyncAssertSuccess(r2 -> {
+                    job.execute(true).onComplete(context.asyncAssertSuccess(r4b -> {
+                        f2.put("_id", r2);
+                        folderService.create(user, f2_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
+                            job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
+                                folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch0 -> {
+                                    context.assertEquals(1, fetch0.size());
+                                    folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch -> {
+                                        context.assertEquals(0, fetch.size());
+                                        final String f2Id = f2.getString("_id");
+                                        folderService.move(user, f2Id, dest).onComplete(context.asyncAssertSuccess(move -> {
+                                            job.execute(true).onComplete(context.asyncAssertSuccess(r5 -> {
+                                                folderService.fetch(user, dest).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                                                    folderService.fetch(user, source).onComplete(context.asyncAssertSuccess(fetch3 -> {
+                                                        context.assertEquals(1, fetch2.size());
+                                                        context.assertEquals(0, fetch3.size());
+                                                        context.assertEquals(dest.get(), fetch2.getJsonObject(0).getJsonArray("ancestors").getString(1));
+                                                        System.out.println("end shouldMoveSubTree");
+                                                    }));
+                                                }));
                                             }));
                                         }));
                                     }));
