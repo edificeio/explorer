@@ -129,7 +129,9 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     }
 
     protected ExplorerMessage transform(final ExplorerMessage message, final JsonObject object) {
-        message.withName(object.getString("name"));
+        if(object.containsKey("name")){
+            message.withName(object.getString("name"));
+        }
         message.withTrashed(object.getBoolean("trashed", false));
         final JsonObject override = new JsonObject();
         if(object.containsKey("parentId")){

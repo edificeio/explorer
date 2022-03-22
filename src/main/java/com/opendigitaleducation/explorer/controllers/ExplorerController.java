@@ -266,16 +266,17 @@ public class ExplorerController extends BaseController {
                 final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
                 final String application = body.getString("application");
                 final List<Future> futures = new ArrayList<>();
-                final List<JsonObject> moved = new ArrayList<>();
+                final JsonObject results = new JsonObject();
                 futures.add(folderService.move(user, folderIds, dest).onSuccess(all->{
-                    moved.addAll(all);
+                    results.put("folders",new JsonArray(all));
                 }));
                 futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(all->{
-                    moved.addAll(all.stream().map(json-> (JsonObject)json).collect(Collectors.toList()));
+                    final List<JsonObject> alls = all.stream().map(json-> (JsonObject)json).collect(Collectors.toList());
+                    results.put("resources",new JsonArray(alls));
                 }));
                 CompositeFuture.all(futures).onComplete(res->{
                     if(res.succeeded()){
-                        renderJson(request, new JsonArray(moved));
+                        renderJson(request, results);
                     }else{
                         badRequest(request, res.cause().getMessage());
                     }
@@ -330,17 +331,19 @@ public class ExplorerController extends BaseController {
                 final String application = body.getString("application");
                 final String resourceType = body.getString("resourceType", application);
                 final List<Future> futures = new ArrayList<>();
-                final List<JsonObject> moved = new ArrayList<>();
+                final JsonObject results = new JsonObject();
                 futures.add(folderService.delete(user, folderIds).onSuccess(all->{
-                    final Set<JsonObject> json = all.stream().map(id -> new JsonObject().put("id",id)).collect(Collectors.toSet());
-                    moved.addAll(json);
+                    final List<JsonObject> json = all.stream().map(id -> new JsonObject().put("id",id)).collect(Collectors.toList());
+                    results.put("folders", new JsonArray(json));
                 }));
                 futures.add(resourceService.delete(user, application, resourceType, resourceIds).onSuccess(all->{
-                    moved.addAll(all.stream().map(json->(JsonObject)json).collect(Collectors.toList()));
+                    final List<JsonObject> jsons = all.stream().map(json->(JsonObject)json).collect(Collectors.toList());
+                    results.put("resources", new JsonArray(jsons));
+
                 }));
                 CompositeFuture.all(futures).onComplete(res->{
                     if(res.succeeded()){
-                        renderJson(request, new JsonArray(moved));
+                        renderJson(request, results);
                     }else{
                         badRequest(request, res.cause().getMessage());
                     }
