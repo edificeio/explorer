@@ -235,7 +235,7 @@ public class ExplorerController extends BaseController {
                     body.put("id", e);
                     body.put("childNumber", 0);
                     body.put("createdAt", new Date().getTime());
-                    renderJson(request, body);
+                    renderJson(request, adaptFolder(body));
                 }).onFailure(e -> {
                     badRequest(request, e.getMessage());
                     log.error("Failed to create folders:", e);
@@ -268,10 +268,11 @@ public class ExplorerController extends BaseController {
                 final List<Future> futures = new ArrayList<>();
                 final JsonObject results = new JsonObject();
                 futures.add(folderService.move(user, folderIds, dest).onSuccess(all->{
-                    results.put("folders",new JsonArray(all));
+                    final List<JsonObject> transformed = all.stream().map(fold-> adaptFolder(fold)).collect(Collectors.toList());
+                    results.put("folders",new JsonArray(transformed));
                 }));
                 futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(all->{
-                    final List<JsonObject> alls = all.stream().map(json-> (JsonObject)json).collect(Collectors.toList());
+                    final List<JsonObject> alls = all.stream().map(json-> adaptResource((JsonObject)json)).collect(Collectors.toList());
                     results.put("resources",new JsonArray(alls));
                 }));
                 CompositeFuture.all(futures).onComplete(res->{
@@ -305,9 +306,8 @@ public class ExplorerController extends BaseController {
             }
             RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
                 folderService.update(user, id, body).onSuccess(e -> {
-                    //TODO response details?
                     body.mergeIn(e);
-                    renderJson(request, body);
+                    renderJson(request, adaptFolder(body));
                 }).onFailure(e -> {
                     badRequest(request, e.getMessage());
                     log.error("Failed to create folders:", e);
@@ -333,11 +333,11 @@ public class ExplorerController extends BaseController {
                 final List<Future> futures = new ArrayList<>();
                 final JsonObject results = new JsonObject();
                 futures.add(folderService.delete(user, folderIds).onSuccess(all->{
-                    final List<JsonObject> json = all.stream().map(id -> new JsonObject().put("id",id)).collect(Collectors.toList());
+                    final List<JsonObject> json = all.stream().map(id -> adaptFolder(new JsonObject().put("id",id))).collect(Collectors.toList());
                     results.put("folders", new JsonArray(json));
                 }));
                 futures.add(resourceService.delete(user, application, resourceType, resourceIds).onSuccess(all->{
-                    final List<JsonObject> jsons = all.stream().map(json->(JsonObject)json).collect(Collectors.toList());
+                    final List<JsonObject> jsons = all.stream().map(json->adaptResource((JsonObject)json)).collect(Collectors.toList());
                     results.put("resources", new JsonArray(jsons));
 
                 }));
