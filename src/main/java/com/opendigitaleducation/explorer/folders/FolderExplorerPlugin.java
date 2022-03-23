@@ -8,9 +8,8 @@ import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
-import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
+import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
 
@@ -18,12 +17,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
-    protected final PostgresClientPool pgPool;
-
+public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
+    protected final FolderExplorerDbSql dbHelper;
     public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, new FolderExplorerDbSql(pgClient));
-        this.pgPool = pgClient.getClientPool();
+        super(communication, pgClient.getClientPool());
+        this.dbHelper = new FolderExplorerDbSql(pgClient);
     }
 
     public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final PostgresClient postgres) throws Exception {
@@ -46,14 +44,14 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     }
 
     public final Future<Void> update(final UserInfos user, final String id, final JsonObject source){
-        return ((FolderExplorerDbSql)explorerDb).update(id, source).compose(e->{
+        return dbHelper.update(id, source).compose(e->{
             setIdForModel(source, e.id.toString());
             return notifyUpsert(user, source);
         });
     }
 
     public final Future<Optional<JsonObject>> get(final UserInfos user, final String id){
-        return explorerDb.getByIds(new HashSet<>(Arrays.asList(id))).map(e->{
+        return this.getByIds(new HashSet<>(Arrays.asList(id))).map(e->{
             if(e.isEmpty()){
                 return Optional.empty();
             }else{
@@ -64,14 +62,14 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
 
     public final Future<List<JsonObject>> get(final UserInfos user, final Collection<String> id){
         final Set<String> ids = new HashSet<>(id);
-        return explorerDb.getByIds(ids).map(e->{
+        return this.getByIds(ids).map(e->{
             return e;
         });
     }
 
 
     public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
-        return ((FolderExplorerDbSql)explorerDb).move(id, newParent).compose(oldParent->{
+        return dbHelper.move(id, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             sources.add(setIdForModel(new JsonObject(), id));
             //update children of oldParent
@@ -88,7 +86,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
 
     public final Future<Void> move(final UserInfos user, final Collection<String> idStr, final Optional<String> newParent){
         final Collection<Integer> ids = idStr.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
-        return ((FolderExplorerDbSql)explorerDb).move(ids, newParent).compose(oldParent->{
+        return dbHelper.move(ids, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             for(final Integer key : oldParent.keySet()){
                 sources.add(setIdForModel(new JsonObject(), key.toString()));
@@ -110,11 +108,20 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
     protected String getApplication() {
         return ExplorerConfig.FOLDER_APPLICATION;
     }
-
+    @Override
+    protected Object toSqlId(final String id) {
+        return Integer.valueOf(id);
+    }
     @Override
     protected String getResourceType() {
         return ExplorerConfig.FOLDER_TYPE;
     }
+    @Override
+    protected String getTableName() { return this.dbHelper.getTableName(); }
+    @Override
+    protected List<String> getColumns() { return this.dbHelper.getColumns(); }
+    @Override
+    protected List<String> getMessageFields() { return Arrays.asList("name", "application", "resourceType", "parentId", "creator_id", "creator_name"); }
 
     @Override
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
@@ -128,16 +135,25 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceDb {
         return Future.succeededFuture(messages);
     }
 
+    @Override
+    public Future<List<String>> doCreate(final UserInfos user, final List<JsonObject> sources, final boolean isCopy) {
+        for(final JsonObject source : sources){
+            dbHelper.beforeCreateOrUpdate(source);
+        }
+        return super.doCreate(user, sources, isCopy);
+    }
+
     protected ExplorerMessage transform(final ExplorerMessage message, final JsonObject object) {
         if(object.containsKey("name")){
             message.withName(object.getString("name"));
         }
         message.withTrashed(object.getBoolean("trashed", false));
-        final JsonObject override = new JsonObject();
-        if(object.containsKey("parentId")){
-            override.put("parentId", object.getValue("parentId").toString());
-        }
-        message.withOverrideFields(override);
+        final Optional<String> parentId = Optional.ofNullable(object.getValue("parentId")).map(e->{
+            return e.toString();
+        });
+        message.withParentId(parentId);
         return message;
     }
+
+
 }

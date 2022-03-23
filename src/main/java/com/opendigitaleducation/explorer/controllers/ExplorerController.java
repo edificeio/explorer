@@ -477,19 +477,21 @@ public class ExplorerController extends BaseController {
             final SimpleDateFormat format = new SimpleDateFormat("HHmm-ddMMyyyy");
             final Optional<String> from = Optional.ofNullable(request.params().get("from"));
             final Optional<String> to = Optional.ofNullable(request.params().get("to"));
+            final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
             try {
                 final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropAll(app).compose(e->{
                     return resourceService.init(app);
                 }) :  Future.succeededFuture();
                 final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
                 final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();
-                dropFuture.compose(e -> {
-                    return client.getForIndexation(user, fromDate, toDate);
-                }).onComplete(e->{
-                   if(e.succeeded()){
-                       renderJson(request, e.result().toJson());
+                final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
+                    return client.getForIndexation(user, fromDate, toDate, new HashSet(), includeFolder);
+                });
+                future.onComplete(res->{
+                   if(res.succeeded()){
+                       renderJson(request, res.result().toJson());
                    }else{
-                       renderError(request, new JsonObject().put("error", e.cause().getMessage()));
+                       renderError(request, new JsonObject().put("error", res.cause().getMessage()));
                    }
                 });
             } catch (ParseException e) {
