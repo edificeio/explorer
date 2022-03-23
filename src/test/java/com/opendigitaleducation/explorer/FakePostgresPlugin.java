@@ -7,23 +7,22 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
-import org.entcore.common.explorer.impl.ExplorerDbSql;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
-import org.entcore.common.explorer.impl.ExplorerPluginResourceDb;
+import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class FakePostgresPlugin extends ExplorerPluginResourceDb {
+public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     static Logger log = LoggerFactory.getLogger(FakePostgresPlugin.class);
 
     protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, new FakeExplorerCrud(pgClient));
+        super(communication, pgClient.getClientPool());
     }
 
     public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
@@ -50,18 +49,10 @@ public class FakePostgresPlugin extends ExplorerPluginResourceDb {
         return Future.succeededFuture(message);
     }
 
-    static class FakeExplorerCrud extends ExplorerDbSql {
+    @Override
+    protected String getTableName() { return "explorer.test_fake"; }
 
-        public FakeExplorerCrud(final PostgresClient pgClient) {
-            super(pgClient.getClientPool());
-        }
-
-        @Override
-        protected String getTableName() { return "explorer.test_fake"; }
-
-        @Override
-        protected List<String> getColumns() { return Arrays.asList("name", "creator_id", "creator_name"); }
-
-    }
+    @Override
+    protected List<String> getColumns() { return Arrays.asList("name", "creator_id", "creator_name"); }
 
 }

@@ -106,7 +106,7 @@ public class ExplorerControllerTest {
         final Promise<JsonObject> promiseCreate = Promise.promise();
         final JsonObject create = new JsonObject();
         createReq.response().endJsonHandler(e -> {
-            context.assertNotNull(e.getString("_id"));
+            context.assertNotNull(e.getString("id"));
             create.mergeIn(e);
             promiseCreate.complete(e);
         });
@@ -148,7 +148,7 @@ public class ExplorerControllerTest {
             //get children
             final Promise<Void> promiseChild = Promise.promise();
             try {
-                final String id = create.getString("_id");
+                final String id = create.getString("id");
                 final HttpTestHelper.TestHttpServerRequest childReq = test.http().get("/folders", new JsonObject().put("id", id));
                 childReq.response().endJsonHandler(e -> {
                     context.assertEquals(0, e.getJsonArray("folders").size());
@@ -163,11 +163,11 @@ public class ExplorerControllerTest {
             //update
             final Promise<Void> promiseUpdate = Promise.promise();
             try {
-                final String id = create.getString("_id");
+                final String id = create.getString("id");
                 final JsonObject update = new JsonObject().put("name", "name2");
                 final HttpTestHelper.TestHttpServerRequest updateReq = test.http().put("/folders", new JsonObject().put("id", id), update);
                 updateReq.response().endJsonHandler(e -> {
-                    context.assertNotNull(e.getString("_id"));
+                    context.assertNotNull(e.getString("id"));
                     promiseUpdate.complete();
                 });
                 controller.updateFolder(updateReq.withSession(user));
@@ -209,7 +209,7 @@ public class ExplorerControllerTest {
             //delete
             final Promise<Void> promiseDelete = Promise.promise();
             try {
-                final String id = create.getString("_id");
+                final String id = create.getString("id");
                 final JsonObject payload = new JsonObject().put("folderIds", new JsonArray().add(id)).put("resourceIds", new JsonArray());
                 final HttpTestHelper.TestHttpServerRequest delReq = test.http().post("", new JsonObject(), payload);
                 delReq.response().endJsonHandler(e -> {
@@ -301,7 +301,7 @@ public class ExplorerControllerTest {
         final Promise<JsonObject> promiseCreate = Promise.promise();
         final JsonObject create = new JsonObject();
         createReq.response().endJsonHandler(e -> {
-            context.assertNotNull(e.getString("_id"));
+            context.assertNotNull(e.getString("id"));
             create.mergeIn(e);
             promiseCreate.complete(e);
         });
@@ -323,7 +323,7 @@ public class ExplorerControllerTest {
             }
             return promiseTrigger.future();
         }).onComplete(createE -> {
-            final String id = create.getString("_id");
+            final String id = create.getString("id");
             final Binding binding = test.http().binding(HttpMethod.POST, ExplorerController.class, "updateFolder");
             final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().put("/folder", new JsonObject().put("id", id));
             folderFilter.authorize(fetchReq, binding, user, e -> {

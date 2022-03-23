@@ -111,9 +111,9 @@ public class MongoPluginTest {
     @Test
     public void shouldReindexResource(TestContext context) {
         final UserInfos user = test.directory().generateUser("reindex");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("_id", "reindex1");
-        final JsonObject f2 = resource("reindex2").put("creatorId", user.getUserId()).put("_id", "reindex2");
-        final JsonObject f3 = resource("reindex3").put("creatorId", user.getUserId()).put("_id", "reindex3");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject f2 = resource("reindex2").put("creatorId", user.getUserId()).put("id", "reindex2");
+        final JsonObject f3 = resource("reindex3").put("creatorId", user.getUserId()).put("id", "reindex3");
         final Promise p1 = Promise.promise();
         final Promise p2 = Promise.promise();
         final Promise p3 = Promise.promise();

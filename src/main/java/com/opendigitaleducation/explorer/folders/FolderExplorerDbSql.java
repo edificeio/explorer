@@ -3,42 +3,26 @@ package com.opendigitaleducation.explorer.folders;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.entcore.common.explorer.impl.ExplorerDbSql;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.user.UserInfos;
+import org.entcore.common.postgres.PostgresClientPool;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FolderExplorerDbSql extends ExplorerDbSql {
-
+public class FolderExplorerDbSql {
+    private final PostgresClientPool pgPool;
     public FolderExplorerDbSql(final PostgresClient pool) {
-        super(pool.getClientPool());
+        this.pgPool = pool.getClientPool();
     }
-
-    @Override
     protected String getTableName() { return "explorer.folders"; }
-
-    @Override
-    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name"); }
 
     protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
 
-    @Override
-    protected List<String> getMessageFields() { return Arrays.asList("name", "application", "resourceType", "parentId", "creator_id", "creator_name"); }
-
-    @Override
-    public Future<List<String>> createAll(final UserInfos user, final List<JsonObject> sources) {
-        for(final JsonObject source : sources){
-            beforeCreateOrUpdate(source);
-        }
-        return super.createAll(user, sources);
-    }
+    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name"); }
 
     public final Future<ResourceExplorerDbSql.FolderSql> update(final String id, final JsonObject source){
         beforeCreateOrUpdate(source);
@@ -122,11 +106,6 @@ public class FolderExplorerDbSql extends ExplorerDbSql {
             }
         }
     }
-
-    protected Object toSqlId(final String id) {
-        return Integer.valueOf(id);
-    }
-
 
     public Future<Map<String, List<String>>> getAncestors(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
