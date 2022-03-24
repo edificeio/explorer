@@ -143,76 +143,108 @@ public class MessageIngesterPostgres implements MessageIngester {
         });
     }
 
-    protected Future<List<ExplorerMessageForIngest>> onUpsertFolders(final List<ExplorerMessageForIngest> messages) {
-        if (messages.isEmpty()) {
+    protected Future<List<ExplorerMessageForIngest>> onUpsertFolders(final List<ExplorerMessageForIngest> messagesOrig) {
+        if (messagesOrig.isEmpty()) {
             return Future.succeededFuture(new ArrayList<>());
         }
-        final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
-        //get parentIds
-        final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
-        final Set<Integer> parentIds = overrides.stream().filter(e -> e.containsKey("parentId")).map(e -> {
-            final String tmp = e.getValue("parentId").toString();
-            return Integer.valueOf(tmp);
-        }).collect(Collectors.toSet());
-        final Set<Integer> idsAndParents = new HashSet<>();
-        idsAndParents.addAll(ids);
-        idsAndParents.addAll(parentIds);
-        //get ancestors of each documents
-        final Future<Map<String, FolderExplorerDbSql.FolderAncestor>> ancestorsF = folderSql.getAncestors(ids);
-        // get parent/child relationship for folder and their parents
-        final Future<Map<String, FolderExplorerDbSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
-        return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
-            final Map<String, FolderExplorerDbSql.FolderAncestor> ancestors = ancestorsF.result();
-            final Map<String, FolderExplorerDbSql.FolderRelationship> relations = relationsF.result();
-            //Transform all
-            for (final ExplorerMessageForIngest message : messages) {
-                final String id = message.getId();
-                final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
-                final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
-                //add children ids and ancestors (reuse existing override)
-                final JsonObject override = message.getOverride();
-                override.put("childrenIds", new JsonArray(relation.childrenIds));
-                if (relation.parentId.isPresent()) {
-                    override.put("parentId", relation.parentId.get());
-                }
-                override.put("ancestors", new JsonArray(ancestor.ancestorIds));
-                message.withOverrideFields(override);
-                if(ancestor.application.isPresent()){
-                    message.withForceApplication(ancestor.application.get());
-                }
-                transformFolder(message);
+        //migrated folders
+        final List<ExplorerMessageForIngest> toMigrate = messagesOrig.stream().filter(message -> {
+            return message.getMigrationFlag();
+        }).collect(Collectors.toList());
+        return folderSql.upsert(toMigrate).compose(folderByEntId -> {
+            if(toMigrate.isEmpty()){
+                return Future.succeededFuture(messagesOrig);
+            }else{
+                return folderSql.updateParentEnt().map(updated->{
+                    //update parent_id
+                    for(final ExplorerMessageForIngest mess : toMigrate){
+                        final String entId = mess.getId();
+                        if(folderByEntId.containsKey(entId)){
+                            final JsonObject saved = folderByEntId.get(entId);
+                            mess.withForceId(saved.getValue("id").toString());
+                            if(updated.containsKey(entId)){
+                                final ExplorerMessageForIngest tmp = updated.get(entId);
+                                mess.withParentId(tmp.getParentId().map(e-> Long.valueOf(e)));
+                            }else{
+                                final Object parentId = saved.getValue("parent_id");
+                                final Optional<Object> parentOpt = Optional.ofNullable(parentId);
+                                mess.withParentId(parentOpt.map(e-> Long.valueOf(e.toString())));
+                            }
+                        }
+                    }
+                    messagesOrig.addAll(updated.values());
+                    return messagesOrig;
+                });
             }
-            //update parent (childrenIds)
-            for (final Integer parentId : parentIds) {
-                final String parentIdStr = parentId.toString();
-                final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
-                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
-                final JsonObject override = new JsonObject();
-                //set childrenIds
-                final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);
-                override.put("childrenIds", new JsonArray(relation.childrenIds));
-                if (relation.parentId.isPresent()) {
-                    override.put("parentId", relation.parentId.get());
-                }
-                //recompute ancestors from child ancestors
-                if (!relation.childrenIds.isEmpty()) {
-                    //get child ancestors
-                    final String child = relation.childrenIds.get(0);
-                    final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(child, new FolderExplorerDbSql.FolderAncestor(child, new ArrayList<>()));
-                    final List<String> parentAncestors = new ArrayList<>(ancestor.ancestorIds);
-                    //remove self from child ancestors
-                    parentAncestors.remove(parentIdStr);
-                    override.put("ancestors", new JsonArray(parentAncestors));
-                    //add parent to list of updated folders
+        }).compose(messages -> {
+            //get ancestors
+            final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
+            //get parentIds
+            final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
+            final Set<Integer> parentIds = overrides.stream().filter(e -> e.containsKey("parentId")).map(e -> {
+                final String tmp = e.getValue("parentId").toString();
+                return Integer.valueOf(tmp);
+            }).collect(Collectors.toSet());
+            final Set<Integer> idsAndParents = new HashSet<>();
+            idsAndParents.addAll(ids);
+            idsAndParents.addAll(parentIds);
+            //get ancestors of each documents
+            final Future<Map<String, FolderExplorerDbSql.FolderAncestor>> ancestorsF = folderSql.getAncestors(ids);
+            // get parent/child relationship for folder and their parents
+            final Future<Map<String, FolderExplorerDbSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
+            return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
+                final Map<String, FolderExplorerDbSql.FolderAncestor> ancestors = ancestorsF.result();
+                final Map<String, FolderExplorerDbSql.FolderRelationship> relations = relationsF.result();
+                //Transform all
+                for (final ExplorerMessageForIngest message : messages) {
+                    final String id = message.getId();
+                    final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
+                    final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
+                    //add children ids and ancestors (reuse existing override)
+                    final JsonObject override = message.getOverride();
+                    override.put("childrenIds", new JsonArray(relation.childrenIds));
+                    if (relation.parentId.isPresent()) {
+                        override.put("parentId", relation.parentId.get());
+                    }
+                    override.put("ancestors", new JsonArray(ancestor.ancestorIds));
                     message.withOverrideFields(override);
-                    //update parent only if childrenids has changed
-                    if(ancestor.application.isPresent()){
+                    if (ancestor.application.isPresent()) {
                         message.withForceApplication(ancestor.application.get());
                     }
-                    messages.add(transformFolder(message));
+                    transformFolder(message);
                 }
-            }
-            return messages;
+                //update parent (childrenIds)
+                for (final Integer parentId : parentIds) {
+                    final String parentIdStr = parentId.toString();
+                    final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
+                    final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
+                    final JsonObject override = new JsonObject();
+                    //set childrenIds
+                    final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);
+                    override.put("childrenIds", new JsonArray(relation.childrenIds));
+                    if (relation.parentId.isPresent()) {
+                        override.put("parentId", relation.parentId.get());
+                    }
+                    //recompute ancestors from child ancestors
+                    if (!relation.childrenIds.isEmpty()) {
+                        //get child ancestors
+                        final String child = relation.childrenIds.get(0);
+                        final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(child, new FolderExplorerDbSql.FolderAncestor(child, new ArrayList<>()));
+                        final List<String> parentAncestors = new ArrayList<>(ancestor.ancestorIds);
+                        //remove self from child ancestors
+                        parentAncestors.remove(parentIdStr);
+                        override.put("ancestors", new JsonArray(parentAncestors));
+                        //add parent to list of updated folders
+                        message.withOverrideFields(override);
+                        //update parent only if childrenids has changed
+                        if (ancestor.application.isPresent()) {
+                            message.withForceApplication(ancestor.application.get());
+                        }
+                        messages.add(transformFolder(message));
+                    }
+                }
+                return messages;
+            });
         });
     }
 

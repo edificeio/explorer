@@ -13,9 +13,9 @@ import java.util.Set;
 //TODO add metrics
 public interface ResourceService {
 
-    Future<Void> init(final String application);
+    Future<Void> initMapping(final String application);
 
-    Future<Void> dropAll(final String application);
+    Future<Void> dropMapping(final String application);
 
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
 
