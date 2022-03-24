@@ -37,7 +37,7 @@ class ExplorerAgent extends AbstractBusAgent {
         this.setHandler( ACTION.SEARCH,     this.searchContext as unknown as IHandler );
         this.setHandler( ACTION.CREATE,     this.createFolder as unknown as IHandler );
         this.setHandler( ACTION.OPEN,       this.listSubfolders as unknown as IHandler );
-        this.setHandler( ACTION.MOVE,       this.moveFolder as unknown as IHandler );
+        this.setHandler( ACTION.MOVE,       this.moveToFolder as unknown as IHandler );
         this.setHandler( ACTION.DELETE,     this.deleteFolders as unknown as IHandler );
         this.setHandler( ACTION.MANAGE,     this.onManage as unknown as IHandler );
     }
@@ -64,8 +64,8 @@ class ExplorerAgent extends AbstractBusAgent {
         .then( this.checkHttpResponse );
     }
 
-    /** Move a folder. */
-    moveFolder( parameters:MoveParameters ): Promise<IActionResult> {
+    /** Move resources/folders to a folder. */
+    moveToFolder( parameters:MoveParameters ): Promise<IActionResult> {
         return this.http.post<IActionResult>( `/explorer/folders/${parameters.folderId}/move`, this.moveToBodyParams(parameters) )
         .then( this.checkHttpResponse );;
     }
