@@ -1,19 +1,26 @@
 package com.opendigitaleducation.explorer.folders;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.ingest.ExplorerMessageForIngest;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
+import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class FolderExplorerDbSql {
+    static Logger log = LoggerFactory.getLogger(FolderExplorerDbSql.class);
     private final PostgresClientPool pgPool;
     public FolderExplorerDbSql(final PostgresClient pool) {
         this.pgPool = pool.getClientPool();
@@ -22,7 +29,91 @@ public class FolderExplorerDbSql {
 
     protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
 
-    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name"); }
+    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name", "ent_id", "parent_ent_id"); }
+
+    protected String[] getColumnsArray() { return getColumns().toArray(new String[getColumns().size()]); }
+
+    public Future<Map<String, ExplorerMessageForIngest>> updateParentEnt(){
+        final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
+        final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL RETURNING * ";
+        final String update = String.format(updateTpl, updateSubQuery);
+        final Future<RowSet<Row>> updateFuture = pgPool.preparedQuery(update, Tuple.tuple());
+        return updateFuture.onFailure(e -> {
+                log.error("Update folders parent failed:", e);
+        }).compose(res -> {
+            final Map<String, ExplorerMessageForIngest> upserted = new HashMap<>();
+            for (final Row row : res) {
+                final Object id = row.getValue("id");
+                final Object parent_id = row.getValue("parent_id");
+                final String creator_id = row.getString("creator_id");
+                final String creator_name = row.getString("creator_name");
+                final String ent_id = row.getString("ent_id");
+                final UserInfos user = new UserInfos();
+                user.setUserId(creator_id);
+                user.setUsername(creator_name);
+                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(ExplorerMessage.upsert(id.toString(), user, false));
+                message.withParentId(Optional.ofNullable(parent_id).map(e -> Long.valueOf(e.toString())));
+                upserted.put(ent_id, message);
+            }
+            return Future.succeededFuture(upserted);
+        });
+    }
+
+    public Future<Map<String, JsonObject>> upsert(final Collection<? extends ExplorerMessage> resources){
+        if(resources.isEmpty()){
+            return Future.succeededFuture(new HashMap<>());
+        }
+        //must do update to return
+        final List<JsonObject> resourcesList = resources.stream().map(e->{
+            final JsonObject params = new JsonObject().put("ent_id", e.getId())
+                    .put("application",e.getApplication())
+                    .put("resource_type", e.getResourceType())
+                    .put("creator_id", e.getCreatorId())
+                    .put("creator_name", e.getCreatorName())
+                    .put("name", e.getName());
+            if(e.getParentEntId().isPresent()){
+                params.put("parent_ent_id", e.getParentEntId().get());
+            }
+            return params;
+        }).collect(Collectors.toList());
+        //(only one upsert per ent_id)
+        final Map<String, JsonObject> resourcesMap = new HashMap<>();
+        for(final JsonObject json : resourcesList){
+            resourcesMap.put(json.getString("ent_id"), json);
+        }
+        final Map<String, Object> defaultVal = new HashMap<>();
+        final Collection<JsonObject> resourcesColl = resourcesMap.values();
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, getColumnsArray());
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, getColumnsArray());
+        final StringBuilder queryTpl = new StringBuilder();
+        queryTpl.append("WITH upserted AS ( ");
+        queryTpl.append("  INSERT INTO explorer.folders as r (name,application,resource_type, parent_id, creator_id, creator_name, ent_id, parent_ent_id) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(ent_id) DO NOTHING RETURNING * ");
+        queryTpl.append(")  ");
+        queryTpl.append("SELECT * FROM upserted ");
+        final String query = String.format(queryTpl.toString(), insertPlaceholder);
+        return pgPool.preparedQuery(query, tuple).map(rows->{
+            final Map<String, JsonObject> results = new HashMap<>();
+            for(final Row row : rows){
+                final Object id = row.getValue("id");
+                final String name = row.getString("name");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                final Object parent_id = row.getValue("parent_id");
+                final String creator_id = row.getString("creator_id");
+                final String creator_name = row.getString("creator_name");
+                final String parent_ent_id = row.getString("parent_ent_id");
+                final String ent_id = row.getString("ent_id");
+                final JsonObject json = new JsonObject().put("name",name).put("id",id).put("parent_ent_id",parent_ent_id)
+                        .put("application", application).put("resource_type", resource_type).put("parent_id", parent_id)
+                        .put("creator_id", creator_id).put("creator_name", creator_name).put("ent_id", ent_id);
+                results.put(ent_id,json);
+            }
+            return (results);
+        }).onFailure(e->{
+            log.error("Failed to upsert folders:", e);
+        });
+    }
 
     public final Future<ResourceExplorerDbSql.FolderSql> update(final String id, final JsonObject source){
         beforeCreateOrUpdate(source);

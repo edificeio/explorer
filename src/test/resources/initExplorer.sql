@@ -84,6 +84,13 @@ CREATE TABLE explorer.folder_resources (
 CREATE INDEX idx_folder_resources_folderid ON explorer.folder_resources(folder_id);
 CREATE INDEX idx_folder_resources_resourceid ON explorer.folder_resources(resource_id);
 CREATE UNIQUE INDEX idx_folder_resources_resourceid_userid ON explorer.folder_resources(user_id,resource_id);
+--script 2
+ALTER TABLE explorer.folders  ADD CONSTRAINT folder_parent_diff CHECK ( parent_id <> id);
+--script3
+ALTER TABLE explorer.folders  ADD COLUMN ent_id VARCHAR(100);
+ALTER TABLE explorer.folders  ADD COLUMN parent_ent_id VARCHAR(100);
+ALTER TABLE explorer.folders ADD CONSTRAINT ent_id_uniq UNIQUE (ent_id);
+CREATE INDEX idx_folders_parent_ent ON explorer.folders (parent_id, parent_ent_id);
 
 -- for tests
 CREATE TABLE explorer.test_fake (

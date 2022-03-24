@@ -19,6 +19,6 @@
     }
   },
   "required": [
-    "resourceIds", "folderIds", "application"
+    "resourceIds", "folderIds", "application", "resourceType"
   ]
 }

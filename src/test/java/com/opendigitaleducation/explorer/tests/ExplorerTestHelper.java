@@ -1,10 +1,13 @@
 package com.opendigitaleducation.explorer.tests;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.SearchOperation;
+import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -29,6 +32,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
+import java.util.Optional;
 
 public class ExplorerTestHelper implements TestRule {
     static final Logger logger = LoggerFactory.getLogger(ExplorerTestHelper.class);
@@ -41,6 +45,7 @@ public class ExplorerTestHelper implements TestRule {
     private ResourceService resourceService;
     private ElasticClientManager elasticClientManager;
     private IExplorerPluginCommunication communication;
+    private FolderService folderService;
 
     public ExplorerTestHelper(final String application) {
         this.application = application;
@@ -64,6 +69,9 @@ public class ExplorerTestHelper implements TestRule {
             resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
             job = IngestJob.create(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+            final JsonObject config = new JsonObject().put("stream", "postgres");
+            final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(testHelper.vertx(), config, postgresClient);
+            folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         }catch(Exception e){
             throw new RuntimeException(e);
         }
@@ -96,6 +104,10 @@ public class ExplorerTestHelper implements TestRule {
         return resourceService.fetch(user, application, new SearchOperation());
     }
 
+    public Future<JsonArray> fetchFolders(final UserInfos user, final String application, final Optional<String> parentId){
+        return folderService.fetch(user, application, parentId);
+    }
+
     public Future<Void> ingestJobExecute(boolean force) {
         return job.execute(true);
     }
@@ -106,6 +118,10 @@ public class ExplorerTestHelper implements TestRule {
 
     public SearchOperation createSearch(){
         return new SearchOperation();
+    }
+
+    public Future<Void> initFolderMapping(){
+        return this.resourceService.initMapping(ExplorerConfig.FOLDER_APPLICATION);
     }
 
     @Override

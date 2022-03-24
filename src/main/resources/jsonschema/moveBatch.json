@@ -4,6 +4,7 @@
   "additionalProperties": false,
   "properties": {
     "application": { "type": "string"},
+    "resourceType": { "type": "string"},
     "resourceIds": {
       "type": "array",
       "items": {
@@ -18,6 +19,6 @@
     }
   },
   "required": [
-    "resourceIds", "folderIds", "application"
+    "resourceIds", "folderIds", "application", "resourceType"
   ]
 }

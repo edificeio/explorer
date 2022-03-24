@@ -489,8 +489,8 @@ public class ExplorerController extends BaseController {
             final Optional<String> to = Optional.ofNullable(request.params().get("to"));
             final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
             try {
-                final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropAll(app).compose(e->{
-                    return resourceService.init(app);
+                final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropMapping(app).compose(e->{
+                    return resourceService.initMapping(app);
                 }) :  Future.succeededFuture();
                 final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
                 final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();

@@ -39,14 +39,14 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<Void> dropAll(final String application) {
+    public Future<Void> dropMapping(final String application) {
         final String index = getIndex(application);
         log.info("Drop mapping for application="+application+", index="+index);
         return manager.getClient().deleteMapping(index);
     }
 
     @Override
-    public Future<Void> init(final String application) {
+    public Future<Void> initMapping(final String application) {
         if(application.equalsIgnoreCase(ExplorerConfig.FOLDER_APPLICATION)){
             final String index = getIndex(application);
             log.info("Create mapping for application="+application+", index="+index);
