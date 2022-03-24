@@ -8,6 +8,8 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 
+import java.util.Optional;
+
 public class FolderFilter implements ResourcesProvider {
 
     private static FolderService folderService;
@@ -24,7 +26,8 @@ public class FolderFilter implements ResourcesProvider {
         }else if (!StringUtils.isEmpty(id)) {
             //TODO check right
             request.pause();
-            folderService.count(user, new FolderService.SearchOperation().setId(id).setSearchEverywhere(true)).onComplete(e -> {
+            final FolderService.SearchOperation search = new FolderService.SearchOperation().setId(id).setSearchEverywhere(true);
+            folderService.count(user, Optional.empty(), search).onComplete(e -> {
                 request.resume();
                 if (e.succeeded()) {
                     handler.handle(e.result().equals(1));

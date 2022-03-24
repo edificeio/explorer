@@ -33,7 +33,6 @@ public abstract class IngestJobTest {
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     static ElasticClientManager elasticClientManager;
-
     protected abstract IngestJob getIngestJob();
 
     protected abstract ExplorerPlugin getExplorerPlugin();
@@ -206,7 +205,7 @@ public abstract class IngestJobTest {
                         context.assertEquals(3, fetch1.size());
                         final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("entId").equals("idexplore2_1")).findFirst().get();
                         //create folder 1
-                        getFolderService().create(user1, Arrays.asList(FolderServiceTest.folder("folder1"))).onComplete(context.asyncAssertSuccess(folders -> {
+                        getFolderService().create(user1, application, Arrays.asList(FolderServiceTest.folder("folder1"))).onComplete(context.asyncAssertSuccess(folders -> {
                             context.assertEquals(1, folders.size());
                             final Integer folder1Id = folders.get(0).getInteger("id");
                             //user1 move 1 resource to folder1

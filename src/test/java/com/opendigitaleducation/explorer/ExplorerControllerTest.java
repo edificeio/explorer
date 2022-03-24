@@ -101,7 +101,7 @@ public class ExplorerControllerTest {
     public void shouldCrudFolder(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
         //create folder
-        final JsonObject folder = FolderServiceTest.folder("folder1");
+        final JsonObject folder = FolderServiceTest.folder("folder1").put("application", application);
         final HttpTestHelper.TestHttpServerRequest createReq = test.http().post("/folders", new JsonObject(), folder);
         final Promise<JsonObject> promiseCreate = Promise.promise();
         final JsonObject create = new JsonObject();
@@ -164,7 +164,7 @@ public class ExplorerControllerTest {
             final Promise<Void> promiseUpdate = Promise.promise();
             try {
                 final String id = create.getString("id");
-                final JsonObject update = new JsonObject().put("name", "name2");
+                final JsonObject update = new JsonObject().put("name", "name2").put("application", application);
                 final HttpTestHelper.TestHttpServerRequest updateReq = test.http().put("/folders", new JsonObject().put("id", id), update);
                 updateReq.response().endJsonHandler(e -> {
                     context.assertNotNull(e.getString("id"));
@@ -296,7 +296,7 @@ public class ExplorerControllerTest {
     public void shouldAuthorizeFolder(final TestContext context) throws Exception {
         final UserInfos user = test.http().sessionUser();
         //create folder
-        final JsonObject folder = FolderServiceTest.folder("folder1");
+        final JsonObject folder = FolderServiceTest.folder("folder1").put("application", application);
         final HttpTestHelper.TestHttpServerRequest createReq = test.http().post("/folders", new JsonObject(), folder);
         final Promise<JsonObject> promiseCreate = Promise.promise();
         final JsonObject create = new JsonObject();

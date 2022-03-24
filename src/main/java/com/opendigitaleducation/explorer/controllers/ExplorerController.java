@@ -77,6 +77,7 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
+                final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 json.put("preferences", new JsonObject());
                 json.put("folders", new JsonArray());
@@ -87,11 +88,10 @@ public class ExplorerController extends BaseController {
                 json.put("resources", new JsonArray());
                 //load root folders
                 final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e->e.toString());
-                final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
+                final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
                 //load user preferences from neo4j
-                final String application = queryParams.getString("application");
                 final JsonObject applications = this.config.getJsonObject("applications", new JsonObject());
                 final JsonObject config = applications.getJsonObject(application, new JsonObject());
                 final Future<ResourceService.FetchResult> preferences = UserUtils.getUserPreferences(eb, request, application).compose(pref -> {
@@ -163,12 +163,12 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
+                final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
-                final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
+                final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
-                final String application = queryParams.getString("application");
                 final SearchOperation searchOperation = toResourceSearch(queryParams);
                 final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                     json.put("resources", adaptResource(e.rows));
@@ -209,7 +209,7 @@ public class ExplorerController extends BaseController {
             }
             final JsonObject json = new JsonObject();
             final Optional<String> folderId = Optional.ofNullable(request.params().get("id"));
-            folderService.fetch(user, folderId).onSuccess(e -> {
+            folderService.fetch(user, Optional.empty(), folderId).onSuccess(e -> {
                 json.put("folders", adaptFolder(e));
             }).onComplete(e -> {
                 if (e.succeeded()) {
@@ -231,7 +231,12 @@ public class ExplorerController extends BaseController {
                 return;
             }
             RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
-                folderService.create(user, body).onSuccess(e -> {
+                final String application = body.getString("application");
+                if (StringUtils.isEmpty(application)) {
+                    badRequest(request, "missing.application");
+                    return;
+                }
+                folderService.create(user,application, body).onSuccess(e -> {
                     body.put("id", e);
                     body.put("childNumber", 0);
                     body.put("createdAt", new Date().getTime());
@@ -267,7 +272,7 @@ public class ExplorerController extends BaseController {
                 final String application = body.getString("application");
                 final List<Future> futures = new ArrayList<>();
                 final JsonObject results = new JsonObject();
-                futures.add(folderService.move(user, folderIds, dest).onSuccess(all->{
+                futures.add(folderService.move(user, folderIds, application, dest).onSuccess(all->{
                     final List<JsonObject> transformed = all.stream().map(fold-> adaptFolder(fold)).collect(Collectors.toList());
                     results.put("folders",new JsonArray(transformed));
                 }));
@@ -305,7 +310,12 @@ public class ExplorerController extends BaseController {
                 return;
             }
             RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
-                folderService.update(user, id, body).onSuccess(e -> {
+                final String application = body.getString("application");
+                if (StringUtils.isEmpty(application)) {
+                    badRequest(request, "missing.application");
+                    return;
+                }
+                folderService.update(user, id, application, body).onSuccess(e -> {
                     body.mergeIn(e);
                     renderJson(request, adaptFolder(body));
                 }).onFailure(e -> {
@@ -332,7 +342,7 @@ public class ExplorerController extends BaseController {
                 final String resourceType = body.getString("resourceType", application);
                 final List<Future> futures = new ArrayList<>();
                 final JsonObject results = new JsonObject();
-                futures.add(folderService.delete(user, folderIds).onSuccess(all->{
+                futures.add(folderService.delete(user, application, folderIds).onSuccess(all->{
                     final List<JsonObject> json = all.stream().map(id -> adaptFolder(new JsonObject().put("id",id))).collect(Collectors.toList());
                     results.put("folders", new JsonArray(json));
                 }));
@@ -373,12 +383,12 @@ public class ExplorerController extends BaseController {
         final UserInfos user = new UserInfos();
         user.setUserId(request.params().get("userid"));
         HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
+            final String application = queryParams.getString("application");
             final JsonObject json = new JsonObject();
             final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
-            final Future<JsonArray> folders = folderService.fetch(user, folderId).onSuccess(e -> {
+            final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
                 json.put("folders", adaptFolder(e));
             });
-            final String application = queryParams.getString("application");
             final SearchOperation searchOperation = toResourceSearch(queryParams);
             final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                 json.put("resources", adaptResource(e.rows));
@@ -410,7 +420,7 @@ public class ExplorerController extends BaseController {
         user.setUserId(request.params().get("userid"));
         final JsonObject json = new JsonObject();
         final Optional<String> folderId = Optional.ofNullable(request.params().get("id"));
-        folderService.fetch(user, folderId).onSuccess(e -> {
+        folderService.fetch(user, Optional.empty(), folderId).onSuccess(e -> {
             json.put("folders", adaptFolder(e));
         }).onComplete(e -> {
             if (e.succeeded()) {

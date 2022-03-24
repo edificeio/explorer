@@ -38,14 +38,14 @@ public class MessageIngesterPostgres implements MessageIngester {
             final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
             switch (a) {
                 case Delete:
-                    if (message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)) {
+                    if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
                         deleteFolders.add(message);
                     } else {
                         deleteResources.add(message);
                     }
                     break;
                 case Upsert:
-                    if (message.getApplication().equals(ExplorerConfig.FOLDER_APPLICATION)) {
+                    if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
                         upsertFolders.add(message);
                     } else {
                         upsertResources.add(message);
@@ -158,24 +158,28 @@ public class MessageIngesterPostgres implements MessageIngester {
         idsAndParents.addAll(ids);
         idsAndParents.addAll(parentIds);
         //get ancestors of each documents
-        final Future<Map<String, List<String>>> ancestorsF = folderSql.getAncestors(ids);
+        final Future<Map<String, FolderExplorerDbSql.FolderAncestor>> ancestorsF = folderSql.getAncestors(ids);
         // get parent/child relationship for folder and their parents
         final Future<Map<String, FolderExplorerDbSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
         return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
-            final Map<String, List<String>> ancestors = ancestorsF.result();
+            final Map<String, FolderExplorerDbSql.FolderAncestor> ancestors = ancestorsF.result();
             final Map<String, FolderExplorerDbSql.FolderRelationship> relations = relationsF.result();
             //Transform all
             for (final ExplorerMessageForIngest message : messages) {
-                //add children ids and ancestors (reuse existing override)
-                final JsonObject override = message.getOverride();
                 final String id = message.getId();
                 final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
+                final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
+                //add children ids and ancestors (reuse existing override)
+                final JsonObject override = message.getOverride();
                 override.put("childrenIds", new JsonArray(relation.childrenIds));
                 if (relation.parentId.isPresent()) {
                     override.put("parentId", relation.parentId.get());
                 }
-                override.put("ancestors", new JsonArray(ancestors.getOrDefault(id, new ArrayList<>())));
+                override.put("ancestors", new JsonArray(ancestor.ancestorIds));
                 message.withOverrideFields(override);
+                if(ancestor.application.isPresent()){
+                    message.withForceApplication(ancestor.application.get());
+                }
                 transformFolder(message);
             }
             //update parent (childrenIds)
@@ -194,13 +198,17 @@ public class MessageIngesterPostgres implements MessageIngester {
                 if (!relation.childrenIds.isEmpty()) {
                     //get child ancestors
                     final String child = relation.childrenIds.get(0);
-                    final List<String> parentAncestors = new ArrayList<>(ancestors.getOrDefault(child, new ArrayList<>()));
+                    final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(child, new FolderExplorerDbSql.FolderAncestor(child, new ArrayList<>()));
+                    final List<String> parentAncestors = new ArrayList<>(ancestor.ancestorIds);
                     //remove self from child ancestors
                     parentAncestors.remove(parentIdStr);
                     override.put("ancestors", new JsonArray(parentAncestors));
                     //add parent to list of updated folders
                     message.withOverrideFields(override);
                     //update parent only if childrenids has changed
+                    if(ancestor.application.isPresent()){
+                        message.withForceApplication(ancestor.application.get());
+                    }
                     messages.add(transformFolder(message));
                 }
             }
