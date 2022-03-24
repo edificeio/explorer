@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer;
 
 import io.vertx.core.json.JsonObject;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class ExplorerConfig {
@@ -44,7 +45,19 @@ public class ExplorerConfig {
     }
 
     public String getIndex(final String application){
+        return getIndex(application, Optional.empty());
+    }
+
+    public String getIndex(final String application, final String type){
+        return getIndex(application, Optional.ofNullable(type));
+    }
+
+    public String getIndex(final String application, final Optional<String> type){
         //TODO one index per application?
+        if(type.isPresent() && FOLDER_TYPE.equalsIgnoreCase(type.get())){
+            final String key = getDefaultIndexName(FOLDER_APPLICATION);
+            return esIndexes.getString(FOLDER_APPLICATION, key);
+        }
         final String key = getDefaultIndexName(application);
         return esIndexes.getString(application, key);
     }

@@ -45,11 +45,12 @@ abstract class MessageIngesterElasticOperation {
         @Override
         void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
+            final String resource = message.getResourceType();
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String id = message.getPredictibleId().orElse(message.getId());
             //TODO implement audience
             final JsonObject audience = message.getMessage().getJsonObject("audience", new JsonObject());
-            final String index = ExplorerConfig.getInstance().getIndex(application);
+            final String index = ExplorerConfig.getInstance().getIndex(application, resource);
             bulk.update(audience, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
         }
     }
@@ -61,9 +62,10 @@ abstract class MessageIngesterElasticOperation {
         @Override
         void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
+            final String resource = message.getResourceType();
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
-            final String index = ExplorerConfig.getInstance().getIndex(application);
+            final String index = ExplorerConfig.getInstance().getIndex(application, resource);
             bulk.delete(id, Optional.of(index), Optional.ofNullable(routing));
         }
     }
@@ -76,6 +78,7 @@ abstract class MessageIngesterElasticOperation {
         @Override
         void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
+            final String resource = message.getResourceType();
             //prepare custom fields
             final JsonObject original = message.getMessage();
             //copy for upsert
@@ -83,7 +86,7 @@ abstract class MessageIngesterElasticOperation {
             final JsonObject update = MessageIngesterElastic.beforeUpdate(original.copy());
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
-            final String index = ExplorerConfig.getInstance().getIndex(application);
+            final String index = ExplorerConfig.getInstance().getIndex(application, resource);
             bulk.upsert(insert, update, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
         }
     }

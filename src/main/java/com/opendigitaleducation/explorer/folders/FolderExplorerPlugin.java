@@ -67,18 +67,23 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         });
     }
 
-
     public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
-        return dbHelper.move(id, newParent).compose(oldParent->{
+        return dbHelper.move(id, newParent).compose(move->{
+            final Optional<Integer> oldParent = move.parentId;
             final List<JsonObject> sources = new ArrayList<>();
-            sources.add(setIdForModel(new JsonObject(), id));
+            final JsonObject source = new JsonObject();
+            if(move.application.isPresent()){
+                source.put("application", move.application.get());
+            }
+            //add
+            sources.add(setIdForModel(source.copy(), id));
             //update children of oldParent
             if(oldParent.isPresent()){
-                sources.add(setIdForModel(new JsonObject(), oldParent.get().toString()));
+                sources.add(setIdForModel(source.copy(), oldParent.get().toString()));
             }
             //update children of newParent
             if(newParent.isPresent()){
-                sources.add(setIdForModel(new JsonObject(), newParent.get().toString()));
+                sources.add(setIdForModel(source.copy(), newParent.get().toString()));
             }
             return notifyUpsert(user, sources);
         });
@@ -89,15 +94,21 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         return dbHelper.move(ids, newParent).compose(oldParent->{
             final List<JsonObject> sources = new ArrayList<>();
             for(final Integer key : oldParent.keySet()){
-                sources.add(setIdForModel(new JsonObject(), key.toString()));
-                final Optional<Integer> parentOpt = oldParent.get(key);
+                final FolderExplorerDbSql.FolderMoveResult move = oldParent.get(key);
+                final Optional<Integer> parentOpt = move.parentId;
+                final JsonObject source = new JsonObject();
+                if(move.application.isPresent()){
+                    source.put("application", move.application.get());
+                }
+                //add
+                sources.add(setIdForModel(source.copy(), key.toString()));
                 //update children of oldParent
                 if(parentOpt.isPresent()){
-                    sources.add(setIdForModel(new JsonObject(), parentOpt.get().toString()));
+                    sources.add(setIdForModel(source.copy(), parentOpt.get().toString()));
                 }
                 //update children of newParent
                 if(newParent.isPresent()){
-                    sources.add(setIdForModel(new JsonObject(), newParent.get()));
+                    sources.add(setIdForModel(source.copy(), newParent.get()));
                 }
             }
             return notifyUpsert(user, sources);
@@ -144,12 +155,16 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
     protected ExplorerMessage transform(final ExplorerMessage message, final JsonObject object) {
+        //force application
+        if(object.containsKey("application")){
+            message.withForceApplication(object.getString("application"));
+        }
         if(object.containsKey("name")){
             message.withName(object.getString("name"));
         }
         message.withTrashed(object.getBoolean("trashed", false));
-        final Optional<String> parentId = Optional.ofNullable(object.getValue("parentId")).map(e->{
-            return e.toString();
+        final Optional<Long> parentId = Optional.ofNullable(object.getValue("parentId")).map(e->{
+            return Long.valueOf(e.toString());
         });
         message.withParentId(parentId);
         return message;

@@ -46,21 +46,22 @@ public class FolderExplorerDbSql {
         });
     }
 
-    public Future<Optional<Integer>> move(final String id, final Optional<String> newParent){
+    public Future<FolderMoveResult> move(final String id, final Optional<String> newParent){
         final StringBuilder query = new StringBuilder();
         final Integer numId = Integer.valueOf(id);
         final Integer numParentId = newParent.map(e->Integer.valueOf(e)).orElse(null);
         final Tuple tuple = Tuple.of(numId, numParentId,numId);
-        query.append("WITH old AS (SELECT parent_id FROM explorer.folders WHERE id = $1) ");
-        query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id FROM old);");
+        query.append("WITH old AS (SELECT parent_id, application FROM explorer.folders WHERE id = $1) ");
+        query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id, application FROM old);");
         return pgPool.preparedQuery(query.toString(), tuple).map(e->{
             final Row row = e.iterator().next();
             final Integer parentId = row.getInteger("parent_id");
-            return Optional.ofNullable(parentId);
+            final String application = row.getString("application");
+            return new FolderMoveResult(numId, Optional.ofNullable(parentId), application);
         });
     }
 
-    public Future<Map<Integer, Optional<Integer>>> move(final Collection<Integer> ids, final Optional<String> newParent){
+    public Future<Map<Integer, FolderMoveResult>> move(final Collection<Integer> ids, final Optional<String> newParent){
         return pgPool.transaction().compose(transaction->{
             final List<Future> futures = new ArrayList<>();
             for(final Integer numId: ids){
@@ -77,18 +78,19 @@ public class FolderExplorerDbSql {
             }
             final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
             final String placeholder = PostgresClient.inPlaceholder(ids, 1);
-            final String query = String.format("SELECT id, parent_id FROM explorer.folders WHERE id IN (%s) ", placeholder);
+            final String query = String.format("SELECT id, parent_id, application FROM explorer.folders WHERE id IN (%s) ", placeholder);
             final Future<RowSet<Row>> promiseRows = transaction.addPreparedQuery(query.toString(), tuple);
             futures.add(promiseRows);
             return transaction.commit().compose(e->{
                return  CompositeFuture.all(futures).map(results->{
                    final RowSet<Row> rows = promiseRows.result();
-                   final Map<Integer, Optional<Integer>> mappingParentByChild = new HashMap<>();
+                   final Map<Integer, FolderMoveResult> mappingParentByChild = new HashMap<>();
                    for(final Row row : rows){
                        final Integer id = row.getInteger("id");
                        final Integer parentId = row.getInteger("parent_id");
+                       final String application = row.getString("application");
                        final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
-                       mappingParentByChild.put(id, parentOpt);
+                       mappingParentByChild.put(id, new FolderMoveResult(id, parentOpt, application));
                    }
                    return mappingParentByChild;
                });
@@ -107,31 +109,35 @@ public class FolderExplorerDbSql {
         }
     }
 
-    public Future<Map<String, List<String>>> getAncestors(final Set<Integer> ids) {
+    public Future<Map<String, FolderAncestor>> getAncestors(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final StringBuilder query = new StringBuilder();
-        query.append("WITH RECURSIVE ancestors(id,name, parent_id) AS ( ");
-        query.append(String.format("   SELECT f1.id, f1.name, f1.parent_id FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder));
+        query.append("WITH RECURSIVE ancestors(id,name, parent_id, application) AS ( ");
+        query.append(String.format("   SELECT f1.id, f1.name, f1.parent_id, f1.application FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder));
         query.append("   UNION ALL ");
-        query.append("   SELECT f2.id, f2.name, f2.parent_id FROM explorer.folders f2, ancestors  WHERE f2.id = ancestors.parent_id ");
+        query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.id = ancestors.parent_id ");
         query.append(") ");
         query.append("SELECT * FROM ancestors;");
         return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
             final Map<Integer, Integer> parentById = new HashMap<>();
+            final Map<Integer, String> applicationById = new HashMap<>();
             for (final Row row : ancestors) {
                 //get parent of each
                 final Integer id = row.getInteger("id");
                 final Integer parent_id = row.getInteger("parent_id");
                 parentById.put(id, parent_id);
+                applicationById.put(id, row.getString("application"));
             }
             //then get ancestors of each by recursion
-            final Map<String, List<String>> map = new HashMap<>();
+            final Map<String, FolderAncestor> map = new HashMap<>();
             for (final Integer id : ids) {
                 if(id != null){
+                    final String application = applicationById.get(id);
                     final List<Integer> ancestorIds = getAncestors(parentById, id);
                     final List<Integer> ancestorsSafe = ancestorIds.stream().filter(e -> e!= null).collect(Collectors.toList());
-                    map.put(id.toString(), ancestorsSafe.stream().map(e -> e.toString()).collect(Collectors.toList()));
+                    final List<String> ancestorIdsStr = ancestorsSafe.stream().map(e -> e.toString()).collect(Collectors.toList());
+                    map.put(id.toString(), new FolderAncestor(id.toString(), application, ancestorIdsStr));
                 }
             }
             return map;
@@ -180,6 +186,38 @@ public class FolderExplorerDbSql {
 
         public FolderRelationship(String id) {
             this.id = id;
+        }
+    }
+
+    public static class FolderAncestor{
+        public final String id;
+        public final Optional<String> application;
+        public final List<String> ancestorIds;
+
+        public FolderAncestor(final String id, final List<String> ancestorIds) {
+            this(id, null, ancestorIds);
+        }
+
+        public FolderAncestor(final String id, final String app, final List<String> ancestorIds) {
+            this.application = Optional.ofNullable(app);
+            this.ancestorIds = ancestorIds;
+            this.id = id;
+        }
+    }
+
+    public static class FolderMoveResult {
+        final Integer id;
+        final Optional<Integer> parentId;
+        final Optional<String> application;
+
+        public FolderMoveResult(Integer id, Optional<Integer> parentId, String application) {
+            this(id, parentId, Optional.ofNullable(application));
+        }
+
+        public FolderMoveResult(Integer id, Optional<Integer> parentId, Optional<String> application) {
+            this.id = id;
+            this.parentId = parentId;
+            this.application = application;
         }
     }
 }

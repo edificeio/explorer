@@ -16,7 +16,7 @@ public interface ResourceService {
     Future<Void> init(final String application);
 
     Future<Void> dropAll(final String application);
-    //TODO fetch by other criterias...
+
     Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
 
     Future<FetchResult> fetchWithMeta(final UserInfos user, final String application, final SearchOperation operation);

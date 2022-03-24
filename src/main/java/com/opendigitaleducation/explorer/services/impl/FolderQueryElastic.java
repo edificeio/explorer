@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,9 +15,10 @@ public class FolderQueryElastic {
     private final List<String> parentId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
     private final List<String> ancestors = new ArrayList<>();
-    private Integer from;
-    private Integer size;
-    private Boolean trashed;
+    private Optional<Integer> from = Optional.empty();
+    private Optional<Integer> size = Optional.empty();
+    private Optional<Boolean> trashed = Optional.empty();
+    private Optional<String> application = Optional.empty();
 
     public FolderQueryElastic withOnlyRoot(boolean onlyRoot) {
         this.parentId.clear();
@@ -24,8 +26,18 @@ public class FolderQueryElastic {
         return this;
     }
 
-    public FolderQueryElastic withTrashed(Boolean trashed) {
-        this.trashed = trashed;
+    public FolderQueryElastic withApplication(final Optional<String> app) {
+        this.application = app;
+        return this;
+    }
+
+    public FolderQueryElastic withApplication(final String app) {
+        this.application = Optional.ofNullable(app);
+        return this;
+    }
+
+    public FolderQueryElastic withTrashed(final Boolean trashed) {
+        this.trashed = Optional.ofNullable(trashed);
         return this;
     }
 
@@ -33,7 +45,11 @@ public class FolderQueryElastic {
         this.parentId.add(folderId);
         return this;
     }
-    //TODO force creator on constructor (every query is by creator)
+
+    static <T> Optional<JsonObject> createTerm(final String key, final T values) {
+        return createTerm(key, Arrays.asList(values));
+    }
+
     static <T> Optional<JsonObject> createTerm(final String key, final List<T> values) {
         if (values.size() == 0) {
             return Optional.empty();
@@ -44,13 +60,13 @@ public class FolderQueryElastic {
         }
     }
 
-    public FolderQueryElastic withFrom(Integer from) {
-        this.from = from;
+    public FolderQueryElastic withFrom(final Integer from) {
+        this.from = Optional.ofNullable(from);
         return this;
     }
 
-    public FolderQueryElastic withSize(Integer size) {
-        this.size = size;
+    public FolderQueryElastic withSize(final Integer size) {
+        this.size = Optional.ofNullable(size);
         return this;
     }
 
@@ -144,16 +160,23 @@ public class FolderQueryElastic {
         if (ancestorsTerm.isPresent()) {
             filter.add(ancestorsTerm.get());
         }
+        //application
+        if(application.isPresent()){
+            final Optional<JsonObject> appTerm = createTerm("application", application.get());
+            if (appTerm.isPresent()) {
+                filter.add(appTerm.get());
+            }
+        }
         //trashed
-        if (trashed != null) {
-            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed)));
+        if (trashed.isPresent()) {
+            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed.get())));
         }
         //from / size
-        if (from != null) {
-            payload.put("from", from);
+        if (from.isPresent()) {
+            payload.put("from", from.get());
         }
-        if (size != null) {
-            payload.put("size", size);
+        if (size.isPresent()) {
+            payload.put("size", size.get());
         }
         return payload;
     }
