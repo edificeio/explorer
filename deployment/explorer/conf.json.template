@@ -38,15 +38,9 @@
         "applications": {
             "blog": {
                 "filters": [
-                    {
-                        "id":"visibility",
-                        "defaultValue": "owner",
-                        "values":[
-                            {"value":"owner", "i18n":"explorer.visibility.owner"},
-                            {"value":"public", "i18n":"explorer.visibility.public"},
-                            {"value":"shared", "i18n":"explorer.visibility.shared"}
-                        ]
-                    }
+                    {"id":"owner",  "defaultValue": true},
+                    {"id":"public", "defaultValue": false},
+                    {"id":"shared", "defaultValue": true}
                 ],
                 "orders": [
                     {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
