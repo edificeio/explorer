@@ -59,9 +59,9 @@ public class FolderExplorerDbSql {
         });
     }
 
-    public Future<Map<String, JsonObject>> upsert(final Collection<? extends ExplorerMessage> resources){
+    public Future<FolderUpsertResult> upsert(final Collection<? extends ExplorerMessage> resources){
         if(resources.isEmpty()){
-            return Future.succeededFuture(new HashMap<>());
+            return Future.succeededFuture(new FolderUpsertResult());
         }
         //must do update to return
         final List<JsonObject> resourcesList = resources.stream().map(e->{
@@ -112,6 +112,34 @@ public class FolderExplorerDbSql {
             return (results);
         }).onFailure(e->{
             log.error("Failed to upsert folders:", e);
+        }).compose(rows -> {
+            //fetch folder
+            return pgPool.transaction().compose(transaction->{
+                final Set<String> resourceEntIds = new HashSet<>();
+                final List<Future> futures = new ArrayList<>();
+                for(final ExplorerMessage res : resources){
+                    if(res.getChildEntId().isPresent() && res.getChildEntId().get().size() > 0){
+                        final String folderId = res.getId();
+                        final String userId = res.getCreatorId();
+                        final Set<String> resEntId = res.getChildEntId().get();
+                        final String inQuery = PostgresClient.inPlaceholder(resEntId, 3);
+                        final Tuple ituple = PostgresClient.inTuple(Tuple.of(userId, folderId), resEntId);
+                        final StringBuilder iquery = new StringBuilder();
+                        iquery.append("INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
+                        iquery.append("SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
+                        iquery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
+                        futures.add(transaction.addPreparedQuery(iquery.toString(), ituple).onFailure(e->{
+                           log.error("Failed to insert relationship for folderId="+folderId, e);
+                        }));
+                        resourceEntIds.addAll(resEntId);
+                    }
+                }
+                return transaction.commit().compose(commit->{
+                    return new ResourceExplorerDbSql(pgPool).getModelByEntIds(resourceEntIds).map(allResources->{
+                        return new FolderUpsertResult(rows, allResources);
+                    });
+                });
+            });
         });
     }
 
@@ -309,6 +337,22 @@ public class FolderExplorerDbSql {
             this.id = id;
             this.parentId = parentId;
             this.application = application;
+        }
+    }
+
+
+
+    public static class FolderUpsertResult {
+        public final Map<String, JsonObject> folderEntById;
+        public final Set<ResourceExplorerDbSql.ResouceSql> resourcesUpdated;
+
+        public FolderUpsertResult() {
+            this(new HashMap<>(), new HashSet<>());
+        }
+
+        public FolderUpsertResult(final Map<String, JsonObject> folderEntById, Set<ResourceExplorerDbSql.ResouceSql> resourcesUpdated) {
+            this.folderEntById = folderEntById;
+            this.resourcesUpdated = resourcesUpdated;
         }
     }
 }

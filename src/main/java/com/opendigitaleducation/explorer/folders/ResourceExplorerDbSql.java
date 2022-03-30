@@ -19,6 +19,9 @@ public class ResourceExplorerDbSql {
     public ResourceExplorerDbSql(final PostgresClient pool) {
         this.pgPool = pool.getClientPool();
     }
+    public ResourceExplorerDbSql(final PostgresClientPool pool) {
+        this.pgPool = pool;
+    }
 
     public Future<Map<Integer, ExplorerMessage>> deleteTemporarlyResources(final Collection<? extends ExplorerMessage> resources){
         if(resources.isEmpty()){
@@ -148,6 +151,30 @@ public class ResourceExplorerDbSql {
         PostgresClient.inTuple(tuple, ids);
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String queryTpl = "SELECT * FROM explorer.resources WHERE id IN (%s)";
+        final String query = String.format(queryTpl, inPlaceholder);
+        return pgPool.preparedQuery(query, tuple).map(rows ->{
+            final Set<ResouceSql> resources = new HashSet<>();
+            for(final Row row : rows){ ;
+                final Integer id = row.getInteger("id");
+                final String entId = row.getString("ent_id");
+                final String creatorId = row.getString("creator_id");
+                final String resourceUniqueId = row.getString("resource_unique_id");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                resources.add(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type));
+            }
+            return  resources;
+        });
+    }
+
+    public Future<Set<ResouceSql>> getModelByEntIds(final Set<String> ids){
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new HashSet<>());
+        }
+        final Tuple tuple = Tuple.tuple();
+        PostgresClient.inTuple(tuple, ids);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final String queryTpl = "SELECT * FROM explorer.resources WHERE ent_id IN (%s)";
         final String query = String.format(queryTpl, inPlaceholder);
         return pgPool.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();

@@ -101,7 +101,7 @@ public class ExplorerTestHelper implements TestRule {
     }
 
     public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation){
-        return resourceService.fetch(user, application, new SearchOperation());
+        return resourceService.fetch(user, application, operation);
     }
 
     public Future<JsonArray> fetchFolders(final UserInfos user, final String application, final Optional<String> parentId){
