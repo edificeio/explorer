@@ -56,31 +56,33 @@ public class MessageIngesterPostgres implements MessageIngester {
             }
         }
         //create or delete resources in postgres
-        final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
-        final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
-        final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-        return CompositeFuture.all(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
-            //ingest only resources created or deleted successfully in postgres
-            final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
-            //TODO on delete folders => update related resources?
-            toIngest.addAll(deleteFolders);
-            toIngest.addAll(beforeDeleteFuture.result());
-            toIngest.addAll(beforeUpsertFuture.result());
-            toIngest.addAll(beforeUpsertFolderFuture.result());
-            return ingester.ingest(toIngest).map(ingestResult -> {
-                //add to failed all resources that cannot be deleted or created into postgres
-                final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
-                prepareFailed.removeAll(toIngest);
-                ingestResult.getFailed().addAll(prepareFailed);
-                return ingestResult;
-            }).compose(ingestResult -> {
-                //delete definitly all resources deleted from ES
-                final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
-                final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
-                    final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
-                    return found.isPresent();
-                }).collect(Collectors.toList());
-                return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);
+        return migrate(upsertFolders, upsertResources).compose(migrate -> {
+            final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
+            final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
+            final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
+            return CompositeFuture.all(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
+                //ingest only resources created or deleted successfully in postgres
+                final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
+                //TODO on delete folders => update related resources?
+                toIngest.addAll(deleteFolders);
+                toIngest.addAll(beforeDeleteFuture.result());
+                toIngest.addAll(beforeUpsertFuture.result());
+                toIngest.addAll(beforeUpsertFolderFuture.result());
+                return ingester.ingest(toIngest).map(ingestResult -> {
+                    //add to failed all resources that cannot be deleted or created into postgres
+                    final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
+                    prepareFailed.removeAll(toIngest);
+                    ingestResult.getFailed().addAll(prepareFailed);
+                    return ingestResult;
+                }).compose(ingestResult -> {
+                    //delete definitly all resources deleted from ES
+                    final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
+                    final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
+                        final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
+                        return found.isPresent();
+                    }).collect(Collectors.toList());
+                    return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);
+                });
             });
         });
     }
@@ -143,19 +145,22 @@ public class MessageIngesterPostgres implements MessageIngester {
         });
     }
 
-    protected Future<List<ExplorerMessageForIngest>> onUpsertFolders(final List<ExplorerMessageForIngest> messagesOrig) {
-        if (messagesOrig.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
+    protected Future<Void> migrate(final List<ExplorerMessageForIngest> upsertFolders, final List<ExplorerMessageForIngest> upsertResources){
         //migrated folders
-        final List<ExplorerMessageForIngest> toMigrate = messagesOrig.stream().filter(message -> {
+        final List<ExplorerMessageForIngest> toMigrate = upsertFolders.stream().filter(message -> {
             return message.getMigrationFlag();
         }).collect(Collectors.toList());
-        return folderSql.upsert(toMigrate).compose(folderByEntId -> {
+        //upsert resources before computing links
+        final Future<List<ResourceExplorerDbSql.ResouceSql>> futureResources = sql.upsertResources(upsertResources);
+        final  Future<FolderExplorerDbSql.FolderUpsertResult> futureFolders = folderSql.upsert(toMigrate);
+        return CompositeFuture.all(futureFolders, futureResources).compose(resourceUpserted -> {
+            final FolderExplorerDbSql.FolderUpsertResult upsertRes = futureFolders.result();
+            final Map<String, JsonObject> folderByEntId = upsertRes.folderEntById;
+            final Set<ResourceExplorerDbSql.ResouceSql> resourceUpdated = upsertRes.resourcesUpdated;
             if(toMigrate.isEmpty()){
-                return Future.succeededFuture(messagesOrig);
+                return Future.succeededFuture();
             }else{
-                return folderSql.updateParentEnt().map(updated->{
+                return folderSql.updateParentEnt().compose(updated->{
                     //update parent_id
                     for(final ExplorerMessageForIngest mess : toMigrate){
                         final String entId = mess.getId();
@@ -172,79 +177,92 @@ public class MessageIngesterPostgres implements MessageIngester {
                             }
                         }
                     }
-                    messagesOrig.addAll(updated.values());
-                    return messagesOrig;
+                    upsertFolders.addAll(updated.values());
+                    //add resources upserted
+                    for(final ResourceExplorerDbSql.ResouceSql r : resourceUpdated){
+                        final UserInfos creator = new UserInfos();
+                        creator.setUserId(r.creatorId);
+                        final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
+                        mess.withType(r.application, r.resourceType);
+                        upsertResources.add(new ExplorerMessageForIngest(mess));
+                    }
+                    return Future.succeededFuture();
                 });
             }
-        }).compose(messages -> {
-            //get ancestors
-            final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
-            //get parentIds
-            final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
-            final Set<Integer> parentIds = overrides.stream().filter(e -> e.containsKey("parentId")).map(e -> {
-                final String tmp = e.getValue("parentId").toString();
-                return Integer.valueOf(tmp);
-            }).collect(Collectors.toSet());
-            final Set<Integer> idsAndParents = new HashSet<>();
-            idsAndParents.addAll(ids);
-            idsAndParents.addAll(parentIds);
-            //get ancestors of each documents
-            final Future<Map<String, FolderExplorerDbSql.FolderAncestor>> ancestorsF = folderSql.getAncestors(ids);
-            // get parent/child relationship for folder and their parents
-            final Future<Map<String, FolderExplorerDbSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
-            return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
-                final Map<String, FolderExplorerDbSql.FolderAncestor> ancestors = ancestorsF.result();
-                final Map<String, FolderExplorerDbSql.FolderRelationship> relations = relationsF.result();
-                //Transform all
-                for (final ExplorerMessageForIngest message : messages) {
-                    final String id = message.getId();
-                    final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
-                    final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
-                    //add children ids and ancestors (reuse existing override)
-                    final JsonObject override = message.getOverride();
-                    override.put("childrenIds", new JsonArray(relation.childrenIds));
-                    if (relation.parentId.isPresent()) {
-                        override.put("parentId", relation.parentId.get());
-                    }
-                    override.put("ancestors", new JsonArray(ancestor.ancestorIds));
+        });
+    }
+
+    protected Future<List<ExplorerMessageForIngest>> onUpsertFolders(final List<ExplorerMessageForIngest> messages) {
+        if (messages.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        //get ancestors
+        final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
+        //get parentIds
+        final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
+        final Set<Integer> parentIds = overrides.stream().filter(e -> e.containsKey("parentId")).map(e -> {
+            final String tmp = e.getValue("parentId").toString();
+            return Integer.valueOf(tmp);
+        }).collect(Collectors.toSet());
+        final Set<Integer> idsAndParents = new HashSet<>();
+        idsAndParents.addAll(ids);
+        idsAndParents.addAll(parentIds);
+        //get ancestors of each documents
+        final Future<Map<String, FolderExplorerDbSql.FolderAncestor>> ancestorsF = folderSql.getAncestors(ids);
+        // get parent/child relationship for folder and their parents
+        final Future<Map<String, FolderExplorerDbSql.FolderRelationship>> relationsF = folderSql.getRelationships(idsAndParents);
+        return CompositeFuture.all(ancestorsF, relationsF).map(e -> {
+            final Map<String, FolderExplorerDbSql.FolderAncestor> ancestors = ancestorsF.result();
+            final Map<String, FolderExplorerDbSql.FolderRelationship> relations = relationsF.result();
+            //Transform all
+            for (final ExplorerMessageForIngest message : messages) {
+                final String id = message.getId();
+                final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
+                final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
+                //add children ids and ancestors (reuse existing override)
+                final JsonObject override = message.getOverride();
+                override.put("childrenIds", new JsonArray(relation.childrenIds));
+                if (relation.parentId.isPresent()) {
+                    override.put("parentId", relation.parentId.get());
+                }
+                override.put("ancestors", new JsonArray(ancestor.ancestorIds));
+                message.withOverrideFields(override);
+                if (ancestor.application.isPresent()) {
+                    message.withForceApplication(ancestor.application.get());
+                }
+                transformFolder(message);
+            }
+            //update parent (childrenIds)
+            for (final Integer parentId : parentIds) {
+                final String parentIdStr = parentId.toString();
+                final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
+                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
+                final JsonObject override = new JsonObject();
+                //set childrenIds
+                final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);
+                override.put("childrenIds", new JsonArray(relation.childrenIds));
+                if (relation.parentId.isPresent()) {
+                    override.put("parentId", relation.parentId.get());
+                }
+                //recompute ancestors from child ancestors
+                if (!relation.childrenIds.isEmpty()) {
+                    //get child ancestors
+                    final String child = relation.childrenIds.get(0);
+                    final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(child, new FolderExplorerDbSql.FolderAncestor(child, new ArrayList<>()));
+                    final List<String> parentAncestors = new ArrayList<>(ancestor.ancestorIds);
+                    //remove self from child ancestors
+                    parentAncestors.remove(parentIdStr);
+                    override.put("ancestors", new JsonArray(parentAncestors));
+                    //add parent to list of updated folders
                     message.withOverrideFields(override);
+                    //update parent only if childrenids has changed
                     if (ancestor.application.isPresent()) {
                         message.withForceApplication(ancestor.application.get());
                     }
-                    transformFolder(message);
+                    messages.add(transformFolder(message));
                 }
-                //update parent (childrenIds)
-                for (final Integer parentId : parentIds) {
-                    final String parentIdStr = parentId.toString();
-                    final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
-                    final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
-                    final JsonObject override = new JsonObject();
-                    //set childrenIds
-                    final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);
-                    override.put("childrenIds", new JsonArray(relation.childrenIds));
-                    if (relation.parentId.isPresent()) {
-                        override.put("parentId", relation.parentId.get());
-                    }
-                    //recompute ancestors from child ancestors
-                    if (!relation.childrenIds.isEmpty()) {
-                        //get child ancestors
-                        final String child = relation.childrenIds.get(0);
-                        final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(child, new FolderExplorerDbSql.FolderAncestor(child, new ArrayList<>()));
-                        final List<String> parentAncestors = new ArrayList<>(ancestor.ancestorIds);
-                        //remove self from child ancestors
-                        parentAncestors.remove(parentIdStr);
-                        override.put("ancestors", new JsonArray(parentAncestors));
-                        //add parent to list of updated folders
-                        message.withOverrideFields(override);
-                        //update parent only if childrenids has changed
-                        if (ancestor.application.isPresent()) {
-                            message.withForceApplication(ancestor.application.get());
-                        }
-                        messages.add(transformFolder(message));
-                    }
-                }
-                return messages;
-            });
+            }
+            return messages;
         });
     }
 

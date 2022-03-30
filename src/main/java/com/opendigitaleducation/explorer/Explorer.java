@@ -56,7 +56,9 @@ public class Explorer extends BaseServer {
 
     @Override
     public void start() throws Exception {
-        //TODO move postgresConfig (j2) to infra
+        //TODO ajouter check de droit sur les API explorer (manage, write)
+        //  => normaliser les droits virtuellement
+        //  => creer un term de recherche "rights":"USERID:write"
         log.info("Starting explorer...");
         super.start();
         final List<Future> futures = new ArrayList<>();
