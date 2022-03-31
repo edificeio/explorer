@@ -29,9 +29,11 @@ public class FolderExplorerDbSql {
 
     protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
 
-    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name", "ent_id", "parent_ent_id"); }
+    protected List<String> getColumns() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name"); }
 
-    protected String[] getColumnsArray() { return getColumns().toArray(new String[getColumns().size()]); }
+    protected List<String> getColumnsExt() { return Arrays.asList("name", "application", "resource_type", "parent_id", "creator_id", "creator_name", "ent_id", "parent_ent_id"); }
+
+    protected String[] getColumnsExtArray() { return getColumnsExt().toArray(new String[getColumnsExt().size()]); }
 
     public Future<Map<String, ExplorerMessageForIngest>> updateParentEnt(){
         final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
@@ -83,8 +85,8 @@ public class FolderExplorerDbSql {
         }
         final Map<String, Object> defaultVal = new HashMap<>();
         final Collection<JsonObject> resourcesColl = resourcesMap.values();
-        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, getColumnsArray());
-        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, getColumnsArray());
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, getColumnsExtArray());
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, getColumnsExtArray());
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
         queryTpl.append("  INSERT INTO explorer.folders as r (name,application,resource_type, parent_id, creator_id, creator_name, ent_id, parent_ent_id) ");

@@ -542,8 +542,10 @@ public class ExplorerController extends BaseController {
 
     private JsonObject adaptFolder(final JsonObject folder) {
         final Object id = folder.remove("_id");
-        if( id != null ) folder.put( "id", id );
-        
+        if( id != null ) {
+            folder.put( "id", id );
+        }
+        folder.put( "assetId", folder.getValue("id"));
         folder.put("childNumber", folder.getJsonArray("childrenIds", new JsonArray()).size());
         return folder;
     }

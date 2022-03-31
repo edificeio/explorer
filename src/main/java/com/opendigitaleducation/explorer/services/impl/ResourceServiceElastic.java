@@ -203,7 +203,7 @@ public class ResourceServiceElastic implements ResourceService {
             final ElasticClient.ElasticOptions optios = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             return manager.getClient().search(index, payload, optios).compose(e -> {
                 final List<JsonObject> jsons = e.stream().map(j -> (JsonObject) j).collect(Collectors.toList());
-                final Set<String> entIds = jsons.stream().map(j -> j.getString("entId")).collect(Collectors.toSet());
+                final Set<String> entIds = jsons.stream().map(j -> j.getString("assetId")).collect(Collectors.toSet());
                 final IExplorerPluginClient client = IExplorerPluginClient.withBus(communication.vertx(), application, resourceType);
                 return client.deleteById(user, entIds).map(ee -> {
                     return new JsonArray(jsons);

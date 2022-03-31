@@ -115,17 +115,17 @@ public class ResourceServiceTest {
                     context.assertEquals(2, fetch1.size());
                     resourceService.fetch(user, application, new SearchOperation().setSearch("MONHTML1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("html1", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("html1", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                     resourceService.fetch(user, application, new SearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("html2", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("html2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                     resourceService.fetch(user, application, new SearchOperation().setSearch("content2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("html2", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("html2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                 }));
@@ -150,17 +150,17 @@ public class ResourceServiceTest {
                     context.assertEquals(2, fetch1.size());
                     resourceService.fetch(user, application, new SearchOperation().setSearch("html1_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("id1", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("id1", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                     resourceService.fetch(user, application, new SearchOperation().setSearch("content2_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("id2", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("id2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                     resourceService.fetch(user, application, new SearchOperation().setSearch("content2_2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
-                        context.assertEquals("id2", fetch2.getJsonObject(0).getString("entId"));
+                        context.assertEquals("id2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
                 }));
