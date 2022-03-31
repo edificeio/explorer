@@ -30,6 +30,7 @@ public abstract class IngestJobTest {
     protected static final TestHelper test = TestHelper.helper();
     protected static String esIndex;
     protected static final String application = FakePostgresPlugin.FAKE_APPLICATION;
+    //TODO opensearch 1.1 => elastic 7/10
     @ClassRule
     public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
     static ElasticClientManager elasticClientManager;
@@ -209,7 +210,7 @@ public abstract class IngestJobTest {
                             context.assertEquals(1, folders.size());
                             final Integer folder1Id = folders.get(0).getInteger("id");
                             //user1 move 1 resource to folder1
-                            getResourceService().move(user1, application, json, Optional.of(folder1Id)).onComplete(context.asyncAssertSuccess(move -> {
+                            getResourceService().move(user1, application, json, Optional.of(folder1Id.toString())).onComplete(context.asyncAssertSuccess(move -> {
                                 getIngestJob().execute(true).onComplete(context.asyncAssertSuccess(load2 -> {
                                     //user1 see 1 resource at folder1
                                     getResourceService().fetch(user1, application, new SearchOperation().setParentId(folder1Id.toString())).onComplete(context.asyncAssertSuccess(fetch2 -> {

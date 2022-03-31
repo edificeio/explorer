@@ -34,6 +34,8 @@ public interface FolderService {
 
     Future<JsonObject> move(final UserInfos user, final String id, final String application, final Optional<String> dest);
 
+    Future<List<JsonObject>> trash(UserInfos creator, Set<String> folderIds, String application, boolean isTrash);
+
     Future<List<JsonObject>> move(final UserInfos user, final Set<String> id, final String application, final Optional<String> dest);
 
     class SearchOperation {

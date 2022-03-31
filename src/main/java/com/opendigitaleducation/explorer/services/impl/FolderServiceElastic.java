@@ -1,13 +1,18 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.services.FolderService;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -19,10 +24,12 @@ import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
 public class FolderServiceElastic implements FolderService {
     final ElasticClientManager manager;
     final FolderExplorerPlugin plugin;
+    final FolderExplorerDbSql dbHelper;
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
         this.manager = aManager;
         this.plugin = plugin;
+        this.dbHelper =  plugin.getDbHelper();
     }
 
     protected String getIndex(){
@@ -135,7 +142,86 @@ public class FolderServiceElastic implements FolderService {
             if (ee < ids.size()) {
                 return Future.failedFuture("folder.delete.id.invalid");
             }
-            return plugin.delete(creator, idList).map(idList);
+            final Set<Integer> idInt = ids.stream().map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
+            return this.dbHelper.getDescendants(idInt).compose(descendants -> {
+                final Set<Integer> all = new HashSet<>(idInt);
+                for (final Map.Entry<String, FolderExplorerDbSql.FolderDescendant> s : descendants.entrySet()) {
+                    all.add(Integer.valueOf(s.getKey()));
+                    all.addAll(s.getValue().descendantIds.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet()));
+                }
+                return this.dbHelper.getResourcesIdsForFolders(all).compose(resourcesIds -> {
+                    final Set<Integer> resourceIdInt = resourcesIds.stream().map(e -> e.id).collect(Collectors.toSet());
+                    //delete related resources
+                    if(!resourceIdInt.isEmpty()){
+                        this.dbHelper.getResourceHelper().getModelByIds(resourceIdInt).compose(models->{
+                            final String resourceType = models.iterator().next().resourceType;
+                            final Set<String> entIds = models.stream().map(e->e.entId).collect(Collectors.toSet());
+                            final IExplorerPluginClient client = IExplorerPluginClient.withBus(plugin.getCommunication().vertx(), application, resourceType);
+                            return client.deleteById(creator, entIds);
+                        });
+                    }
+                    //delete folders
+                    return plugin.delete(creator, idList).map(idList);
+                });
+            });
+        });
+    }
+
+    @Override
+    public Future<List<JsonObject>> trash(final UserInfos creator, final Set<String> folderIds, final String application, final boolean isTrash) {
+        if(folderIds.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final Set<Integer> ids = folderIds.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
+        final SearchOperation search = new SearchOperation().setIds(folderIds).setSearchEverywhere(true);
+        final Future<Integer> checkFuture = folderIds.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
+        return checkFuture.compose(ee-> {
+            if (ee < folderIds.size()) {
+                return Future.failedFuture("folder.trash.id.invalid");
+            }
+            return this.dbHelper.getDescendants(ids).compose(descendants -> {
+                final Set<Integer> all = new HashSet<>(ids);
+                for(final Map.Entry<String, FolderExplorerDbSql.FolderDescendant> s : descendants.entrySet()){
+                    all.add(Integer.valueOf(s.getKey()));
+                    all.addAll(s.getValue().descendantIds.stream().map(e->Integer.valueOf(e)).collect(Collectors.toSet()));
+                }
+                return this.dbHelper.getResourcesIdsForFolders(all).compose(resourcesIds ->{
+                    final Set<Integer> resourceIdInt = resourcesIds.stream().map(e->e.id).collect(Collectors.toSet());
+                    return this.dbHelper.trash(all, resourceIdInt, isTrash).compose(trashed -> {
+                        final List<JsonObject> sources = new ArrayList<>();
+                        for (final Integer key : all) {
+                            final FolderExplorerDbSql.FolderTrashResult move = trashed.folders.get(key);
+                            final Optional<Integer> parentOpt = move.parentId;
+                            final JsonObject source = new JsonObject().put("trashed", isTrash);
+                            if (move.application.isPresent()) {
+                                source.put("application", move.application.get());
+                            }
+                            //add
+                            sources.add(plugin.setIdForModel(source.copy(), key.toString()));
+                            //update children of oldParent
+                            if (parentOpt.isPresent()) {
+                                sources.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
+                            }
+                        }
+                        Future<Void> futureUpsertFolder = plugin.notifyUpsert(creator, sources);
+                        //resources
+                        final List<ExplorerMessage> messages = new ArrayList<>();
+                        for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
+                            final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false);
+                            mess.withType(trash.application.get(), trash.resourceType.get());
+                            mess.withTrashed(isTrash);
+                            messages.add(mess);
+                        }
+                        Future<Void> futureUpsertRes = plugin.notifyUpsert(messages);
+                        //notify folders
+                        return CompositeFuture.all(futureUpsertFolder, futureUpsertRes);
+                    });
+                });
+            }).compose(e -> {
+                return plugin.get(creator, folderIds).map(found -> {
+                    return found;
+                });
+            });
         });
     }
 
@@ -144,13 +230,38 @@ public class FolderServiceElastic implements FolderService {
         if(id.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
+        if(dest.isPresent() && ExplorerConfig.BIN_FOLDER_ID.equals(dest.get())){
+            return this.trash(creator, id, application, true);
+        }
         final SearchOperation search = new SearchOperation().setIds(id).setSearchEverywhere(true);
         final Future<Integer> checkFuture = id.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee-> {
             if (ee < id.size()) {
                 return Future.failedFuture("folder.move.id.invalid");
             }
-            return plugin.move(creator, id, dest).compose(e -> {
+            final Collection<Integer> ids = id.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
+            return this.dbHelper.move(ids, dest).compose(oldParent->{
+                final List<JsonObject> sources = new ArrayList<>();
+                for(final Integer key : oldParent.keySet()){
+                    final FolderExplorerDbSql.FolderMoveResult move = oldParent.get(key);
+                    final Optional<Integer> parentOpt = move.parentId;
+                    final JsonObject source = new JsonObject();
+                    if(move.application.isPresent()){
+                        source.put("application", move.application.get());
+                    }
+                    //add
+                    sources.add(plugin.setIdForModel(source.copy(), key.toString()));
+                    //update children of oldParent
+                    if(parentOpt.isPresent()){
+                        sources.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
+                    }
+                    //update children of newParent
+                    if(dest.isPresent()){
+                        sources.add(plugin.setIdForModel(source.copy(), dest.get()));
+                    }
+                }
+                return plugin.notifyUpsert(creator, sources);
+            }).compose(e -> {
                 return plugin.get(creator, id).map(found -> {
                     return found;
                 });

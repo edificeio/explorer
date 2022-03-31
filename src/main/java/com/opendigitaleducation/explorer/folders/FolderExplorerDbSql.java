@@ -25,6 +25,9 @@ public class FolderExplorerDbSql {
     public FolderExplorerDbSql(final PostgresClient pool) {
         this.pgPool = pool.getClientPool();
     }
+
+    public ResourceExplorerDbSql getResourceHelper() { return new ResourceExplorerDbSql(pgPool); }
+
     protected String getTableName() { return "explorer.folders"; }
 
     protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
@@ -219,6 +222,45 @@ public class FolderExplorerDbSql {
         });
     }
 
+    public Future<List<ResourceExplorerDbSql.ResourceId>> getResourcesIdsForFolders(final Set<Integer> folderIds){
+        final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(pgPool);
+        return resSql.getIdsByFolderIds(folderIds);
+    }
+
+    public Future<FolderTrashResults> trash(final Collection<Integer> folderIds, final Collection<Integer> resourceIds, final boolean trashed){
+        if(!resourceIds.isEmpty() && !folderIds.isEmpty()){
+            return Future.succeededFuture(new FolderTrashResults());
+        }
+        return pgPool.transaction().compose(transaction->{
+            final List<Future> futures = new ArrayList<>();
+            final FolderTrashResults mapTrashed = new FolderTrashResults();
+            if(!resourceIds.isEmpty()){
+                final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(pgPool);
+                futures.add(resSql.trash(transaction, resourceIds, trashed).onSuccess(resources->{
+                    mapTrashed.resources.putAll(resources);
+                }));
+            }
+            if(!folderIds.isEmpty()){
+                final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), folderIds);
+                final String inPlaceholder = PostgresClient.inPlaceholder(folderIds, 2);
+                final String query = String.format("UPDATE explorer.folders SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
+                futures.add(transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+                    for(final Row row : rows){
+                        final Integer id = row.getInteger("id");
+                        final Integer parentId = row.getInteger("parent_id");
+                        final String application = row.getString("application");
+                        final String ent_id = row.getString("ent_id");
+                        final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
+                        mapTrashed.folders.put(id, new FolderTrashResult(id, parentOpt, application, ExplorerConfig.FOLDER_TYPE, ent_id));
+                    }
+                }));
+            }
+            return transaction.commit().compose(commit->{
+                return CompositeFuture.all(futures);
+            }).map(mapTrashed);
+        });
+    }
+
     protected void beforeCreateOrUpdate(final JsonObject source){
         final Object parentId = source.getValue("parentId");
         if(parentId instanceof String){
@@ -265,6 +307,48 @@ public class FolderExplorerDbSql {
         });
     }
 
+    public Future<Map<String, FolderDescendant>> getDescendants(final Set<Integer> ids) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new HashMap<>());
+        }
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+        final StringBuilder query = new StringBuilder();
+        query.append("WITH RECURSIVE ancestors(id,name, parent_id, application) AS ( ");
+        query.append(String.format("   SELECT f1.id, f1.name, f1.parent_id, f1.application FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder));
+        query.append("   UNION ALL ");
+        query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.parent_id = ancestors.id ");
+        query.append(") ");
+        query.append("SELECT * FROM ancestors;");
+        return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
+            final Map<Integer, Set<Integer>> childrenById = new HashMap<>();
+            final Map<Integer, String> applicationById = new HashMap<>();
+            for (final Row row : ancestors) {
+                //get parent of each
+                final Integer id = row.getInteger("id");
+                final Integer parent_id = row.getInteger("parent_id");
+                final Set<Integer> children = childrenById.getOrDefault(parent_id, new HashSet<>());
+                children.add(id);
+                if(parent_id != null){
+                    childrenById.put(parent_id, children);
+                }
+                applicationById.put(id, row.getString("application"));
+            }
+            //then get ancestors of each by recursion
+            final Map<String, FolderDescendant> map = new HashMap<>();
+            for (final Integer id : ids) {
+                if(id != null){
+                    final String application = applicationById.get(id);
+                    final Set<Integer> descendantIds = getDescendants(childrenById, id);
+                    final List<Integer> descendantSafe = descendantIds.stream().filter(e -> e!= null).collect(Collectors.toList());
+                    final List<String> descendantIdsStr = descendantSafe.stream().map(e -> e.toString()).collect(Collectors.toList());
+                    map.put(id.toString(), new FolderDescendant(id.toString(), application, descendantIdsStr));
+                }
+            }
+            return map;
+        });
+    }
+
     public Future<Map<String, FolderRelationship>> getRelationships(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
@@ -300,6 +384,17 @@ public class FolderExplorerDbSql {
         return all;
     }
 
+    public Set<Integer> getDescendants(final Map<Integer, Set<Integer>> childrenById, final Integer root) {
+        final Set<Integer> children = childrenById.getOrDefault(root, new HashSet<>());
+        final Set<Integer> all = new HashSet<>();
+        for(final Integer child : children){
+            final Set<Integer> descendant = getDescendants(childrenById, child);
+            all.addAll(descendant);
+        }
+        all.addAll(children);
+        return all;
+    }
+
     public static class FolderRelationship{
         public final String id;
         public Optional<String> parentId = Optional.empty();
@@ -326,10 +421,26 @@ public class FolderExplorerDbSql {
         }
     }
 
+    public static class FolderDescendant{
+        public final String id;
+        public final Optional<String> application;
+        public final List<String> descendantIds;
+
+        public FolderDescendant(final String id, final List<String> descendantIds) {
+            this(id, null, descendantIds);
+        }
+
+        public FolderDescendant(final String id, final String app, final List<String> descendantIds) {
+            this.application = Optional.ofNullable(app);
+            this.descendantIds = descendantIds;
+            this.id = id;
+        }
+    }
+
     public static class FolderMoveResult {
-        final Integer id;
-        final Optional<Integer> parentId;
-        final Optional<String> application;
+        public final Integer id;
+        public final Optional<Integer> parentId;
+        public final Optional<String> application;
 
         public FolderMoveResult(Integer id, Optional<Integer> parentId, String application) {
             this(id, parentId, Optional.ofNullable(application));
@@ -339,6 +450,31 @@ public class FolderExplorerDbSql {
             this.id = id;
             this.parentId = parentId;
             this.application = application;
+        }
+    }
+
+    public static class FolderTrashResults {
+        public final Map<Integer, FolderTrashResult> folders = new HashMap<>();
+        public final Map<Integer, FolderTrashResult> resources = new HashMap<>();
+    }
+
+    public static class FolderTrashResult {
+        public final Integer id;
+        public final Optional<Integer> parentId;
+        public final Optional<String> application;
+        public final Optional<String> resourceType;
+        public final Optional<String> entId;
+
+        public FolderTrashResult(Integer id, Optional<Integer> parentId, String application, String resourceType, String entId) {
+            this(id, parentId, Optional.ofNullable(application), Optional.ofNullable(resourceType), Optional.ofNullable(entId));
+        }
+
+        public FolderTrashResult(Integer id, Optional<Integer> parentId, Optional<String> application, Optional<String> resourceType, Optional<String> entId) {
+            this.id = id;
+            this.parentId = parentId;
+            this.application = application;
+            this.resourceType = resourceType;
+            this.entId = entId;
         }
     }
 

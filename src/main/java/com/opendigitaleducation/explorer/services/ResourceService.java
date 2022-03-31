@@ -23,11 +23,13 @@ public interface ResourceService {
 
     Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
 
-    Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<Integer> dest);
+    Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<String> dest);
 
-    Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<Integer> dest);
+    Future<JsonArray> trash(UserInfos user, String application, Set<Integer> ids, boolean isTrash);
 
-    Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> id, final Optional<Integer> dest);
+    Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<String> dest);
+
+    Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> id, final Optional<String> dest);
 
     Future<JsonArray> delete(final UserInfos user, final String application, final String resourceType,final Set<String> id);
 
