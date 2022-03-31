@@ -132,49 +132,64 @@ public class FolderServiceTest {
                                             context.assertEquals(0, ch3_1_1.size());
                                             final Set<String> idToTrash = new HashSet<>(Arrays.asList(f3_id));
                                             //TRASH
-                                            folderService.move(user, idToTrash, APPLICATION, Optional.of(ExplorerConfig.BIN_FOLDER_ID)).onComplete(context.asyncAssertSuccess(trashed->{
-                                                job.execute(true).onComplete(context.asyncAssertSuccess(r5 -> {
-                                                    folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.BIN_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch4 -> {
-                                                        context.assertEquals(1, fetch4.size());
-                                                        context.assertTrue(fetch4.getJsonObject(0).getBoolean("trashed"));
-                                                        folderService.fetch(user, APPLICATION, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch5 -> {
-                                                            context.assertEquals(1, fetch5.size());
-                                                            context.assertTrue(fetch5.getJsonObject(0).getBoolean("trashed"));
-                                                            //UNTRASH
-                                                            folderService.trash(user, idToTrash, APPLICATION, false).onComplete(context.asyncAssertSuccess(untrashed->{
-                                                                job.execute(true).onComplete(context.asyncAssertSuccess(r6 -> {
-                                                                    folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.ROOT_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch6 -> {
-                                                                        context.assertEquals(3, fetch6.size());
-                                                                        context.assertFalse(fetch6.getJsonObject(0).getBoolean("trashed"));
-                                                                        context.assertFalse(fetch6.getJsonObject(1).getBoolean("trashed"));
-                                                                        context.assertFalse(fetch6.getJsonObject(2).getBoolean("trashed"));
-                                                                        folderService.fetch(user, APPLICATION, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch7 -> {
-                                                                            context.assertEquals(1, fetch7.size());
-                                                                            context.assertFalse(fetch7.getJsonObject(0).getBoolean("trashed"));
-                                                                            //DELETE
-                                                                            folderService.delete(user, APPLICATION, idToTrash).onComplete(context.asyncAssertSuccess(delete->{
-                                                                                job.execute(true).onComplete(context.asyncAssertSuccess(r7 -> {
-                                                                                    folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.ROOT_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch8 -> {
-                                                                                        context.assertEquals(2, fetch8.size());
-                                                                                        folderService.fetch(user, APPLICATION, new FolderService.SearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetch9 -> {
-                                                                                            context.assertEquals(2, fetch9.size());
-                                                                                            async.complete();
-                                                                                        }));
-                                                                                    }));
-                                                                                }));
-                                                                            }));
-                                                                        }));
-                                                                    }));
-                                                                }));
-                                                            }));
-                                                        }));
-                                                    }));
-                                                }));
-                                            }));
+                                            onTrash(context, user, async, idToTrash, id3_1);
                                         }));
                                     }));
                                 }));
                             }));
+                        }));
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    protected void onTrash(final TestContext context, final UserInfos user, final Async async, final Set<String> idToTrash, final String id3_1) {
+        folderService.move(user, idToTrash, APPLICATION, Optional.of(ExplorerConfig.BIN_FOLDER_ID)).onComplete(context.asyncAssertSuccess(trashed -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r5 -> {
+                folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.BIN_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch4 -> {
+                    context.assertEquals(1, fetch4.size());
+                    context.assertTrue(fetch4.getJsonObject(0).getBoolean("trashed"));
+                    folderService.fetch(user, APPLICATION, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch5 -> {
+                        context.assertEquals(1, fetch5.size());
+                        context.assertTrue(fetch5.getJsonObject(0).getBoolean("trashed"));
+                        //UNTRASH
+                        onUntrash(context, user, async, idToTrash, id3_1);
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    protected void onUntrash(final TestContext context, final UserInfos user, final Async async, final Set<String> idToTrash, final String id3_1) {
+        folderService.trash(user, idToTrash, APPLICATION, false).onComplete(context.asyncAssertSuccess(untrashed -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r6 -> {
+                folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.ROOT_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch6 -> {
+                    context.assertEquals(3, fetch6.size());
+                    context.assertFalse(fetch6.getJsonObject(0).getBoolean("trashed"));
+                    context.assertFalse(fetch6.getJsonObject(1).getBoolean("trashed"));
+                    context.assertFalse(fetch6.getJsonObject(2).getBoolean("trashed"));
+                    folderService.fetch(user, APPLICATION, Optional.of(id3_1)).onComplete(context.asyncAssertSuccess(fetch7 -> {
+                        context.assertEquals(1, fetch7.size());
+                        context.assertFalse(fetch7.getJsonObject(0).getBoolean("trashed"));
+                        onDelete(context, user, async, idToTrash);
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    protected void onDelete(final TestContext context, final UserInfos user, final Async async, final Set<String> idToTrash) {
+        //DELETE
+        folderService.fetch(user, APPLICATION, new FolderService.SearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetchBefore -> {
+            context.assertEquals(5, fetchBefore.size());
+            folderService.delete(user, APPLICATION, idToTrash).onComplete(context.asyncAssertSuccess(delete -> {
+                job.execute(true).onComplete(context.asyncAssertSuccess(r7 -> {
+                    folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.ROOT_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch8 -> {
+                        context.assertEquals(2, fetch8.size());
+                        folderService.fetch(user, APPLICATION, new FolderService.SearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetch9 -> {
+                            context.assertEquals(2, fetch9.size());
+                            async.complete();
                         }));
                     }));
                 }));
