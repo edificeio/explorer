@@ -135,7 +135,6 @@ public class FolderServiceElastic implements FolderService {
         if(ids.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        final List<String> idList = new ArrayList<>(ids);
         final SearchOperation search = new SearchOperation().setIds(ids).setSearchEverywhere(true);
         final Future<Integer> checkFuture = ids.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee-> {
@@ -161,6 +160,7 @@ public class FolderServiceElastic implements FolderService {
                         });
                     }
                     //delete folders
+                    final List<String> idList = all.stream().map(e->e.toString()).collect(Collectors.toList());
                     return plugin.delete(creator, idList).map(idList);
                 });
             });
