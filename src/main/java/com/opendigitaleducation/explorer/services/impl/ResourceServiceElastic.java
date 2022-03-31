@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.SearchOperation;
@@ -108,6 +109,9 @@ public class ResourceServiceElastic implements ResourceService {
             final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
+            if(operation.isWaitFor()){
+                options.withWaitFor(true);
+            }
             return manager.getClient().search(index, queryJson, options);
         });
     }
@@ -119,6 +123,9 @@ public class ResourceServiceElastic implements ResourceService {
             final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withVisibleIds(hashes).withSearchOperation(operation);
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
+            if(operation.isWaitFor()){
+                options.withWaitFor(true);
+            }
             return manager.getClient().searchWithMeta(index, queryJson, options);
         }).map(e -> {
             return new FetchResult(e.getCount(), e.getRows());
@@ -133,12 +140,41 @@ public class ResourceServiceElastic implements ResourceService {
             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             final JsonObject queryJson = query.getSearchQuery();
             queryJson.remove("sort");
+            if(operation.isWaitFor()){
+                options.withWaitFor(true);
+            }
             return manager.getClient().count(index, queryJson, options);
         });
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<Integer> dest) {
+    public Future<JsonArray> trash(final UserInfos user, final String application, final Set<Integer> ids, final boolean isTrash) {
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new JsonArray());
+        }
+        final Future<Integer> futureCheck = count(user, application, new SearchOperation().setIdsInt(ids).setSearchEverywhere(true));
+        return futureCheck.compose(count->{
+            if(count < ids.size()){
+                return Future.failedFuture("resource.trash.id.invalid");
+            }
+            return sql.trash(ids, isTrash).compose(entIds -> {
+                final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e->{
+                    return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
+                }).map(e -> {
+                    final Integer id = e.getKey();
+                    final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
+                    return ExplorerMessage.upsert(id.toString(), user, false).withType(value.application.get(), value.resourceType.get());
+                }).collect(Collectors.toList());
+                return communication.pushMessage(messages);
+            }).compose(e->{
+                final SearchOperation search = new SearchOperation().setWaitFor(true).setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                return fetch(user, application, search);
+            });
+        });
+    }
+
+    @Override
+    public Future<JsonObject> move(final UserInfos user, final String application, final Integer id, final Optional<String> dest) {
         final Set<Integer> ids = new HashSet<>();
         ids.add(id);
         return move(user, application, ids, dest).map(e->{
@@ -147,16 +183,24 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> ids, final Optional<Integer> dest) {
+    public Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> ids, final Optional<String> destOrig) {
         if(ids.isEmpty()){
             return Future.succeededFuture(new JsonArray());
         }
+        //TRASH
+        if(destOrig.isPresent() && ExplorerConfig.BIN_FOLDER_ID.equals(destOrig.get())){
+            return this.trash(user, application, ids, true);
+        }
+        //MOVE TO ROOT
+        final Optional<String> dest = (destOrig.isPresent() && ExplorerConfig.ROOT_FOLDER_ID.equals(destOrig.get()))? Optional.empty():destOrig;
+        //MOVE
+        final Optional<Integer> destInt = dest.map(e-> Integer.valueOf(e));
         return count(user, application, new SearchOperation().setIdsInt(ids).setSearchEverywhere(true)).compose(count->{
             if(count < ids.size()){
                 return Future.failedFuture("resource.move.id.invalid");
             }
             if(dest.isPresent()){
-                return sql.moveTo(ids, dest.get(), user).compose(resources -> {
+                return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
                         return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
                     }).collect(Collectors.toList());
@@ -172,7 +216,7 @@ public class ResourceServiceElastic implements ResourceService {
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
-                    final SearchOperation search = new SearchOperation().setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                    final SearchOperation search = new SearchOperation().setWaitFor(true).setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
                     return fetch(user, application, search);
                 });
             }
@@ -180,7 +224,7 @@ public class ResourceServiceElastic implements ResourceService {
     }
 
     @Override
-    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<Integer> dest) {
+    public Future<JsonObject> move(final UserInfos user, final String application, final JsonObject resource, final Optional<String> dest) {
         final Integer id = Integer.valueOf(resource.getString("_id"));
         final Set<Integer> ids = new HashSet<>();
         ids.add(id);

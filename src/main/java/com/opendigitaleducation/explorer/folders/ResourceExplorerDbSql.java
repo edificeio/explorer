@@ -1,5 +1,7 @@
 package com.opendigitaleducation.explorer.folders;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -167,6 +169,26 @@ public class ResourceExplorerDbSql {
         });
     }
 
+    public Future<List<ResourceId>> getIdsByFolderIds(final Set<Integer> ids){
+        if(ids.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final Tuple tuple = Tuple.tuple();
+        PostgresClient.inTuple(tuple, ids);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final String queryTpl = "SELECT resource_id, r.ent_id as ent_id FROM explorer.folder_resources INNER JOIN explorer.resources r ON r.id = resource_id WHERE folder_id IN (%s)";
+        final String query = String.format(queryTpl, inPlaceholder);
+        return pgPool.preparedQuery(query, tuple).map(rows ->{
+            final List<ResourceId> resources = new ArrayList<>();
+            for(final Row row : rows){ ;
+                final Integer id = row.getInteger("resource_id");
+                final String ent_id = row.getString("ent_id");
+                resources.add(new ResourceId(id, ent_id));
+            }
+            return  resources;
+        });
+    }
+
     public Future<Set<ResouceSql>> getModelByEntIds(final Set<String> ids){
         if(ids.isEmpty()){
             return Future.succeededFuture(new HashSet<>());
@@ -271,6 +293,33 @@ public class ResourceExplorerDbSql {
             return  resources;
         });
     }
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final Collection<Integer> resourceIds, final boolean trashed) {
+        return pgPool.transaction().compose(transaction->{
+           final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trash(transaction, resourceIds, trashed);
+           return transaction.commit().compose(commit -> future);
+        });
+    }
+
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final PostgresClient.PostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
+        if(!resourceIds.isEmpty()){
+            return Future.succeededFuture(new HashMap<>());
+        }
+        final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
+        final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), resourceIds);
+        final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
+        final String query = String.format("UPDATE explorer.resources SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
+        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+            for(final Row row : rows){
+                final Integer id = row.getInteger("id");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                final String ent_id = row.getString("ent_id");
+                final Optional<Integer> parentOpt = Optional.empty();
+                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id));
+            }
+        });
+        return future.map(mapTrashed);
+    }
 
     private Map<Integer, ExplorerMessage> resourcesToMap(final Collection<? extends ExplorerMessage> resources, final RowSet<Row> rows){
         final Map<Integer,ExplorerMessage> newIds = new HashMap<>();
@@ -339,5 +388,14 @@ public class ResourceExplorerDbSql {
         }
         public final Integer id;
         public final String userId;
+    }
+    public static class ResourceId{
+
+        public ResourceId(Integer id, String entId) {
+            this.id = id;
+            this.entId = entId;
+        }
+        public final Integer id;
+        public final String entId;
     }
 }

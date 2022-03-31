@@ -94,7 +94,12 @@ public class FolderQueryElastic {
     }
 
     public FolderQueryElastic withParentId(final String parentId) {
-        this.parentId.add(parentId);
+        if(ExplorerConfig.BIN_FOLDER_ID.equals(parentId)){
+            this.parentId.add(ExplorerConfig.ROOT_FOLDER_ID);
+            this.trashed = Optional.ofNullable(true);
+        }else{
+            this.parentId.add(parentId);
+        }
         return this;
     }
 

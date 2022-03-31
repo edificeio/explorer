@@ -1,5 +1,7 @@
 package com.opendigitaleducation.explorer.services;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -23,6 +25,16 @@ public class SearchOperation {
     private Set<String> ids = new HashSet<>();
     private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
+    private boolean waitFor = false;
+
+    public boolean isWaitFor() {
+        return waitFor;
+    }
+
+    public SearchOperation setWaitFor(boolean waitFor) {
+        this.waitFor = waitFor;
+        return this;
+    }
 
     public SearchOperation setIdsInt(Collection<Integer> ids) {
         this.ids = ids.stream().map(e->e.toString()).collect(Collectors.toSet());
@@ -151,7 +163,12 @@ public class SearchOperation {
         return this;
     }
     public SearchOperation setParentId(final Object parentId) {
-        this.parentId = Optional.ofNullable(parentId).map(e-> e.toString());
+        if(parentId != null && ExplorerConfig.BIN_FOLDER_ID.equals(parentId.toString())){
+            this.parentId = Optional.ofNullable(ExplorerConfig.ROOT_FOLDER_ID);
+            this.trashed = Optional.ofNullable(true);
+        }else{
+            this.parentId = Optional.ofNullable(parentId).map(e-> e.toString());
+        }
         return this;
     }
 

@@ -24,6 +24,13 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         this.dbHelper = new FolderExplorerDbSql(pgClient);
     }
 
+    public FolderExplorerDbSql getDbHelper() {return dbHelper;}
+
+    @Override
+    public JsonObject setIdForModel(JsonObject json, String id) {
+        return super.setIdForModel(json, id);
+    }
+
     public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final PostgresClient postgres) throws Exception {
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
             final RedisClient redis = RedisClient.create(vertx, config);
@@ -64,54 +71,6 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         final Set<String> ids = new HashSet<>(id);
         return this.getByIds(ids).map(e->{
             return e;
-        });
-    }
-
-    public final Future<Void> move(final UserInfos user, final String id, final Optional<String> newParent){
-        return dbHelper.move(id, newParent).compose(move->{
-            final Optional<Integer> oldParent = move.parentId;
-            final List<JsonObject> sources = new ArrayList<>();
-            final JsonObject source = new JsonObject();
-            if(move.application.isPresent()){
-                source.put("application", move.application.get());
-            }
-            //add
-            sources.add(setIdForModel(source.copy(), id));
-            //update children of oldParent
-            if(oldParent.isPresent()){
-                sources.add(setIdForModel(source.copy(), oldParent.get().toString()));
-            }
-            //update children of newParent
-            if(newParent.isPresent()){
-                sources.add(setIdForModel(source.copy(), newParent.get().toString()));
-            }
-            return notifyUpsert(user, sources);
-        });
-    }
-
-    public final Future<Void> move(final UserInfos user, final Collection<String> idStr, final Optional<String> newParent){
-        final Collection<Integer> ids = idStr.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
-        return dbHelper.move(ids, newParent).compose(oldParent->{
-            final List<JsonObject> sources = new ArrayList<>();
-            for(final Integer key : oldParent.keySet()){
-                final FolderExplorerDbSql.FolderMoveResult move = oldParent.get(key);
-                final Optional<Integer> parentOpt = move.parentId;
-                final JsonObject source = new JsonObject();
-                if(move.application.isPresent()){
-                    source.put("application", move.application.get());
-                }
-                //add
-                sources.add(setIdForModel(source.copy(), key.toString()));
-                //update children of oldParent
-                if(parentOpt.isPresent()){
-                    sources.add(setIdForModel(source.copy(), parentOpt.get().toString()));
-                }
-                //update children of newParent
-                if(newParent.isPresent()){
-                    sources.add(setIdForModel(source.copy(), newParent.get()));
-                }
-            }
-            return notifyUpsert(user, sources);
         });
     }
 

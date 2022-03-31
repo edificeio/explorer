@@ -265,8 +265,7 @@ public class ExplorerController extends BaseController {
                 return;
             }
             RequestUtils.bodyToJson(request, pathPrefix + "moveBatch", body -> {
-                final Optional<String> dest = ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)? Optional.empty():Optional.ofNullable(id);
-                final Optional<Integer> destInt = dest.map(e-> Integer.valueOf(e));
+                final Optional<String> dest = Optional.ofNullable(id);
                 final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
                 final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
                 final String application = body.getString("application");
@@ -276,7 +275,7 @@ public class ExplorerController extends BaseController {
                     final List<JsonObject> transformed = all.stream().map(fold-> adaptFolder(fold)).collect(Collectors.toList());
                     results.put("folders",new JsonArray(transformed));
                 }));
-                futures.add(resourceService.move(user, application, resourceIds, destInt).onSuccess(all->{
+                futures.add(resourceService.move(user, application, resourceIds, dest).onSuccess(all->{
                     final List<JsonObject> alls = all.stream().map(json-> adaptResource((JsonObject)json)).collect(Collectors.toList());
                     results.put("resources",new JsonArray(alls));
                 }));
@@ -306,6 +305,10 @@ public class ExplorerController extends BaseController {
                 return;
             }
             if (ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)) {
+                badRequest(request, "bad.id");
+                return;
+            }
+            if (ExplorerConfig.BIN_FOLDER_ID.equalsIgnoreCase(id)) {
                 badRequest(request, "bad.id");
                 return;
             }
