@@ -120,7 +120,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                     mess.getMessage().put("visibleBy", new JsonArray(new ArrayList(visibleBy)));
                     //keep original id
                     final JsonObject override = new JsonObject();
-                    override.put("entId", mess.getId());
+                    override.put("assetId", mess.getId());
                     mess.withOverrideFields(override);
                     //add to success list
                     backupSuccess.add(mess);

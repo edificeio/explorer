@@ -19,7 +19,7 @@
     },
     "dynamic": false,
     "properties": {
-      "entId": {
+      "assetId": {
         "type": "keyword"
       },
       "name": {

@@ -203,7 +203,7 @@ public abstract class IngestJobTest {
                     //user1 see 3 resource at root
                     getResourceService().fetch(user1, application, new SearchOperation().setTrashed(false)).onComplete(context.asyncAssertSuccess(fetch1 -> {
                         context.assertEquals(3, fetch1.size());
-                        final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("entId").equals("idexplore2_1")).findFirst().get();
+                        final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("assetId").equals("idexplore2_1")).findFirst().get();
                         //create folder 1
                         getFolderService().create(user1, application, Arrays.asList(FolderServiceTest.folder("folder1"))).onComplete(context.asyncAssertSuccess(folders -> {
                             context.assertEquals(1, folders.size());
@@ -262,7 +262,7 @@ public abstract class IngestJobTest {
         })).compose(fetch1 -> {
             //share doc1 to user2
             try {
-                final JsonObject doc1 = fetch1.getJsonObject(0);
+                final JsonObject doc1 = fetch1.stream().map(e-> (JsonObject)e).filter(e->"idshare1".equals(e.getString("assetId"))).findFirst().get();
                 final List<ResourceService.ShareOperation> shares1 = shareTo(rights, user2);
                 return getResourceService().share(user1, application, doc1, shares1).compose(share1 -> {
                     return getIngestJob().execute(true);
@@ -287,7 +287,7 @@ public abstract class IngestJobTest {
             //share doc2 to group2
             try {
                 final List<ResourceService.ShareOperation> shares2 = shareToGroup(rights, "group_share1", "group_share2", "group_share3", "group_share4", "group_share5", "group_share6");
-                final JsonObject doc2 = fetch1.getJsonObject(1);
+                final JsonObject doc2 = fetch1.stream().map(e-> (JsonObject)e).filter(e->"idshare2".equals(e.getString("assetId"))).findFirst().get();
                 return getResourceService().share(user1, application, doc2, shares2).compose(share1 -> {
                     return getIngestJob().execute(true);
                 }).compose((share2 -> {
