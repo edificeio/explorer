@@ -125,6 +125,7 @@ class ExplorerAgent extends AbstractBusAgent {
     private moveToBodyParams(p:MoveParameters) {
         return {
             application:    p.application,
+            resourceType:   p.type,
             resourceIds:    p.resourceIds,
             folderIds:      p.folderIds
         };
