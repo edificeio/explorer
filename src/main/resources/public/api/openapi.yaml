@@ -350,11 +350,14 @@ components:
       type: object
       required:
       - id
+      - assetId
       - name
       - type
       - childNumber
       properties:
         id:
+          type: string
+        assetId:
           type: string
         name:
           type: string
@@ -441,6 +444,7 @@ components:
       type: object
       required:
       - id
+      - assetId
       - name
       - thumbnail
       - application
@@ -452,6 +456,8 @@ components:
       - modifiedAt
       properties:
         id:
+          type: string
+        assetId:
           type: string
         name:
           type: string
