@@ -21,6 +21,7 @@ import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
@@ -30,9 +31,9 @@ public abstract class IngestJobTest {
     protected static final TestHelper test = TestHelper.helper();
     protected static String esIndex;
     protected static final String application = FakePostgresPlugin.FAKE_APPLICATION;
-    //TODO opensearch 1.1 => elastic 7/10
+
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
+    public static ElasticsearchContainer esContainer = test.database().createOpenSearchContainer().withReuse(true);
     static ElasticClientManager elasticClientManager;
     protected abstract IngestJob getIngestJob();
 
