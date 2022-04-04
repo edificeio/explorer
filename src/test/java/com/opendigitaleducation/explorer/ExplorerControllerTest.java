@@ -44,7 +44,7 @@ import java.util.UUID;
 public class ExplorerControllerTest {
     protected static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
+    public static ElasticsearchContainer esContainer = test.database().createOpenSearchContainer().withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule

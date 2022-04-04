@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -40,7 +41,7 @@ import java.util.Optional;
 public class MongoPluginTest {
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
-    public static ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
+    public static ElasticsearchContainer esContainer = test.database().createOpenSearchContainer().withReuse(true);
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule

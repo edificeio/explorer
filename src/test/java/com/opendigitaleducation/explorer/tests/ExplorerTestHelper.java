@@ -28,6 +28,7 @@ import org.entcore.test.TestHelper;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -37,7 +38,7 @@ import java.util.Optional;
 public class ExplorerTestHelper implements TestRule {
     static final Logger logger = LoggerFactory.getLogger(ExplorerTestHelper.class);
     private static final TestHelper testHelper = TestHelper.helper();
-    public ElasticsearchContainer esContainer = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.3").withReuse(true);
+    public ElasticsearchContainer esContainer = testHelper.database().createOpenSearchContainer().withReuse(true);
     public PostgreSQLContainer<?> pgContainer = testHelper.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     private final String application;
     private IngestJob job;
