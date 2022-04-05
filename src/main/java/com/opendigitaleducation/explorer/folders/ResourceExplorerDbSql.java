@@ -379,6 +379,38 @@ public class ResourceExplorerDbSql {
             }
             return ids;
         }
+
+        public Map<String, Set<String>> getRightsByUser(){
+            final Map<String, Set<String>> all = new HashMap<>();
+            for(final Object row : shared){
+                if(row instanceof JsonObject){
+                    final JsonObject jsonRow = (JsonObject) row;
+                    final String id = jsonRow.getString("userId");
+                    if(id!=null){
+                        final Set<String> rights = new HashSet<>(jsonRow.fieldNames());
+                        rights.remove("userId");
+                        all.put(id, rights);
+                    }
+                }
+            }
+            return all;
+        }
+
+        public Map<String, Set<String>> getRightsForGroup(){
+            final Map<String, Set<String>> all = new HashMap<>();
+            for(final Object row : shared){
+                if(row instanceof JsonObject){
+                    final JsonObject jsonRow = (JsonObject) row;
+                    final String id = jsonRow.getString("groupId");
+                    if(id!=null){
+                        final Set<String> rights = new HashSet<>(jsonRow.fieldNames());
+                        rights.remove("groupId");
+                        all.put(id, rights);
+                    }
+                }
+            }
+            return all;
+        }
     }
     public static class FolderSql{
 

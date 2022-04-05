@@ -56,7 +56,12 @@
                     {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|create"},
                     {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish"},
                     {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print"}
-                ]
+                ],
+                "rights":{
+                    "read": "org.entcore.blog.controllers.BlogController|get",
+                    "contrib": "org-entcore-blog-controllers-BlogController|update",
+                    "manage": "org.entcore.blog.controllers.BlogController|delete"
+                }
             }
         }
     }

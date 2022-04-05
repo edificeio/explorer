@@ -6,7 +6,7 @@ import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.SearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -28,7 +28,6 @@ import org.entcore.test.TestHelper;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -101,7 +100,7 @@ public class ExplorerTestHelper implements TestRule {
         pgContainer.close();
     }
 
-    public Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation){
+    public Future<JsonArray> fetch(final UserInfos user, final String application, final ResourceSearchOperation operation){
         return resourceService.fetch(user, application, operation);
     }
 
@@ -117,8 +116,8 @@ public class ExplorerTestHelper implements TestRule {
         return job.waitPending();
     }
 
-    public SearchOperation createSearch(){
-        return new SearchOperation();
+    public ResourceSearchOperation createSearch(){
+        return new ResourceSearchOperation();
     }
 
     public Future<Void> initFolderMapping(){

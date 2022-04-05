@@ -24,8 +24,7 @@ package com.opendigitaleducation.explorer;
 
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
-import com.opendigitaleducation.explorer.filters.FolderFilter;
-import com.opendigitaleducation.explorer.filters.ResourceFilter;
+import com.opendigitaleducation.explorer.filters.AbstractFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJobWorker;
 import com.opendigitaleducation.explorer.services.FolderService;
@@ -66,6 +65,8 @@ public class Explorer extends BaseServer {
         final PostgresClient postgresClient = PostgresClient.create(vertx, config);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
+        //init rights map
+        ExplorerConfig.getInstance().setRightsByApplication(config.getJsonObject("applications", new JsonObject()));
         //init indexes
         ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
         if(config.getBoolean("create-index", true)) {
@@ -109,8 +110,8 @@ public class Explorer extends BaseServer {
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
         //configure filter
-        ResourceFilter.setResourceService(resourceService);
-        FolderFilter.setFolderService(folderService);
+        AbstractFilter.setResourceService(resourceService);
+        AbstractFilter.setFolderService(folderService);
         //deploy ingest worker
         final Promise<String> onWorkerDeploy = Promise.promise();
         final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));

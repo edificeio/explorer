@@ -34,11 +34,11 @@ public class DefaultShareTableManager implements ShareTableManager {
         //create list
         final Set<String> ids = new HashSet<>();
         for (String u : userIds) {
-            ids.add(ExplorerConfig.getVisibleByCreator(u));
-            ids.add(ExplorerConfig.getVisibleByUser(u));
+            ids.add(ExplorerConfig.getCreatorRight(u));
+            ids.add(ExplorerConfig.getReadByUser(u));
         }
         for (String u : groupIds) {
-            ids.add(ExplorerConfig.getVisibleByGroup(u));
+            ids.add(ExplorerConfig.getReadByGroup(u));
         }
         return Future.succeededFuture(new ArrayList<>(ids));
     }

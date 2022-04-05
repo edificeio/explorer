@@ -3,6 +3,7 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import io.vertx.core.Future;
@@ -181,13 +182,13 @@ public class FolderServiceTest {
 
     protected void onDelete(final TestContext context, final UserInfos user, final Async async, final Set<String> idToTrash) {
         //DELETE
-        folderService.fetch(user, APPLICATION, new FolderService.SearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetchBefore -> {
+        folderService.fetch(user, APPLICATION, new FolderSearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetchBefore -> {
             context.assertEquals(5, fetchBefore.size());
             folderService.delete(user, APPLICATION, idToTrash).onComplete(context.asyncAssertSuccess(delete -> {
                 job.execute(true).onComplete(context.asyncAssertSuccess(r7 -> {
                     folderService.fetch(user, APPLICATION, Optional.of(ExplorerConfig.ROOT_FOLDER_ID)).onComplete(context.asyncAssertSuccess(fetch8 -> {
                         context.assertEquals(2, fetch8.size());
-                        folderService.fetch(user, APPLICATION, new FolderService.SearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetch9 -> {
+                        folderService.fetch(user, APPLICATION, new FolderSearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(fetch9 -> {
                             context.assertEquals(2, fetch9.size());
                             async.complete();
                         }));

@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SearchOperation {
+public class ResourceSearchOperation {
     private Optional<String> orderField = Optional.empty();
     private Optional<Boolean> orderAsc = Optional.empty();
     private Optional<Long> startIndex = Optional.empty();
@@ -22,6 +22,7 @@ public class SearchOperation {
     private Optional<Boolean> owner = Optional.empty();
     private Optional<Boolean> favorite = Optional.empty();
     private Optional<String> id = Optional.empty();
+    private Optional<String> rightType = Optional.empty();
     private Set<String> ids = new HashSet<>();
     private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
@@ -31,16 +32,25 @@ public class SearchOperation {
         return waitFor;
     }
 
-    public SearchOperation setWaitFor(boolean waitFor) {
+    public Optional<String> getRightType() {
+        return rightType;
+    }
+
+    public ResourceSearchOperation setRightType(final String rightType) {
+        this.rightType = Optional.ofNullable(rightType);
+        return this;
+    }
+
+    public ResourceSearchOperation setWaitFor(boolean waitFor) {
         this.waitFor = waitFor;
         return this;
     }
 
-    public SearchOperation setIdsInt(Collection<Integer> ids) {
+    public ResourceSearchOperation setIdsInt(Collection<Integer> ids) {
         this.ids = ids.stream().map(e->e.toString()).collect(Collectors.toSet());
         return this;
     }
-    public SearchOperation setIds(Set<String> ids) {
+    public ResourceSearchOperation setIds(Set<String> ids) {
         this.ids = ids;
         return this;
     }
@@ -49,7 +59,7 @@ public class SearchOperation {
         return ids;
     }
 
-    public SearchOperation setSearchAfter(final Object searchAfter) {
+    public ResourceSearchOperation setSearchAfter(final Object searchAfter) {
         this.searchAfter = Optional.ofNullable(searchAfter).map(e->e.toString());
         return this;
     }
@@ -60,7 +70,7 @@ public class SearchOperation {
 
     public Optional<String> getOrderField() {return orderField;}
 
-    public SearchOperation setOrder(final Optional<String> field, final Optional<Boolean> orderAsc) {
+    public ResourceSearchOperation setOrder(final Optional<String> field, final Optional<Boolean> orderAsc) {
         this.orderAsc = orderAsc;
         this.orderField = field;
         return this;
@@ -68,28 +78,28 @@ public class SearchOperation {
 
     public Optional<Long> getStartIndex() {return startIndex;}
 
-    public SearchOperation setStartIndex(final Long startIndex) {
+    public ResourceSearchOperation setStartIndex(final Long startIndex) {
         this.startIndex = Optional.ofNullable(startIndex);
         return this;
     }
 
     public Optional<Long> getPageSize() {return pageSize;}
 
-    public SearchOperation setPageSize(final Long pageSize) {
+    public ResourceSearchOperation setPageSize(final Long pageSize) {
         this.pageSize = Optional.ofNullable(pageSize);
         return this;
     }
 
     public Optional<Boolean> getFavorite() {return favorite;}
 
-    public SearchOperation setFavorite(final Boolean favorite) {
+    public ResourceSearchOperation setFavorite(final Boolean favorite) {
         this.favorite = Optional.ofNullable(favorite);
         return this;
     }
 
     public Optional<Boolean> getPub() {return pub;}
 
-    public SearchOperation setPub(final Boolean pub) {
+    public ResourceSearchOperation setPub(final Boolean pub) {
         this.pub = Optional.ofNullable(pub);
         return this;
     }
@@ -98,7 +108,7 @@ public class SearchOperation {
 
     public Optional<Boolean> getOwner() {return owner;}
 
-    public SearchOperation setOwner(final Boolean owner) {
+    public ResourceSearchOperation setOwner(final Boolean owner) {
         if(owner == null){
             this.owner = Optional.empty();
         }else{
@@ -106,7 +116,7 @@ public class SearchOperation {
         }
         return this;
     }
-    public SearchOperation setShared(final Boolean shared) {
+    public ResourceSearchOperation setShared(final Boolean shared) {
         if(shared == null){
             this.shared = Optional.empty();
         }else{
@@ -115,12 +125,12 @@ public class SearchOperation {
         return this;
     }
 
-    public SearchOperation setId(final String id) {
+    public ResourceSearchOperation setId(final String id) {
         this.id = Optional.ofNullable(id);
         return this;
     }
 
-    public SearchOperation setId(final Object id) {
+    public ResourceSearchOperation setId(final Object id) {
         this.id = Optional.ofNullable(id).map(e->e.toString());
         return this;
     }
@@ -133,7 +143,7 @@ public class SearchOperation {
         return searchEverywhere;
     }
 
-    public SearchOperation setSearchEverywhere(boolean searchEverywhere) {
+    public ResourceSearchOperation setSearchEverywhere(boolean searchEverywhere) {
         this.searchEverywhere = searchEverywhere;
         return this;
     }
@@ -142,14 +152,14 @@ public class SearchOperation {
         return trashed;
     }
 
-    public SearchOperation setTrashed(Boolean trashed) {
+    public ResourceSearchOperation setTrashed(Boolean trashed) {
         this.trashed = Optional.ofNullable(trashed);
         return this;
     }
 
     public Optional<String> getResourceType() {return resourceType;}
 
-    public SearchOperation setResourceType(final String resourceType) {
+    public ResourceSearchOperation setResourceType(final String resourceType) {
         this.resourceType = Optional.ofNullable(resourceType);
         return this;
     }
@@ -158,11 +168,11 @@ public class SearchOperation {
         return parentId;
     }
 
-    public SearchOperation setParentId(final String parentId) {
+    public ResourceSearchOperation setParentId(final String parentId) {
         this.parentId = Optional.ofNullable(parentId);
         return this;
     }
-    public SearchOperation setParentId(final Object parentId) {
+    public ResourceSearchOperation setParentId(final Object parentId) {
         if(parentId != null && ExplorerConfig.BIN_FOLDER_ID.equals(parentId.toString())){
             this.parentId = Optional.ofNullable(ExplorerConfig.ROOT_FOLDER_ID);
             this.trashed = Optional.ofNullable(true);
@@ -176,7 +186,7 @@ public class SearchOperation {
         return search;
     }
 
-    public SearchOperation setSearch(final String search) {
+    public ResourceSearchOperation setSearch(final String search) {
         this.search = Optional.ofNullable(search);
         return this;
     }
