@@ -104,12 +104,12 @@ public class MessageIngesterElastic implements MessageIngester {
         if (!document.containsKey("createdAt")) {
             document.put("createdAt", new Date().getTime());
         }
-        if (!document.containsKey("visibleBy")) {
-            document.put("visibleBy", new JsonArray());
+        if (!document.containsKey("rights")) {
+            document.put("rights", new JsonArray());
         }
         if (document.containsKey("creatorId")) {
-            final String tagCreator = ExplorerConfig.getVisibleByCreator(document.getString("creatorId"));
-            document.put("visibleBy", new JsonArray().add(tagCreator));
+            final String tagCreator = ExplorerConfig.getCreatorRight(document.getString("creatorId"));
+            document.put("rights", new JsonArray().add(tagCreator));
         }
         if (!document.containsKey("folderIds")) {
             document.put("folderIds", new JsonArray());

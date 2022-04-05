@@ -2,11 +2,12 @@ package com.opendigitaleducation.explorer.controllers;
 
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.filters.FolderFilter;
+import com.opendigitaleducation.explorer.filters.MoveFilter;
+import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.SearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -128,7 +129,7 @@ public class ExplorerController extends BaseController {
                     json.put("actions", newActions);
                     json.put("preferences", pref);
                     //load root resource using filters
-                    final SearchOperation searchOperation = toResourceSearch(queryParams);
+                    final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
                     return resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                         json.put("resources", adaptResource(e.rows));
                         //pagination details
@@ -169,7 +170,7 @@ public class ExplorerController extends BaseController {
                 final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
-                final SearchOperation searchOperation = toResourceSearch(queryParams);
+                final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
                 final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                     json.put("resources", adaptResource(e.rows));
                     //pagination details
@@ -249,10 +250,51 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Post("folders/:id/move")
+
+    @Put("folders/:id")
     @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
-    @ResourceFilter(FolderFilter.class)
-    public void moveToFolder(final HttpServerRequest request) {
+    @ResourceFilter(UpdateFilter.class)
+    public void updateFolder(final HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                unauthorized(request);
+                return;
+            }
+            final String id = request.params().get("id");
+            if (StringUtils.isEmpty(id)) {
+                badRequest(request, "missing.id");
+                return;
+            }
+            if (ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)) {
+                badRequest(request, "bad.id");
+                return;
+            }
+            if (ExplorerConfig.BIN_FOLDER_ID.equalsIgnoreCase(id)) {
+                badRequest(request, "bad.id");
+                return;
+            }
+            RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
+                final String application = body.getString("application");
+                if (StringUtils.isEmpty(application)) {
+                    badRequest(request, "missing.application");
+                    return;
+                }
+                folderService.update(user, id, application, body).onSuccess(e -> {
+                    body.mergeIn(e);
+                    renderJson(request, adaptFolder(body));
+                }).onFailure(e -> {
+                    badRequest(request, e.getMessage());
+                    log.error("Failed to create folders:", e);
+                });
+            });
+        });
+    }
+
+    @Post("folders/:id/move")
+    //check foldes and resources inside service method
+    @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
+    @ResourceFilter(MoveFilter.class)
+    public void moveBatch(final HttpServerRequest request) {
         //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
@@ -290,10 +332,23 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    @Put("folders/:id")
-    @SecuredAction(value = "explorer.contrib", type = ActionType.RESOURCE)
-    @ResourceFilter(FolderFilter.class)
-    public void updateFolder(final HttpServerRequest request) {
+
+
+    @Put("trash")
+    //check foldes and resources inside service method
+    @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
+    public void trashBatch(final HttpServerRequest request) {
+        trashBatch(request, true);
+    }
+    @Put("restore")
+    //check foldes and resources inside service method
+    @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
+    public void restoreBatch(final HttpServerRequest request){
+        trashBatch(request, false);
+    }
+
+    private void trashBatch(final HttpServerRequest request, final boolean isTrashed){
+        //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
                 unauthorized(request);
@@ -304,34 +359,36 @@ public class ExplorerController extends BaseController {
                 badRequest(request, "missing.id");
                 return;
             }
-            if (ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(id)) {
-                badRequest(request, "bad.id");
-                return;
-            }
-            if (ExplorerConfig.BIN_FOLDER_ID.equalsIgnoreCase(id)) {
-                badRequest(request, "bad.id");
-                return;
-            }
-            RequestUtils.bodyToJson(request, pathPrefix + "createFolder", body -> {
+            RequestUtils.bodyToJson(request, pathPrefix + "trashBatch", body -> {
+                final Optional<String> dest = Optional.ofNullable(id);
+                final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
+                final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
                 final String application = body.getString("application");
-                if (StringUtils.isEmpty(application)) {
-                    badRequest(request, "missing.application");
-                    return;
-                }
-                folderService.update(user, id, application, body).onSuccess(e -> {
-                    body.mergeIn(e);
-                    renderJson(request, adaptFolder(body));
-                }).onFailure(e -> {
-                    badRequest(request, e.getMessage());
-                    log.error("Failed to create folders:", e);
+                final List<Future> futures = new ArrayList<>();
+                final JsonObject results = new JsonObject();
+                futures.add(folderService.trash(user, folderIds, application, isTrashed).onSuccess(all->{
+                    final List<JsonObject> transformed = all.stream().map(fold-> adaptFolder(fold)).collect(Collectors.toList());
+                    results.put("folders",new JsonArray(transformed));
+                }));
+                futures.add(resourceService.trash(user, application, resourceIds, isTrashed).onSuccess(all->{
+                    final List<JsonObject> alls = all.stream().map(json-> adaptResource((JsonObject)json)).collect(Collectors.toList());
+                    results.put("resources",new JsonArray(alls));
+                }));
+                CompositeFuture.all(futures).onComplete(res->{
+                    if(res.succeeded()){
+                        renderJson(request, results);
+                    }else{
+                        badRequest(request, res.cause().getMessage());
+                    }
                 });
             });
         });
     }
 
     @Delete("")
+    //check foldes and resources inside service method
     @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
-    public void deleteFolders(final HttpServerRequest request) {
+    public void deleteBatch(final HttpServerRequest request) {
         //same for delete
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
@@ -392,7 +449,7 @@ public class ExplorerController extends BaseController {
             final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
                 json.put("folders", adaptFolder(e));
             });
-            final SearchOperation searchOperation = toResourceSearch(queryParams);
+            final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
             final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                 json.put("resources", adaptResource(e.rows));
                 //pagination details
@@ -514,12 +571,12 @@ public class ExplorerController extends BaseController {
     }
 
     //TODO on batch delete / update / return list of succeed and list of failed
-    private SearchOperation toResourceSearch(final JsonObject queryParams) {
+    private ResourceSearchOperation toResourceSearch(final JsonObject queryParams) {
         ///application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y&search_after=name|createdAt
         final Optional<String[]> order = Optional.ofNullable(queryParams.getString("order_by")).map(e-> e.split(":")).map(e -> e.length==2? e: null);
         final Optional<Boolean> orderAsc = order.map(e-> "asc".equalsIgnoreCase(e[1]));
         final Optional<String> orderField = order.map(e-> e[0]);
-        final SearchOperation op = new SearchOperation();
+        final ResourceSearchOperation op = new ResourceSearchOperation();
         op.setResourceType(queryParams.getString("resource_type"));
         op.setId(queryParams.getValue("id"));
         op.setOrder(orderField, orderAsc);

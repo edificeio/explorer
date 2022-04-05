@@ -110,14 +110,33 @@ public class MessageIngesterPostgres implements MessageIngester {
                     mess.getMessage().put("usersForFolderIds", new JsonArray(new ArrayList(usersForFolderIds)));
                     //set visible
                     final Set<String> visibleBy = new HashSet<>();
-                    visibleBy.add(ExplorerConfig.getVisibleByCreator(resSql.creatorId));
-                    for (final String userId : resSql.getSharedUsers()) {
-                        visibleBy.add(ExplorerConfig.getVisibleByUser(userId));
+                    visibleBy.add(ExplorerConfig.getCreatorRight(resSql.creatorId));
+                    //get rights
+                    final Optional<String> contribRights = ExplorerConfig.getInstance().getContribRightForApp(mess.getApplication());
+                    final Optional<String> manageRights = ExplorerConfig.getInstance().getManageRightForApp(mess.getApplication());
+                    for (final Map.Entry<String, Set<String>> entry : resSql.getRightsByUser().entrySet()) {
+                        final String userId = entry.getKey();
+                        final Set<String> rights = entry.getValue();
+                        visibleBy.add(ExplorerConfig.getReadByUser(userId));
+                        if(contribRights.isPresent() && rights.contains(contribRights.get())){
+                            visibleBy.add(ExplorerConfig.getContribByUser(userId));
+                        }
+                        if(manageRights.isPresent() && rights.contains(manageRights.get())){
+                            visibleBy.add(ExplorerConfig.getManageByUser(userId));
+                        }
                     }
-                    for (final String groupIds : resSql.getSharedGroups()) {
-                        visibleBy.add(ExplorerConfig.getVisibleByGroup(groupIds));
+                    for (final Map.Entry<String, Set<String>> entry : resSql.getRightsForGroup().entrySet()) {
+                        final String groupId = entry.getKey();
+                        final Set<String> rights = entry.getValue();
+                        visibleBy.add(ExplorerConfig.getReadByGroup(groupId));
+                        if(contribRights.isPresent() && rights.contains(contribRights.get())){
+                            visibleBy.add(ExplorerConfig.getContribByGroup(groupId));
+                        }
+                        if(manageRights.isPresent() && rights.contains(manageRights.get())){
+                            visibleBy.add(ExplorerConfig.getManageByGroup(groupId));
+                        }
                     }
-                    mess.getMessage().put("visibleBy", new JsonArray(new ArrayList(visibleBy)));
+                    mess.getMessage().put("rights", new JsonArray(new ArrayList(visibleBy)));
                     //keep original id
                     final JsonObject override = new JsonObject();
                     override.put("assetId", mess.getId());

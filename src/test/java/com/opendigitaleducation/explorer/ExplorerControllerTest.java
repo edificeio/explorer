@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
-import com.opendigitaleducation.explorer.filters.FolderFilter;
+import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
@@ -53,7 +53,7 @@ public class ExplorerControllerTest {
     static IngestJob job;
     static FakePostgresPlugin fakePlugin;
     static ElasticClientManager esClientManager;
-    static FolderFilter folderFilter = new FolderFilter();
+    static UpdateFilter folderFilter = new UpdateFilter();
     static final String application = FakePostgresPlugin.FAKE_APPLICATION;
 
     @BeforeClass
@@ -80,7 +80,7 @@ public class ExplorerControllerTest {
         fakePlugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         test.http().mockJsonValidator();
         test.directory().mockUserPreferences(new JsonObject());
-        FolderFilter.setFolderService(folderService);
+        UpdateFilter.setFolderService(folderService);
         FolderServiceTest.createMapping(esClientManager, context, folderIndex).onComplete(context.asyncAssertSuccess());
         IngestJobTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
         //flush redis
@@ -216,7 +216,7 @@ public class ExplorerControllerTest {
                     context.assertEquals(1, e.getJsonArray("folders").size());
                     promiseDelete.complete();
                 });
-                controller.deleteFolders(delReq.withSession(user));
+                controller.deleteBatch(delReq.withSession(user));
             } catch (Exception exception) {
                 promiseDelete.fail(exception);
             }

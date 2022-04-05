@@ -3,7 +3,7 @@ package com.opendigitaleducation.explorer.services.impl;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
-import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
+import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -47,7 +47,7 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
-    public Future<JsonArray> fetch(final UserInfos creator, final String application, final SearchOperation search) {
+    public Future<JsonArray> fetch(final UserInfos creator, final String application, final FolderSearchOperation search) {
         final String creatorId = creator.getUserId();
         final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withSearch(search).withApplication(application);
         final String index = getIndex();
@@ -56,7 +56,7 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
-    public Future<Integer> count(final UserInfos creator, final Optional<String> application, final SearchOperation search) {
+    public Future<Integer> count(final UserInfos creator, final Optional<String> application, final FolderSearchOperation search) {
         final String creatorId = creator.getUserId();
         final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withSearch(search).withApplication(application);
         final String index = getIndex();
@@ -89,7 +89,7 @@ public class FolderServiceElastic implements FolderService {
         }).map(e->{
             return (e.getValue("parentId").toString());
         }).collect(Collectors.toSet());
-        final SearchOperation search = new SearchOperation().setIds(parentIds).setSearchEverywhere(true);
+        final FolderSearchOperation search = new FolderSearchOperation().setIds(parentIds).setSearchEverywhere(true);
         final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,application, search);
         return checkFuture.compose(e->{
            if(e < parentIds.size()){
@@ -116,7 +116,7 @@ public class FolderServiceElastic implements FolderService {
         }).map(e->{
             return (e.getValue("parentId").toString());
         }).collect(Collectors.toSet());
-        final SearchOperation search = new SearchOperation().setIds(parentIds).setSearchEverywhere(true);
+        final FolderSearchOperation search = new FolderSearchOperation().setIds(parentIds).setSearchEverywhere(true);
         final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee->{
             if(ee < parentIds.size()){
@@ -135,7 +135,8 @@ public class FolderServiceElastic implements FolderService {
         if(ids.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        final SearchOperation search = new SearchOperation().setIds(ids).setSearchEverywhere(true);
+        //CHECK IF HAVE RIGHTS
+        final FolderSearchOperation search = new FolderSearchOperation().setIds(ids).setSearchEverywhere(true);
         final Future<Integer> checkFuture = ids.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee-> {
             if (ee < ids.size()) {
@@ -172,8 +173,9 @@ public class FolderServiceElastic implements FolderService {
         if(folderIds.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
+        //CHECK IF HAVE RIGHTS ON IT
         final Set<Integer> ids = folderIds.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
-        final SearchOperation search = new SearchOperation().setIds(folderIds).setSearchEverywhere(true);
+        final FolderSearchOperation search = new FolderSearchOperation().setIds(folderIds).setSearchEverywhere(true);
         final Future<Integer> checkFuture = folderIds.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee-> {
             if (ee < folderIds.size()) {
@@ -218,9 +220,7 @@ public class FolderServiceElastic implements FolderService {
                     });
                 });
             }).compose(e -> {
-                return plugin.get(creator, folderIds).map(found -> {
-                    return found;
-                });
+                return plugin.get(creator, folderIds);
             });
         });
     }
@@ -233,7 +233,8 @@ public class FolderServiceElastic implements FolderService {
         if(dest.isPresent() && ExplorerConfig.BIN_FOLDER_ID.equals(dest.get())){
             return this.trash(creator, id, application, true);
         }
-        final SearchOperation search = new SearchOperation().setIds(id).setSearchEverywhere(true);
+        //CHECK IF HAVE RIGHTS ON IT
+        final FolderSearchOperation search = new FolderSearchOperation().setIds(id).setSearchEverywhere(true);
         final Future<Integer> checkFuture = id.isEmpty()?Future.succeededFuture(0):count(creator,application,search);
         return checkFuture.compose(ee-> {
             if (ee < id.size()) {
@@ -262,9 +263,7 @@ public class FolderServiceElastic implements FolderService {
                 }
                 return plugin.notifyUpsert(creator, sources);
             }).compose(e -> {
-                return plugin.get(creator, id).map(found -> {
-                    return found;
-                });
+                return plugin.get(creator, id);
             });
         });
     }

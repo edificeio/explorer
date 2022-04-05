@@ -3,7 +3,7 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.ResourceService;
-import com.opendigitaleducation.explorer.services.SearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -113,19 +112,19 @@ public class ResourceServiceTest {
         final Async async = context.async(3);
         plugin.notifyUpsert(user, Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     context.assertEquals(2, fetch1.size());
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("MONHTML1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("MONHTML1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html1", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("content2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("html2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
@@ -147,20 +146,20 @@ public class ResourceServiceTest {
         final Async async = context.async(3);
         plugin.notifyUpsert(Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
-                resourceService.fetch(user, application, new SearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                     System.out.println(fetch1);
                     context.assertEquals(2, fetch1.size());
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("html1_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("html1_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id1", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("content2_1")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();
                     }));
-                    resourceService.fetch(user, application, new SearchOperation().setSearch("content2_2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
+                    resourceService.fetch(user, application, new ResourceSearchOperation().setSearch("content2_2")).onComplete(context.asyncAssertSuccess(fetch2 -> {
                         context.assertEquals(1, fetch2.size());
                         context.assertEquals("id2", fetch2.getJsonObject(0).getString("assetId"));
                         async.countDown();

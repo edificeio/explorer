@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.services.SearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
@@ -16,7 +16,7 @@ public class ResourceQueryElastic {
     private final List<String> creatorId = new ArrayList<>();
     private final List<String> folderId = new ArrayList<>();
     private final List<String> id = new ArrayList<>();
-    private final List<String> visibleIds = new ArrayList<>();
+    private final List<String> rights = new ArrayList<>();
     private final List<String> searchAfter = new ArrayList<>();
     private Optional<Long> from = Optional.empty();
     private Optional<Long> size = Optional.empty();
@@ -26,6 +26,7 @@ public class ResourceQueryElastic {
     private Optional<Boolean> shared = Optional.empty();
     private Optional<Boolean> pub = Optional.empty();
     private Optional<String> text = Optional.empty();
+    private Optional<String> userRightType = Optional.empty();
 
     public ResourceQueryElastic(final UserInfos u) {
         this.user = u;
@@ -40,6 +41,11 @@ public class ResourceQueryElastic {
             final JsonArray uniq = new JsonArray(new ArrayList(new HashSet<>(values)));
             return Optional.of(new JsonObject().put("terms", new JsonObject().put(key, uniq)));
         }
+    }
+
+    public ResourceQueryElastic withUserRightType(final String rightType) {
+        this.userRightType = Optional.ofNullable(rightType);
+        return this;
     }
 
     public ResourceQueryElastic withOrder(String name, Boolean asc) {
@@ -72,8 +78,8 @@ public class ResourceQueryElastic {
         return this;
     }
 
-    public ResourceQueryElastic withVisibleIds(final Collection<String> ids) {
-        visibleIds.addAll(ids);
+    public ResourceQueryElastic withRights(final Collection<String> ids) {
+        rights.addAll(ids);
         return this;
     }
 
@@ -127,6 +133,27 @@ public class ResourceQueryElastic {
         return this;
     }
 
+    public ResourceQueryElastic withRight(final String id) {
+        this.rights.add(id);
+        return this;
+    }
+
+    public ResourceQueryElastic withUserRight(final String right, final String userId) {
+        return withRight(ExplorerConfig.getRightByUser(right, userId));
+    }
+
+    public ResourceQueryElastic withGroupRight(final String right, final String groupId) {
+        return withRight(ExplorerConfig.getRightByGroup(right, groupId));
+    }
+
+    public ResourceQueryElastic withUserInfoRights(final String right, final UserInfos user) {
+        withUserRight(right, user.getUserId());
+        for(final String id : user.getGroupsIds()){
+            withGroupRight(right, id);
+        }
+        return this;
+    }
+
     public List<String> getCreatorId() {
         return creatorId;
     }
@@ -139,7 +166,7 @@ public class ResourceQueryElastic {
         return id;
     }
 
-    public ResourceQueryElastic withSearchOperation(final SearchOperation operation){
+    public ResourceQueryElastic withSearchOperation(final ResourceSearchOperation operation){
         if(operation.getId().isPresent()){
             this.withId(operation.getId().get());
         }
@@ -184,6 +211,9 @@ public class ResourceQueryElastic {
         if(operation.getSearchAfter().isPresent()){
             this.withSearchAfter(operation.getSearchAfter().get());
         }
+        if(operation.getRightType().isPresent()){
+            this.userRightType = operation.getRightType();
+        }
         return this;
     }
 
@@ -206,14 +236,18 @@ public class ResourceQueryElastic {
         if (creatorIdTerm.isPresent()) {
             must.add(creatorIdTerm.get());
         }
-        //by visible
+        //by rights
         {
-            final List<String> visibles = new ArrayList<>();
-            visibles.add(ExplorerConfig.getVisibleByCreator(user.getUserId()));
-            visibles.add(ExplorerConfig.getVisibleByUser(user.getUserId()));
-            visibles.addAll(this.visibleIds);
-            final Optional<JsonObject> visibleTerm = createTerm("visibleBy", visibles);
-            filter.add(visibleTerm.get());
+            final List<String> rights = new ArrayList<>();
+            rights.add(ExplorerConfig.getCreatorRight(user.getUserId()));
+            if(this.userRightType.isPresent()){
+                rights.add(ExplorerConfig.getRightByUser(this.userRightType.get(), user.getUserId()));
+            }else{
+                rights.add(ExplorerConfig.getReadByUser(user.getUserId()));
+            }
+            rights.addAll(this.rights);
+            final Optional<JsonObject> rightsTerm = createTerm("rights", rights);
+            filter.add(rightsTerm.get());
         }
         //by folder
         if (onlyRoot) {

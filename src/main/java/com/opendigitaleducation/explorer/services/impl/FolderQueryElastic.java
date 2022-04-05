@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.services.impl;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -70,7 +70,7 @@ public class FolderQueryElastic {
         return this;
     }
 
-    public FolderQueryElastic withSearch(final FolderService.SearchOperation search){
+    public FolderQueryElastic withSearch(final FolderSearchOperation search){
         if (search.getParentId().isPresent()) {
             this.withFolderId(search.getParentId().get());
         } else if (!search.isSearchEverywhere()) {

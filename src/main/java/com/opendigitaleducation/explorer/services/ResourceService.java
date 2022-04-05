@@ -17,11 +17,11 @@ public interface ResourceService {
 
     Future<Void> dropMapping(final String application);
 
-    Future<JsonArray> fetch(final UserInfos user, final String application, final SearchOperation operation);
+    Future<JsonArray> fetch(final UserInfos user, final String application, final ResourceSearchOperation operation);
 
-    Future<FetchResult> fetchWithMeta(final UserInfos user, final String application, final SearchOperation operation);
+    Future<FetchResult> fetchWithMeta(final UserInfos user, final String application, final ResourceSearchOperation operation);
 
-    Future<Integer> count(final UserInfos user, final String application, final SearchOperation operation);
+    Future<Integer> count(final UserInfos user, final String application, final ResourceSearchOperation operation);
 
     Future<JsonObject> move(final UserInfos user, final String application, final JsonObject document, final Optional<String> dest);
 

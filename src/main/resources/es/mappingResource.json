@@ -51,7 +51,7 @@
       "usersForFolderIds": {
         "type": "keyword"
       },
-      "visibleBy": {
+      "rights": {
         "type": "keyword"
       },
       "creatorId": {
