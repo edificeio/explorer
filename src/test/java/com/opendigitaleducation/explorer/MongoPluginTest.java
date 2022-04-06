@@ -11,6 +11,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
@@ -34,7 +35,9 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RunWith(VertxUnitRunner.class)
 public class MongoPluginTest {
@@ -75,6 +78,11 @@ public class MongoPluginTest {
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
+        final JsonObject rights = new JsonObject();
+        rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
+        rights.put(ExplorerConfig.RIGHT_CONTRIB, ExplorerConfig.RIGHT_CONTRIB);
+        rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
+        ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
     }
 
 
@@ -142,4 +150,168 @@ public class MongoPluginTest {
             }));
         }));
     }
+
+    @Test
+    public void shouldMoveIfOwner(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_move1");
+        final UserInfos user2 = test.directory().generateUser("user_move2");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final Async async = context.async(2);
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final Integer fId = Integer.valueOf(fetch.getJsonObject(0).getValue("_id").toString());
+                    resourceService.move(user2, application, fId, Optional.empty()).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.move.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.move(user, application, fId, Optional.empty()).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getValue("_id").toString(), fId.toString());
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldTrashIfOwner(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_trash1");
+        final UserInfos user2 = test.directory().generateUser("user_trash2");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final Async async = context.async(2);
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final Integer fId = Integer.valueOf(fetch.getJsonObject(0).getValue("_id").toString());
+                    final Set<Integer> ids = new HashSet<>();
+                    ids.add(fId);
+                    resourceService.trash(user2, application, ids, true).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.trash.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.trash(user, application, ids, true).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getJsonObject(0).getValue("_id").toString(), fId.toString());
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldDeleteIfOwner(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_del1");
+        final UserInfos user2 = test.directory().generateUser("user_del2");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final Async async = context.async(2);
+        plugin.start();
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final String fId = (fetch.getJsonObject(0).getValue("_id").toString());
+                    final Set<String> ids = new HashSet<>();
+                    ids.add(fId);
+                    resourceService.delete(user2, application, plugin.getResourceType(), ids).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.delete.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.delete(user, application, plugin.getResourceType(), ids).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getJsonObject(0).getValue("_id").toString(), fId);
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldMoveIfReadRight(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_move1_read");
+        final UserInfos user2 = test.directory().generateUser("user_move2_read");
+        final UserInfos user3 = test.directory().generateUser("user_move3_read");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject share = new JsonObject().put("userId",user3.getUserId()).put(ExplorerConfig.RIGHT_READ, true);
+        f1.put("shared", new JsonArray().add(share));
+        final Async async = context.async(2);
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final Integer fId = Integer.valueOf(fetch.getJsonObject(0).getValue("_id").toString());
+                    resourceService.move(user2, application, fId, Optional.empty()).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.move.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.move(user3, application, fId, Optional.empty()).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getValue("_id").toString(), fId.toString());
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldTrashIfManageRight(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_trash1_manage");
+        final UserInfos user2 = test.directory().generateUser("user_trash2_manage");
+        final UserInfos user3 = test.directory().generateUser("user_trash3_manage");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject share = new JsonObject().put("userId",user3.getUserId()).put(ExplorerConfig.RIGHT_MANAGE, true);
+        f1.put("shared", new JsonArray().add(share));
+        final Async async = context.async(2);
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final Integer fId = Integer.valueOf(fetch.getJsonObject(0).getValue("_id").toString());
+                    final Set<Integer> ids = new HashSet<>();
+                    ids.add(fId);
+                    resourceService.trash(user2, application, ids, true).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.trash.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.trash(user3, application, ids, true).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getJsonObject(0).getValue("_id").toString(), fId.toString());
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldDeleteIfManageRight(TestContext context) {
+        final UserInfos user = test.directory().generateUser("user_del1_manage");
+        final UserInfos user2 = test.directory().generateUser("user_del2_manage");
+        final UserInfos user3 = test.directory().generateUser("user_del3_manage");
+        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject share = new JsonObject().put("userId",user3.getUserId()).put(ExplorerConfig.RIGHT_MANAGE, true);
+        f1.put("shared", new JsonArray().add(share));
+        final Async async = context.async(2);
+        plugin.start();
+        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final String fId = (fetch.getJsonObject(0).getValue("_id").toString());
+                    final Set<String> ids = new HashSet<>();
+                    ids.add(fId);
+                    resourceService.delete(user2, application, plugin.getResourceType(), ids).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "resource.delete.id.invalid");
+                        async.countDown();
+                    }));
+                    resourceService.delete(user3, application, plugin.getResourceType(), ids).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getJsonObject(0).getValue("_id").toString(), fId);
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
 }

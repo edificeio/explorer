@@ -242,4 +242,80 @@ public class FolderServiceTest {
         }));
     }
 
+    @Test
+    public void shouldMoveIfOwner(TestContext context) {
+        final JsonObject f1 = folder("move1");
+        final UserInfos user = test.directory().generateUser("user_move1");
+        final UserInfos user2 = test.directory().generateUser("user_move2");
+        final Async async = context.async(2);
+        folderService.create(user, APPLICATION, Arrays.asList(f1)).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final String fId = fetch.getJsonObject(0).getValue("_id").toString();
+                    folderService.move(user2, fId, APPLICATION, Optional.empty()).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "folder.move.id.invalid");
+                        async.countDown();
+                    }));
+                    folderService.move(user, fId, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.getValue("id").toString(), fId);
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldTrashIfOwner(TestContext context) {
+        final JsonObject f1 = folder("trash1");
+        final UserInfos user = test.directory().generateUser("user_trash1");
+        final UserInfos user2 = test.directory().generateUser("user_trash2");
+        final Async async = context.async(2);
+        folderService.create(user, APPLICATION, Arrays.asList(f1)).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final String fId = fetch.getJsonObject(0).getValue("_id").toString();
+                    final Set<String> ids = new HashSet<>();
+                    ids.add(fId);
+                    folderService.trash(user2, ids, APPLICATION, true).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "folder.trash.id.invalid");
+                        async.countDown();
+                    }));
+                    folderService.trash(user, ids, APPLICATION, true).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.get(0).getValue("id").toString(), fId);
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
+    @Test
+    public void shouldDeleteIfOwner(TestContext context) {
+        final JsonObject f1 = folder("delete1");
+        final UserInfos user = test.directory().generateUser("user_del1");
+        final UserInfos user2 = test.directory().generateUser("user_del2");
+        final Async async = context.async(2);
+        folderService.create(user, APPLICATION, Arrays.asList(f1)).onComplete(context.asyncAssertSuccess(r -> {
+            job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
+                folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch -> {
+                    context.assertEquals(1, fetch.size());
+                    final String fId = fetch.getJsonObject(0).getValue("_id").toString();
+                    final Set<String> ids = new HashSet<>();
+                    ids.add(fId);
+                    folderService.delete(user2, APPLICATION, ids).onComplete(context.asyncAssertFailure(move -> {
+                        context.assertEquals(move.getMessage(), "folder.delete.id.invalid");
+                        async.countDown();
+                    }));
+                    folderService.delete(user, APPLICATION, ids).onComplete(context.asyncAssertSuccess(move -> {
+                        context.assertEquals(move.get(0), fId);
+                        async.countDown();
+                    }));
+                }));
+            }));
+        }));
+    }
+
 }

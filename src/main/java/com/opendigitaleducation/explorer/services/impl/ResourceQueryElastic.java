@@ -9,7 +9,7 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 
 public class ResourceQueryElastic {
-    private final UserInfos user;
+    private final Optional<UserInfos> user;
     private final List<Map.Entry<String, Boolean>> sorts = new ArrayList<>();
     private final List<String> resourceType = new ArrayList<>();
     private final List<String> application = new ArrayList<>();
@@ -29,6 +29,10 @@ public class ResourceQueryElastic {
     private Optional<String> userRightType = Optional.empty();
 
     public ResourceQueryElastic(final UserInfos u) {
+        this.user = Optional.ofNullable(u);
+    }
+
+    public ResourceQueryElastic(final Optional<UserInfos> u) {
         this.user = u;
     }
 
@@ -237,21 +241,40 @@ public class ResourceQueryElastic {
             must.add(creatorIdTerm.get());
         }
         //by rights
-        {
+        if(user.isPresent()){
+            final UserInfos user = this.user.get();
             final List<String> rights = new ArrayList<>();
+            //by creator
             rights.add(ExplorerConfig.getCreatorRight(user.getUserId()));
+            //by user id
             if(this.userRightType.isPresent()){
                 rights.add(ExplorerConfig.getRightByUser(this.userRightType.get(), user.getUserId()));
             }else{
                 rights.add(ExplorerConfig.getReadByUser(user.getUserId()));
             }
+            //by group ids
+            for(final String groupId : user.getGroupsIds()){
+                if(this.userRightType.isPresent()){
+                    rights.add(ExplorerConfig.getRightByGroup(this.userRightType.get(), groupId));
+                }else{
+                    rights.add(ExplorerConfig.getReadByGroup(groupId));
+                }
+            }
+            //create term
+            final Optional<JsonObject> rightsTerm = createTerm("rights", rights);
+            filter.add(rightsTerm.get());
+        }else if(!this.rights.isEmpty()){
+            //force rights
+            final List<String> rights = new ArrayList<>();
             rights.addAll(this.rights);
             final Optional<JsonObject> rightsTerm = createTerm("rights", rights);
             filter.add(rightsTerm.get());
         }
         //by folder
         if (onlyRoot) {
-            mustNot.add(new JsonObject().put("term", new JsonObject().put("usersForFolderIds", user.getUserId())));
+            if(user.isPresent()){
+                mustNot.add(new JsonObject().put("term", new JsonObject().put("usersForFolderIds", user.get().getUserId())));
+            }
         } else {
             final Optional<JsonObject> folderIdsTerm = createTerm("folderIds", folderId);
             if (folderIdsTerm.isPresent()) {
@@ -284,18 +307,20 @@ public class ResourceQueryElastic {
         if (pub.isPresent()) {
             filter.add(new JsonObject().put("term", new JsonObject().put("public", pub.get())));
         }
-        if (favorite.isPresent()) {
-            if(favorite.get()){
-                filter.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.getUserId())));
-            }else{
-                mustNot.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.getUserId())));
+        if(user.isPresent()) {
+            if (favorite.isPresent()) {
+                if (favorite.get()) {
+                    filter.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.get().getUserId())));
+                } else {
+                    mustNot.add(new JsonObject().put("term", new JsonObject().put("favoriteFor", user.get().getUserId())));
+                }
             }
-        }
-        if(shared.isPresent()){
-            if(shared.get()){
-                mustNot.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.getUserId())));
-            }else{
-                filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.getUserId())));
+            if (shared.isPresent()) {
+                if (shared.get()) {
+                    mustNot.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.get().getUserId())));
+                } else {
+                    filter.add(new JsonObject().put("term", new JsonObject().put("creatorId", user.get().getUserId())));
+                }
             }
         }
         //sort

@@ -103,38 +103,32 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<JsonArray> fetch(final UserInfos user, final String application, final ResourceSearchOperation operation) {
-        return shareTableManager.findHashes(user).compose(hashes -> {
-            final String index = getIndex(application);
-            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withRights(hashes).withSearchOperation(operation);
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
-            final JsonObject queryJson = query.getSearchQuery();
-            return manager.getClient().search(index, queryJson, options);
-        });
+        final String index = getIndex(application);
+        final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withSearchOperation(operation);
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+        final JsonObject queryJson = query.getSearchQuery();
+        return manager.getClient().search(index, queryJson, options);
     }
 
     @Override
     public Future<FetchResult> fetchWithMeta(UserInfos user, String application, ResourceSearchOperation operation) {
-        return shareTableManager.findHashes(user).compose(hashes -> {
-            final String index = getIndex(application);
-            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withRights(hashes).withSearchOperation(operation);
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
-            final JsonObject queryJson = query.getSearchQuery();
-            return manager.getClient().searchWithMeta(index, queryJson, options);
-        }).map(e -> {
+        final String index = getIndex(application);
+        final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withSearchOperation(operation);
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+        final JsonObject queryJson = query.getSearchQuery();
+        return manager.getClient().searchWithMeta(index, queryJson, options).map(e -> {
             return new FetchResult(e.getCount(), e.getRows());
         });
     }
 
     @Override
     public Future<Integer> count(final UserInfos user, final String application, final ResourceSearchOperation operation) {
-        return shareTableManager.findHashes(user).compose(hashes -> {
-            final String index = getIndex(application);
-            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withRights(hashes).withSearchOperation(operation);
-            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
-            final JsonObject queryJson = query.getSearchQuery();
-            queryJson.remove("sort");
-            return manager.getClient().count(index, queryJson, options);
-        });
+        final String index = getIndex(application);
+        final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withSearchOperation(operation);
+        final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
+        final JsonObject queryJson = query.getSearchQuery();
+        queryJson.remove("sort");
+        return manager.getClient().count(index, queryJson, options);
     }
 
     @Override
@@ -231,7 +225,7 @@ public class ResourceServiceElastic implements ResourceService {
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
-        final ResourceSearchOperation search = new ResourceSearchOperation().setId(id).setSearchEverywhere(true).setRightType(ExplorerConfig.RIGHT_MANAGE);
+        final ResourceSearchOperation search = new ResourceSearchOperation().setIds(id).setSearchEverywhere(true).setRightType(ExplorerConfig.RIGHT_MANAGE);
         final Future<Integer> futureCheck = count(user, application, search);
         return futureCheck.compose(count-> {
             if (count < id.size()) {

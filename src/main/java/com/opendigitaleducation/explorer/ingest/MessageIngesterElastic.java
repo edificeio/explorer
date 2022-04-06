@@ -109,7 +109,10 @@ public class MessageIngesterElastic implements MessageIngester {
         }
         if (document.containsKey("creatorId")) {
             final String tagCreator = ExplorerConfig.getCreatorRight(document.getString("creatorId"));
-            document.put("rights", new JsonArray().add(tagCreator));
+            final JsonArray rights = document.getJsonArray("rights", new JsonArray());
+            if(!rights.contains(tagCreator)){
+                document.put("rights", rights.add(tagCreator));
+            }
         }
         if (!document.containsKey("folderIds")) {
             document.put("folderIds", new JsonArray());
