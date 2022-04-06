@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -44,6 +45,7 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
+        message.withShared(source.getJsonArray("shared", new JsonArray()));
         return Future.succeededFuture(message);
     }
 
