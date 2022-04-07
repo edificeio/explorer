@@ -147,9 +147,10 @@ public class ResourceServiceElastic implements ResourceService {
                 final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e->{
                     return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
                 }).map(e -> {
-                    final Integer id = e.getKey();
+                    //final Integer id = e.getKey();
                     final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
-                    return ExplorerMessage.upsert(id.toString(), user, false).withType(value.application.get(), value.resourceType.get());
+                    //use entid to push message
+                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false).withType(value.application.get(), value.resourceType.get()).withTrashed(isTrash);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
             }).compose(e->{
@@ -188,7 +189,8 @@ public class ResourceServiceElastic implements ResourceService {
             if(dest.isPresent()){
                 return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
-                        return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                        //use entid to push message
+                        return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -198,7 +200,8 @@ public class ResourceServiceElastic implements ResourceService {
             }else{
                 return sql.moveToRoot(ids, user).compose(entIds -> {
                     final List<ExplorerMessage> messages = entIds.stream().map(e -> {
-                        return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType);
+                        //use entid to push message
+                        return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -257,7 +260,8 @@ public class ResourceServiceElastic implements ResourceService {
         final JsonArray shared = new JsonArray(rights);
         return sql.getModelByIds(ids).compose(entIds -> {
             final List<ExplorerMessage> messages = entIds.stream().map(e -> {
-                return ExplorerMessage.upsert(e.entId, user, false).withType(e.application, e.resourceType).withShared(shared);
+                //use entid to push message
+                return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType).withShared(shared);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);

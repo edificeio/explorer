@@ -14,8 +14,12 @@
     "public": { "type": "boolean"},
     "favorite": { "type": "boolean"},
     "folder": {
-      "type": "string",
-      "pattern": "^(default|bin|[0-9]+)$"
+      "anyOf": [{
+        "type": "string",
+        "pattern": "^(default|bin|[0-9]+)$"
+        },
+        { "type": "number"}
+      ]
     },
     "search": { "type": "string"},
     "start_idx": { "type": "number"},

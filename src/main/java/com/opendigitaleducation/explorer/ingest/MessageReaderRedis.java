@@ -84,7 +84,7 @@ public class MessageReaderRedis implements MessageReader {
         onReady.onSuccess(e -> {
             //only new messages
             final String startFrom = ">";
-            redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom),false).onComplete(res -> {
+            redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom),true).onComplete(res -> {
                 if(res.failed()){
                     log.error("Could not read xstream ",res.cause());
                     return;
@@ -141,7 +141,7 @@ public class MessageReaderRedis implements MessageReader {
         return onReady.compose(e->{
             final Promise<List<JsonObject>> promise = Promise.promise();
             final String startAt = pending ? "0" : ">";
-            redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt), false).onComplete(res -> {
+            redisClient.xreadGroup(consumerGroup, consumerName, stream, true, Optional.of(maxBatchSize), Optional.empty(), Optional.of(startAt), true).onComplete(res -> {
                 if (res.succeeded()) {
                     promise.complete(res.result());
                 } else {

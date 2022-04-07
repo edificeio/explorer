@@ -209,12 +209,13 @@ public class FolderServiceElastic implements FolderService {
                         //resources
                         final List<ExplorerMessage> messages = new ArrayList<>();
                         for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
+                            //use entid to push resource message
                             final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false);
                             mess.withType(trash.application.get(), trash.resourceType.get());
                             mess.withTrashed(isTrash);
                             messages.add(mess);
                         }
-                        Future<Void> futureUpsertRes = plugin.notifyUpsert(messages);
+                        Future<Void> futureUpsertRes = plugin.getCommunication().pushMessage(messages);
                         //notify folders
                         return CompositeFuture.all(futureUpsertFolder, futureUpsertRes);
                     });
@@ -226,11 +227,11 @@ public class FolderServiceElastic implements FolderService {
     }
 
     @Override
-    public Future<List<JsonObject>> move(final UserInfos creator, final Set<String> id, final String application, final Optional<String> dest) {
+    public Future<List<JsonObject>> move(final UserInfos creator, final Set<String> id, final String application, final Optional<String> destOrig) {
         if(id.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        if(dest.isPresent() && ExplorerConfig.BIN_FOLDER_ID.equals(dest.get())){
+        if(destOrig.isPresent() && ExplorerConfig.BIN_FOLDER_ID.equals(destOrig.get())){
             return this.trash(creator, id, application, true);
         }
         //CHECK IF HAVE RIGHTS ON IT
@@ -241,6 +242,7 @@ public class FolderServiceElastic implements FolderService {
                 return Future.failedFuture("folder.move.id.invalid");
             }
             final Collection<Integer> ids = id.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
+            final Optional<String> dest = (destOrig.isPresent() && ExplorerConfig.ROOT_FOLDER_ID.equals(destOrig.get()))? Optional.empty():destOrig;
             return this.dbHelper.move(ids, dest).compose(oldParent->{
                 final List<JsonObject> sources = new ArrayList<>();
                 for(final Integer key : oldParent.keySet()){

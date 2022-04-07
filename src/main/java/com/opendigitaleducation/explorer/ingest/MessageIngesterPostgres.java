@@ -201,7 +201,8 @@ public class MessageIngesterPostgres implements MessageIngester {
                     for(final ResourceExplorerDbSql.ResouceSql r : resourceUpdated){
                         final UserInfos creator = new UserInfos();
                         creator.setUserId(r.creatorId);
-                        final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
+                        //use id because upsertResource already done
+                        final ExplorerMessage mess = ExplorerMessage.upsert(r.id.toString(), creator, false);
                         mess.withType(r.application, r.resourceType);
                         upsertResources.add(new ExplorerMessageForIngest(mess));
                     }
@@ -219,7 +220,7 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
         //get parentIds
         final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
-        final Set<Integer> parentIds = overrides.stream().filter(e -> e.containsKey("parentId")).map(e -> {
+        final Set<Integer> parentIds = overrides.stream().filter(e -> e!= null && e.containsKey("parentId")).map(e -> {
             final String tmp = e.getValue("parentId").toString();
             return Integer.valueOf(tmp);
         }).collect(Collectors.toSet());
@@ -236,13 +237,15 @@ public class MessageIngesterPostgres implements MessageIngester {
             //Transform all
             for (final ExplorerMessageForIngest message : messages) {
                 final String id = message.getId();
-                final FolderExplorerDbSql.FolderRelationship relation = relations.get(id);
+                final Optional<FolderExplorerDbSql.FolderRelationship> relation = Optional.ofNullable(relations.get(id));
                 final FolderExplorerDbSql.FolderAncestor ancestor = ancestors.getOrDefault(id, new FolderExplorerDbSql.FolderAncestor(id, new ArrayList<>()));
                 //add children ids and ancestors (reuse existing override)
-                final JsonObject override = message.getOverride();
-                override.put("childrenIds", new JsonArray(relation.childrenIds));
-                if (relation.parentId.isPresent()) {
-                    override.put("parentId", relation.parentId.get());
+                final JsonObject override = Optional.ofNullable(message.getOverride()).orElse(new JsonObject());
+                if(relation.isPresent()){
+                    override.put("childrenIds", new JsonArray(relation.get().childrenIds));
+                    if (relation.get().parentId.isPresent()) {
+                        override.put("parentId", relation.get().parentId.get());
+                    }
                 }
                 override.put("ancestors", new JsonArray(ancestor.ancestorIds));
                 message.withOverrideFields(override);

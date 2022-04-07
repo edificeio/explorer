@@ -354,13 +354,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            final String id = request.params().get("id");
-            if (StringUtils.isEmpty(id)) {
-                badRequest(request, "missing.id");
-                return;
-            }
             RequestUtils.bodyToJson(request, pathPrefix + "trashBatch", body -> {
-                final Optional<String> dest = Optional.ofNullable(id);
                 final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
                 final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
                 final String application = body.getString("application");

@@ -301,7 +301,7 @@ public class ResourceExplorerDbSql {
     }
 
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final PostgresClient.PostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
-        if(!resourceIds.isEmpty()){
+        if(resourceIds.isEmpty()){
             return Future.succeededFuture(new HashMap<>());
         }
         final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
