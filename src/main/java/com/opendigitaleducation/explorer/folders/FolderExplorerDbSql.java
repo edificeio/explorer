@@ -91,9 +91,10 @@ public class FolderExplorerDbSql {
         final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, getColumnsExtArray());
         final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, getColumnsExtArray());
         final StringBuilder queryTpl = new StringBuilder();
+        //do update on conflict (because of returning)
         queryTpl.append("WITH upserted AS ( ");
         queryTpl.append("  INSERT INTO explorer.folders as r (name,application,resource_type, parent_id, creator_id, creator_name, ent_id, parent_ent_id) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(ent_id) DO NOTHING RETURNING * ");
+        queryTpl.append("  VALUES %s ON CONFLICT(ent_id) DO UPDATE SET name = r.name RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT * FROM upserted ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
@@ -133,6 +134,7 @@ public class FolderExplorerDbSql {
                         iquery.append("INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
                         iquery.append("SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
                         iquery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
+                        iquery.append(" ON CONFLICT(folder_id, user_id,resource_id) DO NOTHING RETURNING * ");
                         futures.add(transaction.addPreparedQuery(iquery.toString(), ituple).onFailure(e->{
                            log.error("Failed to insert relationship for folderId="+folderId, e);
                         }));
@@ -228,7 +230,7 @@ public class FolderExplorerDbSql {
     }
 
     public Future<FolderTrashResults> trash(final Collection<Integer> folderIds, final Collection<Integer> resourceIds, final boolean trashed){
-        if(!resourceIds.isEmpty() && !folderIds.isEmpty()){
+        if(resourceIds.isEmpty() && folderIds.isEmpty()){
             return Future.succeededFuture(new FolderTrashResults());
         }
         return pgPool.transaction().compose(transaction->{

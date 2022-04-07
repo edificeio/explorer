@@ -177,7 +177,7 @@ public class ResourceQueryElastic {
         if(!operation.getIds().isEmpty()){
             this.withId(operation.getIds());
         }
-        if (operation.getParentId().isPresent()) {
+        if (operation.getParentId().isPresent() && !ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(operation.getParentId().get())) {
             this.withFolderId(operation.getParentId().get());
         } else if (!operation.isSearchEverywhere()) {
             this.withOnlyRoot(true);

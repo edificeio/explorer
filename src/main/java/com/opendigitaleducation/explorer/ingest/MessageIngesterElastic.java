@@ -9,6 +9,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticBulkBuilder;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,9 +58,14 @@ public class MessageIngesterElastic implements MessageIngester {
                 if (res.isOk()) {
                     succeed.add(op.message);
                 } else {
-                    op.message.setError(res.getMessage());
-                    op.message.setErrorDetails(res.getDetails());
-                    failed.add(op.message);
+                    //if deleted is not found => suceed
+                    if(ExplorerMessage.ExplorerAction.Delete.name().equals(op.getMessage().getAction()) && "not_found".equals(res.getMessage())){
+                        succeed.add(op.message);
+                    }else{
+                        op.message.setError(res.getMessage());
+                        op.message.setErrorDetails(res.getDetails());
+                        failed.add(op.message);
+                    }
                 }
             }
             //metrics
