@@ -143,6 +143,7 @@ public class ResourceServiceElastic implements ResourceService {
             if(count < ids.size()){
                 return Future.failedFuture("resource.trash.id.invalid");
             }
+            //TODO remove previous parent if it is not trashed
             return sql.trash(ids, isTrash).compose(entIds -> {
                 final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e->{
                     return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
