@@ -37,8 +37,8 @@ public class MessageIngesterElastic implements MessageIngester {
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
-        final List<MessageIngesterElasticOperation> operations = messages.stream().map(mess->{
-            return MessageIngesterElasticOperation.create(mess);
+        final List<MessageIngesterElasticOperation> operations = messages.stream().flatMap(mess->{
+            return MessageIngesterElasticOperation.create(mess).stream();
         }).collect(Collectors.toList());
         final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
         for(final MessageIngesterElasticOperation op : operations){
@@ -55,6 +55,10 @@ public class MessageIngesterElastic implements MessageIngester {
             for (int i = 0; i < results.size(); i++) {
                 final ElasticBulkBuilder.ElasticBulkRequestResult res = results.get(i);
                 final MessageIngesterElasticOperation op = operations.get(i);
+                //dont need to ACK subresources
+                if(op instanceof MessageIngesterElasticOperation.MessageIngesterElasticOperationUpsertSubResource){
+                    continue;
+                }
                 if (res.isOk()) {
                     succeed.add(op.message);
                 } else {
@@ -101,6 +105,9 @@ public class MessageIngesterElastic implements MessageIngester {
     }
 
     static JsonObject beforeCreate(final JsonObject document) {
+        if(!document.containsKey("subresources")){
+            document.put("subresources", new JsonArray());
+        }
         if (!document.containsKey("trashed")) {
             document.put("trashed", false);
         }
