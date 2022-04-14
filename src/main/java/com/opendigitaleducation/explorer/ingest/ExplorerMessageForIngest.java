@@ -24,8 +24,9 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
         this.idQueue = Optional.of(idQueue);
     }
 
-    public void setPredictibleId(final String predictibleId) {
+    public ExplorerMessageForIngest setPredictibleId(final String predictibleId) {
         this.predictibleId = Optional.of(predictibleId);
+        return this;
     }
 
     public Optional<String> getPredictibleId() {

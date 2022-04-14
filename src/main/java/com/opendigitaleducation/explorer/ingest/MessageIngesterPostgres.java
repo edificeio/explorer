@@ -94,9 +94,8 @@ public class MessageIngesterPostgres implements MessageIngester {
         return sql.upsertResources(messages).map(resourcesSql -> {
             final List<ExplorerMessageForIngest> backupSuccess = new ArrayList<>();
             for (final ResourceExplorerDbSql.ResouceSql resSql : resourcesSql) {
-                final Optional<ExplorerMessageForIngest> found = messages.stream().filter(e -> e.getResourceUniqueId().equals(resSql.resourceUniqId)).findFirst();
-                if (found.isPresent()) {
-                    final ExplorerMessageForIngest mess = found.get();
+                final List<ExplorerMessageForIngest> found = messages.stream().filter(e -> e.getResourceUniqueId().equals(resSql.resourceUniqId)).collect(Collectors.toList());
+                for (final ExplorerMessageForIngest mess : found) {
                     //set predictible id
                     mess.setPredictibleId(resSql.id.toString());
                     //set folder ids
@@ -201,10 +200,13 @@ public class MessageIngesterPostgres implements MessageIngester {
                     for(final ResourceExplorerDbSql.ResouceSql r : resourceUpdated){
                         final UserInfos creator = new UserInfos();
                         creator.setUserId(r.creatorId);
-                        //use id because upsertResource already done
-                        final ExplorerMessage mess = ExplorerMessage.upsert(r.id.toString(), creator, false);
-                        mess.withType(r.application, r.resourceType);
-                        upsertResources.add(new ExplorerMessageForIngest(mess));
+                        final Optional<ExplorerMessageForIngest> found = upsertResources.stream().filter(e-> e.getId().equals(r.entId)).findFirst();
+                        if(!found.isPresent()){
+                            //use id because upsertResource already done
+                            final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
+                            mess.withType(r.application, r.resourceType);
+                            upsertResources.add(new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString()));
+                        }
                     }
                     return Future.succeededFuture();
                 });
@@ -257,8 +259,9 @@ public class MessageIngesterPostgres implements MessageIngester {
             //update parent (childrenIds)
             for (final Integer parentId : parentIds) {
                 final String parentIdStr = parentId.toString();
+                final Optional<ExplorerMessageForIngest> found = messages.stream().filter(m-> m.getId().equals(parentIdStr)).findFirst();
                 final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
-                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(mess);
+                final ExplorerMessageForIngest message = found.orElse(new ExplorerMessageForIngest(mess));
                 final JsonObject override = new JsonObject();
                 //set childrenIds
                 final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);
