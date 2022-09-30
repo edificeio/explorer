@@ -1,14 +1,14 @@
 {
-  "name": "ode-react-boilerplate",
+  "name": "explorer",
   "version": "1.0.0",
-  "description": "Open Digital Education React + Vite boilerplate",
-  "homepage": "https://github.com/opendigitaleducation/ode-react-boilerplate#readme",
+  "description": "Open Digital Education Explorer",
+  "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
-    "url": "https://github.com/opendigitaleducation/ode-react-boilerplate/issues"
+    "url": "https://github.com/opendigitaleducation/explorer/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/opendigitaleducation/ode-react-boilerplate.git"
+    "url": "git+https://github.com/opendigitaleducation/explorer.git"
   },
   "license": "GPL-3.0",
   "author": "Open Digital Education",
@@ -22,12 +22,12 @@
     "dev": "vite",
     "lighthouse": "yarn clean:lighthouse && lhci autorun",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "fix": "eslint --fix .",
     "pre-commit": "lint-staged",
-    "prepare": "husky install",
-    "pretty": "concurrently \"yarn:pretty:*\"",
-    "pretty:check": "yarn prettier --check .",
-    "pretty:write": "yarn prettier --write .",
+    "prepare": "cd .. && husky install frontend/.husky",
+    "format": "concurrently \"yarn:format:*\"",
+    "format:check": "yarn prettier --check .",
+    "format:write": "yarn prettier --write .",
     "preview": "vite preview"
   },
   "husky": {
@@ -36,9 +36,10 @@
     }
   },
   "lint-staged": {
+    "gitDir": "../",
     "**/*.{js,jsx,ts,tsx}": [
-      "yarn pretty:write",
-      "yarn lint:fix"
+      "yarn format:write",
+      "yarn fix"
     ]
   },
   "dependencies": {

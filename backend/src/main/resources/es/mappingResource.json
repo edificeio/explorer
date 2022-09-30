@@ -1,0 +1,104 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "html_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "html_strip"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_routing": {
+      "required": true
+    },
+    "dynamic": false,
+    "properties": {
+      "assetId": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword",
+        "copy_to": "contentAll"
+      },
+      "content": {
+        "type": "text",
+        "copy_to": "contentAll"
+      },
+      "contentHtml": {
+        "type": "text",
+        "analyzer": "html_analyzer",
+        "copy_to": "contentAll"
+      },
+      "contentAll": {
+        "type": "text",
+        "store": true
+      },
+      "application": {
+        "type": "keyword"
+      },
+      "resourceType": {
+        "type": "keyword"
+      },
+      "folderIds": {
+        "type": "keyword"
+      },
+      "usersForFolderIds": {
+        "type": "keyword"
+      },
+      "rights": {
+        "type": "keyword"
+      },
+      "creatorId": {
+        "type": "keyword"
+      },
+      "creatorName": {
+        "type": "keyword",
+        "copy_to": "contentAll"
+      },
+      "createdAt": {
+        "type": "date"
+      },
+      "updatedAt": {
+        "type": "date"
+      },
+      "public": {
+        "type": "boolean"
+      },
+      "trashed": {
+        "type": "boolean"
+      },
+      "favoriteFor": {
+        "type": "keyword"
+      },
+      "shared": {
+        "type": "object",
+        "enabled": false
+      },
+      "subresources": {
+        "properties": {
+            "id": {
+              "type": "keyword"
+            },
+            "content": {
+              "type": "text",
+              "copy_to": "contentAll"
+            },
+            "contentHtml": {
+              "type": "text",
+              "analyzer": "html_analyzer",
+              "copy_to": "contentAll"
+            },
+            "deleted": {
+              "type": "boolean"
+            }
+        }
+      }
+    }
+  }
+}

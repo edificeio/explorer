@@ -1,5 +1,5 @@
+import Header from "@components/Header";
 import clsx from "clsx";
-import Header from "components/Header";
 import { useTranslation } from "react-i18next";
 
 function App() {
@@ -16,8 +16,7 @@ function App() {
       <div>
         <Header />
       </div>
-      <h1>Vite + React</h1>
-      <h2>{t("welcome.react", { ns: "translations" })}</h2>
+      <h1>{t("explorer", { ns: "translations" })}</h1>
       <div className={cxCard}>
         <p>
           Edit<code>src/App.tsx</code> and save to test HMR

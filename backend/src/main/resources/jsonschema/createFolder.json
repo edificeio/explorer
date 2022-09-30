@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "application": { "type": "string"},
+    "resourceType": { "type": "string"},
+    "parentId": {
+      "type": "string",
+      "pattern": "^(default|[0-9]+)$"
+    },
+    "name": { "type": "string"}
+  },
+  "required": [
+    "application", "resourceType", "name", "parentId"
+  ]
+}

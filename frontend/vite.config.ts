@@ -8,15 +8,18 @@ export default defineConfig({
     alias: [
       { find: "~", replacement: path.resolve(__dirname, "src") },
       {
-        find: "components",
+        find: "@components",
         replacement: path.resolve(__dirname, "./src/components"),
       },
     ],
   },
+  /* build: {
+    assetsDir: "assets/js/explorer/",
+  }, */
   plugins: [react()],
   server: {
     host: "0.0.0.0",
-    port: 8080,
-    open: true
+    port: 3000,
+    open: true,
   },
 });
