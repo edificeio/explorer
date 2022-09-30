@@ -1,0 +1,66 @@
+    {
+      "name": "com.opendigitaleducation~explorer~1.0-SNAPSHOT",
+      "config": {
+        "main" : "com.opendigitaleducation.explorer.Explorer",
+        "port" : 8068,
+        "app-name" : "Explorer",
+        "app-address" : "/explorer",
+        "app-icon" : "explorer-large",
+        "host": "${host}",
+        "ssl" : $ssl,
+        "sql": true,
+        "auto-redeploy": false,
+        "userbook-host": "${host}",
+        "mode" : "${mode}",
+        "max-workertime-minutes":15,
+        "stream": "postgres",
+        "create-index": true,
+        "elasticsearchConfig":{
+            "uris": ["${explorerEsUrl}"],
+            "index": "explorer-index"
+        },
+        "ingest":{
+            "consumer-block-ms": 0,
+            "max-attempt": 10,
+            "batch-size": 100,
+            "max-delay-ms": 45000
+        },
+	"projects" : [],
+        "publicConf": {
+          <% if ("true".equals(xitiSwitch)) { %>
+            "xiti": {
+              "ID_SERVICE": {
+                "default": 2
+              }
+            }
+          <% } %>
+        },
+        "applications": {
+            "blog": {
+                "filters": [
+                    {"id":"owner",  "defaultValue": true},
+                    {"id":"public", "defaultValue": false},
+                    {"id":"shared", "defaultValue": true}
+                ],
+                "orders": [
+                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
+                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
+                ],
+                "actions": [
+                     {"id": "open","workflow":"org.entcore.blog.controllers.BlogController|blog"},
+                     {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
+                     {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
+                     {"id": "move","workflow":"org.entcore.blog.controllers.BlogController|create"},
+                     {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|create"},
+                     {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish"},
+                     {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print"}
+                ],
+                "rights":{
+                     "read": "org.entcore.blog.controllers.BlogController|get",
+                     "contrib": "org-entcore-blog-controllers-BlogController|update",
+                     "manage": "org.entcore.blog.controllers.BlogController|delete"
+                }
+            }
+        }
+      }
+    }

@@ -1,6 +1,6 @@
-# Open Digital Education React Boilerplate with Vite
+# Open Digital Education Explorer
 
-This is a [ReactJS](https://reactjs.org) + [Vite](https://vitejs.dev) boilerplate.
+This is a [ReactJS](https://reactjs.org) + [Vite](https://vitejs.dev) app.
 
 ## What is inside?
 
@@ -17,29 +17,6 @@ Many tools are already configured like:
 
 ### Install
 
-Create the project with the name of your app (Ex: blog)
-
-```bash
-npx degit opendigitaleducation/ode-react-boilerplate blog
-```
-
-Go to the project directory.
-
-```bash
-cd blog
-```
-
-Git init, commit and push to remote repository
-
-```bash
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin git@github.com:<ORG>/<app>.git
-git push -u origin main
-```
-
 Install all dependencies.
 
 ```bash
@@ -50,7 +27,7 @@ yarn
 
 ### Start project
 
-Open your project with Vite Server + HMR at <http://localhost:8080>.
+Open your project with Vite Server + HMR at <http://localhost:3000>.
 
 ```bash
 yarn dev
@@ -63,8 +40,8 @@ You can change Vite Server by editing `vite.config.ts`
 ```bash
 server: {
   host: "0.0.0.0",
-  port: 8080,
-  open: true // open the page on <http://localhost:8080> when dev server starts.
+  port: 3000,
+  open: true // open the page on <http://localhost:3000> when dev server starts.
 }
 ```
 
@@ -112,14 +89,14 @@ yarn lint
 Prettier write and check separately
 
 ```bash
-yarn pretty:write
-yarn pretty:check
+yarn format:write
+yarn format:check
 ```
 
 Prettier everything once
 
 ```bash
-yarn pretty
+yarn format
 ```
 
 ### Lighthouse

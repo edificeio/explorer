@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "application": { "type": "string"},
+    "resourceType": { "type": "string"},
+    "resourceIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "folderIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "resourceIds", "folderIds", "application", "resourceType"
+  ]
+}

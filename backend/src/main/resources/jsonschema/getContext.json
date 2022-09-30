@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "application": { "type": "string"},
+    "resource_type": { "type": "string"},
+    "order_by": {
+      "type": "string",
+      "pattern": "^(name|createdAt|updatedAt|application|resourceType):(asc|desc)$"
+    },
+    "owner": { "type": "boolean"},
+    "shared": { "type": "boolean"},
+    "public": { "type": "boolean"},
+    "favorite": { "type": "boolean"},
+    "folder": {
+      "anyOf": [{
+        "type": "string",
+        "pattern": "^(default|bin|[0-9]+)$"
+        },
+        { "type": "number"}
+      ]
+    },
+    "search": { "type": "string"},
+    "start_idx": { "type": "number"},
+    "page_size": { "type": "number"},
+    "search_after": { "type": "string"},
+    "id": { "type": "number"}
+  },
+  "required": [
+    "application"
+  ]
+}
