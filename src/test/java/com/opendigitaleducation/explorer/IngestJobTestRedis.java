@@ -21,6 +21,7 @@ import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @RunWith(VertxUnitRunner.class)
 public class IngestJobTestRedis extends IngestJobTest {
@@ -35,7 +36,7 @@ public class IngestJobTestRedis extends IngestJobTest {
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer().withInitScript("initExplorer.sql").withReuse(true);
     @ClassRule
-    public static GenericContainer redisContainer = new GenericContainer(("redis:5.0.3-alpine")).withReuse(true);
+    public static GenericContainer redisContainer = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine")).withExposedPorts(6379);
 
     @BeforeClass
     public static void setupAll(TestContext context){
