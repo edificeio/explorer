@@ -62,6 +62,29 @@
                     "contrib": "org-entcore-blog-controllers-BlogController|update",
                     "manage": "org-entcore-blog-controllers-BlogController|delete"
                 }
+            },
+            "exercizer": {
+                "filters": [
+                    {"id":"owner",  "defaultValue": true},
+                    {"id":"public", "defaultValue": false},
+                    {"id":"shared", "defaultValue": true}
+                ],
+                "orders": [
+                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
+                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
+                ],
+                "actions": [
+                    {"id": "create","workflow":"fr.openent.exercizer.controllers.SubjectController|persist"},
+                    {"id": "import","workflow":"fr.openent.exercizer.controllers.SubjectController|importSubjectGrains"},
+                    {"id": "publish","workflow":"fr.openent.exercizer.controllers.SubjectController|publish"},
+                    {"id": "list","workflow":"fr.openent.exercizer.controllers.SubjectController|listSubject"},
+                    {"id": "view","workflow":"fr.openent.exercizer.controllers.SubjectController|view"}
+                ],
+                "rights":{
+                    "read": "com-thecodingmachine-inca-controllers-ThematicController|list",
+                    "contrib": "fr-openent-exercizer-controllers-SubjectController|canSchedule",
+                    "manage": "fr-openent-exercizer-controllers-SubjectController|remove"
+                }
             }
         }
     }
