@@ -1,5 +1,7 @@
 package com.opendigitaleducation.explorer;
 
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -14,15 +16,31 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceMongo;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.share.ShareService;
+import org.entcore.common.share.impl.MongoDbShareService;
+
+import java.util.*;
 
 public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     public static final String COLLECTION = "explorer.test_fake";
     static Logger log = LoggerFactory.getLogger(FakeMongoPlugin.class);
-
+    private final Vertx vertx;
     protected FakeMongoPlugin(final IExplorerPluginCommunication communication, final MongoClient mongoClient) {
         super(communication, mongoClient);
+        this.vertx = communication.vertx();
+    }
+
+    @Override
+    protected Optional<ShareService> getShareService() {
+        Map<String, SecuredAction> securedActions = new HashMap<>();
+        Map<String, List<String>> groupedActions = new HashMap<>();
+        securedActions.put(ExplorerConfig.RIGHT_READ, new SecuredAction(ExplorerConfig.RIGHT_READ,ExplorerConfig.RIGHT_READ,"resource"));
+        securedActions.put(ExplorerConfig.RIGHT_MANAGE, new SecuredAction(ExplorerConfig.RIGHT_MANAGE,ExplorerConfig.RIGHT_MANAGE,"resource"));
+        securedActions.put(ExplorerConfig.RIGHT_CONTRIB, new SecuredAction(ExplorerConfig.RIGHT_CONTRIB,ExplorerConfig.RIGHT_CONTRIB,"resource"));
+        final ShareService share = new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(),COLLECTION,securedActions, groupedActions);
+        return Optional.of(share);
     }
 
     public static FakeMongoPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {

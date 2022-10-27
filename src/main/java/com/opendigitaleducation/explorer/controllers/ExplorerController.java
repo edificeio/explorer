@@ -416,6 +416,33 @@ public class ExplorerController extends BaseController {
         });
     }
 
+    @Put("/share/:application/:type/:resourceId")
+    @SecuredAction(value = "explorer.manager", type = ActionType.RESOURCE)
+    public void shareResource(final HttpServerRequest request) {
+        final String resourceId = request.params().get("resourceId");
+        final String app = request.params().get("application");
+        final String type = request.params().get("type");
+        final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, app, type);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                unauthorized(request);
+                return;
+            }
+            RequestUtils.bodyToJson(request, share -> {
+                //TODO map virtual rights?
+                client.shareById(user, resourceId, share).onComplete(r -> {
+                    if (r.succeeded()) {
+                        final JsonArray nta = r.result().notifyTimelineMap.get(resourceId);
+                        renderJson(request, new JsonObject().put("notify-timeline-array", nta));
+                    } else {
+                        final JsonObject error = new JsonObject().put("error", r.cause().getMessage());
+                        renderJson(request, error, 400);
+                    }
+                });
+            });
+        });
+    }
+
     @Get("metrics")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(SuperAdminFilter.class)
