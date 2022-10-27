@@ -12,9 +12,11 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.share.ShareService;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_APPLICATION = "test";
@@ -23,6 +25,11 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
 
     protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
         super(communication, pgClient.getClientPool());
+    }
+
+    @Override
+    protected Optional<ShareService> getShareService() {
+        return Optional.empty();
     }
 
     public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {

@@ -11,6 +11,7 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -25,6 +26,11 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
     public FolderExplorerDbSql getDbHelper() {return dbHelper;}
+
+    @Override
+    protected Optional<ShareService> getShareService() {
+        return Optional.empty();
+    }
 
     @Override
     public JsonObject setIdForModel(JsonObject json, String id) {
