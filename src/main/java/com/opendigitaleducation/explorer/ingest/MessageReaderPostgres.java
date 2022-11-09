@@ -172,6 +172,17 @@ public class MessageReaderPostgres implements MessageReader {
         });
     }
 
+    private Object dateToJsonValue( final Object date ) {
+        if( date == null ) {
+            return null;
+        } else if( date instanceof LocalDateTime ) {
+            // LocalDateTime is not supported by JsonObject
+            return ((LocalDateTime)date).now().toString();
+        } else {
+            return date;
+        }
+    }
+
     @Override
     public Future<JsonObject> getMetrics() {
         final Integer lastMaxAtempt = metrics.getInteger("last_fetch_max_attempt", -1);
@@ -179,22 +190,22 @@ public class MessageReaderPostgres implements MessageReader {
         final Future<RowSet<Row>> f1 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count = 0", Tuple.tuple()).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_count", row.getValue("nb"));
-                metrics.put("pending_min", row.getValue("mindate"));
-                metrics.put("pending_max", row.getValue("maxdate"));
+                metrics.put("pending_min", dateToJsonValue(row.getValue("mindate")));
+                metrics.put("pending_max", dateToJsonValue(row.getValue("maxdate")));
             }
         });
         final Future<RowSet<Row>> f2 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count < $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_retry_count", row.getValue("nb"));
-                metrics.put("pending_retry_min", row.getValue("mindate"));
-                metrics.put("pending_retry_max", row.getValue("maxdate"));
+                metrics.put("pending_retry_min", dateToJsonValue(row.getValue("mindate")));
+                metrics.put("pending_retry_max", dateToJsonValue(row.getValue("maxdate")));
             }
         });
         final Future<RowSet<Row>> f3 = pgClient.preparedQuery("SELECT COUNT(*) as nb, MIN(created_at) mindate, MAX(created_at) maxdate FROM explorer.resource_queue WHERE attempted_count > $1", Tuple.of(lastMaxAtempt)).onSuccess(result -> {
             for (final Row row : result) {
                 metrics.put("pending_failed_count", row.getValue("nb"));
-                metrics.put("pending_failed_min", row.getValue("mindate"));
-                metrics.put("pending_failed_max", row.getValue("maxdate"));
+                metrics.put("pending_failed_min", dateToJsonValue(row.getValue("mindate")));
+                metrics.put("pending_failed_max", dateToJsonValue(row.getValue("maxdate")));
             }
         });
         return CompositeFuture.all(f1, f2, f3).map(e -> {
