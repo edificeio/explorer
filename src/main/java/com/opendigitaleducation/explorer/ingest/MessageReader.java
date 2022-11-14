@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
@@ -15,11 +16,12 @@ public interface MessageReader {
 
 
     static MessageReader create(final Vertx vertx, final JsonObject config, final JsonObject ingestConfig) throws Exception {
+        ExplorerPluginFactory.init(vertx, config);
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
-            final RedisClient redis = RedisClient.create(vertx, config);
+            final RedisClient redis = RedisClient.create(vertx, ExplorerPluginFactory.getRedisConfig());
             return redis(redis, ingestConfig);
         }else{
-            final PostgresClient postgres = PostgresClient.create(vertx, config);
+            final PostgresClient postgres = PostgresClient.create(vertx, ExplorerPluginFactory.getPostgresConfig());
             return postgres(postgres, ingestConfig);
         }
     }
