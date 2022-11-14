@@ -17,6 +17,7 @@
         "max-workertime-minutes":15,
         "stream": "redis",
         "create-index": {{explorerCreateIndex | default(true)}},
+        "enable-job": {{explorerEnableJob | default(true)}},
         "elasticsearchConfig":{
             "uris": {{explorerEsUris}},
             "index": "{{explorerEsIndex}}"

@@ -113,10 +113,12 @@ public class Explorer extends BaseServer {
         AbstractFilter.setResourceService(resourceService);
         AbstractFilter.setFolderService(folderService);
         //deploy ingest worker
-        final Promise<String> onWorkerDeploy = Promise.promise();
-        final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
-        vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
-        futures.add(onWorkerDeploy.future());
+        if(config.getBoolean("enable-job", true)){
+            final Promise<String> onWorkerDeploy = Promise.promise();
+            final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
+            vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
+            futures.add(onWorkerDeploy.future());
+        }
         //call start promise
         CompositeFuture.all(futures).onComplete(e -> {
             log.info("Explorer application started -> " + e.succeeded());
