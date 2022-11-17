@@ -1,25 +1,16 @@
-/* import { useLayoutEffect } from "react"; */
-
+import useOdeBackend from "@hooks/useOdeBackend";
 import Blog from "@pages/Blog";
 import Home from "@pages/Home";
-/* import { configure } from "ode-ts-client/src/ts/configure/Framework";
-import { session } from "ode-ts-client/src/ts/session/Framework"; */
 import { Routes, Route } from "react-router-dom";
 
 function App() {
-  // useLayoutEffect(() => {
-  //   session.initialize().then(() => {
-  //     console.log("test");
-  //   });
-  //   // configure.initialize(null, null);
-  //   /* session
-  //     .initialize()
-  //     .then(() => configure.initialize(null, null))
-  //     .then(() => {
-  //       console.log("test");
-  //     }); */
-  // }, []);
-  // console.log(handleSession);
+  // TODO useContext
+  const { session } = useOdeBackend(null, null);
+
+  if (session === null) {
+    // TODO améliorer cette gestion d'erreur
+    return <div>Impossible de se connecter au backend.</div>;
+  }
 
   return (
     <div className="App">

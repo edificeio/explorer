@@ -15,6 +15,10 @@ export default defineConfig({
         find: "@pages",
         replacement: path.resolve(__dirname, "./src/pages"),
       },
+      {
+        find: "@hooks",
+        replacement: path.resolve(__dirname, "./src/hooks"),
+      },
     ],
   },
   /* build: {
@@ -35,6 +39,6 @@ export default defineConfig({
     }, */
     host: "0.0.0.0",
     port: 3000,
-    open: true,
+    //open: true,
   },
 });
