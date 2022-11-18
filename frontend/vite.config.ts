@@ -31,12 +31,27 @@ export default defineConfig({
     open: true,
   }, */
   server: {
-    /* proxy: {
+    proxy: {
+      // Springboard urls
+      "/conf/public": {
+        target: "http://localhost:8090",
+        changeOrigin: false,
+      },
+      "^\/(?=assets|theme|locale|i18n|skin)": {
+        target: "http://localhost:8090",
+        changeOrigin: false,
+      },
+      // Entcore urls
+      "^\/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace)": {
+        target: "http://localhost:8090",
+        changeOrigin: false,
+      },
+      // App urls
       "/blog": {
         target: "http://localhost:8090",
         changeOrigin: false,
       },
-    }, */
+    },
     host: "0.0.0.0",
     port: 3000,
     //open: true,
