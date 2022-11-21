@@ -1,6 +1,5 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -10,6 +9,7 @@ import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -50,6 +50,30 @@ public interface MessageReader {
     }
 
     Function<Void, Void> listenNewMessages(final Handler<Void> handler);
+
+    /**
+     * Fetch messages to treat by picking them from the following streams in the
+     * following order :
+     * <ol>
+     *     <li>messages in error</li>
+     *     <li>messages which where not acknowledged</li>
+     *     <li>new messages</li>
+     * </ol>
+     * <u>NB: </u> The order is important ! Messages should be treated in the order they are presented.
+     * @param maxBatchSize Maximum number of batches
+     * @param maxAttempt Maximum attempts
+     * @return The list of the messages to treat
+     */
+    default Future<List<ExplorerMessageForIngest>> getMessagesToTreat(final int maxBatchSize, final int maxAttempt) {
+        return getFailedMessages(maxBatchSize, maxAttempt).flatMap(failedMessages -> {
+            final int nbMessagesLeftToFetch = maxBatchSize - failedMessages.size();
+            return getIncomingMessages(nbMessagesLeftToFetch).map(incominMessages -> {
+                final List<ExplorerMessageForIngest> allMessages = new ArrayList<>(failedMessages);
+                allMessages.addAll(incominMessages);
+                return allMessages;
+            });
+        });
+    }
 
     Future<List<ExplorerMessageForIngest>> getIncomingMessages(final int maxBatchSize);
 

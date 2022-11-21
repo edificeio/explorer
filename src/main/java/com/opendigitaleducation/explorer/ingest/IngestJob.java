@@ -9,7 +9,6 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,49 +140,34 @@ public class IngestJob {
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 final long tmpIdExecution = idExecution;
-                final Future<List<ExplorerMessageForIngest>> newMessage = this.messageReader.getIncomingMessages(batchSize);
-                final Future<List<ExplorerMessageForIngest>> failedMessage = this.messageReader.getFailedMessages(batchSize, maxAttempt);
+                final Future<List<ExplorerMessageForIngest>> messagesToTreat = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
                 //load new message
-                newMessage.compose(result -> {
-                    return this.messageIngester.ingest(result);
-                }).compose(ingestResult -> {
-                    if (ingestResult.size() > 0) {
-                        return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
-                    } else {
-                        return Future.succeededFuture(ingestResult);
-                    }
-                }).onComplete(newMessageRes -> {
-                    //load failed message
-                    failedMessage.compose(result -> {
-                        return this.messageIngester.ingest(result);
-                    }).compose(ingestResult -> {
+                messagesToTreat
+                    .compose(this.messageIngester::ingest)
+                    .compose(ingestResult -> {
                         if (ingestResult.size() > 0) {
                             return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
                         } else {
                             return Future.succeededFuture(ingestResult);
                         }
-                    }).onComplete(failedMessageRes -> {
+                    }).onComplete(messageRes -> {
                         try {
-                            if (newMessageRes.succeeded()) {
-                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(newMessageRes.result()));
+                            if (messageRes.succeeded()) {
+                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
                             } else {
-                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(newMessageRes.cause()));
-                                log.error("Failed to load new message on search engine:", newMessageRes.cause());
-                            }
-                            //
-                            if (failedMessageRes.failed()) {
-                                log.error("Failed to load retried message on search engine:", failedMessageRes.cause());
+                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
+                                log.error("Failed to load new message on search engine:", messageRes.cause());
                             }
                         } catch (Exception exc) {
+                            log.error("An exception occurred while ending the execution of the job " + idExecution, exc);
                         } finally {
                             onTaskComplete(current);
                             //if no pending execution => trigger next execution
                             if (tmpIdExecution == idExecution) {
-                                scheduleNextExecution(newMessageRes.otherwise(IngestJobResult.empty()).result(), failedMessageRes.otherwise(IngestJobResult.empty()).result());
+                                scheduleNextExecution(messageRes.otherwise(IngestJobResult.empty()).result());
                             }
                         }
                     });
-                });
             } catch (Exception e) {
                 onTaskComplete(current);
             }
@@ -196,16 +180,14 @@ public class IngestJob {
         current.complete();
     }
 
-    private void scheduleNextExecution(final IngestJobResult newMessages, final IngestJobResult retryMessages) {
+    private void scheduleNextExecution(final IngestJobResult newMessages) {
         vertx.cancelTimer(nextExecutionTimerId);
-        if (newMessages.size() >= this.batchSize || newMessages.failed.size() > 0 || retryMessages.size() >= this.batchSize || retryMessages.failed.size() > 0) {
+        if (newMessages.size() >= this.batchSize || newMessages.failed.size() > 0) {
             //messagereader seems to have still some message pending so trigger now
             execute();
         } else {
             //if execute is not trigger before this delay -> execute
-            nextExecutionTimerId = vertx.setTimer(maxDelayBetweenExecutionMs, e -> {
-                execute();
-            });
+            nextExecutionTimerId = vertx.setTimer(maxDelayBetweenExecutionMs, e -> execute());
         }
     }
 
