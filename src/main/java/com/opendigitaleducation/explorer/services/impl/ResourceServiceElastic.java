@@ -20,6 +20,7 @@ import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
@@ -34,7 +35,7 @@ public class ResourceServiceElastic implements ResourceService {
     final IExplorerPluginCommunication communication;
     final MessageConsumer messageConsumer;
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final PostgresClient sql) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final IPostgresClient sql) {
         this(aManager, shareTableManager, communication, new ResourceExplorerDbSql(sql));
     }
 

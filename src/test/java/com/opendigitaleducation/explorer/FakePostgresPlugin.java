@@ -10,6 +10,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
@@ -23,8 +24,8 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_TYPE = "fake";
     static Logger log = LoggerFactory.getLogger(FakePostgresPlugin.class);
 
-    protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, pgClient.getClientPool());
+    protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final IPostgresClient pgClient) {
+        super(communication, pgClient);
     }
 
     @Override
@@ -32,12 +33,12 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
         return Optional.empty();
     }
 
-    public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
+    public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
         final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
         return new FakePostgresPlugin(communication, postgres);
     }
 
-    public static FakePostgresPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgres) {
+    public static FakePostgresPlugin withPostgresChannel(final Vertx vertx, final IPostgresClient postgres) {
         final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
         return new FakePostgresPlugin(communication, postgres);
     }

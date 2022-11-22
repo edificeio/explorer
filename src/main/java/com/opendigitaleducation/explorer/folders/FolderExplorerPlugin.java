@@ -9,6 +9,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
@@ -20,8 +21,8 @@ import java.util.stream.Collectors;
 
 public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     protected final FolderExplorerDbSql dbHelper;
-    public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final PostgresClient pgClient) {
-        super(communication, pgClient.getClientPool());
+    public FolderExplorerPlugin(final IExplorerPluginCommunication communication, final IPostgresClient pgClient) {
+        super(communication, pgClient);
         this.dbHelper = new FolderExplorerDbSql(pgClient);
     }
 
@@ -37,7 +38,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         return super.setIdForModel(json, id);
     }
 
-    public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final PostgresClient postgres) throws Exception {
+    public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final IPostgresClient postgres) throws Exception {
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
             final RedisClient redis = RedisClient.create(vertx, config);
             return withRedisStream(vertx, redis, postgres);
@@ -46,12 +47,12 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         }
     }
 
-    public static FolderExplorerPlugin withPgStream(final Vertx vertx, final PostgresClient postgres) {
+    public static FolderExplorerPlugin withPgStream(final Vertx vertx, final IPostgresClient postgres) {
         final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
         return new FolderExplorerPlugin(communication, postgres);
     }
 
-    public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final PostgresClient postgres) {
+    public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
         final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
         return new FolderExplorerPlugin(communication, postgres);
     }

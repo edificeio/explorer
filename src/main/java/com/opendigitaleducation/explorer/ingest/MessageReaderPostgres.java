@@ -10,6 +10,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientChannel;
 
@@ -31,7 +32,7 @@ public class MessageReaderPostgres implements MessageReader {
     private int pendingNotifications = 0;
     private MessageReaderStatus status = MessageReaderStatus.Running;
 
-    public MessageReaderPostgres(final PostgresClient postgresClient, final JsonObject config) {
+    public MessageReaderPostgres(final IPostgresClient postgresClient, final JsonObject config) {
         this.pgClient = postgresClient.getClientChannel();
         this.modulo = config.getInteger("consumer-modulo", DEFAULT_JOB_MODULO);
         //TODO close remove listeners?

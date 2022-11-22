@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
@@ -23,7 +24,7 @@ public class IngestJobWorker extends AbstractVerticle {
     @Override
     public void start(final Promise<Void> startPromise) throws Exception {
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
-        final PostgresClient postgresClient = PostgresClient.create(vertx, config());
+        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), true, false);
         //create ingest job
         final JsonObject ingestConfig = config().getJsonObject("ingest");
         final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);

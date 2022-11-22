@@ -9,6 +9,8 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.postgres.IPostgresClient;
+import org.entcore.common.postgres.IPostgresTransaction;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -17,12 +19,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ResourceExplorerDbSql {
-    final PostgresClientPool pgPool;
-    public ResourceExplorerDbSql(final PostgresClient pool) {
-        this.pgPool = pool.getClientPool();
-    }
-    public ResourceExplorerDbSql(final PostgresClientPool pool) {
-        this.pgPool = pool;
+    final IPostgresClient client;
+    public ResourceExplorerDbSql(final IPostgresClient client) {
+        this.client = client;
     }
 
     public Future<Map<Integer, ExplorerMessage>> deleteTemporarlyResources(final Collection<? extends ExplorerMessage> resources){
@@ -34,7 +33,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(uniqIds, 1);
         final String queryTpl = "UPDATE explorer.resources SET deleted=TRUE WHERE resource_unique_id IN (%s) RETURNING *";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows->{
+        return client.preparedQuery(query, tuple).map(rows->{
             return resourcesToMap(resources, rows);
         });
     }
@@ -48,7 +47,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(uniqIds, 1);
         final String queryTpl = "DELETE FROM explorer.resources WHERE resource_unique_id IN (%s) AND deleted IS TRUE RETURNING *";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows->{
+        return client.preparedQuery(query, tuple).map(rows->{
             return resourcesToMap(resources, rows);
         });
     }
@@ -89,7 +88,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows->{
+        return client.preparedQuery(query, tuple).map(rows->{
             final Map<Integer, ResouceSql> results = new HashMap<>();
             for(final Row row : rows){
                 final Integer id = row.getInteger("resource_id");
@@ -123,7 +122,7 @@ public class ResourceExplorerDbSql {
         final String queryTpl = "SELECT * FROM explorer.resources WHERE ent_id IN (%s)";
         final String query = String.format(queryTpl, inPlaceholder);
         final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -154,7 +153,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String queryTpl = "SELECT * FROM explorer.resources WHERE id IN (%s)";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -178,7 +177,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String queryTpl = "SELECT resource_id, r.ent_id as ent_id FROM explorer.folder_resources INNER JOIN explorer.resources r ON r.id = resource_id WHERE folder_id IN (%s)";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final List<ResourceId> resources = new ArrayList<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("resource_id");
@@ -198,7 +197,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final String queryTpl = "SELECT * FROM explorer.resources WHERE ent_id IN (%s)";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -222,7 +221,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 2);
         final String queryTpl = "UPDATE explorer.resources SET shared = $1 WHERE id IN (%s) RETURNING * ";
         final String query = String.format(queryTpl, inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -252,7 +251,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("   ON CONFLICT(resource_id, user_id) DO UPDATE SET folder_id=EXCLUDED.folder_id RETURNING * ");
         queryTpl.append(") SELECT * FROM explorer.resources WHERE id IN (SELECT resource_id FROM updated) ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -279,7 +278,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("   DELETE FROM explorer.folder_resources WHERE resource_id IN (%s) RETURNING * ");
         queryTpl.append(") SELECT * FROM explorer.resources WHERE id IN (SELECT resource_id FROM deleted) ");
         final String query = String.format(queryTpl.toString(), inPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows ->{
+        return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
@@ -294,13 +293,13 @@ public class ResourceExplorerDbSql {
         });
     }
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final Collection<Integer> resourceIds, final boolean trashed) {
-        return pgPool.transaction().compose(transaction->{
+        return client.transaction().compose(transaction->{
            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trash(transaction, resourceIds, trashed);
            return transaction.commit().compose(commit -> future);
         });
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final PostgresClient.PostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final IPostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
         if(resourceIds.isEmpty()){
             return Future.succeededFuture(new HashMap<>());
         }

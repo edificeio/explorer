@@ -14,6 +14,7 @@ import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Request;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.junit.BeforeClass;
@@ -53,7 +54,7 @@ public class IngestJobTestRedis extends IngestJobTest {
         return postgresqlConfig;
     }
 
-    protected PostgresClient getPostgresClient(){
+    protected IPostgresClient getPostgresClient(){
         if(postgresClient == null) {
             postgresClient = new PostgresClient(test.vertx(), getPostgresConfig());
         }
