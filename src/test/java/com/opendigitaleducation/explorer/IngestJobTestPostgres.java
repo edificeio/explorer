@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -18,7 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @RunWith(VertxUnitRunner.class)
 public class IngestJobTestPostgres extends IngestJobTest {
     private IngestJob job;
-    private PostgresClient postgresClient;
+    private IPostgresClient postgresClient;
     private ExplorerPlugin explorerPlugin;
     private ShareTableManager shareTableManager;
     private ResourceService resourceService;
@@ -34,9 +35,14 @@ public class IngestJobTestPostgres extends IngestJobTest {
         return postgresqlConfig;
     }
 
-    protected PostgresClient getPostgresClient(){
+    protected IPostgresClient getPostgresClient() {
         if(postgresClient == null) {
-            postgresClient = new PostgresClient(test.vertx(), getPostgresConfig());
+            try {
+                final JsonObject json = new JsonObject().put("postgresConfig", getPostgresConfig());
+                postgresClient = IPostgresClient.create(test.vertx(), json, true, false);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         return postgresClient;
     }

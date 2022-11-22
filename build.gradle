@@ -59,6 +59,7 @@ compileTestJava {
 dependencies {
     compileOnly "io.vertx:vertx-core:$vertxVersion"
     compile "org.entcore:common:$entCoreVersion"
+    compile "com.ongres.scram:client:$scramVersion"
     testCompile "org.entcore:test:$entCoreVersion:fat"
 }
 

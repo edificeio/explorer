@@ -12,6 +12,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
@@ -21,12 +22,12 @@ import java.util.stream.Collectors;
 
 public class FolderExplorerDbSql {
     static Logger log = LoggerFactory.getLogger(FolderExplorerDbSql.class);
-    private final PostgresClientPool pgPool;
-    public FolderExplorerDbSql(final PostgresClient pool) {
-        this.pgPool = pool.getClientPool();
+    private final IPostgresClient client;
+    public FolderExplorerDbSql(final IPostgresClient client) {
+        this.client = client;
     }
 
-    public ResourceExplorerDbSql getResourceHelper() { return new ResourceExplorerDbSql(pgPool); }
+    public ResourceExplorerDbSql getResourceHelper() { return new ResourceExplorerDbSql(client); }
 
     protected String getTableName() { return "explorer.folders"; }
 
@@ -42,7 +43,7 @@ public class FolderExplorerDbSql {
         final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
         final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL RETURNING * ";
         final String update = String.format(updateTpl, updateSubQuery);
-        final Future<RowSet<Row>> updateFuture = pgPool.preparedQuery(update, Tuple.tuple());
+        final Future<RowSet<Row>> updateFuture = client.preparedQuery(update, Tuple.tuple());
         return updateFuture.onFailure(e -> {
                 log.error("Update folders parent failed:", e);
         }).compose(res -> {
@@ -98,7 +99,7 @@ public class FolderExplorerDbSql {
         queryTpl.append(")  ");
         queryTpl.append("SELECT * FROM upserted ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
-        return pgPool.preparedQuery(query, tuple).map(rows->{
+        return client.preparedQuery(query, tuple).map(rows->{
             final Map<String, JsonObject> results = new HashMap<>();
             for(final Row row : rows){
                 final Object id = row.getValue("id");
@@ -120,7 +121,7 @@ public class FolderExplorerDbSql {
             log.error("Failed to upsert folders:", e);
         }).compose(rows -> {
             //fetch folder
-            return pgPool.transaction().compose(transaction->{
+            return client.transaction().compose(transaction->{
                 final Set<String> resourceEntIds = new HashSet<>();
                 final List<Future> futures = new ArrayList<>();
                 for(final ExplorerMessage res : resources){
@@ -142,7 +143,7 @@ public class FolderExplorerDbSql {
                     }
                 }
                 return transaction.commit().compose(commit->{
-                    return new ResourceExplorerDbSql(pgPool).getModelByEntIds(resourceEntIds).map(allResources->{
+                    return new ResourceExplorerDbSql(client).getModelByEntIds(resourceEntIds).map(allResources->{
                         return new FolderUpsertResult(rows, allResources);
                     });
                 });
@@ -161,7 +162,7 @@ public class FolderExplorerDbSql {
         final String updatePlaceholder = PostgresClient.updatePlaceholders(source, 2, columnToUpdate,tuple);
         final String queryTpl = "UPDATE %s SET %s WHERE id = $1 RETURNING *";
         final String query = String.format(queryTpl, getTableName(), updatePlaceholder);
-        return pgPool.preparedQuery(query, tuple).compose(rows->{
+        return client.preparedQuery(query, tuple).compose(rows->{
            for(final Row row : rows){
                final Integer idDb = row.getInteger("id");
                final String creator_id = row.getString("creator_id");
@@ -179,7 +180,7 @@ public class FolderExplorerDbSql {
         final Tuple tuple = Tuple.of(numId, numParentId,numId);
         query.append("WITH old AS (SELECT parent_id, application FROM explorer.folders WHERE id = $1) ");
         query.append("UPDATE explorer.folders SET parent_id=$2 WHERE id=$3 RETURNING (SELECT parent_id, application FROM old);");
-        return pgPool.preparedQuery(query.toString(), tuple).map(e->{
+        return client.preparedQuery(query.toString(), tuple).map(e->{
             final Row row = e.iterator().next();
             final Integer parentId = row.getInteger("parent_id");
             final String application = row.getString("application");
@@ -188,7 +189,7 @@ public class FolderExplorerDbSql {
     }
 
     public Future<Map<Integer, FolderMoveResult>> move(final Collection<Integer> ids, final Optional<String> newParent){
-        return pgPool.transaction().compose(transaction->{
+        return client.transaction().compose(transaction->{
             final List<Future> futures = new ArrayList<>();
             for(final Integer numId: ids){
                 final StringBuilder query = new StringBuilder();
@@ -225,7 +226,7 @@ public class FolderExplorerDbSql {
     }
 
     public Future<List<ResourceExplorerDbSql.ResourceId>> getResourcesIdsForFolders(final Set<Integer> folderIds){
-        final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(pgPool);
+        final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(client);
         return resSql.getIdsByFolderIds(folderIds);
     }
 
@@ -233,11 +234,11 @@ public class FolderExplorerDbSql {
         if(resourceIds.isEmpty() && folderIds.isEmpty()){
             return Future.succeededFuture(new FolderTrashResults());
         }
-        return pgPool.transaction().compose(transaction->{
+        return client.transaction().compose(transaction->{
             final List<Future> futures = new ArrayList<>();
             final FolderTrashResults mapTrashed = new FolderTrashResults();
             if(!resourceIds.isEmpty()){
-                final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(pgPool);
+                final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(client);
                 futures.add(resSql.trash(transaction, resourceIds, trashed).onSuccess(resources->{
                     mapTrashed.resources.putAll(resources);
                 }));
@@ -284,7 +285,7 @@ public class FolderExplorerDbSql {
         query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.id = ancestors.parent_id ");
         query.append(") ");
         query.append("SELECT * FROM ancestors;");
-        return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
+        return client.preparedQuery(query.toString(), inTuple).map(ancestors -> {
             final Map<Integer, Integer> parentById = new HashMap<>();
             final Map<Integer, String> applicationById = new HashMap<>();
             for (final Row row : ancestors) {
@@ -322,7 +323,7 @@ public class FolderExplorerDbSql {
         query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.parent_id = ancestors.id ");
         query.append(") ");
         query.append("SELECT * FROM ancestors;");
-        return pgPool.preparedQuery(query.toString(), inTuple).map(ancestors -> {
+        return client.preparedQuery(query.toString(), inTuple).map(ancestors -> {
             final Map<Integer, Set<Integer>> childrenById = new HashMap<>();
             final Map<Integer, String> applicationById = new HashMap<>();
             for (final Row row : ancestors) {
@@ -355,7 +356,7 @@ public class FolderExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
         final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) OR f1.id IN (%s) ", inPlaceholder,inPlaceholder);
-        return pgPool.preparedQuery(query, inTuple).map(ancestors -> {
+        return client.preparedQuery(query, inTuple).map(ancestors -> {
             final Map<String, FolderRelationship> relationShips = new HashMap<>();
             for (final Row row : ancestors) {
                 //get parent of each

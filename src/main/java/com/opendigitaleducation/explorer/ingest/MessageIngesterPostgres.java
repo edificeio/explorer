@@ -8,6 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
@@ -19,7 +20,7 @@ public class MessageIngesterPostgres implements MessageIngester {
     private final FolderExplorerDbSql folderSql;
     private final MessageIngester ingester;
 
-    public MessageIngesterPostgres(final PostgresClient sql, final MessageIngester ingester) {
+    public MessageIngesterPostgres(final IPostgresClient sql, final MessageIngester ingester) {
         this.ingester = ingester;
         this.sql = new ResourceExplorerDbSql(sql);
         this.folderSql = new FolderExplorerDbSql(sql);

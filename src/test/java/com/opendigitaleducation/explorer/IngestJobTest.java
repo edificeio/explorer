@@ -17,7 +17,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
-import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;
@@ -42,7 +42,7 @@ public abstract class IngestJobTest {
 
     protected abstract ResourceService getResourceService();
 
-    protected abstract PostgresClient getPostgresClient();
+    protected abstract IPostgresClient getPostgresClient();
 
     protected FolderService getFolderService() {
         final FolderExplorerPlugin folderPlugin = new FolderExplorerPlugin(getExplorerPlugin().getCommunication(), getPostgresClient());

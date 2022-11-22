@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.utils.StringUtils;
 
@@ -98,7 +99,7 @@ public class IngestJob {
         this.messageConsumer.unregister();
     }
 
-    public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final PostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
+    public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final IPostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
         final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient);
         return new IngestJob(vertx, reader, ingester, config);
     }

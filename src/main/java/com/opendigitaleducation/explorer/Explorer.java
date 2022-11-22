@@ -44,6 +44,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class Explorer extends BaseServer {
         super.start();
         final List<Future> futures = new ArrayList<>();
         //create postgres client
-        final PostgresClient postgresClient = PostgresClient.create(vertx, config);
+        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, true);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
         //init rights map
