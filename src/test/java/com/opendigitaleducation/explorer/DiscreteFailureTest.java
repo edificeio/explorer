@@ -156,7 +156,6 @@ public class DiscreteFailureTest {
                     // Generate update messages
                     final List<JsonObject> modifications = new ArrayList<>();
                     final int nbFailedMessages = 2;
-                    final String expectedFinalFlag = "fail " + (nbFailedMessages - 1);
                     final String expectedFinalMessage = "after first error message";
                     modifications.addAll(generateModifiedResourcesToSucceed(createdResource, 1, "before error messages"));
                     modifications.addAll(generateModifiedResourcesToFail(createdResource, nbFailedMessages));
@@ -171,17 +170,17 @@ public class DiscreteFailureTest {
                             // were not processed
                             final String contentOfMessage = asReturnedByFetch.getString("content", "");
                             final String myFlag = asReturnedByFetch.getString("my_flag");
-                            context.assertTrue(contentOfMessage.contains("before error messages") ||
+                            context.assertTrue(contentOfMessage.contains("initial") ||
+                                            contentOfMessage.contains("before error messages") ||
                                             contentOfMessage.contains("after first error message"),
-                                    "The resource should be at a valid version before or after the version but not at the invalid one");
-                            context.assertTrue(myFlag == null || myFlag.equals(expectedFinalFlag));
+                                    "The resource should be at a valid version before or after the version but not at the invalid one. Instead it was " + contentOfMessage);
                             ////////////////////////////
                             // Clear error rules and relaunch the job
                             clearErrorRules();
                             executeJobNTimesAndFetchUniqueResult(10, user, context).onComplete(context.asyncAssertSuccess(finalResult -> {
-                                context.assertEquals("after first error message", finalResult.getString("content"),
+                                context.assertEquals("after first error message0", finalResult.getString("content"),
                                         "The resource should be at a valid version before or after the version but not at the invalid one");
-                                context.assertEquals(expectedFinalFlag, myFlag);
+                                context.assertFalse(finalResult.containsKey("my_flag"), "The final version of the document should not contain a flag but it was instead " + finalResult.getString("my_flag"));
                                 async.complete();
                             }));
                         }));
@@ -239,6 +238,7 @@ public class DiscreteFailureTest {
             final JsonObject modifiedResource = originalResource.copy();
             modifiedResource.put("content", "modified for failure number " + i);
             modifiedResource.put("my_flag", "fail " + i);
+            modifiedResource.put("_id", originalResource.getString("assetId"));
             return modifiedResource;
         }).collect(Collectors.toList());
     }
@@ -249,6 +249,7 @@ public class DiscreteFailureTest {
         return IntStream.range(0, numberOfMessages).mapToObj(i -> {
             final JsonObject modifiedResource = originalResource.copy();
             modifiedResource.put("content", prefix + i);
+            modifiedResource.put("_id", originalResource.getString("assetId"));
             return modifiedResource;
         }).collect(Collectors.toList());
     }

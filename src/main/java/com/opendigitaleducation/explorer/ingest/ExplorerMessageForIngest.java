@@ -21,7 +21,7 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
     public ExplorerMessageForIngest(final String resourceAction, final String idQueue, final String idResource, final JsonObject json) {
         super(idResource, ExplorerAction.valueOf(resourceAction), false);
         this.getMessage().mergeIn(json);
-        this.idQueue = Optional.of(idQueue);
+        this.idQueue = Optional.ofNullable(idQueue);
     }
 
     public ExplorerMessageForIngest setPredictibleId(final String predictibleId) {

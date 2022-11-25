@@ -3,14 +3,19 @@ package com.opendigitaleducation.explorer.ingest;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -153,20 +158,24 @@ public class IngestJob {
             try {
                 final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
-                messages.compose(result -> {
+                messages.map(this::mergeMessages)
+                .compose(result -> {
                     final List<ExplorerMessageForIngest> messagesToTreat;
                     if(allowErrorRulesToBeApplied) {
-                        messagesToTreat = transformMessagesBasedOnErrorRules(result);
+                        messagesToTreat = transformMessagesBasedOnErrorRules(result.getMessagesToTreat());
                     } else {
-                        messagesToTreat = result;
+                        messagesToTreat = result.getMessagesToTreat();
                     }
-                    return this.messageIngester.ingest(messagesToTreat);
-                }).compose(ingestResult -> {
+                    return this.messageIngester.ingest(messagesToTreat).map(jobResult -> Pair.of(jobResult, result));
+                }).compose(ingestResultAndJobResult -> {
+                    final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
+                    final Future<IngestJobResult> future;
                     if (ingestResult.size() > 0) {
-                        return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
+                        future = this.messageReader.updateStatus(transformIngestResult(ingestResult, ingestResultAndJobResult.getRight()), maxAttempt).map(ingestResult);
                     } else {
-                        return Future.succeededFuture(ingestResult);
+                        future = Future.succeededFuture(ingestResult);
                     }
+                    return future;
                 }).onComplete(messageRes -> {
                     try {
                         if (messageRes.succeeded()) {
@@ -190,6 +199,103 @@ public class IngestJob {
         });
         return current.future();
     }
+
+    private IngestJobResult transformIngestResult(final IngestJobResult ingestResult, final MergeMessagesResult mergedMessages) {
+        final Map<String, List<ExplorerMessageForIngest>> messagesByUniqueId = mergedMessages.getMessagesByResourceUniqueId();
+        final List<ExplorerMessageForIngest> succeededSourceMessages = ingestResult.succeed.stream()
+                .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
+                .collect(Collectors.toList());
+        final List<ExplorerMessageForIngest> failedSourceMessages = ingestResult.failed.stream()
+                .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
+                .collect(Collectors.toList());
+        return new IngestJobResult(succeededSourceMessages, failedSourceMessages);
+    }
+
+    /**
+     * Merge messages concerning the same resource.
+     * @param messagesFromReader Messages
+     * @return
+     */
+    private MergeMessagesResult mergeMessages(final List<ExplorerMessageForIngest> messagesFromReader) {
+        final Map<String, ExplorerMessageForIngest> messagesToTreat = new HashMap<>();
+        final Map<String, List<ExplorerMessageForIngest>> messagesByResource = new HashMap<>();
+        //final Map<String, Long> lastVersionByResource = new HashMap<>();
+        // So far we don't need version as long as we can ensure that the order of the messages returned by the reader
+        // is the chronological order
+        for (final ExplorerMessageForIngest explorerMessageForIngest : messagesFromReader) {
+            final String resourceUniqueId = explorerMessageForIngest.getResourceUniqueId();
+            if(messagesByResource.containsKey(resourceUniqueId)) {
+                final ExplorerMessageForIngest alreadyGeneratedMessage = messagesToTreat.get(resourceUniqueId);
+                final ExplorerMessage.ExplorerAction currentAction = ExplorerMessage.ExplorerAction.valueOf(explorerMessageForIngest.getAction());
+                final ExplorerMessage.ExplorerAction alreadyGeneratedAction = ExplorerMessage.ExplorerAction.valueOf(alreadyGeneratedMessage.getAction());
+                switch (currentAction) {
+                    case Delete:
+                        messagesToTreat.put(resourceUniqueId, explorerMessageForIngest);
+                        break;
+                    case Upsert:
+                        switch (alreadyGeneratedAction) {
+                            case Delete:
+                                log.error("An extremely weird error occurred : an upsert message appeared after a delete message");
+                                break;
+                            case Audience:
+                                log.error("We do not know how to merge audience messages so far");
+                                break;
+                            case Upsert:
+                                messagesToTreat.put(resourceUniqueId, mergeMessageIntoExistingOne(alreadyGeneratedMessage, explorerMessageForIngest));
+                                break;
+                        }
+                        break;
+                    case Audience:
+                        log.error("We do not know how to merge audience messages so far");
+                        break;
+                }
+            } else {
+                messagesToTreat.put(resourceUniqueId, explorerMessageForIngest);
+            }
+            messagesByResource.compute(resourceUniqueId, (k, v) -> {
+                final List<ExplorerMessageForIngest> ingests;
+                if(v == null) {
+                    ingests = new ArrayList<>();
+                } else {
+                    ingests = v;
+                }
+                ingests.add(explorerMessageForIngest);
+                return ingests;
+            });
+        }
+        return new MergeMessagesResult(new ArrayList<>(messagesToTreat.values()), messagesByResource);
+    }
+
+    private ExplorerMessageForIngest mergeMessageIntoExistingOne(final ExplorerMessageForIngest oldMessage,
+                                                                 final ExplorerMessageForIngest newMessage) {
+        final ExplorerMessageForIngest merged = new ExplorerMessageForIngest(newMessage);
+        final JsonArray existingSubResources = oldMessage.getSubresources();
+        if(existingSubResources != null) {
+            for (int i = 0; i < existingSubResources.size(); i++) {
+                final JsonObject subResource = existingSubResources.getJsonObject(i);
+                final String subResourceId = subResource.getString("id");
+                if(subResource.getBoolean("deleted", false)) {
+                    merged.withSubResource(subResourceId, true);
+                } else {
+                    final ExplorerMessage.ExplorerContentType type;
+                    final String content;
+                    if(subResource.containsKey("contentPdf")){
+                        type =  ExplorerMessage.ExplorerContentType.Pdf;
+                        content = subResource.getString("contentPdf");
+                    } else if(subResource.containsKey("contentHtml")){
+                        type =  ExplorerMessage.ExplorerContentType.Html;
+                        content = subResource.getString("contentHtml");
+                    } else {
+                        type = ExplorerMessage.ExplorerContentType.Text;
+                        content = subResource.getString("content");
+                    }
+                    merged.withSubResourceContent(subResourceId, content, type);
+                }
+            }
+        }
+        return merged;
+    }
+
 
     private List<ExplorerMessageForIngest> transformMessagesBasedOnErrorRules(List<ExplorerMessageForIngest> result) {
         return result.stream().map(message -> {

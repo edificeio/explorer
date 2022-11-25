@@ -78,6 +78,12 @@ public interface MessageReader {
 
     Future<List<ExplorerMessageForIngest>> getFailedMessages(final int maxBatchSize, final int maxAttempt);
 
+    /**
+     * Updates in the message buffer the status of messages that have been ingested.
+     * @param ingestResult Result of the ingestion
+     * @param maxAttempt Maximum attempt of ingestion
+     * @return
+     */
     Future<Void> updateStatus(final IngestJob.IngestJobResult ingestResult, final int maxAttempt);
 
     Future<JsonObject> getMetrics();
