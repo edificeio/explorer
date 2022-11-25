@@ -34,12 +34,13 @@ public class MessageIngesterElastic implements MessageIngester {
     //TODO if payload greater than max reduce maxPayload
     @Override
     public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
+        // TODO JBE messages appear to arrive in reverse order here
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
-        final List<MessageIngesterElasticOperation> operations = messages.stream().flatMap(mess->{
-            return MessageIngesterElasticOperation.create(mess).stream();
-        }).collect(Collectors.toList());
+        final List<MessageIngesterElasticOperation> operations = messages.stream().flatMap(mess->
+            MessageIngesterElasticOperation.create(mess).stream()
+        ).collect(Collectors.toList());
         final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
         for(final MessageIngesterElasticOperation op : operations){
             op.execute(bulk);
@@ -56,7 +57,7 @@ public class MessageIngesterElastic implements MessageIngester {
                 final ElasticBulkBuilder.ElasticBulkRequestResult res = results.get(i);
                 final MessageIngesterElasticOperation op = operations.get(i);
                 //dont need to ACK subresources
-                if(op instanceof MessageIngesterElasticOperation.MessageIngesterElasticOperationUpsertSubResource){
+                if(op instanceof MessageIngesterElasticOperation.MessageIngesterElasticOperationUpsertSubResource) {
                     continue;
                 }
                 if (res.isOk()) {

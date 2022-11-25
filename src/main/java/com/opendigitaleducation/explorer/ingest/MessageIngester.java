@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 
 import java.util.List;
 

@@ -154,6 +154,7 @@ public class MessageReaderRedis implements MessageReader {
 
     protected Future<List<ExplorerMessageForIngest>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
         //iterate over streams by priority and fill results list
+        // TODO JBE shady ?
         final Iterator<String> it = streams.iterator();
         Future<List<JsonObject>> futureIt = Future.succeededFuture(new ArrayList<>());
         do {
@@ -245,8 +246,8 @@ public class MessageReaderRedis implements MessageReader {
         for (final ExplorerMessageForIngest mess : ingestResult.failed) {
             if(mess.getIdQueue().isPresent()) {
                 final String idQueue = mess.getIdQueue().get();
-                final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
-                final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT);
+                final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM, "");
+                final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT, 0);
                 final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
                 batch.beginTransaction();
                 //if already failed => do not add suffix to stream name
@@ -280,6 +281,9 @@ public class MessageReaderRedis implements MessageReader {
         }
         //TODO age of first and last foreach stream and reformat stream infos
         return CompositeFuture.all(futures).map(e -> {
+            return metrics;
+        }).otherwise(th -> {
+            log.error("Cannot gather metrics", th);
             return metrics;
         });
     }

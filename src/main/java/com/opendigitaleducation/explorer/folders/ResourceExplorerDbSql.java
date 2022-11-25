@@ -1,7 +1,6 @@
 package com.opendigitaleducation.explorer.folders;
 
-import com.opendigitaleducation.explorer.ExplorerConfig;
-import io.vertx.core.CompositeFuture;
+import com.opendigitaleducation.explorer.utils.DataWithVersion;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -12,7 +11,6 @@ import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.IPostgresTransaction;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -68,13 +66,26 @@ public class ResourceExplorerDbSql {
             return params;
         }).collect(Collectors.toList());
         //(only one upsert per resource_uniq_id)
-        final Map<String, JsonObject> resourcesMap = new HashMap<>();
+        final Map<String, DataWithVersion> resourcesMap = new HashMap<>();
         for(final JsonObject json : resourcesList){
-            resourcesMap.put(json.getString("resource_unique_id"), json);
+            // TODO JBE version was used here - but does not work because no version is present in some resources
+            final DataWithVersion dataToAddMaybe = encapsulateDataAndVersion(json);
+            final long versionOfDocumentToInsert = dataToAddMaybe.getVersion();
+            final String resourceUniqueId = "resource_unique_id";
+            if(resourcesMap.containsKey(resourceUniqueId)) {
+                final DataWithVersion registeredValueForId = resourcesMap.get(resourceUniqueId);
+                if(registeredValueForId.getVersion() < versionOfDocumentToInsert) {
+                    resourcesMap.put(resourceUniqueId, dataToAddMaybe);
+                }
+            } else {
+                resourcesMap.put(resourceUniqueId, dataToAddMaybe);
+            }
         }
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
-        final Collection<JsonObject> resourcesColl = resourcesMap.values();
+        final Collection<JsonObject> resourcesColl = resourcesMap.values().stream()
+                .map(DataWithVersion::getData)
+                .collect(Collectors.toList());
         final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name","application","resource_type","resource_unique_id", "creator_id", "shared");
         final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name","application","resource_type", "resource_unique_id", "creator_id", "shared");
         final StringBuilder queryTpl = new StringBuilder();
@@ -112,6 +123,16 @@ public class ResourceExplorerDbSql {
             }
             return new ArrayList<>(results.values());
         });
+    }
+
+    private DataWithVersion encapsulateDataAndVersion(JsonObject json) {
+        final List<String> possibleFieldsForVersion = Arrays.asList("version", "updatedAt", "createdAt");
+        final long version = possibleFieldsForVersion.stream()
+                .filter(json::containsKey)
+                .map(json::getLong)
+                .findFirst()
+                .orElse(-1L);
+        return new DataWithVersion(json, version);
     }
 
     public Future<Set<ResouceSql>> getSharedByEntIds(final Set<String> ids) {
