@@ -8,11 +8,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 public class IngestJob {
     public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
@@ -39,6 +41,10 @@ public class IngestJob {
     private boolean pendingNotification = false;
     private final MessageConsumer messageConsumer;
 
+    private final boolean allowErrorRulesToBeApplied;
+
+    private List<IngestJobErrorRule> errorRules;
+
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
         this.vertx = vertx;
         this.messageReader = messageReader;
@@ -46,6 +52,12 @@ public class IngestJob {
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
+        this.allowErrorRulesToBeApplied = config.getBoolean("error-rules-allowed", false);
+        if(allowErrorRulesToBeApplied) {
+            errorRules = new ArrayList<>();
+        } else {
+            errorRules = emptyList();
+        }
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
@@ -140,39 +152,94 @@ public class IngestJob {
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 final long tmpIdExecution = idExecution;
-                final Future<List<ExplorerMessageForIngest>> messagesToTreat = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
-                //load new message
-                messagesToTreat
-                    .compose(this.messageIngester::ingest)
-                    .compose(ingestResult -> {
-                        if (ingestResult.size() > 0) {
-                            return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
+                final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
+                messages.compose(result -> {
+                    final List<ExplorerMessageForIngest> messagesToTreat;
+                    if(allowErrorRulesToBeApplied) {
+                        messagesToTreat = transformMessagesBasedOnErrorRules(result);
+                    } else {
+                        messagesToTreat = result;
+                    }
+                    return this.messageIngester.ingest(messagesToTreat);
+                }).compose(ingestResult -> {
+                    if (ingestResult.size() > 0) {
+                        return this.messageReader.updateStatus(ingestResult, maxAttempt).map(ingestResult);
+                    } else {
+                        return Future.succeededFuture(ingestResult);
+                    }
+                }).onComplete(messageRes -> {
+                    try {
+                        if (messageRes.succeeded()) {
+                            this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
                         } else {
-                            return Future.succeededFuture(ingestResult);
+                            log.error("Failed to load messages on search engine:", messageRes.cause());
+                            this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
                         }
-                    }).onComplete(messageRes -> {
-                        try {
-                            if (messageRes.succeeded()) {
-                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
-                            } else {
-                                this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
-                                log.error("Failed to load new message on search engine:", messageRes.cause());
-                            }
-                        } catch (Exception exc) {
-                            log.error("An exception occurred while ending the execution of the job " + idExecution, exc);
-                        } finally {
-                            onTaskComplete(current);
-                            //if no pending execution => trigger next execution
-                            if (tmpIdExecution == idExecution) {
-                                scheduleNextExecution(messageRes.otherwise(IngestJobResult.empty()).result());
-                            }
+                    } catch (Exception exc) {
+                    } finally {
+                        onTaskComplete(current);
+                        //if no pending execution => trigger next execution
+                        if (tmpIdExecution == idExecution) {
+                            scheduleNextExecution(messageRes.otherwise(IngestJobResult.empty()).result());
                         }
-                    });
+                    }
+                });
             } catch (Exception e) {
                 onTaskComplete(current);
             }
         });
         return current.future();
+    }
+
+    private List<ExplorerMessageForIngest> transformMessagesBasedOnErrorRules(List<ExplorerMessageForIngest> result) {
+        return result.stream().map(message -> {
+            final ExplorerMessageForIngest transformedMessage;
+            if(messageMatchesError(message)) {
+                transformedMessage = transormMessageToGenerateError(message);
+            } else {
+                transformedMessage = message;
+            }
+            return transformedMessage;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Generates a message that will generate an error by setting values with wrong types.
+     * @param message Message that should generate an error
+     * @return A transformed version of the message that will generate an error upon ingestion
+     */
+    private ExplorerMessageForIngest transormMessageToGenerateError(ExplorerMessageForIngest message) {
+        final JsonObject duplicate = message.getMessage().copy();
+        final ExplorerMessageForIngest ingest = new ExplorerMessageForIngest(
+                message.getAction(),
+                message.getIdQueue().orElse(null),
+                message.getId(),
+                duplicate);
+        ingest.getMessage().put("public", 4); // raise an error because we specified "public" as being a boolean in the mapping
+        return ingest;
+    }
+
+    private boolean messageMatchesError(ExplorerMessageForIngest message) {
+        return this.errorRules.stream().anyMatch(errorRule -> {
+            if(errorRule.getValuesToTarget() != null) {
+                final JsonObject messageBody = message.getMessage();
+                final boolean bodyMatch = errorRule.getValuesToTarget().entrySet().stream().allMatch(fieldNameAndValue ->
+                    messageBody.getString(fieldNameAndValue.getKey(), "").matches(fieldNameAndValue.getValue())
+                );
+                if(bodyMatch) {
+                    log.debug("Evicting message " + messageBody + " based on " + errorRule);
+                } else {
+                    return false;
+                }
+            }
+            if(errorRule.getAction() != null && !message.getAction().matches(errorRule.getAction())) {
+                return false;
+            }
+            if(errorRule.getPriority() != null && !message.getPriority().name().matches(errorRule.getPriority())) {
+                return false;
+            }
+            return true;
+        });
     }
 
     private void onTaskComplete(final Promise<Void> current) {
@@ -283,6 +350,12 @@ public class IngestJob {
 
         public int size() {
             return succeed.size() + failed.size();
+        }
+    }
+
+    public void setErrorRules(final List<IngestJobErrorRule> errorRules) {
+        if(this.allowErrorRulesToBeApplied) {
+            this.errorRules = errorRules;
         }
     }
 }

@@ -6,7 +6,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;
