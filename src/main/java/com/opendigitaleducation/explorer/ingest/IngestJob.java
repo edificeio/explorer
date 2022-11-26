@@ -145,7 +145,6 @@ public class IngestJob {
         //TODO define max concurrent thread
         //TODO define max bulk size according (dynamic bulk size acording to response?)
         //TODO debounce ms? (config)
-        //TODO optimize and merge updating related to one resource?
         // lock running
         if (!isRunning() && !force) {
             return Future.failedFuture("resource loader is stopped");
