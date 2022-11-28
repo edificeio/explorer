@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Preserve the original list.
+ */
 public class NoopMessageMerger implements MessageMerger {
     @Override
     public String getId() {
