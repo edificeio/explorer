@@ -1,19 +1,17 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.ingest.impl.MessageMergerFactory;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
-import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -22,6 +20,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 public class IngestJob {
+    static Logger log = LoggerFactory.getLogger(IngestJob.class);
     public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
     public static final String INGESTOR_STATUS = "status";
     public static final String INGESTOR_JOB_METRICS = "metrics";
@@ -29,7 +28,6 @@ public class IngestJob {
     static final int DEFAULT_BATCH_SIZE = 100;
     static final int DEFAULT_MAX_ATTEMPT = 10;
     static final int DEFAULT_MAX_DELAY_MS = 45000;
-    static Logger log = LoggerFactory.getLogger(IngestJob.class);
     private final int batchSize;
     private final int maxAttempt;
     private final Vertx vertx;
@@ -49,11 +47,13 @@ public class IngestJob {
     private final boolean allowErrorRulesToBeApplied;
 
     private List<IngestJobErrorRule> errorRules;
+    private final MessageMerger messageMerger;
 
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
         this.vertx = vertx;
         this.messageReader = messageReader;
         this.messageIngester = messageIngester;
+        this.messageMerger = MessageMergerFactory.getMerger(config.getString("message-merger", "noop"));
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
@@ -157,7 +157,7 @@ public class IngestJob {
             try {
                 final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
-                messages.map(this::mergeMessages)
+                messages.map(this.messageMerger::mergeMessages)
                 .compose(result -> {
                     final List<ExplorerMessageForIngest> messagesToTreat;
                     if(allowErrorRulesToBeApplied) {
@@ -208,91 +208,6 @@ public class IngestJob {
                 .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
                 .collect(Collectors.toList());
         return new IngestJobResult(succeededSourceMessages, failedSourceMessages);
-    }
-
-    /**
-     * Merge messages concerning the same resource.
-     * @param messagesFromReader Messages
-     * @return
-     */
-    private MergeMessagesResult mergeMessages(final List<ExplorerMessageForIngest> messagesFromReader) {
-        final Map<String, ExplorerMessageForIngest> messagesToTreat = new HashMap<>();
-        final Map<String, List<ExplorerMessageForIngest>> messagesByResource = new HashMap<>();
-        //final Map<String, Long> lastVersionByResource = new HashMap<>();
-        // So far we don't need version as long as we can ensure that the order of the messages returned by the reader
-        // is the chronological order
-        for (final ExplorerMessageForIngest explorerMessageForIngest : messagesFromReader) {
-            final String resourceUniqueId = explorerMessageForIngest.getResourceUniqueId();
-            if(messagesByResource.containsKey(resourceUniqueId)) {
-                final ExplorerMessageForIngest alreadyGeneratedMessage = messagesToTreat.get(resourceUniqueId);
-                final ExplorerMessage.ExplorerAction currentAction = ExplorerMessage.ExplorerAction.valueOf(explorerMessageForIngest.getAction());
-                final ExplorerMessage.ExplorerAction alreadyGeneratedAction = ExplorerMessage.ExplorerAction.valueOf(alreadyGeneratedMessage.getAction());
-                switch (currentAction) {
-                    case Delete:
-                        messagesToTreat.put(resourceUniqueId, explorerMessageForIngest);
-                        break;
-                    case Upsert:
-                        switch (alreadyGeneratedAction) {
-                            case Delete:
-                                log.error("An extremely weird error occurred : an upsert message appeared after a delete message");
-                                break;
-                            case Audience:
-                                log.error("We do not know how to merge audience messages so far");
-                                break;
-                            case Upsert:
-                                messagesToTreat.put(resourceUniqueId, mergeMessageIntoExistingOne(alreadyGeneratedMessage, explorerMessageForIngest));
-                                break;
-                        }
-                        break;
-                    case Audience:
-                        log.error("We do not know how to merge audience messages so far");
-                        break;
-                }
-            } else {
-                messagesToTreat.put(resourceUniqueId, explorerMessageForIngest);
-            }
-            messagesByResource.compute(resourceUniqueId, (k, v) -> {
-                final List<ExplorerMessageForIngest> ingests;
-                if(v == null) {
-                    ingests = new ArrayList<>();
-                } else {
-                    ingests = v;
-                }
-                ingests.add(explorerMessageForIngest);
-                return ingests;
-            });
-        }
-        return new MergeMessagesResult(new ArrayList<>(messagesToTreat.values()), messagesByResource);
-    }
-
-    private ExplorerMessageForIngest mergeMessageIntoExistingOne(final ExplorerMessageForIngest oldMessage,
-                                                                 final ExplorerMessageForIngest newMessage) {
-        final ExplorerMessageForIngest merged = new ExplorerMessageForIngest(newMessage);
-        final JsonArray existingSubResources = oldMessage.getSubresources();
-        if(existingSubResources != null) {
-            for (int i = 0; i < existingSubResources.size(); i++) {
-                final JsonObject subResource = existingSubResources.getJsonObject(i);
-                final String subResourceId = subResource.getString("id");
-                if(subResource.getBoolean("deleted", false)) {
-                    merged.withSubResource(subResourceId, true);
-                } else {
-                    final ExplorerMessage.ExplorerContentType type;
-                    final String content;
-                    if(subResource.containsKey("contentPdf")){
-                        type =  ExplorerMessage.ExplorerContentType.Pdf;
-                        content = subResource.getString("contentPdf");
-                    } else if(subResource.containsKey("contentHtml")){
-                        type =  ExplorerMessage.ExplorerContentType.Html;
-                        content = subResource.getString("contentHtml");
-                    } else {
-                        type = ExplorerMessage.ExplorerContentType.Text;
-                        content = subResource.getString("content");
-                    }
-                    merged.withSubResourceContent(subResourceId, content, type);
-                }
-            }
-        }
-        return merged;
     }
 
 
