@@ -23,11 +23,9 @@ public class ErrorMessageTransformer implements MessageTransformer {
 
     @Override
     public List<ExplorerMessageForIngest> transform(List<ExplorerMessageForIngest> messages) {
-        return messages.stream().map(message -> {
-            return messageMatchesError(message).map(errorRule ->
-                    transormMessageToGenerateError(message, errorRule)
-            ).orElse(message);
-        }).collect(Collectors.toList());
+        return messages.stream().map(message -> messageMatchesError(message).map(errorRule ->
+                transormMessageToGenerateError(message, errorRule)
+        ).orElse(message)).collect(Collectors.toList());
     }
 
     private Optional<IngestJobErrorRule> messageMatchesError(ExplorerMessageForIngest message) {
@@ -70,7 +68,8 @@ public class ErrorMessageTransformer implements MessageTransformer {
             ingest.getMessage().put("public", 4);
         } else if("pg-ingest".equalsIgnoreCase(pof)) {
             // raise an error in Postgre because shared is supposed to be an array
-            ingest.getMessage().put("shared", false);
+            ingest.getMessage().put("creator_id", false);
+            ingest.getMessage().put("creatorId", false);
         }
         return ingest;
     }

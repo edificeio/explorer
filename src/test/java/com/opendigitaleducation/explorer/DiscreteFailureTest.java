@@ -323,7 +323,7 @@ public class DiscreteFailureTest {
         return errors;
     }
     private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForPG() {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRuleES("my_flag", ".*fail.*");
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRulePG("my_flag", ".*fail.*");
         errors.addAll(evictionRulePG("content", ".*fail.*"));
         return errors;
     }
