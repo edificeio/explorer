@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ingest.impl.MessageMergerFactory;
+import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -16,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
 
 public class IngestJob {
     static Logger log = LoggerFactory.getLogger(IngestJob.class);
@@ -44,9 +43,8 @@ public class IngestJob {
     private boolean pendingNotification = false;
     private final MessageConsumer messageConsumer;
 
-    private final boolean allowErrorRulesToBeApplied;
+    private final MessageTransformerChain messageTransformer;
 
-    private List<IngestJobErrorRule> errorRules;
     private final MessageMerger messageMerger;
 
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
@@ -57,12 +55,7 @@ public class IngestJob {
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
-        this.allowErrorRulesToBeApplied = config.getBoolean("error-rules-allowed", false);
-        if(allowErrorRulesToBeApplied) {
-            errorRules = new ArrayList<>();
-        } else {
-            errorRules = emptyList();
-        }
+        this.messageTransformer = new MessageTransformerChain();
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
@@ -159,12 +152,7 @@ public class IngestJob {
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
                 messages.map(this.messageMerger::mergeMessages)
                 .compose(result -> {
-                    final List<ExplorerMessageForIngest> messagesToTreat;
-                    if(allowErrorRulesToBeApplied) {
-                        messagesToTreat = transformMessagesBasedOnErrorRules(result.getMessagesToTreat());
-                    } else {
-                        messagesToTreat = result.getMessagesToTreat();
-                    }
+                    final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
                     return this.messageIngester.ingest(messagesToTreat).map(jobResult -> Pair.of(jobResult, result));
                 }).compose(ingestResultAndJobResult -> {
                     final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
@@ -208,58 +196,6 @@ public class IngestJob {
                 .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
                 .collect(Collectors.toList());
         return new IngestJobResult(succeededSourceMessages, failedSourceMessages);
-    }
-
-
-    private List<ExplorerMessageForIngest> transformMessagesBasedOnErrorRules(List<ExplorerMessageForIngest> result) {
-        return result.stream().map(message -> {
-            final ExplorerMessageForIngest transformedMessage;
-            if(messageMatchesError(message)) {
-                transformedMessage = transormMessageToGenerateError(message);
-            } else {
-                transformedMessage = message;
-            }
-            return transformedMessage;
-        }).collect(Collectors.toList());
-    }
-
-    /**
-     * Generates a message that will generate an error by setting values with wrong types.
-     * @param message Message that should generate an error
-     * @return A transformed version of the message that will generate an error upon ingestion
-     */
-    private ExplorerMessageForIngest transormMessageToGenerateError(ExplorerMessageForIngest message) {
-        final JsonObject duplicate = message.getMessage().copy();
-        final ExplorerMessageForIngest ingest = new ExplorerMessageForIngest(
-                message.getAction(),
-                message.getIdQueue().orElse(null),
-                message.getId(),
-                duplicate);
-        ingest.getMessage().put("public", 4); // raise an error because we specified "public" as being a boolean in the mapping
-        return ingest;
-    }
-
-    private boolean messageMatchesError(ExplorerMessageForIngest message) {
-        return this.errorRules.stream().anyMatch(errorRule -> {
-            if(errorRule.getValuesToTarget() != null) {
-                final JsonObject messageBody = message.getMessage();
-                final boolean bodyMatch = errorRule.getValuesToTarget().entrySet().stream().allMatch(fieldNameAndValue ->
-                    messageBody.getString(fieldNameAndValue.getKey(), "").matches(fieldNameAndValue.getValue())
-                );
-                if(bodyMatch) {
-                    log.debug("Evicting message " + messageBody + " based on " + errorRule);
-                } else {
-                    return false;
-                }
-            }
-            if(errorRule.getAction() != null && !message.getAction().matches(errorRule.getAction())) {
-                return false;
-            }
-            if(errorRule.getPriority() != null && !message.getPriority().name().matches(errorRule.getPriority())) {
-                return false;
-            }
-            return true;
-        });
     }
 
     private void onTaskComplete(final Promise<Void> current) {
@@ -373,9 +309,7 @@ public class IngestJob {
         }
     }
 
-    public void setErrorRules(final List<IngestJobErrorRule> errorRules) {
-        if(this.allowErrorRulesToBeApplied) {
-            this.errorRules = errorRules;
-        }
+    public MessageTransformerChain getMessageTransformer() {
+        return messageTransformer;
     }
 }

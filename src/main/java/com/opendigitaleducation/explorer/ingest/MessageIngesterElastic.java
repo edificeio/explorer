@@ -34,7 +34,6 @@ public class MessageIngesterElastic implements MessageIngester {
     //TODO if payload greater than max reduce maxPayload
     @Override
     public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
-        // TODO JBE messages appear to arrive in reverse order here
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
