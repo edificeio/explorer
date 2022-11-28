@@ -37,9 +37,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -121,11 +119,6 @@ public class DiscreteFailureTest {
     public void beforeTests(TestContext context){
         System.out.println("Flushing data");
         clearErrorRules();
-        //flush redis
-        /*final Async async = context.async();
-        redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
-            async.complete();
-        });*/
     }
 
 
@@ -139,12 +132,12 @@ public class DiscreteFailureTest {
     }
 
     /**
-     * <u>GOAL</u> : Test that no old message ever rewrites a fresher one.
+     * <u>GOAL</u> : Test that no old message (coming from a communication error with ES) ever rewrites a fresher one.
      *
      * <u>STEPS</u> :
      * <ol>
      *     <li>Create a resource</li>
-     *     <li>Activate error rules</li>
+     *     <li>Activate error rules to generate an error while saving in ES</li>
      *     <li>Update the resource n times (with n small enough to hold everything in one batch). The messages in between
      *     are designed to fail</li>
      *     <li>Launch the job x times</li>
@@ -157,19 +150,24 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
-    public void oldMessagesShouldNotRewriteNewOneWhenMessagesInOneBatchErrorInES(TestContext context) {
+    public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInOneBatchErrorInES(TestContext context) {
         testInterspersedErrorMessages(1, 2, 1, createErrorRulesForES(), context);
     }
 
     /**
-     * <u>GOAL</u> : Test that no old message ever rewrites a fresher one.
+     * <u>GOAL</u> : Test that no old message (coming from a communication error with Postgre) ever rewrites a fresher one.
      *
      * <u>STEPS</u> :
      * <ol>
      *     <li>Create a resource</li>
-     *     <li>Activate error rules</li>
-     *     <li>Update the resource n times (with n small enough to hold everything in one batch). The messages in between
-     *     are designed to fail</li>
+     *     <li>Activate error rules to generate an error when communicating with PG</li>
+     *     <li>Update the resource :
+     *      <ul>
+     *         <li>n times (with n small enough to hold everything in one batch) in an OK version</li>
+     *         <li>n times to fail</li>
+     *         <li>n times (with n small enough to hold everything in one batch) in an OK version</li>
+     *      </ul>
+     *     </li>
      *     <li>Launch the job x times</li>
      *     <li>Verify that the resource is whether at a version prior to the error or at the last valid version
      *     (both are functionally okay and depend entirely on the implementation and the configuration).</li>
@@ -180,18 +178,23 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
-    public void oldMessagesShouldNotRewriteNewOneWhenMessagesInOneBatchErrorInPG(TestContext context) {
+    public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInOneBatchErrorInPG(TestContext context) {
         testInterspersedErrorMessages(1, 2, 1, createErrorRulesForPG(), context);
     }
     /**
-     * <u>GOAL</u> : Test that no old message ever rewrites a fresher one across multiple batches of data.
+     * <u>GOAL</u> : Test that no old message (coming from a communication error with ES) ever rewrites a fresher one across multiple batches of data.
      *
      * <u>STEPS</u> :
      * <ol>
      *     <li>Create a resource</li>
-     *     <li>Activate error rules</li>
-     *     <li>Update the resource n times (with n small enough to hold everything in one batch). The messages in between
-     *     are designed to fail</li>
+     *     <li>Activate error rules to generate an error while communicating with ES</li>
+     *     <li>Update the resource :
+     *      <ul>
+     *         <li>n times (with n small enough to hold everything in one batch) in an OK version</li>
+     *         <li>n times to fail</li>
+     *         <li>n times (with n small enough to hold everything in one batch) in an OK version</li>
+     *      </ul>
+     *     </li>
      *     <li>Launch the job x times</li>
      *     <li>Verify that the resource is whether at a version prior to the error or at the last valid version
      *     (both are functionally okay and depend entirely on the implementation and the configuration).</li>
@@ -202,11 +205,11 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
-    public void oldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInES(TestContext context) {
+    public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInES(TestContext context) {
         testInterspersedErrorMessages(2, BATCH_SIZE * 5, BATCH_SIZE + 1, createErrorRulesForES(), context);
     }
     /**
-     * <u>GOAL</u> : Test that no old message ever rewrites a fresher one across multiple batches of data.
+     * <u>GOAL</u> : Test that no old message (coming from a communication error with Postgre) ever rewrites a fresher one across multiple batches of data.
      *
      * <u>STEPS</u> :
      * <ol>
@@ -224,7 +227,7 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
-    public void oldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInPG(TestContext context) {
+    public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInPG(TestContext context) {
         testInterspersedErrorMessages(2, BATCH_SIZE * 5, BATCH_SIZE + 1, createErrorRulesForPG(), context);
     }
     public void testInterspersedErrorMessages(final int nbFirstMessagesOk,
@@ -381,4 +384,100 @@ public class DiscreteFailureTest {
         return rules;
     }
 
+    private static class TestConfiguration {
+        final int nbFirstMessagesOk;
+        final int nbMessagesKO;
+        final int nbLastMessagesOk;
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors;
+
+        public TestConfiguration(int nbFirstMessagesOk, int nbMessagesKO, int nbLastMessagesOk, List<ErrorMessageTransformer.IngestJobErrorRule> errors) {
+            this.nbFirstMessagesOk = nbFirstMessagesOk;
+            this.nbMessagesKO = nbMessagesKO;
+            this.nbLastMessagesOk = nbLastMessagesOk;
+            this.errors = errors;
+        }
+    }
+
+    /* WIP
+    @Test
+    public void testNResourcesMErrors(TestContext context) {
+        final List<TestConfiguration> configurations = IntStream.range(0, BATCH_SIZE)
+            .mapToObj(resourceIndex -> new TestConfiguration(1 + resourceIndex, BATCH_SIZE * resourceIndex, 1 + resourceIndex,
+                    resourceIndex % 2 == 0 ? createErrorRulesForES() : createErrorRulesForPG()))
+            .collect(Collectors.toList());
+        testInterspersedErrorMessages(configurations, context);
+    }
+
+
+    public void testInterspersedErrorMessages(final List<TestConfiguration> configurations, final TestContext context) {
+        final Map<String, JsonObject> resources = configurations.stream().map(conf -> {
+            final String resourceName = "resource" + idtResource.incrementAndGet();
+            final JsonObject f1 = resource(resourceName);
+            f1.put("content", "initial");
+            return f1;
+        }).collect(Collectors.toMap(o -> o.getString("name"), o -> o));
+        final Set<String> resourceNames = resources.keySet();
+        final UserInfos user = test.directory().generateUser("usermove");
+        final Async async = context.async();
+        final int nbTimesToExecuteJob = 5 * configurations.stream().mapToInt(c -> c.nbFirstMessagesOk + c.nbMessagesKO + c.nbLastMessagesOk).sum();
+        resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+            context.assertTrue(
+                    fetch0.stream().noneMatch(resource -> resourceNames.contains(((JsonObject)resource).getString("name", ""))),
+                    "The user already has a resource called something like " + resourceNames
+            );
+            plugin.create(user, new ArrayList<>(resources.values()), false).onComplete(context.asyncAssertSuccess(r -> {
+                executeJobNTimesAndFetchUniqueResults(resourceNames.size(), user, resourceNames, context).compose(createdResources -> {
+                    ////////////////////////////
+                    // Generate update messages
+                    createdResources.stream().map(createdResource -> )
+                    final List<JsonObject> modifications = new ArrayList<>();
+                    final String expectedFinalMessage = "after first error message";
+                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbFirstMessagesOk, "before error messages"));
+                    modifications.addAll(generateModifiedResourcesToFail(createdResource, nbMessagesKO));
+                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbLastMessagesOk, expectedFinalMessage));
+                    setErrorRules(errors);
+                    return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
+                        ////////////////////////////
+                        // Launch the job n times to make sure that upon restart nothing changes
+                        executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
+                            ////////////////////////////
+                            // Verify that the desired state has been reached or that the error messages
+                            // were not processed
+                            final String contentOfMessage = asReturnedByFetch.getString("content", "");
+                            context.assertTrue(contentOfMessage.contains("initial") ||
+                                            contentOfMessage.contains("before error messages") ||
+                                            contentOfMessage.contains("after first error message"),
+                                    "The resource should be at a valid version before or after the version but not at the invalid one. Instead it was " + contentOfMessage);
+                            ////////////////////////////
+                            // Clear error rules and relaunch the job
+                            clearErrorRules();
+                            executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
+                                context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
+                                        "The resource should be at a valid version before or after the version but not at the invalid one");
+                                // TODO JBE this limitation comes from the fact that I manually add a field that is not supposed to be present on the source
+                                // and that an upsert in ES does not remove fields
+                                //context.assertFalse(finalResult.containsKey("my_flag"), "The final version of the document should not contain a flag but it was instead " + finalResult.getString("my_flag"));
+                                async.complete();
+                            }));
+                        }));
+                    }));
+                });
+            }));
+        }));
+    }
+
+    private Future<JsonObject> executeJobNTimesAndFetchUniqueResults(final int nbBatchExecutions, final UserInfos user,
+                                                                    final Set<String> resourceNames, final TestContext context) {
+        return executeJobNTimes(nbBatchExecutions, context).flatMap(e ->
+                resourceService.fetch(user, application, new ResourceSearchOperation())
+                        .map(results -> {
+                            final List<JsonObject> resultsForMyResource = results.stream().map(r -> ((JsonObject)r))
+                                    .filter(r -> resourceNames.contains(r.getString("name", "")))
+                                    .collect(Collectors.toList());
+                            context.assertEquals(resourceNames.size(), resultsForMyResource.size());
+                            return resultsForMyResource.get(0);
+                        })
+        );
+    }
+     */
 }

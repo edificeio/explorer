@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Transform messages based on a set of rules to produce errors at different stage of the ingestion.
+ */
 public class ErrorMessageTransformer implements MessageTransformer {
 
     static Logger log = LoggerFactory.getLogger(ErrorMessageTransformer.class);

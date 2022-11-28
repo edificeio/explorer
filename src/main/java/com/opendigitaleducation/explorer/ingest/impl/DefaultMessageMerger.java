@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Merge UPSERT and delete messages of a resource based on its resourceUniqueId field.
+ *
+ * So far it does not handle Audience message.
+ */
 public class DefaultMessageMerger implements MessageMerger {
 
     static Logger log = LoggerFactory.getLogger(DefaultMessageMerger.class);
@@ -23,11 +28,7 @@ public class DefaultMessageMerger implements MessageMerger {
         return "default";
     }
 
-    /**
-     * Merge messages concerning the same resource.
-     * @param messagesFromReader Messages
-     * @return
-     */
+    @Override
     public MergeMessagesResult mergeMessages(final List<ExplorerMessageForIngest> messagesFromReader) {
         final Map<String, ExplorerMessageForIngest> messagesToTreat = new HashMap<>();
         final Map<String, List<ExplorerMessageForIngest>> messagesByResource = new HashMap<>();
