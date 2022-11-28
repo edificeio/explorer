@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.vertx.core.CompositeFuture.all;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 @RunWith(VertxUnitRunner.class)
@@ -62,7 +63,7 @@ public class DiscreteFailureTest {
     static ElasticClientManager elasticClientManager;
     static ResourceService resourceService;
     static FakeMongoPlugin plugin;
-    static  RedisClient redisClient;
+    static FaillibleRedisClient redisClient;
     static String application;
     static IngestJob job;
     static MongoClient mongoClient;
@@ -82,7 +83,7 @@ public class DiscreteFailureTest {
         final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
-        redisClient = new RedisClient(test.vertx(), redisConfig);
+        redisClient = new FaillibleRedisClient(test.vertx(), redisConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
@@ -230,6 +231,86 @@ public class DiscreteFailureTest {
     public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInPG(TestContext context) {
         testInterspersedErrorMessages(2, BATCH_SIZE * 5, BATCH_SIZE + 1, createErrorRulesForPG(), context);
     }
+
+
+    /**
+     * <u>GOAL</u> : Test that even if a redis message cannot be written to Redis at first its content can finally be
+     * processed by the IngestJob when Redis is finally back online.
+     *
+     * <u>STEPS</u> :
+     * <ol>
+     *     <li>Create a resource</li>
+     *     <li>Activate error rules on REDIS</li>
+     *     <li>Update the resource n times to fail</li>
+     *     <li>Launch the job x times</li>
+     *     <li>Verify that the resource is whether at a version prior to the error or at the last valid version
+     *     (both are functionally okay and depend entirely on the implementation and the configuration).</li>
+     *     <li>Deactivate error rules</li>
+     *     <li>Launch the job x times</li>
+     *     <li>Verify that the resource has the desired end state.</li>
+     * </ol>
+     * @param context Test context
+     */
+    @Test
+    public void testMessagesThatCouldNotBeWrittenInRedisAreEventuallyIngested(TestContext context) {
+        errorOnRedis(1, 2, 0, createErrorRulesForRedis(), context);
+    }
+
+    public void errorOnRedis(final int nbFirstMessagesOk,
+                              final int nbMessagesKO,
+                              final int nbLastMessagesOk,
+                              final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
+                              final TestContext context) {
+        final String resourceName = "resource" + idtResource.incrementAndGet();
+        final JsonObject f1 = resource(resourceName);
+        f1.put("content", "initial");
+        final UserInfos user = test.directory().generateUser("usermove");
+        final Async async = context.async();
+        final int nbTimesToExecuteJob = 2 * (nbLastMessagesOk + nbMessagesKO + nbLastMessagesOk);
+        resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+            context.assertTrue(
+                    fetch0.stream().noneMatch(resource -> ((JsonObject)resource).getString("name", "").equals(f1.getString("name"))),
+                    "The user already had a resource called " + f1.getString("name")
+            );
+            plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+                executeJobNTimesAndFetchUniqueResult(1, user, resourceName, context).compose(createdResource -> {
+                    ////////////////////////////
+                    // Generate update messages
+                    final List<JsonObject> modifications = new ArrayList<>();
+                    final String expectedFinalMessage = "after first error message";
+                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbFirstMessagesOk, "before error messages"));
+                    modifications.addAll(generateModifiedResourcesToFail(createdResource, nbMessagesKO));
+                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbLastMessagesOk, expectedFinalMessage));
+                    redisClient.setErrorRules(errors);
+                    return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
+                        ////////////////////////////
+                        // Launch the job n times to make sure that upon restart nothing changes
+                        executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
+                            ////////////////////////////
+                            // Verify that the desired state has been reached or that the error messages
+                            // were not processed
+                            final String contentOfMessage = asReturnedByFetch.getString("content", "");
+                            context.assertTrue(contentOfMessage.contains("initial") ||
+                                            contentOfMessage.contains("before error messages") ||
+                                            contentOfMessage.contains("after first error message"),
+                                    "The resource should be at a valid version before or after the version but not at the invalid one. Instead it was " + contentOfMessage);
+                            ////////////////////////////
+                            // Clear error rules and relaunch the job
+                            redisClient.setErrorRules(emptyList());
+                            executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
+                                context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
+                                        "The resource should be at a valid version before or after the version but not at the invalid one");
+                                // TODO JBE this limitation comes from the fact that I manually add a field that is not supposed to be present on the source
+                                // and that an upsert in ES does not remove fields
+                                //context.assertFalse(finalResult.containsKey("my_flag"), "The final version of the document should not contain a flag but it was instead " + finalResult.getString("my_flag"));
+                                async.complete();
+                            }));
+                        }));
+                    }));
+                });
+            }));
+        }));
+    }
     public void testInterspersedErrorMessages(final int nbFirstMessagesOk,
                                               final int nbMessagesKO,
                                               final int nbLastMessagesOk,
@@ -327,6 +408,11 @@ public class DiscreteFailureTest {
     }
     private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForPG() {
         final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRulePG("my_flag", ".*fail.*");
+        errors.addAll(evictionRulePG("content", ".*fail.*"));
+        return errors;
+    }
+    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedis() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "xAdd");
         errors.addAll(evictionRulePG("content", ".*fail.*"));
         return errors;
     }
