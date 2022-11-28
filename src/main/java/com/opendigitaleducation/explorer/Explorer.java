@@ -64,7 +64,7 @@ public class Explorer extends BaseServer {
         final List<Future> futures = new ArrayList<>();
         //create postgres client
         log.info("Init postgres bus consumer...");
-        IPostgresClient.initPostgresConsumer(vertx, config, true);
+        IPostgresClient.initPostgresConsumer(vertx, config, false);
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, true);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
