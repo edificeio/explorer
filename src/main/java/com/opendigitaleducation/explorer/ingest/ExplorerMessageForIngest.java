@@ -56,4 +56,15 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
     public JsonObject getMetadata() {
         return metadata;
     }
+
+    @Override
+    public String toString() {
+        return "ExplorerMessageForIngest{" +
+                "idQueue=" + idQueue +
+                ", error='" + error + '\'' +
+                ", errorDetails='" + errorDetails + '\'' +
+                ", predictibleId=" + predictibleId +
+                ", metadata=" + metadata +
+                '}';
+    }
 }
