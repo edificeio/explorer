@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -72,6 +73,7 @@ public class DiscreteFailureTest {
     static IngestJob job;
     static MongoClient mongoClient;
     static ExplorerPluginClient pluginClient;
+    static AtomicInteger idtResource = new AtomicInteger(0);
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
@@ -100,7 +102,8 @@ public class DiscreteFailureTest {
         final JsonObject jobConf = new JsonObject()
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
-                .put("max-delay-ms", 2000);
+                .put("max-delay-ms", 2000)
+                .put("message-merger", "default");
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
         rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
@@ -175,7 +178,7 @@ public class DiscreteFailureTest {
                                               final int nbMessagesKO,
                                               final int nbLastMessagesOk,
                                               final TestContext context) {
-        final JsonObject f1 = resource("resource1");
+        final JsonObject f1 = resource("resource" + idtResource.incrementAndGet());
         f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
         final Async async = context.async();
@@ -245,8 +248,8 @@ public class DiscreteFailureTest {
     }
 
     private void activateErrorRules() {
-        job.setErrorRules(evictionRule("content", ".*fail.*"));
-        job.setErrorRules(evictionRule("my_flag", ".*fail.*"));
+        job.setErrorRules(evictionRuleES("content", ".*fail.*"));
+        job.setErrorRules(evictionRuleES("my_flag", ".*fail.*"));
     }
 
     private void clearErrorRules() {
@@ -284,7 +287,15 @@ public class DiscreteFailureTest {
         }).collect(Collectors.toList());
     }
 
-    private List<IngestJobErrorRule> evictionRule(final String attributeName, final String attributeValue) {
+    private List<IngestJobErrorRule> evictionRuleES(final String attributeName, final String attributeValue) {
+        final List<IngestJobErrorRule> rules = new ArrayList<>();
+        rules.add(new IngestJobErrorRuleBuilder()
+                .withValueToTarget(attributeName, attributeValue)
+                .createIngestJobErrorRule());
+        return rules;
+    }
+
+    private List<IngestJobErrorRule> evictionRulePQ(final String attributeName, final String attributeValue) {
         final List<IngestJobErrorRule> rules = new ArrayList<>();
         rules.add(new IngestJobErrorRuleBuilder()
                 .withValueToTarget(attributeName, attributeValue)
