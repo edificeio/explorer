@@ -45,7 +45,6 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +102,7 @@ public class Explorer extends BaseServer {
             futures.add(future);
         }
         //create folder service
-        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(vertx, config, postgresClient);
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create();
         final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         //create resources service
         final ShareTableManager shareTableManager = new DefaultShareTableManager();

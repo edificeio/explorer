@@ -5,6 +5,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPluginFactory;
+import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
@@ -36,6 +38,14 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     @Override
     public JsonObject setIdForModel(JsonObject json, String id) {
         return super.setIdForModel(json, id);
+    }
+
+
+    public static FolderExplorerPlugin create() throws Exception {
+        final IExplorerPlugin plugin =  ExplorerPluginFactory.createPostgresPlugin((params)->{
+            return new FolderExplorerPlugin(params.getCommunication(), params.getDb());
+        });
+        return (FolderExplorerPlugin) plugin;
     }
 
     public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final IPostgresClient postgres) throws Exception {
