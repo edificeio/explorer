@@ -11,6 +11,7 @@ import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
@@ -266,7 +267,8 @@ public class DiscreteFailureTest {
         f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
         final Async async = context.async();
-        final int nbTimesToExecuteJob = 2 * (nbLastMessagesOk + nbMessagesKO + nbLastMessagesOk);
+        final int nbMessages = nbLastMessagesOk + nbMessagesKO + nbLastMessagesOk;
+        final int nbTimesToExecuteJob = 2 * nbMessages;
         resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
             context.assertTrue(
                     fetch0.stream().noneMatch(resource -> ((JsonObject)resource).getString("name", "").equals(f1.getString("name"))),
@@ -300,9 +302,12 @@ public class DiscreteFailureTest {
                             executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
                                 context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
                                         "The resource should be at a valid version before or after the version but not at the invalid one");
-                                // TODO JBE this limitation comes from the fact that I manually add a field that is not supposed to be present on the source
+                                // This limitation comes from the fact that I manually add a field that is not supposed to be present on the source
                                 // and that an upsert in ES does not remove fields
                                 //context.assertFalse(finalResult.containsKey("my_flag"), "The final version of the document should not contain a flag but it was instead " + finalResult.getString("my_flag"));
+                                final JsonArray subresources = finalResult.getJsonArray("subresources", new JsonArray());
+                                final Set<String> srContents = subresources.stream().map(sr -> ((JsonObject) sr).getString("contentHtml")).collect(Collectors.toSet());
+                                context.assertEquals(nbMessages, srContents.size(), "There should be exactly one sub resource per message. What we got back is " + srContents);
                                 async.complete();
                             }));
                         }));
@@ -438,6 +443,13 @@ public class DiscreteFailureTest {
             modifiedResource.put("content", "modified for failure number " + idxMessage);
             modifiedResource.put("my_flag", "fail " + idxMessage);
             modifiedResource.put("_id", originalResource.getString("assetId"));
+            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
+            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
+            final JsonObject subResource = new JsonObject().put("id", subResourceId);
+            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of failed resource " + idxMessage + " <div>");
+            subResource.put("deleted", false);
+            subResources.add(subResource);
+            modifiedResource.put("subresources", subResources);
             return modifiedResource;
         }).collect(Collectors.toList());
     }
@@ -446,9 +458,17 @@ public class DiscreteFailureTest {
                                                                 final String messagePrefix) {
         final String prefix = messagePrefix == null ? "modified for success number " : messagePrefix;
         return IntStream.range(0, numberOfMessages).mapToObj(i -> {
+            final int idxMessage = indexMessage.incrementAndGet();
             final JsonObject modifiedResource = originalResource.copy();
             modifiedResource.put("content", prefix + indexMessage.incrementAndGet());
             modifiedResource.put("_id", originalResource.getString("assetId"));
+            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
+            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
+            final JsonObject subResource = new JsonObject().put("id", subResourceId);
+            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of succeeded resource " + idxMessage + " <div>");
+            subResource.put("deleted", false);
+            subResources.add(subResource);
+            modifiedResource.put("subresources", subResources);
             return modifiedResource;
         }).collect(Collectors.toList());
     }
