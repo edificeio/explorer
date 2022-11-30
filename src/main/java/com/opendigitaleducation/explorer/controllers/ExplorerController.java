@@ -3,6 +3,7 @@ package com.opendigitaleducation.explorer.controllers;
 import com.opendigitaleducation.explorer.Explorer;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.filters.MoveFilter;
+import com.opendigitaleducation.explorer.filters.ShareFilter;
 import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.services.FolderService;
@@ -417,6 +418,7 @@ public class ExplorerController extends BaseController {
     }
 
     @Put("/share/:application/:type/:resourceId")
+    @ResourceFilter(ShareFilter.class)
     @SecuredAction(value = "explorer.manager", type = ActionType.RESOURCE)
     public void shareResource(final HttpServerRequest request) {
         final String resourceId = request.params().get("resourceId");
