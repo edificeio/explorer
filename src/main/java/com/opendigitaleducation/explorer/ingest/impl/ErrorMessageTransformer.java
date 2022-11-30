@@ -70,9 +70,8 @@ public class ErrorMessageTransformer implements MessageTransformer {
             // raise an error because we specified "public" as being a boolean in the mapping
             ingest.getMessage().put("public", 4);
         } else if("pg-ingest".equalsIgnoreCase(pof)) {
-            // raise an error in Postgre because shared is supposed to be an array
-            ingest.getMessage().put("creator_id", false);
-            ingest.getMessage().put("creatorId", false);
+            // raise an error in Postgre because application max length is 100
+            ingest.getMessage().put("application", "DebGwKIkgDVcnDbiIDZyVPzfZT8FCwn3ywMBskJdNqJYtVEfNUJEAljXsIfrTTOPLwlOa3Lw5UjX7evnOBfafKTsSLU0ZOfJIvFHB8BqKBjzwTtCNmIrWHk11dfI730KOHuRDYwRSbthCwHNFvfza6KhGexpKBd1uMyWiglZobg31FWFpPszRjhNcZlZRLNGyJprsKjlojkCqu5QxvImSwOhA7DuYQwmHx4zAQevpNi8qgEGKUk4qeoZWMubt5RDrLOiWoAxCEyt3kiNf1Fl2sl4iKBFcaLGUVbJeNVXs7oST5nvTcrh7eXpKPb6yIFWwkawHuxZ8gJ1MBfM7PpboGy3evdLDEqvgf7PUzTwmAMMfsjyn0s2bgzHUi2x2qwokraEhXDYLuqC69MOZESuPSBM5griE6hhKDIogLZAo0ZeujMKny8dgyvGMbMReJgJKQryp6AtJcHP7m8Yf6LVziTuzk0dHXl0J4TSNlWST1IfGVFdAUNgaQ5md7e3RVp0");
         }
         return ingest;
     }
