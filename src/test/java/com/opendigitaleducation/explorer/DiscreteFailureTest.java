@@ -26,7 +26,6 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;
@@ -35,10 +34,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -58,7 +59,7 @@ public class DiscreteFailureTest {
     @ClassRule
     public static MongoDBContainer mongoDBContainer = test.database().createMongoContainer().withReuse(true);
     @ClassRule
-    public static GenericContainer redisContainer = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine")).withExposedPorts(6379);
+    public static GenericContainer redisContainer = test.database().createRedisContainer().withExposedPorts(6379);
     @Rule
     public Timeout timeoutRule = Timeout.seconds(360000);
     static ElasticClientManager elasticClientManager;
@@ -208,7 +209,7 @@ public class DiscreteFailureTest {
      */
     @Test
     public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInES(TestContext context) {
-        testInterspersedErrorMessages(2, BATCH_SIZE * 5, BATCH_SIZE + 1, createErrorRulesForES(), context);
+        testInterspersedErrorMessages(2, BATCH_SIZE + 1, BATCH_SIZE + 1, createErrorRulesForES(), context);
     }
     /**
      * <u>GOAL</u> : Test that no old message (coming from a communication error with Postgre) ever rewrites a fresher one across multiple batches of data.
@@ -230,7 +231,7 @@ public class DiscreteFailureTest {
      */
     @Test
     public void testOldMessagesShouldNotRewriteNewOneWhenMessagesInMultipleBatchesErrorInPG(TestContext context) {
-        testInterspersedErrorMessages(2, BATCH_SIZE * 5, BATCH_SIZE + 1, createErrorRulesForPG(), context);
+        testInterspersedErrorMessages(2, BATCH_SIZE + 1, BATCH_SIZE + 1, createErrorRulesForPG(), context);
     }
 
 
@@ -327,7 +328,8 @@ public class DiscreteFailureTest {
         f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
         final Async async = context.async();
-        final int nbTimesToExecuteJob = 2 * (nbLastMessagesOk + nbMessagesKO + nbLastMessagesOk);
+        final int nbMessages = nbFirstMessagesOk + nbMessagesKO + nbLastMessagesOk;
+        final int nbTimesToExecuteJob = 5;
         resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
             context.assertTrue(
                     fetch0.stream().noneMatch(resource -> ((JsonObject)resource).getString("name", "").equals(f1.getString("name"))),
@@ -360,10 +362,13 @@ public class DiscreteFailureTest {
                             clearErrorRules();
                             executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
                                 context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
-                                        "The resource should be at a valid version before or after the version but not at the invalid one");
+                                        "The resource should be at a valid version");
                                 // TODO JBE this limitation comes from the fact that I manually add a field that is not supposed to be present on the source
                                 // and that an upsert in ES does not remove fields
                                 //context.assertFalse(finalResult.containsKey("my_flag"), "The final version of the document should not contain a flag but it was instead " + finalResult.getString("my_flag"));
+                                final JsonArray subresources = finalResult.getJsonArray("subresources", new JsonArray());
+                                final Set<String> srContents = subresources.stream().map(sr -> ((JsonObject) sr).getString("contentHtml")).collect(Collectors.toSet());
+                                context.assertEquals(nbMessages, srContents.size(), "There should be exactly one sub resource per message. What we got back is " + srContents);
                                 async.complete();
                             }));
                         }));
@@ -404,7 +409,9 @@ public class DiscreteFailureTest {
                 context.assertEquals(1, resultsForMyResource.size());
                 return resultsForMyResource.get(0);
             })
-        );
+            .onFailure(Throwable::printStackTrace)
+        )
+        .onFailure(Throwable::printStackTrace);
     }
 
     private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForES() {
@@ -432,6 +439,7 @@ public class DiscreteFailureTest {
         if (nbTimesToExecute <= 0) {
             onDone = Future.succeededFuture();
         } else {
+            System.out.println("Still " + nbTimesToExecute + " times to execute the job");
             onDone = job.execute(true).compose(e -> executeJobNTimes(nbTimesToExecute - 1, context));
         }
         return onDone.onFailure(e -> context.asyncAssertFailure());

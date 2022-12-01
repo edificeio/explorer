@@ -67,6 +67,7 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
         if(source.containsKey("my_flag")) {
             message.getMessage().put("my_flag", source.getString("my_flag"));
         }
+        message.getMessage().put("subresources", source.getJsonArray("subresources", new JsonArray()));
         return Future.succeededFuture(message);
     }
 
