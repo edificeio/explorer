@@ -253,6 +253,7 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
+    @Ignore
     public void testMessagesThatCouldNotBeWrittenInRedisAreEventuallyIngested(TestContext context) {
         errorOnRedis(1, 2, 0, createErrorRulesForRedis(), context);
     }
