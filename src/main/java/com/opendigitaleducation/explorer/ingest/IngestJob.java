@@ -1,6 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.ingest.impl.MessageMergerFactory;
+import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
 import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
@@ -51,7 +51,7 @@ public class IngestJob {
         this.vertx = vertx;
         this.messageReader = messageReader;
         this.messageIngester = messageIngester;
-        this.messageMerger = MessageMergerFactory.getMerger(config.getString("message-merger", "noop"));
+        this.messageMerger = MessageMergerRepository.getMerger(config.getString("message-merger", "default"));
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
