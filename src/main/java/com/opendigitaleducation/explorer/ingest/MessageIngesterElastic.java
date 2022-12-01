@@ -14,6 +14,8 @@ import org.entcore.common.explorer.ExplorerMessage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+
 public class MessageIngesterElastic implements MessageIngester {
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
 
@@ -84,6 +86,15 @@ public class MessageIngesterElastic implements MessageIngester {
                 nbIngestedPerAction.compute(op.getMessage().getAction(), (key, val) -> val + 1l);
             }
             return new IngestJob.IngestJobResult(succeed, failed);
+        }).otherwise(th -> {
+            th.printStackTrace();
+            final List<ExplorerMessageForIngest> failed = operations.stream().map(op -> {
+                op.message.setError("bulk.operation.error");
+                op.message.setErrorDetails(th.getMessage());
+                return op.message;
+            }).collect(Collectors.toList());
+            return new IngestJob.IngestJobResult(
+                    emptyList(), failed);
         });
     }
 
