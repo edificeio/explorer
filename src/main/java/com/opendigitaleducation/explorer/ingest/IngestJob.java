@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
 import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
+import com.opendigitaleducation.explorer.ingest.impl.MicrometerJobMetricsRecorder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -47,6 +48,8 @@ public class IngestJob {
 
     private final MessageMerger messageMerger;
 
+    private final IngestJobMetricsRecorder ingestJobMetricsRecorder;
+
     public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
         this.vertx = vertx;
         this.messageReader = messageReader;
@@ -56,6 +59,7 @@ public class IngestJob {
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
         this.messageTransformer = new MessageTransformerChain();
+        this.ingestJobMetricsRecorder = new MicrometerJobMetricsRecorder();
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
@@ -146,8 +150,10 @@ public class IngestJob {
         final Promise<Void> current = Promise.promise();
         pending.add(current.future());
         idExecution++;
+        this.ingestJobMetricsRecorder.onPendingIngestCycleExecutionChanged(pending.size());
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
+                this.ingestJobMetricsRecorder.onIngestCycleStarted();
                 final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
                 messages.map(this.messageMerger::mergeMessages)
@@ -157,6 +163,7 @@ public class IngestJob {
                 }).compose(ingestResultAndJobResult -> {
                     final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
                     final Future<IngestJobResult> future;
+                    this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight());
                     if (ingestResult.size() > 0) {
                         future = this.messageReader.updateStatus(transformIngestResult(ingestResult, ingestResultAndJobResult.getRight()), maxAttempt).map(ingestResult);
                     } else {
@@ -166,13 +173,16 @@ public class IngestJob {
                 }).onComplete(messageRes -> {
                     try {
                         if (messageRes.succeeded()) {
+                            this.ingestJobMetricsRecorder.onIngestCycleSucceeded();
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
                         } else {
+                            this.ingestJobMetricsRecorder.onIngestCycleFailed();
                             log.error("Failed to load messages on search engine:", messageRes.cause());
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
                         }
                     } catch (Exception exc) {
                     } finally {
+                        this.ingestJobMetricsRecorder.onIngestCycleCompleted();
                         onTaskComplete(current);
                         //if no pending execution => trigger next execution
                         if (tmpIdExecution == idExecution) {
