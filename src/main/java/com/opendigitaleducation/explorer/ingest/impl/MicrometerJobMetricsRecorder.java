@@ -26,6 +26,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter failedMessagesCounter;
     private final Counter succeededMessagesCounter;
     private final Timer ingestionTimes;
+    private final Counter jobCounter;
 
     public MicrometerJobMetricsRecorder() {
         final MeterRegistry registry = BackendRegistries.getDefaultNow();
@@ -50,12 +51,24 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         succeededMessagesCounter = Counter.builder("ingest.message.succeeded")
                 .description("number of succeeded messages")
                 .register(registry);
+        jobCounter = Counter.builder("ingest.job")
+                .description("number of launched jobs")
+                .register(registry);
         ingestionTimes = Timer.builder("ingest.ingestion.time")
                 .description("ingestion time of messages")
-                .minimumExpectedValue(Duration.ofMillis(0))
-                .maximumExpectedValue(Duration.ofMillis(60000))
+                .maximumExpectedValue(Duration.ofMinutes(2L))
                 .publishPercentileHistogram()
                 .register(registry);
+    }
+
+    @Override
+    public void onJobStarted() {
+        jobCounter.increment();
+    }
+
+    @Override
+    public void onJobStopped() {
+        jobCounter.increment(-1.);
     }
 
     @Override
@@ -85,9 +98,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         failedMessagesCounter.increment(ingestJobResult.getFailed().size());
         succeededMessagesCounter.increment(ingestJobResult.getSucceed().size());
         for (ExplorerMessageForIngest explorerMessageForIngest : ingestJobResult.getSucceed()) {
-            getMessageCreationTime(explorerMessageForIngest).ifPresent(creationTime -> {
-                ingestionTimes.record(now - creationTime, TimeUnit.MILLISECONDS);
-            });
+            getMessageCreationTime(explorerMessageForIngest).ifPresent(creationTime -> ingestionTimes.record(now - creationTime, TimeUnit.MILLISECONDS));
         }
     }
 

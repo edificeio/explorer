@@ -60,6 +60,7 @@ public class IngestJob {
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
         this.messageTransformer = new MessageTransformerChain();
         this.ingestJobMetricsRecorder = new MicrometerJobMetricsRecorder();
+        this.ingestJobMetricsRecorder.onJobStarted();
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
@@ -276,6 +277,7 @@ public class IngestJob {
     }
 
     public Future<Void> stop() {
+        this.ingestJobMetricsRecorder.onJobStopped();
         this.messageReader.stop();
         this.status = IngestJobStatus.Stopped;
         if (subscription != null) {
