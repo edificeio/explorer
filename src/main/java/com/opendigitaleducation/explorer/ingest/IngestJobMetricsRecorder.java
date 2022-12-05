@@ -1,6 +1,10 @@
 package com.opendigitaleducation.explorer.ingest;
 
 public interface IngestJobMetricsRecorder {
+    void onJobStarted();
+
+    void onJobStopped();
+
     void onIngestCycleStarted();
     void onIngestCycleSucceeded();
     void onIngestCycleFailed();
@@ -9,7 +13,17 @@ public interface IngestJobMetricsRecorder {
 
     void onPendingIngestCycleExecutionChanged(int size);
 
-    public static class NoopIngestJobMetricsRecorder implements IngestJobMetricsRecorder {
+    class NoopIngestJobMetricsRecorder implements IngestJobMetricsRecorder {
+        @Override
+        public void onJobStarted() {
+
+        }
+
+        @Override
+        public void onJobStopped() {
+
+        }
+
         @Override
         public void onIngestCycleStarted() {
 
