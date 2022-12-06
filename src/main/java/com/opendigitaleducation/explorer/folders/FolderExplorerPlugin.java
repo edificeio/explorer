@@ -12,7 +12,6 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
@@ -20,6 +19,8 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     protected final FolderExplorerDbSql dbHelper;
@@ -58,12 +59,12 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
     public static FolderExplorerPlugin withPgStream(final Vertx vertx, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, getExplorerPluginMetricsRecorder());
         return new FolderExplorerPlugin(communication, postgres);
     }
 
     public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
         return new FolderExplorerPlugin(communication, postgres);
     }
 

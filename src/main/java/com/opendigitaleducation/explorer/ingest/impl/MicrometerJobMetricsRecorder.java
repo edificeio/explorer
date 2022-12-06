@@ -25,8 +25,8 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter ingestCycleCompletedCounter;
     private final Counter failedMessagesCounter;
     private final Counter succeededMessagesCounter;
-    private final Timer ingestionTimes;
     private final Counter jobCounter;
+    private final Timer ingestionTimes;
 
     public MicrometerJobMetricsRecorder() {
         final MeterRegistry registry = BackendRegistries.getDefaultNow();
@@ -113,4 +113,5 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     public void onPendingIngestCycleExecutionChanged(int size) {
 
     }
+
 }

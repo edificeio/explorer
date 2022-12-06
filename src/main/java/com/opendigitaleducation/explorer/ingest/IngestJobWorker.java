@@ -10,8 +10,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +18,9 @@ public class IngestJobWorker extends AbstractVerticle {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
     private IngestJob job;
 
-
     @Override
     public void start(final Promise<Void> startPromise) throws Exception {
+        IngestJobMetricsRecorderFactory.init(config());
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), true, false);
         //create ingest job
@@ -30,7 +28,8 @@ public class IngestJobWorker extends AbstractVerticle {
         final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);
         final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient);
         log.info("Starting ingest job worker... ");
-        job = new IngestJob(vertx, reader, ingester, ingestConfig);
+        final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
         final List<Future> futures = new ArrayList<>();
         futures.add(job.start());
         //call start promise

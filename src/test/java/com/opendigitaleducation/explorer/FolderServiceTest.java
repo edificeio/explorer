@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
@@ -14,6 +15,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
@@ -51,6 +53,8 @@ public class FolderServiceTest {
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
+        IngestJobMetricsRecorderFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String index = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);

@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
@@ -19,7 +20,12 @@ import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     public static final String FAKE_APPLICATION = "test";
@@ -44,12 +50,14 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     }
 
     public static FakeMongoPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
+        ExplorerPluginMetricsFactory.init(new JsonObject());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
         return new FakeMongoPlugin(communication, mongoClient);
     }
 
     public static FakeMongoPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgresClient, final MongoClient mongoClient) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient);
+        ExplorerPluginMetricsFactory.init(new JsonObject());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient, getExplorerPluginMetricsRecorder());
         return new FakeMongoPlugin(communication, mongoClient);
     }
 
