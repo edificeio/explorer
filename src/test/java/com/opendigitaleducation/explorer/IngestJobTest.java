@@ -2,9 +2,10 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.services.FolderService;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
@@ -16,6 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.user.UserInfos;
@@ -58,6 +60,8 @@ public abstract class IngestJobTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        IngestJobMetricsRecorderFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
         createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());

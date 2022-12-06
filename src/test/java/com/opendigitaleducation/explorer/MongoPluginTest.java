@@ -1,9 +1,10 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -18,6 +19,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
@@ -39,6 +41,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 @RunWith(VertxUnitRunner.class)
 public class MongoPluginTest {
@@ -64,6 +68,8 @@ public class MongoPluginTest {
     public static void setUp(TestContext context) throws Exception {
         test.database().initNeo4j(context, neo4jContainer);
         test.database().initMongo(context, mongoDBContainer);
+        IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        ExplorerPluginMetricsFactory.init(new JsonObject());
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
@@ -73,7 +79,7 @@ public class MongoPluginTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
+        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, getExplorerPluginMetricsRecorder());
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withPostgresChannel(test.vertx(), postgresClient, mongoClient);

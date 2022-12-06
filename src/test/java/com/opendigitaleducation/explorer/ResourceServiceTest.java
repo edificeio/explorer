@@ -1,9 +1,10 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -17,6 +18,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
@@ -55,6 +57,8 @@ public class ResourceServiceTest {
         final HttpClientOptions httpOptions = new HttpClientOptions().setDefaultHost(esContainer.getHost()).setDefaultPort(esContainer.getMappedPort(9200));
         final HttpClient httpClient = test.vertx().createHttpClient(httpOptions);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
+        IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        ExplorerPluginMetricsFactory.init(new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();

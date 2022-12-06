@@ -6,18 +6,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_APPLICATION = "test";
@@ -34,12 +36,14 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     }
 
     public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis);
+        ExplorerPluginMetricsFactory.init(new JsonObject());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
         return new FakePostgresPlugin(communication, postgres);
     }
 
     public static FakePostgresPlugin withPostgresChannel(final Vertx vertx, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres);
+        ExplorerPluginMetricsFactory.init(new JsonObject());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, getExplorerPluginMetricsRecorder());
         return new FakePostgresPlugin(communication, postgres);
     }
 

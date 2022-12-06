@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.ingest.impl.ErrorMessageTransformer;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
@@ -21,6 +22,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Request;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
@@ -45,6 +47,7 @@ import java.util.stream.IntStream;
 
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.singletonList;
+import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 @RunWith(VertxUnitRunner.class)
 public class IngestJobStressTest {
@@ -76,6 +79,8 @@ public class IngestJobStressTest {
         test.database().initMongo(context, mongoDBContainer);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
+        IngestJobMetricsRecorderFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(new JsonObject());
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + resourceIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
@@ -85,7 +90,7 @@ public class IngestJobStressTest {
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         redisClient = new FaillibleRedisClient(test.vertx(), redisConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient);
+        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, getExplorerPluginMetricsRecorder());
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withRedisStream(test.vertx(), redisClient, mongoClient);

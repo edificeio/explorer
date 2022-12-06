@@ -2,7 +2,6 @@ package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
 import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
-import com.opendigitaleducation.explorer.ingest.impl.MicrometerJobMetricsRecorder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -50,7 +49,7 @@ public class IngestJob {
 
     private final IngestJobMetricsRecorder ingestJobMetricsRecorder;
 
-    public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final JsonObject config) {
+    public IngestJob(final Vertx vertx, final MessageReader messageReader, final MessageIngester messageIngester, final IngestJobMetricsRecorder metricsRecorder, final JsonObject config) {
         this.vertx = vertx;
         this.messageReader = messageReader;
         this.messageIngester = messageIngester;
@@ -59,7 +58,7 @@ public class IngestJob {
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
         this.messageTransformer = new MessageTransformerChain();
-        this.ingestJobMetricsRecorder = new MicrometerJobMetricsRecorder();
+        this.ingestJobMetricsRecorder = metricsRecorder;
         this.ingestJobMetricsRecorder.onJobStarted();
         messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
@@ -115,7 +114,7 @@ public class IngestJob {
 
     public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final IPostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
         final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient);
-        return new IngestJob(vertx, reader, ingester, config);
+        return new IngestJob(vertx, reader, ingester, IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder(), config);
     }
 
     public Future<JsonObject> getMetrics() {

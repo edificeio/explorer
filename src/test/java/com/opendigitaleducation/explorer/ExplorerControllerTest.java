@@ -4,6 +4,7 @@ import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
@@ -23,6 +24,7 @@ import io.vertx.redis.client.Command;
 import io.vertx.redis.client.Request;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
@@ -60,6 +62,8 @@ public class ExplorerControllerTest {
     @BeforeClass
     public static void setUp(final TestContext context) throws Exception {
         EventStoreFactory.getFactory().setVertx(test.vertx());
+        ExplorerPluginMetricsFactory.init(new JsonObject());
+        IngestJobMetricsRecorderFactory.init(new JsonObject());
         final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
         final RedisClient redisClient = new RedisClient(test.vertx(), redisConfig);
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
