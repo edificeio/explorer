@@ -8,9 +8,24 @@ interface OdeContextProps {
 
 const OdeContext = createContext<OdeContextProps | null>(null!);
 
-export default function OdeProvider({ children }: { children: ReactNode }) {
+export type OdeProviderParams = {
+  app: string;
+  version?: string | null;
+  cdnDomain?: string | null;
+};
+
+export default function OdeProvider({
+  children,
+  params,
+}: {
+  params: OdeProviderParams;
+  children: ReactNode;
+}) {
   //   const { session, login, logout } = useOdeBackend(null, null);
-  const { session } = useOdeBackend(null, null);
+  const { session } = useOdeBackend(
+    params.version || null,
+    params.cdnDomain || null,
+  );
 
   const values = useMemo(
     () => ({
