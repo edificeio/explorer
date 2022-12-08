@@ -20,6 +20,7 @@
       "@components/*": ["./components/*"],
       "@pages/*": ["./pages/*"],
       "@hooks/*": ["./hooks/*"],
+      "@contexts/*": ["./contexts/*"]
     }
   },
   "include": ["src"],
