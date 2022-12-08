@@ -19,6 +19,10 @@ export default defineConfig({
         find: "@hooks",
         replacement: path.resolve(__dirname, "./src/hooks"),
       },
+      {
+        find: "@contexts",
+        replacement: path.resolve(__dirname, "./src/contexts"),
+      },
     ],
   },
   /* build: {
@@ -37,15 +41,16 @@ export default defineConfig({
         target: "http://localhost:8090",
         changeOrigin: false,
       },
-      "^\/(?=assets|theme|locale|i18n|skin)": {
+      "^/(?=assets|theme|locale|i18n|skin)": {
         target: "http://localhost:8090",
         changeOrigin: false,
       },
       // Entcore urls
-      "^\/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace)": {
-        target: "http://localhost:8090",
-        changeOrigin: false,
-      },
+      "^/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace)":
+        {
+          target: "http://localhost:8090",
+          changeOrigin: false,
+        },
       // App urls
       "/blog": {
         target: "http://localhost:8090",

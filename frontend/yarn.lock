@@ -365,6 +365,30 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@ode-react-ui/advanced@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/advanced/-/advanced-1.0.5.tgz#ad5536ba674c98faaa9a325ff1b145cef1121b63"
+  integrity sha512-NWEMFTSmL21gw3J08UOiVdyTADWjP/hxalKthswnZuOGqCsjvvhL3zs8ojzWRoNB0st2cDt/ufdvpZlU5P3+NA==
+
+"@ode-react-ui/core@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/core/-/core-1.0.6.tgz#a68a260e83903695e8cc7d46958d2e519796f590"
+  integrity sha512-/VQKN95kQhHug1McTYqNPy6m7lgVgqp8WTm1yEFe5j7uUq80I5fyH7N8imFoP+lNSxS7hpsI96oa5s0Qn0klnQ==
+
+"@ode-react-ui/hooks@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/hooks/-/hooks-1.0.6.tgz#451c76c9a1ff75c3b196652cda8e7b0206297fab"
+  integrity sha512-EmABmVM3i3nTmGbDTLysJXt1+4aHHbjhN1c1jPNt1YN4Zr/aXY9iHybxwuO7Wh8b+KjPft+9YxAxAZ7JyKOzsA==
+  dependencies:
+    clsx "1.2.1"
+    react "18.2.0"
+    react-dom "18.2.0"
+
+"@ode-react-ui/icons@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/icons/-/icons-1.0.6.tgz#747aef035d5cb4a9584ec8167b7afcf82dd8bdf2"
+  integrity sha512-5fN6o0yX5dFOdTglb9SPL8gpwNg9RAau7XMfQ6AmGY6RDYNrKbuGIZNuLGPmgEC0bEmxAcE/RfWruqAgdXnq9g==
+
 "@remix-run/router@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.0.1.tgz#88d7ac31811ab0cef14aaaeae2a0474923b278bc"
@@ -2121,9 +2145,14 @@ object.values@^1.1.5:
     define-properties "^1.1.4"
     es-abstract "^1.20.4"
 
-"ode-ts-client@link:../../ode-ts-client":
-  version "0.0.0"
-  uid ""
+ode-ts-client@^1.0.0-explorer.202211181040:
+  version "1.0.0-explorer.202211181040"
+  resolved "https://registry.yarnpkg.com/ode-ts-client/-/ode-ts-client-1.0.0-explorer.202211181040.tgz#d92086c55e5bc4b0eb411c3d97328f077b1aac18"
+  integrity sha512-4JXXjm1obf7FZwN5Z1RB9JgjUfXU65Y23trPfDqbtZAvSnE4dZMQCK8G90wSuLDAWTcjScUG3HcCmcXHN9XZJg==
+  dependencies:
+    axios "~0.21.1"
+    core-js "3.8.3"
+    rxjs "7.3.0"
 
 once@^1.3.0:
   version "1.4.0"
