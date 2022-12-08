@@ -8,19 +8,18 @@ import { Plus } from "@ode-react-ui/icons";
 
 function App() {
   const { session } = useOdeContext();
-  if (session === null) {
-    return <div>Impossible de se connecter au backend.</div>;
-  }
 
-  // const loginForm = session.notLoggedIn ? (
-  //   <button type="button" onClick={() => login(/* login, mdp */)}>
-  //     Login
-  //   </button>
-  // ) : (
-  //   <button type="button" onClick={() => logout()}>
-  //     Logout
-  //   </button>
-  // );
+  if (!session || session.notLoggedIn) {
+    return (
+      <div>
+        <a href="http://localhost:8090/" target="_blank" rel="noreferrer">
+          S'identifier
+        </a>
+        sur le backend...
+        <button type="button">OK</button>
+      </div>
+    );
+  }
 
   const fakeData = {
     id: "root",
