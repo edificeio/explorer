@@ -13,15 +13,17 @@ interface ExplorerContextProps {
   context: IExplorerContext;
 }
 
+interface ExplorerProviderProps {
+  children: ReactNode;
+  types: ResourceType[];
+}
+
 const ExplorerContext = createContext<ExplorerContextProps | null>(null!);
 
 export default function ExplorerContextProvider({
   children,
   types,
-}: {
-  children: ReactNode;
-  types: ResourceType[];
-}) {
+}: ExplorerProviderProps) {
   const { params, explorer, session } = useOdeContext();
 
   const context = explorer.createContext(types, params.app);
