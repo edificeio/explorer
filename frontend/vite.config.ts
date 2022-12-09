@@ -56,6 +56,10 @@ export default defineConfig({
         target: "http://localhost:8090",
         changeOrigin: false,
       },
+      "/explorer": {
+        target: "http://localhost:8090",
+        changeOrigin: false,
+      },
     },
     host: "0.0.0.0",
     port: 3000,

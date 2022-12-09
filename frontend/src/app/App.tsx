@@ -1,13 +1,17 @@
+import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
+import useI18n from "@hooks/useI18n";
 import { TreeView } from "@ode-react-ui/advanced";
 import { AppCard, Button, Header } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
+// import i18n from "i18n";
 // import Blog from "@pages/Blog";
 // import Home from "@pages/Home";
 // import { Routes, Route } from "react-router-dom";
 
 function App() {
   const { session } = useOdeContext();
+  const { i18n } = useI18n();
 
   if (!session || session.notLoggedIn) {
     return (
@@ -16,10 +20,29 @@ function App() {
           S'identifier
         </a>
         sur le backend...
-        <button type="button">OK</button>
       </div>
     );
   }
+
+  const { context } = useExplorerContext();
+  // TODO initialize search parameters. Here and/or in the dedicated React component
+  // context.getSearchParameters().pagination.pageSize = 50;
+
+  // Do explore...
+  context.initialize();
+  // ...results are observable in latestResources
+  /* TODO : il faudrait que le composant tree (ou son parent) s'abonne aux résultats de recherche,
+            et adapte les données en conséquence.
+    const { fakeData, setFakeData } = useState<IFolder & {section:boolean;}>({
+      id: "root",
+      name: "Section Element",
+      section: true,
+      children: [
+        {
+          id: "1",
+          name: "level 1 arborescence tree",
+          <div className="
+  */
 
   const fakeData = {
     id: "root",
@@ -93,6 +116,7 @@ function App() {
 
   return (
     <div className="App">
+      <h1>{i18n("alttext.help")}</h1>
       <Header />
       <main className="bg-white container">
         <div className="container-fluid d-flex justify-content-between py-16 border-bottom">
