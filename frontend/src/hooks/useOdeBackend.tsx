@@ -20,9 +20,7 @@ export default function useOdeBackend(
   const notif = NotifyFrameworkFactory.instance();
   const { http } = TransportFrameworkFactory.instance();
 
-  const [session, setSession] = useState<ISession | null>(
-    sessionFramework.session,
-  );
+  const [session, setSession] = useState<ISession | null>(null);
 
   // Exécuté au premier render du Composant
   useEffect(() => {
@@ -31,9 +29,9 @@ export default function useOdeBackend(
       try {
         await sessionFramework.initialize();
         await configure.initialize(version, cdnDomain);
-        setSession(sessionFramework.session); // ...same session object, but triggers React rendering.
+        setSession(sessionFramework.session); // ...same object, but triggers React.
       } catch (e) {
-        setSession(null); // An unrecovable error occured
+        console.log(e); // An unrecovable error occured
       }
     };
     initOnce();
