@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
-      - run: yarn install && yarn global add @lhci/cli@0.8.x
+      - run: cd frontend && yarn install && yarn global add @lhci/cli@0.8.x
       - run: yarn build
       - run: lhci autorun
         env:

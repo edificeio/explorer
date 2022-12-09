@@ -37,13 +37,12 @@ export type OdeProviderParams = {
   cdnDomain?: string | null;
 };
 
-export default function OdeProvider({
-  children,
-  params,
-}: {
+interface OdeProviderProps {
   children: ReactNode;
   params: OdeProviderParams;
-}) {
+}
+
+export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
 
