@@ -57,14 +57,23 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
         return metadata;
     }
 
+    public long getVersion() {
+        return getMessage().getLong("version");
+    }
+
     @Override
     public String toString() {
-        return "ExplorerMessageForIngest{" +
-                "idQueue=" + idQueue +
-                ", error='" + error + '\'' +
-                ", errorDetails='" + errorDetails + '\'' +
-                ", predictibleId=" + predictibleId +
-                ", metadata=" + metadata +
-                '}';
+        final StringBuffer sb = new StringBuffer("ExplorerMessageForIngest{");
+        sb.append("idQueue=").append(idQueue);
+        sb.append(", error='").append(error).append('\'');
+        sb.append(", errorDetails='").append(errorDetails).append('\'');
+        sb.append(", predictibleId=").append(predictibleId);
+        sb.append(", metadata=").append(metadata);
+        sb.append('}').append(super.toString());
+        return sb.toString();
+    }
+
+    public boolean isSynthetic() {
+        return !idQueue.isPresent();
     }
 }

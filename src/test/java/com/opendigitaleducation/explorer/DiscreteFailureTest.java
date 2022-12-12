@@ -25,6 +25,7 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimesAndFetchUniqueResult;
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -84,7 +86,7 @@ public class DiscreteFailureTest {
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + resourceIndex);
         IngestJobMetricsRecorderFactory.init(new JsonObject());
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
         final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
         final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
@@ -92,7 +94,7 @@ public class DiscreteFailureTest {
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         redisClient = new FaillibleRedisClient(test.vertx(), redisConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, getExplorerPluginMetricsRecorder());
+        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withRedisStream(test.vertx(), redisClient, mongoClient);
@@ -106,7 +108,7 @@ public class DiscreteFailureTest {
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
                 .put("max-delay-ms", 2000)
-                .put("message-merger", "default");
+                .put("message-merger", "noop");
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
         rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
@@ -136,7 +138,7 @@ public class DiscreteFailureTest {
     }
 
     static JsonObject resource(final String name) {
-        return new JsonObject().put("name", name);
+        return new JsonObject().put("name", name).put("version", 1);
     }
 
     /**
@@ -259,7 +261,6 @@ public class DiscreteFailureTest {
      * @param context Test context
      */
     @Test
-    @Ignore
     public void testMessagesThatCouldNotBeWrittenInRedisAreEventuallyIngested(TestContext context) {
         errorOnRedis(1, 2, 0, createErrorRulesForRedis(), context);
     }
@@ -282,7 +283,7 @@ public class DiscreteFailureTest {
                     "The user already had a resource called " + f1.getString("name")
             );
             plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
-                executeJobNTimesAndFetchUniqueResult(1, user, resourceName, context).compose(createdResource -> {
+                executeJobNTimesAndFetchUniqueResult(job, 1, application, resourceService, user, resourceName, context).compose(createdResource -> {
                     ////////////////////////////
                     // Generate update messages
                     final List<JsonObject> modifications = new ArrayList<>();
@@ -294,7 +295,7 @@ public class DiscreteFailureTest {
                     return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
                         ////////////////////////////
                         // Launch the job n times to make sure that upon restart nothing changes
-                        executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
+                        executeJobNTimesAndFetchUniqueResult(job, nbTimesToExecuteJob, application, resourceService, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
                             ////////////////////////////
                             // Verify that the desired state has been reached or that the error messages
                             // were not processed
@@ -306,7 +307,7 @@ public class DiscreteFailureTest {
                             ////////////////////////////
                             // Clear error rules and relaunch the job
                             redisClient.setErrorRules(emptyList());
-                            executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
+                            executeJobNTimesAndFetchUniqueResult(job, nbTimesToExecuteJob, application, resourceService, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
                                 context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
                                         "The resource should be at a valid version before or after the version but not at the invalid one");
                                 // This limitation comes from the fact that I manually add a field that is not supposed to be present on the source
@@ -341,7 +342,7 @@ public class DiscreteFailureTest {
                     "The user already had a resource called " + f1.getString("name")
             );
             plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
-                executeJobNTimesAndFetchUniqueResult(1, user, resourceName, context).compose(createdResource -> {
+                executeJobNTimesAndFetchUniqueResult(job, 1, application, resourceService, user, resourceName, context).compose(createdResource -> {
                     ////////////////////////////
                     // Generate update messages
                     final List<JsonObject> modifications = new ArrayList<>();
@@ -353,7 +354,7 @@ public class DiscreteFailureTest {
                     return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
                         ////////////////////////////
                         // Launch the job n times to make sure that upon restart nothing changes
-                        executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
+                        executeJobNTimesAndFetchUniqueResult(job, nbTimesToExecuteJob, application, resourceService, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
                             ////////////////////////////
                             // Verify that the desired state has been reached or that the error messages
                             // were not processed
@@ -365,7 +366,7 @@ public class DiscreteFailureTest {
                             ////////////////////////////
                             // Clear error rules and relaunch the job
                             clearErrorRules();
-                            executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
+                            executeJobNTimesAndFetchUniqueResult(job, nbTimesToExecuteJob, application, resourceService, user, resourceName, context).onComplete(context.asyncAssertSuccess(finalResult -> {
                                 context.assertEquals(modifications.get(modifications.size() - 1).getString("content"), finalResult.getString("content"),
                                         "The resource should be at a valid version");
                                 // TODO JBE this limitation comes from the fact that I manually add a field that is not supposed to be present on the source
@@ -403,21 +404,6 @@ public class DiscreteFailureTest {
         return done;
     }
 
-    private Future<JsonObject> executeJobNTimesAndFetchUniqueResult(final int nbBatchExecutions, final UserInfos user,
-                                                                    final String resourceName, final TestContext context) {
-        return executeJobNTimes(nbBatchExecutions, context).flatMap(e ->
-            resourceService.fetch(user, application, new ResourceSearchOperation())
-            .map(results -> {
-                final List<JsonObject> resultsForMyResource = results.stream().map(r -> ((JsonObject)r))
-                    .filter(r -> r.getString("name", "").equals(resourceName))
-                    .collect(Collectors.toList());
-                context.assertEquals(1, resultsForMyResource.size());
-                return resultsForMyResource.get(0);
-            })
-            .onFailure(Throwable::printStackTrace)
-        )
-        .onFailure(Throwable::printStackTrace);
-    }
 
     private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForES() {
         final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRuleES("my_flag", ".*fail.*");
@@ -439,16 +425,6 @@ public class DiscreteFailureTest {
         job.getMessageTransformer().clearChain();
     }
 
-    private Future<Object> executeJobNTimes(int nbTimesToExecute, final TestContext context) {
-        final Future<Object> onDone;
-        if (nbTimesToExecute <= 0) {
-            onDone = Future.succeededFuture();
-        } else {
-            System.out.println("Still " + nbTimesToExecute + " times to execute the job");
-            onDone = job.execute(true).compose(e -> executeJobNTimes(nbTimesToExecute - 1, context));
-        }
-        return onDone.onFailure(e -> context.asyncAssertFailure());
-    }
 
     private List<JsonObject> generateModifiedResourcesToFail(JsonObject originalResource, final int numberOfMessages) {
         return IntStream.range(0, numberOfMessages).mapToObj(i -> {
@@ -457,11 +433,13 @@ public class DiscreteFailureTest {
             modifiedResource.put("content", "modified for failure number " + idxMessage);
             modifiedResource.put("my_flag", "fail " + idxMessage);
             modifiedResource.put("_id", originalResource.getString("assetId"));
+            modifiedResource.put("version", indexMessage.get());
             final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
             final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
             final JsonObject subResource = new JsonObject().put("id", subResourceId);
             subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of failed resource " + idxMessage + " <div>");
             subResource.put("deleted", false);
+            subResource.put("version", indexMessage.get());
             subResources.add(subResource);
             modifiedResource.put("subresources", subResources);
             return modifiedResource;
@@ -476,11 +454,13 @@ public class DiscreteFailureTest {
             final JsonObject modifiedResource = originalResource.copy();
             modifiedResource.put("content", prefix + indexMessage.incrementAndGet());
             modifiedResource.put("_id", originalResource.getString("assetId"));
+            modifiedResource.put("version", indexMessage.get());
             final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
             final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
             final JsonObject subResource = new JsonObject().put("id", subResourceId);
             subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of succeeded resource " + idxMessage + " <div>");
             subResource.put("deleted", false);
+            subResource.put("version", indexMessage.get());
             subResources.add(subResource);
             modifiedResource.put("subresources", subResources);
             return modifiedResource;

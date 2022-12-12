@@ -12,9 +12,11 @@ import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceMongo;
+import org.entcore.common.explorer.impl.ExplorerSubResource;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
@@ -25,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
+import static java.util.Collections.emptyList;
 
 public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     public static final String FAKE_APPLICATION = "test";
@@ -50,14 +52,12 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     }
 
     public static FakeMongoPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final MongoClient mongoClient) {
-        ExplorerPluginMetricsFactory.init(new JsonObject());
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FakeMongoPlugin(communication, mongoClient);
     }
 
     public static FakeMongoPlugin withPostgresChannel(final Vertx vertx, final PostgresClient postgresClient, final MongoClient mongoClient) {
-        ExplorerPluginMetricsFactory.init(new JsonObject());
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FakeMongoPlugin(communication, mongoClient);
     }
 
@@ -68,7 +68,7 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     protected String getResourceType() { return FAKE_TYPE; }
 
     @Override
-    protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
+    protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
         message.withShared(source.getJsonArray("shared", new JsonArray()));
@@ -82,4 +82,8 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     @Override
     protected String getCollectionName() { return COLLECTION; }
 
+    @Override
+    protected List<ExplorerSubResource> getSubResourcesPlugin() {
+        return emptyList();
+    }
 }

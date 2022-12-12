@@ -3,7 +3,6 @@ package com.opendigitaleducation.explorer.ingest.impl;
 import com.opendigitaleducation.explorer.ingest.ExplorerMessageForIngest;
 import com.opendigitaleducation.explorer.ingest.MergeMessagesResult;
 import com.opendigitaleducation.explorer.ingest.MessageMerger;
-import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ public class NoopMessageMerger implements MessageMerger {
     @Override
     public MergeMessagesResult mergeMessages(List<ExplorerMessageForIngest> messagesFromReader) {
         final Map<String, List<ExplorerMessageForIngest>> messagesByResourceUniqueId = messagesFromReader.stream()
-                .collect(Collectors.groupingBy(ExplorerMessage::getResourceUniqueId));
+                .collect(Collectors.groupingBy(e -> e.getIdQueue().get()));
         return new MergeMessagesResult(
                 messagesFromReader,
                 messagesByResourceUniqueId);

@@ -12,19 +12,19 @@ import java.util.Map;
     /** Messages that should be treated by the job.*/
     private final List<ExplorerMessageForIngest> messagesToTreat;
     /** All messages that were merged by their resource unique id.*/
-    private final Map<String, List<ExplorerMessageForIngest>> messagesByResourceUniqueId;
+    private final Map<String, List<ExplorerMessageForIngest>> messagesToAckByTratedMessageIdQueue;
 
-    public MergeMessagesResult(List<ExplorerMessageForIngest> messagesToTreat, Map<String, List<ExplorerMessageForIngest>> messagesByResourceUniqueId) {
+    public MergeMessagesResult(List<ExplorerMessageForIngest> messagesToTreat, Map<String, List<ExplorerMessageForIngest>> messagesToAckByTratedMessageIdQueue) {
         this.messagesToTreat = messagesToTreat;
-        this.messagesByResourceUniqueId = messagesByResourceUniqueId;
+        this.messagesToAckByTratedMessageIdQueue = messagesToAckByTratedMessageIdQueue;
     }
 
     public List<ExplorerMessageForIngest> getMessagesToTreat() {
         return messagesToTreat;
     }
 
-    public Map<String, List<ExplorerMessageForIngest>> getMessagesByResourceUniqueId() {
-        return messagesByResourceUniqueId;
+    public Map<String, List<ExplorerMessageForIngest>> getMessagesToAckByTratedMessageIdQueue() {
+        return messagesToAckByTratedMessageIdQueue;
     }
 
 }

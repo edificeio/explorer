@@ -52,6 +52,8 @@ CREATE TABLE explorer.folders (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     trashed BOOLEAN DEFAULT FALSE,
     trashedAt TIMESTAMP,
+    version int,
+    ingest_job_state VARCHAR(20),
     PRIMARY KEY(id),
     CONSTRAINT fk_folders FOREIGN KEY(parent_id) REFERENCES explorer.folders(id) ON DELETE SET NULL INITIALLY DEFERRED
 );
@@ -69,6 +71,8 @@ CREATE TABLE explorer.resources (
     trashedAt TIMESTAMP,
     deleted BOOLEAN DEFAULT FALSE,
     shared JSONB,
+    version int,
+    ingest_job_state VARCHAR(20),
     PRIMARY KEY(id)
 );
 CREATE UNIQUE INDEX idx_resources_ent_id ON explorer.resources(resource_unique_id);

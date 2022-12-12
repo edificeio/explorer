@@ -30,10 +30,9 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import static java.lang.System.currentTimeMillis;
 
 @RunWith(VertxUnitRunner.class)
 public class FolderServiceTest {
@@ -54,7 +53,7 @@ public class FolderServiceTest {
     public static void setUp(TestContext context) throws Exception {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         IngestJobMetricsRecorderFactory.init(new JsonObject());
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String index = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + index);
@@ -80,7 +79,11 @@ public class FolderServiceTest {
     }
 
     static JsonObject folder(final String name, final String application, final String resourceType, final Integer parentId) {
-        final JsonObject folder = new JsonObject().put("name", name).put("application", application).put("resourceType", resourceType);
+        final JsonObject folder = new JsonObject()
+                .put("name", name)
+                .put("application", application)
+                .put("resourceType", resourceType)
+                .put("version", 1);
         if (parentId != null) {
             folder.put("parentId", parentId);
         }
@@ -95,15 +98,18 @@ public class FolderServiceTest {
     @Test
     public void shouldCreateFolderTree(TestContext context) {
         final Async async = context.async();
-        final JsonObject f1 = folder("folder1");
-        final JsonObject f2 = folder("folder2");
-        final JsonObject f3 = folder("folder3");
-        final JsonObject f3_1 = folder("folder3_1");
-        final JsonObject f3_1_1 = folder("folder3_1_1");
+        final JsonObject f1 = folder("folder1_" + currentTimeMillis());
+        final JsonObject f2 = folder("folder2_" + currentTimeMillis());
+        final JsonObject f3 = folder("folder3_" + currentTimeMillis());
+        final JsonObject f3_1 = folder("folder3_1_" + currentTimeMillis());
+        final JsonObject f3_1_1 = folder("folder3_1_1_" + currentTimeMillis());
         final UserInfos user = test.directory().generateUser("usermove");
         folderService.create(user, APPLICATION, Arrays.asList(f1, f2, f3)).onComplete(context.asyncAssertSuccess(r -> {
             final String f3_id = r.get(2).getValue("id").toString();
             job.execute(true).onComplete(context.asyncAssertSuccess(ra1 -> {
+                folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(tutu -> {
+                    context.assertEquals(3, tutu.result().size());
+                });
                 folderService.create(user, APPLICATION, f3_1.put("parentId", f3_id)).onComplete(context.asyncAssertSuccess(r2 -> {
                     job.execute(true).onComplete(context.asyncAssertSuccess(ra2 -> {
                         folderService.create(user, APPLICATION, f3_1_1.put("parentId", r2)).onComplete(context.asyncAssertSuccess(r3 -> {
@@ -253,7 +259,7 @@ public class FolderServiceTest {
         final UserInfos user = test.directory().generateUser("user_move1");
         final UserInfos user2 = test.directory().generateUser("user_move2");
         final Async async = context.async(2);
-        folderService.create(user, APPLICATION, Arrays.asList(f1)).onComplete(context.asyncAssertSuccess(r -> {
+        folderService.create(user, APPLICATION, Collections.singletonList(f1)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
                 folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(fetch -> {
                     context.assertEquals(1, fetch.size());

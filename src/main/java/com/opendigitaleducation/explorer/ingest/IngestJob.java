@@ -4,12 +4,15 @@ import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
 import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.IngestJobState;
+import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.postgres.IPostgresClient;
 
 import java.util.ArrayList;
@@ -17,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
 
 public class IngestJob {
     static Logger log = LoggerFactory.getLogger(IngestJob.class);
@@ -58,52 +63,65 @@ public class IngestJob {
         this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
         this.messageTransformer = new MessageTransformerChain();
+        this.messageConsumer = getRouter(vertx);
         this.ingestJobMetricsRecorder = metricsRecorder;
         this.ingestJobMetricsRecorder.onJobStarted();
-        messageConsumer = vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
+    }
+
+    private MessageConsumer getRouter(Vertx vertx) {
+        return vertx.eventBus().consumer(INGESTOR_JOB_ADDRESS, message -> {
             final String action = message.headers().get("action");
             switch (action) {
                 case INGESTOR_STATUS:
-                    final String method = message.headers().get("method");
-                    final Future<Void> future = "stop".equalsIgnoreCase(method)? this.stop(): ("start".equalsIgnoreCase(method))?this.start(): Future.succeededFuture();
-                    future.onComplete(e->{
-                        if (e.succeeded()) {
-                            message.reply(new JsonObject().put("running", this.isRunning()));
-                            log.info("Ingest job has been "+method);
-                        } else {
-                            message.fail(500, e.cause().getMessage());
-                            log.error("Ingest job failed to "+method, e.cause());
-                        }
-                    });
-                    break;
+                    onStatusMessageReceived(message);
                 case INGESTOR_JOB_TRIGGER:
-                    execute(true).onComplete(ee -> {
-                        if (ee.succeeded()) {
-                            getMetrics().onComplete(e -> {
-                                if (e.succeeded()) {
-                                    message.reply(e.result());
-                                } else {
-                                    message.fail(500, e.cause().getMessage());
-                                    log.error("Ingest job failed to get metrics for trigger", e.cause());
-                                }
-                            });
-                        } else {
-                            message.fail(500, ee.cause().getMessage());
-                            log.error("Ingest job failed to trigger", ee.cause());
-                        }
-                    });
-                    break;
+                    onJobTriggerMessageReceived(message);
                 case INGESTOR_JOB_METRICS:
                 default:
-                    getMetrics().onComplete(e -> {
-                        if (e.succeeded()) {
-                            message.reply(e.result());
-                        } else {
-                            message.fail(500, e.cause().getMessage());
-                            log.error("Ingest job failed to get metrics", e.cause());
-                        }
-                    });
-                    break;
+                    onJobMetricsMessageReceived(message);
+            }
+        });
+    }
+
+    private void onJobMetricsMessageReceived(Message<Object> message) {
+        getMetrics().onComplete(e -> {
+            if (e.succeeded()) {
+                message.reply(e.result());
+            } else {
+                message.fail(500, e.cause().getMessage());
+                log.error("Ingest job failed to get metrics", e.cause());
+            }
+        });
+    }
+
+    private void onJobTriggerMessageReceived(Message<Object> message) {
+        execute(true).onComplete(ee -> {
+            if (ee.succeeded()) {
+                getMetrics().onComplete(e -> {
+                    if (e.succeeded()) {
+                        message.reply(e.result());
+                    } else {
+                        message.fail(500, e.cause().getMessage());
+                        log.error("Ingest job failed to get metrics for trigger", e.cause());
+                    }
+                });
+            } else {
+                message.fail(500, ee.cause().getMessage());
+                log.error("Ingest job failed to trigger", ee.cause());
+            }
+        });
+    }
+
+    private void onStatusMessageReceived(Message<Object> message) {
+        final String method = message.headers().get("method");
+        final Future<Void> future = "stop".equalsIgnoreCase(method)? this.stop(): ("start".equalsIgnoreCase(method))?this.start(): Future.succeededFuture();
+        future.onComplete(e->{
+            if (e.succeeded()) {
+                message.reply(new JsonObject().put("running", this.isRunning()));
+                log.info("Ingest job has been "+method);
+            } else {
+                message.fail(500, e.cause().getMessage());
+                log.error("Ingest job failed to "+method, e.cause());
             }
         });
     }
@@ -156,11 +174,14 @@ public class IngestJob {
                 this.ingestJobMetricsRecorder.onIngestCycleStarted();
                 final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
-                messages.map(this.messageMerger::mergeMessages)
+                messages.onSuccess(readMessages -> notifyMessageStateUpdate(readMessages, IngestJobState.RECEIVED))
+                .onFailure(current::fail)
+                .map(this.messageMerger::mergeMessages)
                 .compose(result -> {
                     final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
                     return this.messageIngester.ingest(messagesToTreat).map(jobResult -> Pair.of(jobResult, result));
-                }).compose(ingestResultAndJobResult -> {
+                })
+                .compose(ingestResultAndJobResult -> {
                     final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
                     final Future<IngestJobResult> future;
                     this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight());
@@ -174,6 +195,9 @@ public class IngestJob {
                     try {
                         if (messageRes.succeeded()) {
                             this.ingestJobMetricsRecorder.onIngestCycleSucceeded();
+                            final IngestJobResult ingestResult = messageRes.result();
+                            notifyMessageStateUpdate(ingestResult.succeed, IngestJobState.OK);
+                            notifyMessageStateUpdate(ingestResult.failed, IngestJobState.KO);
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
                         } else {
                             this.ingestJobMetricsRecorder.onIngestCycleFailed();
@@ -197,13 +221,28 @@ public class IngestJob {
         return current.future();
     }
 
+    private void notifyMessageStateUpdate(final List<ExplorerMessageForIngest> readMessages, final IngestJobState state) {
+        readMessages.stream()
+        .filter(readMessage -> readMessage.getIdQueue().isPresent())
+        .forEach(readMessage -> {
+            try {
+                final IngestJobStateUpdateMessage message = new IngestJobStateUpdateMessage(readMessage.getId(), readMessage.getVersion(), state);
+                vertx.eventBus().send(addressForIngestStateUpdate(readMessage.getApplication(), readMessage.getEntityType()), JsonObject.mapFrom(message));
+            } catch (Exception e) {
+                log.error("Could not notify that we have received message" + readMessage, e);
+            }
+        });
+    }
+
     private IngestJobResult transformIngestResult(final IngestJobResult ingestResult, final MergeMessagesResult mergedMessages) {
-        final Map<String, List<ExplorerMessageForIngest>> messagesByUniqueId = mergedMessages.getMessagesByResourceUniqueId();
+        final Map<String, List<ExplorerMessageForIngest>> messagesByUniqueId = mergedMessages.getMessagesToAckByTratedMessageIdQueue();
         final List<ExplorerMessageForIngest> succeededSourceMessages = ingestResult.succeed.stream()
-                .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
+                .filter(message -> message.getIdQueue().isPresent()) // Because some synthetic messages can be added
+                .flatMap(message -> messagesByUniqueId.get(message.getIdQueue().get()).stream())
                 .collect(Collectors.toList());
         final List<ExplorerMessageForIngest> failedSourceMessages = ingestResult.failed.stream()
-                .flatMap(message -> messagesByUniqueId.get(message.getResourceUniqueId()).stream())
+                .filter(message -> message.getIdQueue().isPresent()) // Because some synthetic messages can be added
+                .flatMap(message -> messagesByUniqueId.get(message.getIdQueue().get()).stream())
                 .collect(Collectors.toList());
         return new IngestJobResult(succeededSourceMessages, failedSourceMessages);
     }
