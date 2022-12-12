@@ -80,6 +80,9 @@
         "type": "object",
         "enabled": false
       },
+      "version": {
+        "type": "long"
+      },
       "subresources": {
         "properties": {
             "id": {
@@ -96,6 +99,9 @@
             },
             "deleted": {
               "type": "boolean"
+            },
+            "version": {
+              "type": "long"
             }
         }
       }

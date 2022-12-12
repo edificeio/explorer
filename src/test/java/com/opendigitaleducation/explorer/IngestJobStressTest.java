@@ -25,6 +25,7 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
@@ -80,7 +81,7 @@ public class IngestJobStressTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         IngestJobMetricsRecorderFactory.init(new JsonObject());
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         System.out.println("Using index: " + resourceIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
@@ -90,7 +91,7 @@ public class IngestJobStressTest {
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         redisClient = new FaillibleRedisClient(test.vertx(), redisConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, getExplorerPluginMetricsRecorder());
+        IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withRedisStream(test.vertx(), redisClient, mongoClient);

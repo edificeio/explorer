@@ -13,6 +13,7 @@ import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -80,15 +81,14 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<List<JsonObject>> create(final UserInfos creator, final String application, final List<JsonObject> folders) {
+        final long now = System.currentTimeMillis();
         if(folders.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
         final Set<String> parentIds = folders.stream().filter(e->e.getValue("parentId") !=null).filter(e->{
             final String parentId = e.getValue("parentId").toString();
             return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
-        }).map(e->{
-            return (e.getValue("parentId").toString());
-        }).collect(Collectors.toSet());
+        }).map(e-> (e.getValue("parentId").toString())).collect(Collectors.toSet());
         final FolderSearchOperation search = new FolderSearchOperation().setIds(parentIds).setSearchEverywhere(true);
         final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,application, search);
         return checkFuture.compose(e->{
@@ -99,6 +99,7 @@ public class FolderServiceElastic implements FolderService {
            for(final JsonObject folder : folders){
                folder.put("application", application);
            }
+           plugin.setVersion(folders, now);
            return plugin.create(creator, folders, false).map(ids ->{
                 for(int i = 0; i < folders.size(); i++){
                     folders.get(i).put("_id", ids.get(i));
@@ -110,7 +111,8 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<JsonObject> update(final UserInfos creator, final String id, final String application, final JsonObject folder) {
-        final Set<String> parentIds = Arrays.asList(folder).stream().filter(e->e.getValue("parentId") !=null).filter(e->{
+        final long now = System.currentTimeMillis();
+        final Set<String> parentIds = Collections.singletonList(folder).stream().filter(e->e.getValue("parentId") !=null).filter(e->{
             final String parentId = e.getValue("parentId").toString();
             return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
         }).map(e->{
@@ -122,6 +124,7 @@ public class FolderServiceElastic implements FolderService {
             if(ee < parentIds.size()){
                 return Future.failedFuture("folder.create.parent.invalid");
             }
+            plugin.setIngestJobStateAndVersion(folder, IngestJobState.TO_BE_SENT, now);
             return plugin.update(creator, id, folder).map(e->{
                 folder.put("_id", id);
                 folder.put("updatedAt", new Date().getTime());
@@ -132,6 +135,7 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<List<String>> delete(final UserInfos creator, final String application, final Set<String> ids) {
+        final long now = System.currentTimeMillis();
         if(ids.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
@@ -170,6 +174,7 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<List<JsonObject>> trash(final UserInfos creator, final Set<String> folderIds, final String application, final boolean isTrash) {
+        final long now = System.currentTimeMillis();
         if(folderIds.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
@@ -205,13 +210,15 @@ public class FolderServiceElastic implements FolderService {
                                 sources.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
                             }
                         }
+                        plugin.setVersion(sources, now);
                         Future<Void> futureUpsertFolder = plugin.notifyUpsert(creator, sources);
                         //resources
                         final List<ExplorerMessage> messages = new ArrayList<>();
                         for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
                             //use entid to push resource message
                             final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false);
-                            mess.withType(trash.application.get(), trash.resourceType.get());
+                            // TODO JBER check entityType
+                            mess.withType(trash.application.get(), trash.resourceType.get(), trash.resourceType.get());
                             mess.withTrashed(isTrash);
                             messages.add(mess);
                         }
@@ -228,6 +235,7 @@ public class FolderServiceElastic implements FolderService {
 
     @Override
     public Future<List<JsonObject>> move(final UserInfos creator, final Set<String> id, final String application, final Optional<String> destOrig) {
+        final long now = System.currentTimeMillis();
         if(id.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
@@ -263,6 +271,7 @@ public class FolderServiceElastic implements FolderService {
                         sources.add(plugin.setIdForModel(source.copy(), dest.get()));
                     }
                 }
+                plugin.setVersion(sources, now);
                 return plugin.notifyUpsert(creator, sources);
             }).compose(e -> {
                 return plugin.get(creator, id);

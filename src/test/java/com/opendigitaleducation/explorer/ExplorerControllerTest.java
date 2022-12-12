@@ -43,6 +43,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URI;
 import java.util.UUID;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimes;
+
 @RunWith(VertxUnitRunner.class)
 public class ExplorerControllerTest {
     protected static final TestHelper test = TestHelper.helper();
@@ -62,7 +64,7 @@ public class ExplorerControllerTest {
     @BeforeClass
     public static void setUp(final TestContext context) throws Exception {
         EventStoreFactory.getFactory().setVertx(test.vertx());
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         IngestJobMetricsRecorderFactory.init(new JsonObject());
         final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
         final RedisClient redisClient = new RedisClient(test.vertx(), redisConfig);
@@ -130,7 +132,9 @@ public class ExplorerControllerTest {
                 context.fail(exception);
             }
             return promiseTrigger.future();
-        }).compose(createE -> {
+        })
+        .compose(e -> executeJobNTimes(job, 1, context))
+        .compose(createE -> {
             //list folders
             final Promise<Void> promiseList = Promise.promise();
             try {
@@ -194,7 +198,8 @@ public class ExplorerControllerTest {
                 context.fail(exception);
             }
             return promiseTrigger.future();
-        }).compose(update -> {
+        }).compose(e -> executeJobNTimes(job, 1, context))
+        .compose(update -> {
             //get context
             final Promise<Void> promiseContext = Promise.promise();
             try {
@@ -234,6 +239,7 @@ public class ExplorerControllerTest {
         final UserInfos user = test.http().sessionUser();
         user.setUserId(UUID.randomUUID().toString());
         final JsonObject doc1 = IngestJobTest.create(user, "id1", "name1", "text1");
+        fakePlugin.setVersion(doc1, 1);
         fakePlugin.notifyUpsert(user, doc1).compose(e -> {
             //get metrics
             final Promise<Void> promiseMetrics = Promise.promise();
@@ -260,7 +266,8 @@ public class ExplorerControllerTest {
                 promiseTrigger.fail(ex);
             }
             return promiseTrigger.future();
-        }).compose(e -> {
+        }).compose(e -> executeJobNTimes(job, 1, context))
+        .compose(e -> {
             //fetch resources
             final Promise<Void> promiseFetch = Promise.promise();
             try {
@@ -299,10 +306,12 @@ public class ExplorerControllerTest {
 
     @Test
     public void shouldAuthorizeFolder(final TestContext context) throws Exception {
+        final JsonObject params = new JsonObject().put("timeout", "1800000");
         final UserInfos user = test.http().sessionUser();
         //create folder
         final JsonObject folder = FolderServiceTest.folder("folder1").put("application", application);
-        final HttpTestHelper.TestHttpServerRequest createReq = test.http().post("/folders", new JsonObject(), folder);
+        fakePlugin.setVersion(folder, 1);
+        final HttpTestHelper.TestHttpServerRequest createReq = test.http().post("/folders", params, folder);
         final Promise<JsonObject> promiseCreate = Promise.promise();
         final JsonObject create = new JsonObject();
         createReq.response().endJsonHandler(e -> {
@@ -317,7 +326,6 @@ public class ExplorerControllerTest {
         promiseCreate.future().compose(e -> {
             final Promise<JsonObject> promiseTrigger = Promise.promise();
             try {
-                final JsonObject params = new JsonObject().put("timeout", "180000");
                 final HttpTestHelper.TestHttpServerRequest triggerReq = test.http().post("/folders", params, folder);
                 triggerReq.response().endJsonHandler(ee -> {
                     promiseTrigger.complete(ee);
@@ -327,7 +335,8 @@ public class ExplorerControllerTest {
                 context.fail(exception);
             }
             return promiseTrigger.future();
-        }).onComplete(createE -> {
+        }).compose(e -> executeJobNTimes(job, 1, context))
+        .onComplete(createE -> {
             final String id = create.getString("id");
             final Binding binding = test.http().binding(HttpMethod.POST, ExplorerController.class, "updateFolder");
             final HttpTestHelper.TestHttpServerRequest fetchReq = test.http().put("/folder", new JsonObject().put("id", id));

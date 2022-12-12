@@ -7,9 +7,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.explorer.ExplorerMessage;
+import org.apache.commons.lang3.NotImplementedException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class DefaultMessageMerger implements MessageMerger {
 
     @Override
     public MergeMessagesResult mergeMessages(final List<ExplorerMessageForIngest> messagesFromReader) {
-        final Map<String, ExplorerMessageForIngest> messagesToTreat = new HashMap<>();
+        /*final Map<String, ExplorerMessageForIngest> messagesToTreat = new HashMap<>();
         final Map<String, List<ExplorerMessageForIngest>> messagesByResource = new HashMap<>();
         //final Map<String, Long> lastVersionByResource = new HashMap<>();
         // So far we don't need version as long as we can ensure that the order of the messages returned by the reader
@@ -76,35 +75,45 @@ public class DefaultMessageMerger implements MessageMerger {
                 return ingests;
             });
         }
-        return new MergeMessagesResult(new ArrayList<>(messagesToTreat.values()), messagesByResource);
+        return new MergeMessagesResult(new ArrayList<>(messagesToTreat.values()), messagesByResource);*/
+        throw new NotImplementedException("not.working.anymore");
     }
     private ExplorerMessageForIngest mergeMessageIntoExistingOne(final ExplorerMessageForIngest oldMessage,
                                                                  final ExplorerMessageForIngest newMessage) {
-        final ExplorerMessageForIngest merged = new ExplorerMessageForIngest(newMessage);
-        final JsonArray existingSubResources = oldMessage.getSubresources();
-        if(existingSubResources != null) {
-            for (int i = 0; i < existingSubResources.size(); i++) {
-                final JsonObject subResource = existingSubResources.getJsonObject(i);
+        final boolean correctOrder = newMessage.getVersion() > oldMessage.getVersion();
+        final ExplorerMessageForIngest mostRecentMessage = correctOrder ? newMessage : oldMessage;
+        final ExplorerMessageForIngest merged = new ExplorerMessageForIngest(mostRecentMessage);
+        final JsonArray oldMessageResources = oldMessage.getSubresources();
+        final JsonArray newSubResources = newMessage.getSubresources();
+        final JsonArray finalSubResources = new JsonArray();
+        final Map<String, Long> versionPerResource = new HashMap<>();
+        if(oldMessageResources != null) {
+            finalSubResources.addAll(oldMessageResources);
+            for (int i = 0; i < oldMessageResources.size(); i++) {
+                final JsonObject subResource = oldMessageResources.getJsonObject(i);
                 final String subResourceId = subResource.getString("id");
-                if(subResource.getBoolean("deleted", false)) {
-                    merged.withSubResource(subResourceId, true);
-                } else {
-                    final ExplorerMessage.ExplorerContentType type;
-                    final String content;
-                    if(subResource.containsKey("contentPdf")){
-                        type =  ExplorerMessage.ExplorerContentType.Pdf;
-                        content = subResource.getString("contentPdf");
-                    } else if(subResource.containsKey("contentHtml")){
-                        type =  ExplorerMessage.ExplorerContentType.Html;
-                        content = subResource.getString("contentHtml");
-                    } else {
-                        type = ExplorerMessage.ExplorerContentType.Text;
-                        content = subResource.getString("content");
+                final long subResourceVersion = subResource.getLong("version");
+                versionPerResource.put(subResourceId, subResourceVersion);
+            }
+        }
+        for (int i = 0; i < newSubResources.size(); i++) {
+            final JsonObject subResource = newSubResources.getJsonObject(i);
+            final long currentSubVersion = subResource.getLong("version");
+            final String subResourceId = subResource.getString("id");
+            final Long subResourceRegisteredVersion = versionPerResource.get(subResourceId);
+            if(subResourceRegisteredVersion == null) {
+                versionPerResource.put(subResourceId, currentSubVersion);
+                finalSubResources.add(subResource);
+            } else if(subResourceRegisteredVersion < currentSubVersion) {
+                versionPerResource.put(subResourceId, currentSubVersion);
+                for (int j = 0; j < finalSubResources.size(); j++) {
+                    if(finalSubResources.getJsonObject(i).getString("id").equals(subResourceId)) {
+                        finalSubResources.set(j, subResource);
                     }
-                    merged.withSubResourceContent(subResourceId, content, type);
                 }
             }
         }
+        merged.withSubResources(finalSubResources);
         return merged;
     }
 }

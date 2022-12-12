@@ -9,7 +9,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -205,7 +204,9 @@ public class MessageIngesterPostgres implements MessageIngester {
                         if(!found.isPresent()){
                             //use id because upsertResource already done
                             final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
-                            mess.withType(r.application, r.resourceType);
+                            // TODO JBER change here the last resourceType to get the entity type
+                            mess.withType(r.application, r.resourceType, r.resourceType);
+                            // TODO JBER check version to set
                             upsertResources.add(new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString()));
                         }
                     }
@@ -261,8 +262,15 @@ public class MessageIngesterPostgres implements MessageIngester {
             for (final Integer parentId : parentIds) {
                 final String parentIdStr = parentId.toString();
                 final Optional<ExplorerMessageForIngest> found = messages.stream().filter(m-> m.getId().equals(parentIdStr)).findFirst();
-                final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false).withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE);
-                final ExplorerMessageForIngest message = found.orElse(new ExplorerMessageForIngest(mess));
+                final ExplorerMessageForIngest message = found.orElseGet(() -> {
+                    // TODO JBER check if that is the right thing to do. Should we not fetch the folder information first.
+                    // This seems to be why the test FolderServiceTest.shouldCreateFolderTree fails
+                    // When version is set to System.currentTimeMillis() then it still fails and another one fails
+                    final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false)
+                            .withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
+                            .withVersion(System.currentTimeMillis());
+                    return new ExplorerMessageForIngest(mess);
+                });
                 final JsonObject override = new JsonObject();
                 //set childrenIds
                 final FolderExplorerDbSql.FolderRelationship relation = relations.get(parentIdStr);

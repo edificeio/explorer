@@ -8,9 +8,11 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
+import org.entcore.common.explorer.impl.ExplorerSubResource;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
@@ -19,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
+import static java.util.Collections.emptyList;
 
 public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_APPLICATION = "test";
@@ -36,14 +38,12 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     }
 
     public static FakePostgresPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
-        ExplorerPluginMetricsFactory.init(new JsonObject());
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FakePostgresPlugin(communication, postgres);
     }
 
     public static FakePostgresPlugin withPostgresChannel(final Vertx vertx, final IPostgresClient postgres) {
-        ExplorerPluginMetricsFactory.init(new JsonObject());
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FakePostgresPlugin(communication, postgres);
     }
 
@@ -54,11 +54,16 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     protected String getResourceType() { return FAKE_TYPE; }
 
     @Override
-    protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
+    protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
         message.withContent(source.getString("html"), ExplorerMessage.ExplorerContentType.Html);
         return Future.succeededFuture(message);
+    }
+
+    @Override
+    protected List<ExplorerSubResource> getSubResourcesPlugin() {
+        return emptyList();
     }
 
     @Override

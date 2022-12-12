@@ -11,6 +11,7 @@ import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import io.advantageous.boon.core.Str;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -22,6 +23,8 @@ import io.vertx.ext.unit.TestContext;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
+import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
@@ -33,7 +36,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ExplorerTestHelper implements TestRule {
     static final Logger logger = LoggerFactory.getLogger(ExplorerTestHelper.class);
@@ -62,12 +67,12 @@ public class ExplorerTestHelper implements TestRule {
             elasticClientManager = new ElasticClientManager(testHelper.vertx(), uris);
             resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
             logger.info("Using index: " + resourceIndex);
-            ExplorerPluginMetricsFactory.init(new JsonObject());
+            ExplorerPluginMetricsFactory.init(testHelper.vertx(), new JsonObject());
             ExplorerConfig.getInstance().setEsIndex(application, resourceIndex);
             final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
             final PostgresClient postgresClient = new PostgresClient(testHelper.vertx(), postgresqlConfig);
             final ShareTableManager shareTableManager = new DefaultShareTableManager();
-            communication = new ExplorerPluginCommunicationPostgres(testHelper.vertx(), postgresClient, ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder());
+            communication = new ExplorerPluginCommunicationPostgres(testHelper.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
             resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
             job = IngestJob.create(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
@@ -140,5 +145,38 @@ public class ExplorerTestHelper implements TestRule {
                 }, description).evaluate();
             }
         },description);
+    }
+
+
+    public static Future<JsonObject> executeJobNTimesAndFetchUniqueResult(final IngestJob job,
+                                                                          final int nbBatchExecutions,
+                                                                          final String application,
+                                                                          final ResourceService resourceService,
+                                                                          final UserInfos user,
+                                                                          final String resourceName, final TestContext context) {
+        return executeJobNTimes(job, nbBatchExecutions, context).flatMap(e ->
+                        resourceService.fetch(user, application, new ResourceSearchOperation())
+                                .map(results -> {
+                                    final List<JsonObject> resultsForMyResource = results.stream().map(r -> ((JsonObject)r))
+                                            .filter(r -> r.getString("name", "").equals(resourceName))
+                                            .collect(Collectors.toList());
+                                    context.assertEquals(1, resultsForMyResource.size(), "Could not find the resource that was inserted");
+                                    return resultsForMyResource.get(0);
+                                })
+                                .onFailure(Throwable::printStackTrace)
+                )
+                .onFailure(Throwable::printStackTrace);
+    }
+
+
+    public static Future<Object> executeJobNTimes(final IngestJob job, int nbTimesToExecute, final TestContext context) {
+        final Future<Object> onDone;
+        if (nbTimesToExecute <= 0) {
+            onDone = Future.succeededFuture();
+        } else {
+            System.out.println("Still " + nbTimesToExecute + " times to execute the job");
+            onDone = job.execute(true).compose(e -> executeJobNTimes(job, nbTimesToExecute - 1, context));
+        }
+        return onDone.onFailure(e -> context.asyncAssertFailure());
     }
 }

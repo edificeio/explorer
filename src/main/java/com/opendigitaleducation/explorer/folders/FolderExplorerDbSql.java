@@ -57,6 +57,7 @@ public class FolderExplorerDbSql {
                 final UserInfos user = new UserInfos();
                 user.setUserId(creator_id);
                 user.setUsername(creator_name);
+                // TODO JBER check version to set
                 final ExplorerMessageForIngest message = new ExplorerMessageForIngest(ExplorerMessage.upsert(id.toString(), user, false));
                 message.withParentId(Optional.ofNullable(parent_id).map(e -> Long.valueOf(e.toString())));
                 upserted.put(ent_id, message);

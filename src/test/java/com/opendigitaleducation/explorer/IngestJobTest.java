@@ -17,6 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.postgres.IPostgresClient;
@@ -27,6 +28,9 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.net.URI;
 import java.util.*;
+
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.singletonList;
 
 public abstract class IngestJobTest {
     protected static final TestHelper test = TestHelper.helper();
@@ -59,9 +63,9 @@ public abstract class IngestJobTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
-        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + currentTimeMillis();
         IngestJobMetricsRecorderFactory.init(new JsonObject());
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
         createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());
@@ -82,6 +86,7 @@ public abstract class IngestJobTest {
         json.put("name", name);
         json.put("content", content);
         json.put("public", pub);
+        json.put("version", 1);
         return json;
     }
 
@@ -149,7 +154,7 @@ public abstract class IngestJobTest {
                                     //delete
                                     final Promise<IngestJob.IngestJobResult> fDelete = Promise.promise();
                                     job.onEachExecutionEnd(fDelete);
-                                    exPlugin.notifyDeleteById(user, "id1").onComplete(context.asyncAssertSuccess(push3 -> {
+                                    exPlugin.notifyDeleteById(user, new IdAndVersion("id1", currentTimeMillis())).onComplete(context.asyncAssertSuccess(push3 -> {
                                         fDelete.future().onComplete(context.asyncAssertSuccess(results3 -> {
                                             context.assertEquals(1, results3.getSucceed().size());
                                             getResourceService().fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch2 -> {
@@ -202,7 +207,7 @@ public abstract class IngestJobTest {
         final JsonObject message3 = create(user2, "idexplore3", "name3", "text3");
         final JsonObject message2_1 = create(user1, "idexplore2_1", "name2_1", "text2_1");
         //user1 has 3 resources and user2 has 1
-        getExplorerPlugin().notifyUpsert(user2, Arrays.asList(message3)).onComplete(context.asyncAssertSuccess(push -> {
+        getExplorerPlugin().notifyUpsert(user2, singletonList(message3)).onComplete(context.asyncAssertSuccess(push -> {
             getExplorerPlugin().notifyUpsert(user1, Arrays.asList(message1, message2, message2_1)).onComplete(context.asyncAssertSuccess(push1 -> {
                 getIngestJob().execute(true).onComplete(context.asyncAssertSuccess(load -> {
                     //user1 see 3 resource at root
@@ -210,7 +215,7 @@ public abstract class IngestJobTest {
                         context.assertEquals(3, fetch1.size());
                         final JsonObject json = fetch1.stream().map(e -> (JsonObject) e).filter(e -> e.getString("assetId").equals("idexplore2_1")).findFirst().get();
                         //create folder 1
-                        getFolderService().create(user1, application, Arrays.asList(FolderServiceTest.folder("folder1"))).onComplete(context.asyncAssertSuccess(folders -> {
+                        getFolderService().create(user1, application, singletonList(FolderServiceTest.folder("folder1"))).onComplete(context.asyncAssertSuccess(folders -> {
                             context.assertEquals(1, folders.size());
                             final Integer folder1Id = folders.get(0).getInteger("id");
                             //user1 move 1 resource to folder1

@@ -58,7 +58,7 @@ public class ResourceServiceTest {
         final HttpClient httpClient = test.vertx().createHttpClient(httpOptions);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
-        ExplorerPluginMetricsFactory.init(new JsonObject());
+        ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();

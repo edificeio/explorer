@@ -3,8 +3,8 @@ package com.opendigitaleducation.explorer.services.impl;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -18,14 +18,15 @@ import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginClient;
-import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.System.currentTimeMillis;
 
 public class ResourceServiceElastic implements ResourceService {
     static Logger log = LoggerFactory.getLogger(ResourceServiceElastic.class);
@@ -152,7 +153,8 @@ public class ResourceServiceElastic implements ResourceService {
                     //final Integer id = e.getKey();
                     final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
                     //use entid to push message
-                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false).withType(value.application.get(), value.resourceType.get()).withTrashed(isTrash);
+                    // TODO JBER check entityType
+                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false).withType(value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
             }).compose(e->{
@@ -173,6 +175,7 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<JsonArray> move(final UserInfos user, final String application, final Set<Integer> ids, final Optional<String> destOrig) {
+        final long now = currentTimeMillis();
         if(ids.isEmpty()){
             return Future.succeededFuture(new JsonArray());
         }
@@ -192,7 +195,11 @@ public class ResourceServiceElastic implements ResourceService {
                 return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
                         //use entid to push message
-                        return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType);
+                        //
+                        // TODO JBER check entityType
+                        return ExplorerMessage.upsert(e.entId, user, false)
+                                .withType(e.application, e.resourceType, e.resourceType)
+                                .withVersion(now);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -203,7 +210,10 @@ public class ResourceServiceElastic implements ResourceService {
                 return sql.moveToRoot(ids, user).compose(entIds -> {
                     final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                         //use entid to push message
-                        return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType);
+                        // TODO JBER check entityType
+                        return ExplorerMessage.upsert(e.entId.toString(), user, false)
+                                .withType(e.application, e.resourceType, e.resourceType)
+                                .withVersion(now);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -257,13 +267,18 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> resources, final List<ShareOperation> operation) throws Exception {
+        final long now = currentTimeMillis();
         final List<JsonObject> rights = operation.stream().map(o -> o.toJsonRight()).collect(Collectors.toList());
         final Set<Integer> ids = resources.stream().map(e -> Integer.valueOf(e.getString("_id"))).collect(Collectors.toSet());
         final JsonArray shared = new JsonArray(rights);
         return sql.getModelByIds(ids).compose(entIds -> {
             final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                 //use entid to push message
-                return ExplorerMessage.upsert(e.entId.toString(), user, false).withType(e.application, e.resourceType).withShared(shared);
+                // TODO JBER check entityType
+                return ExplorerMessage.upsert(e.entId, user, false)
+                        .withType(e.application, e.resourceType, e.resourceType)
+                        .withShared(shared)
+                        .withVersion(now);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);

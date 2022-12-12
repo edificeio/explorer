@@ -4,21 +4,19 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.explorer.ExplorerPluginFactory;
-import org.entcore.common.explorer.IExplorerPlugin;
-import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.*;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
+import org.entcore.common.explorer.impl.ExplorerSubResource;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
@@ -59,16 +57,17 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
     public static FolderExplorerPlugin withPgStream(final Vertx vertx, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertx, postgres, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FolderExplorerPlugin(communication, postgres);
     }
 
     public static FolderExplorerPlugin withRedisStream(final Vertx vertx, final RedisClient redis, final IPostgresClient postgres) {
-        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, getExplorerPluginMetricsRecorder());
+        final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertx, redis, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         return new FolderExplorerPlugin(communication, postgres);
     }
 
     public final Future<Void> update(final UserInfos user, final String id, final JsonObject source){
+        setIngestJobState(source, IngestJobState.TO_BE_SENT);
         return dbHelper.update(id, source).compose(e->{
             setIdForModel(source, e.id.toString());
             return notifyUpsert(user, source);
@@ -109,18 +108,19 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     @Override
     protected List<String> getColumns() { return this.dbHelper.getColumns(); }
     @Override
-    protected List<String> getMessageFields() { return Arrays.asList("name", "application", "resourceType", "parentId", "creator_id", "creator_name"); }
+    protected List<String> getMessageFields() {
+        // TODO JBER voir à quoi sert ce truc
+        return Arrays.asList("name", "application", "resourceType", "parentId", "creator_id", "creator_name", "version", "ingest_job_state");
+    }
 
     @Override
-    protected Future<ExplorerMessage> toMessage(final ExplorerMessage message, final JsonObject source) {
+    protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
         return Future.succeededFuture(transform(message, source));
     }
+
     @Override
-    protected Future<List<ExplorerMessage>> toMessage(final List<JsonObject> sources, final Function<JsonObject, ExplorerMessage> builder) {
-        final List<ExplorerMessage> messages = sources.stream().map(e->{
-            return transform(builder.apply(e), e);
-        }).collect(Collectors.toList());
-        return Future.succeededFuture(messages);
+    protected List<ExplorerSubResource> getSubResourcesPlugin() {
+        return emptyList();
     }
 
     @Override
