@@ -164,7 +164,7 @@ public class MessageReaderPostgres implements MessageReader {
                 transaction.addPreparedQuery(query, tuple);
                 final Tuple tupleMessage = PostgresClient.insertValues(failedJson, Tuple.tuple(), defaultValues, "_idQueue", "_idResource", "_error", "_attemptat");
                 final String placeholderMessage = PostgresClient.insertPlaceholders(failedJson, 1, "_idQueue", "id_resource", "_error", "_attemptat");
-                final String queryMessage = String.format("INSERT INTO explorer.resource_queue_causes (id, id_resource, attempt_reason, attempted_at) VALUES %s", placeholderMessage);
+                final String queryMessage = String.format("INSERT INTO explorer.resource_queue_causes (id, id_resource, attempt_reason, attempted_at) VALUES %s  ON CONFLICT(id) DO UPDATE SET attempt_reason = EXCLUDED.attempt_reason, attempted_at=EXCLUDED.attempted_at;", placeholderMessage);
                 transaction.addPreparedQuery(queryMessage, tupleMessage);
             }
             return transaction.commit().onFailure(e -> {
