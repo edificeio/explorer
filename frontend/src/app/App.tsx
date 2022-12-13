@@ -1,6 +1,6 @@
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
-import useExplorerTreeView from "@hooks/adapters/explorer/useExplorerTreeView";
+import useExplorerAdapter from "@hooks/adapters/explorer/useExplorerAdapter";
 import useI18n from "@hooks/useI18n";
 import { TreeView } from "@ode-react-ui/advanced";
 import { AppCard, Button, Header } from "@ode-react-ui/core";
@@ -14,7 +14,7 @@ function App() {
   const { session } = useOdeContext();
   const { i18n } = useI18n();
   const { context } = useExplorerContext();
-  const { treeData } = useExplorerTreeView(context);
+  const { treeData, listData } = useExplorerAdapter(context);
 
   if (!session || session.notLoggedIn) {
     return (
@@ -28,11 +28,15 @@ function App() {
   }
 
   // TODO initialize search parameters. Here and/or in the dedicated React component
-  context.getSearchParameters().pagination.pageSize = 3;
+  context.getSearchParameters().pagination.pageSize = 1;
   // Do explore...
   context.initialize();
   // ...results (latestResources()) are observed in treeview adapter
   //
+
+  function searchMore() {
+    context.getResources();
+  }
 
   return (
     <div className="App">
@@ -66,10 +70,25 @@ function App() {
         </div>
         <div className="container">
           <div className="row">
+            <button type="button" onClick={() => searchMore()}>
+              Voir plus
+            </button>
+          </div>
+          <div className="row">
             <div className="col-4">
               <TreeView data={treeData} />
             </div>
-            <div className="col-8">NOTHING FOUND</div>
+            <div className="col-8">
+              <ul>
+                {listData
+                  .map((r) => (
+                    <li>
+                      Nom={r.name}, id={r.id}, thumbnail={r.thumbnail}
+                    </li>
+                  ))
+                  .join("\r")}
+              </ul>
+            </div>
           </div>
         </div>
       </main>
