@@ -15,22 +15,11 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
 
 public class MessageIngesterElastic implements MessageIngester {
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
 
     private final ElasticClientManager elasticClient;
-    private final Map<String, Long> nbIngestedPerAction = new HashMap<>();
-    private Date lastIngestion;
-    private long nbIngestion = 0;
-    private long nbIngested = 0;
-    private long nbSuccess = 0;
-    private long nbFailed = 0;
-    private long lastIngestCount = 0;
-
     public MessageIngesterElastic(final ElasticClientManager elasticClient) {
         this.elasticClient = elasticClient;
     }
@@ -121,23 +110,6 @@ public class MessageIngesterElastic implements MessageIngester {
             default:
                 throw new NotImplementedException(a + ".not.implemented");
         }
-    }
-
-    @Override
-    public Future<JsonObject> getMetrics() {
-        final JsonObject metrics = new JsonObject();
-        if (lastIngestion != null) {
-            metrics.put("last_ingestion_date", this.lastIngestion.toString());
-        }
-        metrics.put("last_ingest_count", this.lastIngestCount);
-        metrics.put("count_failed", this.nbFailed);
-        metrics.put("count_success", this.nbSuccess);
-        metrics.put("count_ingested", this.nbIngested);
-        metrics.put("count_ingestion", this.nbIngestion);
-        for (final String key : nbIngestedPerAction.keySet()) {
-            metrics.put("count_" + key, nbIngestedPerAction.getOrDefault(key, 0l));
-        }
-        return Future.succeededFuture(metrics);
     }
 
     static JsonObject beforeCreate(final JsonObject document) {

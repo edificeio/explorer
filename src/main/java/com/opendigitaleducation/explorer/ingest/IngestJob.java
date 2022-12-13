@@ -138,13 +138,7 @@ public class IngestJob {
     public Future<JsonObject> getMetrics() {
         final JsonObject metrics = new JsonObject();
         metrics.put("status", status.name());
-        return messageReader.getMetrics().compose(readMetrics -> {
-            metrics.put("read", readMetrics);
-            return messageIngester.getMetrics();
-        }).map(ingestMetrics -> {
-            metrics.put("ingest", ingestMetrics);
-            return metrics;
-        });
+        return Future.succeededFuture(metrics);
     }
 
     public boolean isRunning() {
