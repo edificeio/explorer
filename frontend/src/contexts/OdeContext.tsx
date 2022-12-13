@@ -33,6 +33,7 @@ const OdeContext = createContext<OdeContextProps | null>(null!);
 
 export type OdeProviderParams = {
   app: App;
+  alternativeApp?: boolean;
   version?: string | null;
   cdnDomain?: string | null;
 };
@@ -53,7 +54,10 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
     const initOnce = async () => {
       try {
         console.log(`initizaling ${params.app}`);
-        await configure.Platform.apps.initialize(params.app);
+        await configure.Platform.apps.initialize(
+          params.app,
+          params.alternativeApp,
+        );
         setIdiom(configure.Platform.idiom); // ...same object, but triggers React.
       } catch (e) {
         console.log(e);

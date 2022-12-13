@@ -51,7 +51,7 @@
     "i18next": "21.9.2",
     "i18next-browser-languagedetector": "6.1.5",
     "i18next-http-backend": "1.4.4",
-    "ode-ts-client": "^1.0.0-explorer.202211181040",
+    "ode-ts-client": "feat-explorer",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "3.1.4",
