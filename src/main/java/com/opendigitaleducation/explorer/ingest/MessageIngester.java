@@ -1,7 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.postgres.IPostgresClient;
 
@@ -18,7 +17,5 @@ public interface MessageIngester {
     }
 
     Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages);
-
-    Future<JsonObject> getMetrics();
 
 }

@@ -321,9 +321,4 @@ public class MessageIngesterPostgres implements MessageIngester {
         return message;
     }
 
-    @Override
-    public Future<JsonObject> getMetrics() {
-        return (ingester.getMetrics());
-    }
-
 }

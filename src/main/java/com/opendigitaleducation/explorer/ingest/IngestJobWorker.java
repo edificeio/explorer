@@ -20,7 +20,7 @@ public class IngestJobWorker extends AbstractVerticle {
 
     @Override
     public void start(final Promise<Void> startPromise) throws Exception {
-        IngestJobMetricsRecorderFactory.init(config());
+        IngestJobMetricsRecorderFactory.init(vertx, config());
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
         final boolean runjobInWroker = config().getBoolean("worker-job", true);
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), runjobInWroker, false);
