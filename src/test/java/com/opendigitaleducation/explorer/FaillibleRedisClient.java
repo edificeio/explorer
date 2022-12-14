@@ -31,28 +31,33 @@ public class FaillibleRedisClient extends RedisClient {
     @Override
     public Future<List<String>> xAdd(final String stream, final List<JsonObject> jsons) {
         for (JsonObject message : jsons) {
-            final boolean matchesOneRule = this.errorRules.stream().anyMatch(errorRule -> {
-                if(errorRule.getValuesToTarget() != null) {
-                    final JsonObject payload = new JsonObject(message.getString("payload"));
-                    final boolean bodyMatch = errorRule.getValuesToTarget().entrySet().stream().allMatch(fieldNameAndValue ->
-                            payload.getString(fieldNameAndValue.getKey(), "").matches(fieldNameAndValue.getValue())
-                    );
-                    if(bodyMatch) {
-                        log.debug("Evicting message " + message + " based on " + errorRule);
-                    } else {
-                        return false;
-                    }
-                }
-                if (errorRule.getAction() != null && stream.matches(errorRule.getAction())) {
-                    return false;
-                }
-                return true;
-            });
+            final boolean matchesOneRule = this.errorRules.stream()
+                    .filter(rule -> "redis-xadd".equals(rule.getPointOfFailure()))
+                    .anyMatch(errorRule -> messageMatchesErrorRule(message, stream, errorRule));
             if(matchesOneRule) {
                 return Future.failedFuture("evicted.by.test.rules");
             }
         }
-
         return super.xAdd(stream, jsons);
+    }
+
+    public boolean messageMatchesErrorRule(final JsonObject message,
+                                           final String stream,
+                                           final ErrorMessageTransformer.IngestJobErrorRule errorRule) {
+        if(errorRule.getValuesToTarget() != null) {
+            final JsonObject payload = new JsonObject(message.getString("payload"));
+            final boolean bodyMatch = errorRule.getValuesToTarget().entrySet().stream().allMatch(fieldNameAndValue ->
+                    payload.getString(fieldNameAndValue.getKey(), "").matches(fieldNameAndValue.getValue())
+            );
+            if(bodyMatch) {
+                log.debug("Evicting message " + message + " based on " + errorRule);
+            } else {
+                return false;
+            }
+        }
+        if (errorRule.getAction() != null && stream.matches(errorRule.getAction())) {
+            return false;
+        }
+        return true;
     }
 }

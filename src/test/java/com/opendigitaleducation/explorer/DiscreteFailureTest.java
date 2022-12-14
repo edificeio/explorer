@@ -51,7 +51,6 @@ import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.execute
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 @RunWith(VertxUnitRunner.class)
 public class DiscreteFailureTest {
@@ -262,14 +261,37 @@ public class DiscreteFailureTest {
      */
     @Test
     public void testMessagesThatCouldNotBeWrittenInRedisAreEventuallyIngested(TestContext context) {
-        errorOnRedis(1, 2, 0, createErrorRulesForRedis(), context);
+        errorOnRedis(1, 2, 0, createErrorRulesForRedisXAdd(), context);
+    }
+
+
+    /**
+     * <u>GOAL</u> : Test that the final result of the ingestion is the expected one even if two (or more) messages
+     * do not arrive in the right order.
+     *
+     * <u>STEPS</u> :
+     * <ol>
+     *     <li>Create a resource</li>
+     *     <li>Activate error rules on REDIS</li>
+     *     <li>Update the resource at time t by changing the content</li>
+     *     <li>Update the resource at time t + 1  by changing again the content</li>
+     *     <li>Configure the transformer to invert the messages</li>
+     *     <li>Launch the job x times</li>
+     *     <li>Verify that the resource has the desired end state.</li>
+     * </ol>
+     * @param context Test context
+     */
+    @Test
+    public void testMessagesThatArriveInWrongOrderAreCorrectlyProcessed(TestContext context) {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-read", "HEAD");
+        errorOnRedisOnContent(BATCH_SIZE, errors, context);
     }
 
     public void errorOnRedis(final int nbFirstMessagesOk,
-                              final int nbMessagesKO,
-                              final int nbLastMessagesOk,
-                              final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
-                              final TestContext context) {
+                             final int nbMessagesKO,
+                             final int nbLastMessagesOk,
+                             final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
+                             final TestContext context) {
         final String resourceName = "resource" + idtResource.incrementAndGet();
         final JsonObject f1 = resource(resourceName);
         f1.put("content", "initial");
@@ -318,6 +340,52 @@ public class DiscreteFailureTest {
                                 context.assertEquals(nbMessages, srContents.size(), "There should be exactly one sub resource per message. What we got back is " + srContents);
                                 async.complete();
                             }));
+                        }));
+                    }));
+                });
+            }));
+        }));
+    }
+
+    public void errorOnRedisOnContent(
+            final int nbMessages,
+            final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
+            final TestContext context) {
+        final String resourceName = "resource" + idtResource.incrementAndGet();
+        final JsonObject f1 = resource(resourceName);
+        f1.put("content", "initial");
+        final UserInfos user = test.directory().generateUser("usermove");
+        final Async async = context.async();
+        final int nbTimesToExecuteJob = 2 * nbMessages;
+        resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
+            context.assertTrue(
+                    fetch0.stream().noneMatch(resource -> ((JsonObject)resource).getString("name", "").equals(f1.getString("name"))),
+                    "The user already had a resource called " + f1.getString("name")
+            );
+            plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+                executeJobNTimesAndFetchUniqueResult(job, 1, application, resourceService, user, resourceName, context).compose(createdResource -> {
+                    ////////////////////////////
+                    // Generate update messages
+                    final List<JsonObject> modifications = new ArrayList<>();
+                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbMessages - 1, "before invertion messages"));
+                    modifications.addAll(generateModifiedResourcesToFail(createdResource, 1));
+                    final String expectedFinalMessage = modifications.get(modifications.size() - 1).getString("content");
+                    final long expectedVersion = modifications.get(modifications.size() - 1).getLong("version");
+                    setErrorRules(errors);
+                    return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
+                        ////////////////////////////
+                        // Launch the job n times to make sure that upon restart nothing changes
+                        executeJobNTimesAndFetchUniqueResult(job, nbTimesToExecuteJob, application, resourceService, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
+                            ////////////////////////////
+                            // Verify that the desired state has been reached or that the error messages
+                            // were not processed
+                            final String contentOfMessage = asReturnedByFetch.getString("content", "");
+                            final Long version = asReturnedByFetch.getLong("version", -1L);
+                            context.assertEquals(expectedFinalMessage, contentOfMessage,
+                                    "The resource should have the last content. Instead it was " + contentOfMessage);
+                            context.assertEquals(expectedVersion, asReturnedByFetch.getLong("version", -1l),
+                                    "The resource should have the last version. Instead it was " + version);
+                            async.complete();
                         }));
                     }));
                 });
@@ -415,8 +483,13 @@ public class DiscreteFailureTest {
         errors.addAll(evictionRulePG("content", ".*fail.*"));
         return errors;
     }
-    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedis() {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "xAdd");
+    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedisXAdd() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-xadd");
+        errors.addAll(evictionRulePG("content", ".*fail.*"));
+        return errors;
+    }
+    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedisRead() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-read");
         errors.addAll(evictionRulePG("content", ".*fail.*"));
         return errors;
     }
@@ -476,10 +549,14 @@ public class DiscreteFailureTest {
     }
 
     private List<ErrorMessageTransformer.IngestJobErrorRule> evictionRules(final String attributeName, final String attributeValue, final String pointOfFailure) {
+        return evictionRules(attributeName, attributeValue, pointOfFailure, null);
+    }
+    private List<ErrorMessageTransformer.IngestJobErrorRule> evictionRules(final String attributeName, final String attributeValue, final String pointOfFailure, final String trigger) {
         final List<ErrorMessageTransformer.IngestJobErrorRule> rules = new ArrayList<>();
         rules.add(new ErrorMessageTransformer.IngestJobErrorRuleBuilder()
                 .withValueToTarget(attributeName, attributeValue)
                 .setPointOfFailure(pointOfFailure)
+                .setTriggeredAction(trigger)
                 .createIngestJobErrorRule());
         return rules;
     }
