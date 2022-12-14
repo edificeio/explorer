@@ -32,9 +32,9 @@ export default function useExplorerAdapter(explorerContext: IExplorerContext) {
   }
 
   function wrapResourceData(resources?: IResource[]) {
-    if (listData && resources && resources.length) {
-      setListData(
-        listData.concat(resources.map((r) => new ResourceCardWrapper(r))),
+    if (resources && resources.length) {
+      setListData((d) =>
+        d.concat(resources.map((r) => new ResourceCardWrapper(r))),
       );
     }
   }

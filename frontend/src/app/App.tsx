@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
 import useExplorerAdapter from "@hooks/adapters/explorer/useExplorerAdapter";
@@ -15,6 +17,30 @@ function App() {
   const { i18n } = useI18n();
   const { context } = useExplorerContext();
   const { treeData, listData } = useExplorerAdapter(context);
+  const [listItems, setListItems] = useState(<ul />);
+
+  useEffect(() => {
+    setListItems(
+      <ul>
+        {listData
+          .map((r) => (
+            <li>
+              Nom={r.name}, id={r.id}, thumbnail={r.thumbnail}
+            </li>
+          ))
+          .join()}
+      </ul>,
+    );
+  }, [listData]);
+
+  useEffect(() => {
+    // TODO initialize search parameters. Here and/or in the dedicated React component
+    context.getSearchParameters().pagination.pageSize = 1;
+    // Do explore...
+    context.initialize();
+    // ...results (latestResources()) are observed in treeview adapter
+    //
+  }, []);
 
   if (!session || session.notLoggedIn) {
     return (
@@ -27,14 +53,7 @@ function App() {
     );
   }
 
-  // TODO initialize search parameters. Here and/or in the dedicated React component
-  context.getSearchParameters().pagination.pageSize = 1;
-  // Do explore...
-  context.initialize();
-  // ...results (latestResources()) are observed in treeview adapter
-  //
-
-  function searchMore() {
+  function handleSearch() {
     context.getResources();
   }
 
@@ -70,25 +89,15 @@ function App() {
         </div>
         <div className="container">
           <div className="row">
-            <button type="button" onClick={() => searchMore()}>
-              Voir plus
-            </button>
-          </div>
-          <div className="row">
             <div className="col-4">
               <TreeView data={treeData} />
             </div>
-            <div className="col-8">
-              <ul>
-                {listData
-                  .map((r) => (
-                    <li>
-                      Nom={r.name}, id={r.id}, thumbnail={r.thumbnail}
-                    </li>
-                  ))
-                  .join("\r")}
-              </ul>
-            </div>
+            <div className="col-8">{listItems}</div>
+          </div>
+          <div className="row">
+            <button type="button" onClick={handleSearch}>
+              Voir plus
+            </button>
           </div>
         </div>
       </main>
