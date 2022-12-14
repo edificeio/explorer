@@ -18,6 +18,7 @@
         "stream": "redis",
         "create-index": {{explorerCreateIndex | default(true)}},
         "enable-job": {{explorerEnableJob | default(true)}},
+        "worker-job": {{explorerWorkerJob | default(true)}},
         "elasticsearchConfig":{
             "uris": {{explorerEsUris}},
             "index": "{{explorerEsIndex}}"

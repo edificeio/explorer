@@ -60,10 +60,13 @@ public class Explorer extends BaseServer {
         //  => creer un term de recherche "rights":"USERID:write"
         log.info("Starting explorer...");
         super.start();
+        final boolean runjobInWroker = config.getBoolean("worker-job", true);
         final List<Future> futures = new ArrayList<>();
         //create postgres client
         log.info("Init postgres bus consumer...");
-        IPostgresClient.initPostgresConsumer(vertx, config, false);
+        if(runjobInWroker){
+            IPostgresClient.initPostgresConsumer(vertx, config, false);
+        }
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, true);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
@@ -117,7 +120,10 @@ public class Explorer extends BaseServer {
         //deploy ingest worker
         if(config.getBoolean("enable-job", true)){
             final Promise<String> onWorkerDeploy = Promise.promise();
-            final DeploymentOptions dep = new DeploymentOptions().setWorker(true).setConfig(config).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
+            final DeploymentOptions dep = new DeploymentOptions().setConfig(config);
+            if(runjobInWroker){
+                dep.setWorker(true).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
+            }
             vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
             futures.add(onWorkerDeploy.future());
         }
