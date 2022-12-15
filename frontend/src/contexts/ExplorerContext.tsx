@@ -1,4 +1,10 @@
-import { useMemo, createContext, useContext, ReactNode } from "react";
+import {
+  useMemo,
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 
 import {
   IExplorerContext,
@@ -24,7 +30,7 @@ export default function ExplorerContextProvider({
   children,
   types,
 }: ExplorerProviderProps) {
-  const { params, explorer, session } = useOdeContext();
+  const { params, explorer } = useOdeContext();
 
   const context = explorer.createContext(types, params.app);
 
@@ -33,8 +39,34 @@ export default function ExplorerContextProvider({
       explorer,
       context,
     }),
-    [session],
+    [],
   );
+
+  // Observe streamed search results
+  useEffect(() => {
+    const subscription = context.latestResources().subscribe({
+      next: (resultset) => {
+        // Prepare searching next page
+        const { pagination } = context.getSearchParameters();
+        pagination.maxIdx = resultset.output.pagination.maxIdx;
+        pagination.startIdx =
+          resultset.output.pagination.startIdx +
+          resultset.output.pagination.pageSize;
+        if (
+          typeof pagination.maxIdx !== "undefined" &&
+          pagination.startIdx > pagination.maxIdx
+        ) {
+          pagination.startIdx = pagination.maxIdx;
+        }
+      },
+    });
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, []); // execute effect only once
 
   return (
     <ExplorerContext.Provider value={values}>

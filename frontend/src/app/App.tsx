@@ -16,7 +16,7 @@ function App() {
   const { session } = useOdeContext();
   const { i18n } = useI18n();
   const { context } = useExplorerContext();
-  const { treeData, listData } = useExplorerAdapter(context);
+  const { treeData, listData } = useExplorerAdapter();
   const [listItems, setListItems] = useState(<ul />);
 
   useEffect(() => {
