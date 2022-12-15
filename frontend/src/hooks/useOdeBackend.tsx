@@ -39,7 +39,6 @@ export default function useOdeBackend(
 
   /** The custom-hook-ized login process */
   function login(/* email: string, password: string */) {
-    alert("login clicked !");
     // sessionFramework.login(email, password).then(() => {
     //   setSession(sessionFramework.session); // ...same session object, but triggers React rendering.
     // });
