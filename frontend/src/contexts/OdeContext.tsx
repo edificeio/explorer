@@ -16,6 +16,7 @@ import {
   IIdiom,
   INotifyFramework,
   ISession,
+  IWebApp,
 } from "ode-ts-client";
 
 interface OdeContextProps {
@@ -26,6 +27,7 @@ interface OdeContextProps {
   http: IHttp;
   idiom: IIdiom;
   params: OdeProviderParams;
+  currentApp: IWebApp;
   login: () => void;
   logout: () => void;
 }
@@ -43,21 +45,36 @@ interface OdeProviderProps {
   params: OdeProviderParams;
 }
 
+type Apps = {
+  [key: string]: any;
+};
+
 export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
 
   const [idiom, setIdiom] = useState<IIdiom>(configure.Platform.idiom);
 
+  const [currentApp, setCurrentApp] = useState<IWebApp>(null!);
+
+  function getCurrentApp(list: [], param: App) {
+    const { apps }: Apps = list;
+    const filteredList = apps.filter((item: any) => item.displayName === param);
+    const [app] = filteredList;
+    return app;
+  }
+
   useEffect(() => {
     console.log("OdeContext INIT ONLY ONCE, PLEASE !");
     const initOnce = async () => {
       try {
-        console.log(`initizaling ${params.app}`);
+        console.log(`init ${params.app}`);
         await configure.Platform.apps.initialize(
           params.app,
           params.alternativeApp,
         );
+        const appsList = await configure.Platform.apps.getAppsList();
+        setCurrentApp(getCurrentApp(appsList, params.app));
         setIdiom(configure.Platform.idiom); // ...same object, but triggers React.
       } catch (e) {
         console.log(e);
@@ -68,17 +85,18 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
 
   const values = useMemo(
     () => ({
-      session,
       configure,
-      notif,
+      currentApp,
       explorer,
       http,
       idiom,
-      params,
       login,
       logout,
+      notif,
+      params,
+      session,
     }),
-    [session, idiom],
+    [session, idiom, currentApp],
   );
 
   return <OdeContext.Provider value={values}>{children}</OdeContext.Provider>;

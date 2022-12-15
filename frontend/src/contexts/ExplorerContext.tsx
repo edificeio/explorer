@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import {
+  ACTION,
   IExplorerContext,
   IExplorerFramework,
   ResourceType,
@@ -17,6 +18,8 @@ import { useOdeContext } from "./OdeContext";
 interface ExplorerContextProps {
   explorer: IExplorerFramework;
   context: IExplorerContext;
+  onOpen: (assetId: string) => void;
+  onCreate: () => void;
 }
 
 interface ExplorerProviderProps {
@@ -34,10 +37,22 @@ export default function ExplorerContextProvider({
 
   const context = explorer.createContext(types, params.app);
 
+  function onOpen(assetId: string) {
+    return explorer
+      .getBus()
+      .publish(types[0], ACTION.OPEN, { resourceId: assetId });
+  }
+
+  function onCreate() {
+    return explorer.getBus().publish(types[0], ACTION.CREATE, "test proto");
+  }
+
   const values = useMemo(
     () => ({
       explorer,
       context,
+      onOpen,
+      onCreate,
     }),
     [],
   );
