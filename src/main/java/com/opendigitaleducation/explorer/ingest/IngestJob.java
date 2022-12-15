@@ -65,7 +65,6 @@ public class IngestJob {
         this.messageTransformer = new MessageTransformerChain();
         this.messageConsumer = getRouter(vertx);
         this.ingestJobMetricsRecorder = metricsRecorder;
-        this.ingestJobMetricsRecorder.onJobStarted();
     }
 
     private MessageConsumer getRouter(Vertx vertx) {
@@ -295,6 +294,7 @@ public class IngestJob {
             });
         });
         this.status = IngestJobStatus.Running;
+        this.ingestJobMetricsRecorder.onJobStarted();
         //start reader (listening)
         return this.messageReader.start().compose(ee -> {
             if (pending.isEmpty()) {
