@@ -1,4 +1,8 @@
-:root {
+.card .app-card p {
+  display: none;
+}
+
+/* :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -122,3 +126,4 @@ button:focus-visible {
 button {
   margin-inline: 0.5rem;
 }
+ */

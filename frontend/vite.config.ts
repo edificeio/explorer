@@ -36,7 +36,12 @@ export default defineConfig({
   }, */
   server: {
     proxy: {
-      // Springboard urls
+      // List of all applications
+      "/applications-list": {
+        target: "http://localhost:8090",
+        changeOrigin: false,
+      },
+      // Public Conf
       "/conf/public": {
         target: "http://localhost:8090",
         changeOrigin: false,

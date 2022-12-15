@@ -22,6 +22,6 @@ export default class ResourceCardWrapper implements Card {
   }
 
   get authorName() {
-    return this.res.authorName;
+    return this.res.creatorName;
   }
 }

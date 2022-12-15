@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { IFolder, IResource } from "ode-ts-client";
 
-import ResourceCardWrapper from "./ResourceCardWrapper";
+// import ResourceCardWrapper from "./ResourceCardWrapper";
 import TreeNodeFolderWrapper from "./TreeNodeFolderWrapper";
-import { Card, TreeNode } from "./types";
+import { TreeNode } from "./types";
 
 /**
  * This hook acts as a data-model adapter.
@@ -21,7 +21,7 @@ export default function useExplorerAdapter() {
     children: [],
   });
 
-  const [listData, setListData] = useState<Array<Card>>([]);
+  const [listData, setListData] = useState<IResource[]>([]);
 
   // TODO  const selectedNode = treeData;
 
@@ -36,11 +36,17 @@ export default function useExplorerAdapter() {
 
   function wrapResourceData(resources?: IResource[]) {
     if (resources && resources.length) {
+      setListData(resources);
+    }
+  }
+
+  /* function wrapResourceData(resources?: IResource[]) {
+    if (resources && resources.length) {
       setListData((d) =>
         d.concat(resources.map((r) => new ResourceCardWrapper(r))),
       );
     }
-  }
+  } */
 
   // Observe streamed search results
   useEffect(() => {
@@ -56,7 +62,7 @@ export default function useExplorerAdapter() {
         subscription.unsubscribe();
       }
     };
-  }, []); // execute effect only once
+  }, [treeData, listData]); // execute effect only once
 
   return {
     treeData,

@@ -43,10 +43,10 @@
     ]
   },
   "dependencies": {
-    "@ode-react-ui/advanced": "^1.0.5",
-    "@ode-react-ui/core": "^1.0.6",
-    "@ode-react-ui/hooks": "^1.0.6",
-    "@ode-react-ui/icons": "^1.0.6",
+    "@ode-react-ui/advanced": "dev",
+    "@ode-react-ui/core": "dev",
+    "@ode-react-ui/hooks": "dev",
+    "@ode-react-ui/icons": "dev",
     "clsx": "1.2.1",
     "i18next": "21.9.2",
     "i18next-browser-languagedetector": "6.1.5",
