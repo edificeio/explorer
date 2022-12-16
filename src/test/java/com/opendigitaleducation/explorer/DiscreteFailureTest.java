@@ -9,9 +9,9 @@ import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import com.opendigitaleducation.explorer.tests.ExplorerTestHelper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimesAndFetchUniqueResult;
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.emptyList;
@@ -101,8 +102,10 @@ public class DiscreteFailureTest {
         final Async async = context.async();
         final Promise<Void> promiseMongo = Promise.promise();
         final Promise<Void> promiseRedis = Promise.promise();
-        all(Arrays.asList(promiseRedis.future(), promiseRedis.future())).onComplete(e -> async.complete());
-        createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> promiseMongo.complete());
+        final Promise<Void> promiseScript = Promise.promise();
+        all(Arrays.asList(promiseRedis.future(), promiseRedis.future(), promiseScript.future())).onComplete(e -> async.complete());
+        ExplorerTestHelper.createMapping(test.vertx(), elasticClientManager, resourceIndex).onComplete(r -> promiseMongo.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final JsonObject jobConf = new JsonObject()
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
@@ -128,12 +131,6 @@ public class DiscreteFailureTest {
     public void beforeTests(TestContext context){
         System.out.println("Flushing data");
         clearErrorRules();
-    }
-
-
-    static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
-        return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
     static JsonObject resource(final String name) {

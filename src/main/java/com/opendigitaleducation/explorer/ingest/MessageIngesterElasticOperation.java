@@ -12,6 +12,8 @@ import org.entcore.common.explorer.ExplorerMessage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.of;
+
 abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
     protected final ExplorerMessageForIngest message;
@@ -33,11 +35,6 @@ abstract class MessageIngesterElasticOperation {
                 //prepare
                 final List<MessageIngesterElasticOperation> operations = new ArrayList<>();
                 operations.add(new MessageIngesterElasticOperationUpsert(message));
-                //subresource
-                final List<JsonObject> subresources = message.getSubresources().stream().filter(e-> e instanceof JsonObject).map(e-> (JsonObject)e).collect(Collectors.toList());
-                if(!subresources.isEmpty()){
-                    operations.add(new MessageIngesterElasticOperationUpsertSubResource(message));
-                }
                 return operations;
             case Audience:
                 return Arrays.asList(new MessageIngesterElasticOperationAudience(message));
@@ -81,22 +78,97 @@ abstract class MessageIngesterElasticOperation {
     }
 
     static class MessageIngesterElasticOperationUpsert extends MessageIngesterElasticOperation {
+        private final long version;
+        private final JsonObject changes;
+        private final int audienceDelta;
+        private final JsonArray subresources;
         MessageIngesterElasticOperationUpsert(final ExplorerMessageForIngest message) {
             super(message);
+            JsonObject changes = message.getMessage().copy();
+            if(message.isSynthetic()) {
+                changes = keepOnlyOverride(changes);
+            } else {
+                changes = beforeCreate(changes);
+            }
+            this.version = message.getVersion();
+            this.changes = changes;
+            this.audienceDelta = 0;
+            this.subresources = message.getSubresources();
+        }
+
+        private static JsonObject keepOnlyOverride(JsonObject message) {
+            final JsonObject changes = new JsonObject();
+            //override field can override existing fields
+            final JsonObject override = message.getJsonObject("override", new JsonObject());
+            for (final String key : override.fieldNames()) {
+                changes.put(key, override.getValue(key));
+            }
+            changes.put("updatedAt", message.getLong("updatedAt"));
+            changes.put("version", message.getLong("version"));
+            return changes;
+        }
+
+        private static JsonObject beforeCreate(final JsonObject document) {
+
+            document.remove("entityType");
+            if(!document.containsKey("subresources")){
+                document.put("subresources", new JsonArray());
+            }
+            if (!document.containsKey("trashed")) {
+                document.put("trashed", false);
+            }
+            if (!document.containsKey("public")) {
+                document.put("public", false);
+            }
+            if (!document.containsKey("createdAt")) {
+                document.put("createdAt", new Date().getTime());
+            }
+            if (!document.containsKey("rights")) {
+                document.put("rights", new JsonArray());
+            }
+            if (document.containsKey("creatorId")) {
+                final String tagCreator = ExplorerConfig.getCreatorRight(document.getString("creatorId"));
+                final JsonArray rights = document.getJsonArray("rights", new JsonArray());
+                if(!rights.contains(tagCreator)){
+                    document.put("rights", rights.add(tagCreator));
+                }
+            }
+            if (!document.containsKey("folderIds")) {
+                document.put("folderIds", new JsonArray());
+            }
+            if (!document.containsKey("usersForFolderIds")) {
+                document.put("usersForFolderIds", new JsonArray());
+            }
+            //custom field should not override existing fields
+            final JsonObject custom = document.getJsonObject("custom", new JsonObject());
+            for (final String key : custom.fieldNames()) {
+                if (!document.containsKey(key)) {
+                    document.put(key, custom.getValue(key));
+                }
+            }
+            document.remove("custom");
+            //override field can override existing fields
+            final JsonObject override = document.getJsonObject("override", new JsonObject());
+            for (final String key : override.fieldNames()) {
+                document.put(key, override.getValue(key));
+            }
+            document.remove("override");
+            return document;
         }
 
         @Override
         void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
             final String resource = message.getResourceType();
-            //prepare custom fields
-            //copy for upsert
-            final JsonObject insert = MessageIngesterElastic.beforeCreate(copy());
-            final JsonObject update = MessageIngesterElastic.beforeUpdate(copy());
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String index = ExplorerConfig.getInstance().getIndex(application, resource);
-            bulk.upsert(insert, update, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
+            final JsonObject params = new JsonObject()
+                    .put("version", version)
+                    .put("changes", changes == null ? new JsonObject() : changes)
+                    .put("subresources", subresources == null ? new JsonArray() : subresources)
+                    .put("audienceDelta", audienceDelta);
+            bulk.storedScript("explorer-upsert-ressource", params, of(id), of(index), of(routing), of(new JsonObject()));
         }
 
         private JsonObject copy(){

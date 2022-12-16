@@ -211,7 +211,7 @@ public class ResourceServiceElastic implements ResourceService {
                     final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                         //use entid to push message
                         // TODO JBER check entityType
-                        return ExplorerMessage.upsert(e.entId.toString(), user, false)
+                        return ExplorerMessage.upsert(e.entId, user, false)
                                 .withType(e.application, e.resourceType, e.resourceType)
                                 .withVersion(now);
                     }).collect(Collectors.toList());

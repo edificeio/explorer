@@ -11,8 +11,8 @@ import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
-import io.advantageous.boon.core.Str;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,7 +24,6 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
-import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
@@ -178,5 +177,16 @@ public class ExplorerTestHelper implements TestRule {
             onDone = job.execute(true).compose(e -> executeJobNTimes(job, nbTimesToExecute - 1, context));
         }
         return onDone.onFailure(e -> context.asyncAssertFailure());
+    }
+
+    public static Future<Void> createScript(final Vertx vertx, ElasticClientManager elasticClientManager) {
+        final Buffer upsertScript = vertx.fileSystem().readFileBlocking("es/upsertScript.json");
+        return elasticClientManager.getClient().storeScript("explorer-upsert-ressource", upsertScript);
+    }
+
+
+    public static Future<Void> createMapping(final Vertx vertx, ElasticClientManager elasticClientManager, String index) {
+        final Buffer mapping = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
+        return elasticClientManager.getClient().createMapping(index, mapping);
     }
 }

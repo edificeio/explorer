@@ -48,7 +48,6 @@ import java.util.stream.IntStream;
 
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.singletonList;
-import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
 
 @RunWith(VertxUnitRunner.class)
 public class IngestJobStressTest {
@@ -135,7 +134,7 @@ public class IngestJobStressTest {
     }
 
     static JsonObject resource(final String name) {
-        return new JsonObject().put("name", name);
+        return new JsonObject().put("name", name).put("version", 1);
     }
 
     /**

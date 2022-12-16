@@ -103,6 +103,8 @@ public class Explorer extends BaseServer {
             final Future future = elasticClientManager.getClient().createMapping(index, mappingFolder);
             log.info("Creating ES Resource Folder using index" + index);
             futures.add(future);
+
+            futures.add(createUpsertScript(config.getString("upsert-resource-script", "explorer-upsert-ressource"), elasticClientManager));
         }
         //create folder service
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create();
@@ -134,6 +136,13 @@ public class Explorer extends BaseServer {
                 log.error("Explorer application failed to start", e.cause());
             }
         });
+    }
+
+    private Future createUpsertScript(final String scriptId, final ElasticClientManager elasticClientManager) {
+        final Buffer upsertScript = vertx.fileSystem().readFileBlocking("es/upsertScript.json");
+        final Future future = elasticClientManager.getClient().storeScript(scriptId, upsertScript);
+        log.info("Creating Resource upsert script " + scriptId);
+        return future;
     }
 
     @Override

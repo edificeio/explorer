@@ -57,7 +57,7 @@ public class ResourceServiceTest {
         final HttpClientOptions httpOptions = new HttpClientOptions().setDefaultHost(esContainer.getHost()).setDefaultPort(esContainer.getMappedPort(9200));
         final HttpClient httpClient = test.vertx().createHttpClient(httpOptions);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
-        IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
@@ -84,11 +84,12 @@ public class ResourceServiceTest {
 
 
     static JsonObject createHtml(String id, String name, String html, String content) {
-        final JsonObject json = new JsonObject();
-        json.put("id", id);
-        json.put("html", html);
-        json.put("content", content);
-        json.put("name", name);
+        final JsonObject json = new JsonObject()
+                .put("id", id)
+                .put("html", html)
+                .put("content", content)
+                .put("name", name)
+                .put("version", 1);
         return json;
     }
 
@@ -142,10 +143,10 @@ public class ResourceServiceTest {
     @Test
     public void shouldSearchResourceWithSubresources(TestContext context) {
         final UserInfos user = test.directory().generateUser("usernested");
-        final ExplorerMessage f1 = ExplorerMessage.upsert("id1", user, false);
+        final ExplorerMessage f1 = ExplorerMessage.upsert("id1", user, false).withVersion(1L);
         f1.withSubResourceContent("id1_1", "content1_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_1", "<h1>html1_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f1.withSubResourceContent("id1_2", "content1_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_2", "<h1>html1_2</h1>", ExplorerMessage.ExplorerContentType.Html);
-        final ExplorerMessage f2 = ExplorerMessage.upsert("id2", user, false);
+        final ExplorerMessage f2 = ExplorerMessage.upsert("id2", user, false).withVersion(1L);
         f2.withSubResourceContent("id2_1", "content2_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_1", "<h1>html2_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f2.withSubResourceContent("id2_2", "content2_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_2", "<h1>html2_2</h1>", ExplorerMessage.ExplorerContentType.Html);
         final Async async = context.async(3);

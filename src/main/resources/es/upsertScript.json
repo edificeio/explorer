@@ -1,0 +1,6 @@
+{
+  "script": {
+      "lang": "painless",
+      "source": "if ( ctx.op == 'create' ) {\nctx._source = params.changes;\nctx._source.version = params.version;\nif(params.subresources != null) {\nctx._source.subresources = params.subresources;\n}\n} else {\nif (ctx._source.version == null || ctx._source.version < params.version) {\nctx._source.version = params.version;\nfor(entry in params.changes.entrySet()) {\ndef fieldName = entry.getKey();\nif (fieldName != 'subresources') {\nctx._source[fieldName] = entry.getValue();\n}\n}\n}\nif (ctx._source.subresources == null) {\nctx._source.subresources = [];\n}\nif(params.subresources != null) {\nfor(subresource in params.subresources) {\ndef srdeleted = subresource.deleted != null && subresource.deleted;\ndef srId = subresource.id;\ndef matchedsr = null;\ndef index = -1;\ndef matchedIndex = null;\nfor(existingSubresource in ctx._source.subresources) {\nindex += 1;\nif (existingSubresource.id == srId) {\nmatchedsr = existingSubresource;\nmatchedIndex = index;\nbreak;\n}\n}\nif(matchedsr == null) {\nif(!srdeleted) {\nctx._source.subresources.add(subresource);\n}\n} else if(matchedsr.version < subresource.version) {\nif(srdeleted) {\nctx._source.subresources.remove(matchedIndex);\n} else {\nctx._source.subresources[matchedIndex] = subresource;\n}\n}\n}\n}\n}"
+  }
+}
