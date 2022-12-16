@@ -3,11 +3,11 @@ import React, { useEffect, useRef } from "react";
 import "../index.css";
 
 import AppHeader from "@components/AppHeader";
+import FakeCard from "@components/FakeCard";
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
 import useExplorerAdapter from "@hooks/adapters/explorer/useExplorerAdapter";
 import useI18n from "@hooks/useI18n";
-import { TreeView } from "@ode-react-ui/advanced";
 import {
   AppCard,
   Button,
@@ -16,15 +16,11 @@ import {
   Header,
   Input,
   SearchButton,
+  TreeView,
 } from "@ode-react-ui/core";
-import { Plus, Users } from "@ode-react-ui/icons";
-import { OneProfile } from "@ode-react-ui/icons/nav";
+import { Plus } from "@ode-react-ui/icons";
 
 import libraryIMG from "../assets/images/library.jpg";
-// import i18n from "i18n";
-// import Blog from "@pages/Blog";
-// import Home from "@pages/Home";
-// import { Routes, Route } from "react-router-dom";
 
 function App() {
   const { session, currentApp } = useOdeContext();
@@ -34,11 +30,10 @@ function App() {
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 1;
+    context.getSearchParameters().pagination.pageSize = 2;
     // Do explore...
     context.initialize();
     // ...results (latestResources()) are observed in treeview adapter
-    //
   }, []);
 
   // Form
@@ -52,9 +47,6 @@ function App() {
     window.addEventListener("keydown", () => {
       onOpen(assetId);
     });
-    /* if (e.keyCode === 13) {
-      onOpen(item?.assetId);
-    } */
   }
 
   if (!session || session.notLoggedIn) {
@@ -79,6 +71,7 @@ function App() {
         <AppHeader>
           <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
             <AppCard.Icon size="40" />
+            <AppCard.Name />
           </AppCard>
           <Button
             type="button"
@@ -91,7 +84,7 @@ function App() {
             {i18n("blog.create.title")}
           </Button>
         </AppHeader>
-        <Grid>
+        <Grid style={{ minHeight: "calc(100vh - 14rem)" }}>
           <Grid.Col
             sm="3"
             className="border-end pt-16 pe-16 d-none d-lg-block"
@@ -131,58 +124,44 @@ function App() {
             </form>
             <h2 className="py-24 body">{i18n("filters.mine")}</h2>
             <ul className="grid ps-0">
-              {listData.map((item) => {
+              {listData.map((item: any) => {
                 return (
-                  <div
-                    key={item?.assetId}
-                    className="card g-col-4 shadow border-0"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onOpen(item?.assetId)}
-                    onKeyDown={() => handleKeyDown(item?.assetId)}
-                  >
-                    <div className="card-body p-16 d-flex align-items-center gap-12">
-                      <AppCard
-                        app={currentApp}
-                        className="rounded-2 d-flex align-items-center justify-content-center"
-                        style={{
-                          width: "80px",
-                          height: "80px",
-                          backgroundColor: "#DDE8FD",
-                        }}
-                      >
-                        <AppCard.Icon size="48" />
-                      </AppCard>
-                      <div>
-                        <h3 className="card-title body">
-                          <strong>
-                            {item?.name} ({item?.application})
-                          </strong>
-                        </h3>
-                        <span className="card-text small">
-                          <em>{item?.updatedAt}</em>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="card-footer py-8 px-16 bg-light rounded-2 m-2 border-0 d-flex align-items-center justify-content-between">
-                      <div className="d-inline-flex align-items-center gap-8">
-                        <OneProfile />
-                        <p className="small">{item?.creatorName}</p>
-                      </div>
-                      <p className="d-inline-flex align-items-center gap-4 caption">
-                        <Users width={16} height={16} /> <strong>23</strong>
-                      </p>
-                    </div>
-                  </div>
+                  <FakeCard
+                    key={item.assetId}
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...item}
+                    currentApp={currentApp}
+                    onClick={() => onOpen(item.assetId)}
+                    onKeyDown={() => handleKeyDown(item.assetId)}
+                  />
                 );
               })}
             </ul>
+            <div className="d-grid">
+              <Button
+                type="button"
+                color="secondary"
+                variant="filled"
+                // eslint-disable-next-line react/jsx-no-bind
+                onClick={handleViewMore}
+              >
+                Voir plus
+              </Button>
+            </div>
           </Grid.Col>
-          <div className="row">
-            <button type="button" onClick={handleViewMore}>
-              Voir plus
-            </button>
-          </div>
+          {/* <Grid.Col sm="3" className="g-start-7">
+            <div className="d-grid">
+              <Button
+                type="button"
+                color="secondary"
+                variant="filled"
+                // eslint-disable-next-line react/jsx-no-bind
+                onClick={handleViewMore}
+              >
+                Voir plus
+              </Button>
+            </div>
+          </Grid.Col> */}
         </Grid>
       </main>
     </div>
