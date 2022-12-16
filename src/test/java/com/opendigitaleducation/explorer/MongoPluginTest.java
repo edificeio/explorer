@@ -43,7 +43,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.singletonList;
 
 @RunWith(VertxUnitRunner.class)
 public class MongoPluginTest {
@@ -69,11 +70,11 @@ public class MongoPluginTest {
     public static void setUp(TestContext context) throws Exception {
         test.database().initNeo4j(context, neo4jContainer);
         test.database().initMongo(context, mongoDBContainer);
-        IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
-        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + currentTimeMillis();
         System.out.println("Using index: " + resourceIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
         final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
@@ -104,7 +105,7 @@ public class MongoPluginTest {
     }
 
     static JsonObject resource(final String name) {
-        return new JsonObject().put("name", name);
+        return new JsonObject().put("name", name).put("version", 1);
     }
 
     @Test
@@ -288,10 +289,11 @@ public class MongoPluginTest {
 
     @Test
     public void shouldMoveIfReadRight(TestContext context) {
-        final UserInfos user = test.directory().generateUser("user_move1_read");
-        final UserInfos user2 = test.directory().generateUser("user_move2_read");
-        final UserInfos user3 = test.directory().generateUser("user_move3_read");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final UserInfos user = test.directory().generateUser("user_move1_read" + currentTimeMillis());
+        final UserInfos user2 = test.directory().generateUser("user_move2_read" + currentTimeMillis());
+        final UserInfos user3 = test.directory().generateUser("user_move3_read" + currentTimeMillis());
+        final String idResource = "reindex1" + currentTimeMillis();
+        final JsonObject f1 = resource(idResource).put("creatorId", user.getUserId()).put("id", idResource);
         final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ExplorerConfig.RIGHT_READ, true);
         f1.put("shared", new JsonArray().add(share));
         final Async async = context.async(2);
@@ -347,12 +349,13 @@ public class MongoPluginTest {
         final UserInfos user = test.directory().generateUser("user_del1_manage");
         final UserInfos user2 = test.directory().generateUser("user_del2_manage");
         final UserInfos user3 = test.directory().generateUser("user_del3_manage");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final String idResource = "reindex2" + currentTimeMillis();
+        final JsonObject f1 = resource(idResource).put("creatorId", user.getUserId()).put("id", idResource);
         final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ExplorerConfig.RIGHT_MANAGE, true);
         f1.put("shared", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.start();
-        plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
+        plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
                 resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
                     context.assertEquals(1, fetch.size());

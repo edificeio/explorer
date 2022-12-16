@@ -1,20 +1,19 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import com.opendigitaleducation.explorer.ingest.impl.DeleteElasticOperation;
-import com.opendigitaleducation.explorer.ingest.impl.ExplorerScriptedUpsert;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
+import org.entcore.common.elasticsearch.ElasticBulkBuilder;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class MessageIngesterElastic implements MessageIngester {
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
@@ -31,18 +30,18 @@ public class MessageIngesterElastic implements MessageIngester {
         if(messages.isEmpty()){
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
-        final List<ExplorerElasticOperation> operations = new ArrayList<>();
+        final List<MessageIngesterElasticOperation> operations = new ArrayList<>();
         final List<ExplorerMessageForIngest> failedTransformationToOperation = new ArrayList<>();
         for (ExplorerMessageForIngest message : messages) {
             try {
-                operations.add(toElasticOperation(message));
+                operations.addAll(MessageIngesterElasticOperation.create(message));
             } catch (Exception e) {
                 message.setError("to.elastic.operation.failed");
                 message.setErrorDetails(e.getMessage());
                 failedTransformationToOperation.add(message);
             }
         }
-        return chainOperations(operations)
+        return executeOperations(operations)
                 .map(result -> {
                     result.failed.addAll(failedTransformationToOperation);
                     return result;
@@ -62,54 +61,41 @@ public class MessageIngesterElastic implements MessageIngester {
          */
     }
 
-    private Future<IngestJob.IngestJobResult> chainOperations(List<ExplorerElasticOperation> operations) {
+    private Future<IngestJob.IngestJobResult> executeOperations(final List<MessageIngesterElasticOperation> operations) {
         final IngestJob.IngestJobResult ingestJobResult = new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>());
-        return chainOperations(operations, 0, ingestJobResult);
-    }
-
-    private Future<IngestJob.IngestJobResult> chainOperations(List<ExplorerElasticOperation> operations, int idxOperation, IngestJob.IngestJobResult ingestJobResult) {
-        if(idxOperation >= operations.size()) {
-            return Future.succeededFuture(ingestJobResult);
+        final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
+        for (MessageIngesterElasticOperation operation : operations) {
+            operation.execute(bulk);
         }
-        final ExplorerElasticOperation op = operations.get(idxOperation);
-        Future future;
-        final Promise promise = Promise.promise();
-        final ElasticClient client = elasticClient.getClient();
-        if(op instanceof ExplorerScriptedUpsert) {
-            final ExplorerScriptedUpsert scriptedUpsert = (ExplorerScriptedUpsert) op;
-            future = client.scriptedUpsert(scriptedUpsert.getIndex(), scriptedUpsert.getId(), scriptedUpsert.toJson(), scriptedUpsert.getOptions());
-        } else if(op instanceof DeleteElasticOperation) {
-            future = client.deleteDocument(op.getIndex(), op.getId(), op.getOptions());
-        } else {
-            future = Future.failedFuture("unknown");
-        }
-        future.onSuccess(id -> ingestJobResult.getSucceed().add(op.getMessage()))
-            .onFailure(th -> {
-                final ExplorerMessageForIngest message = op.getMessage();
-                message.setError(th.toString());
-                message.setErrorDetails(th.toString());
-                ingestJobResult.getFailed().add(message);
-            }).onComplete(futureCompleted -> {
-                chainOperations(operations, idxOperation + 1, ingestJobResult).onComplete(e -> {
-                    promise.complete(e.result());
-                });
-            });
-        return promise.future();
-    }
-
-    private ExplorerElasticOperation toElasticOperation(final ExplorerMessageForIngest message) {
-        final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
-        switch (a) {
-            case Delete:
-                return DeleteElasticOperation.create(message);
-            case Upsert:
-                return ExplorerScriptedUpsert.create(message);
-            case Audience:
-                // TODO implement
-                //return Arrays.asList(new MessageIngesterElasticOperation.MessageIngesterElasticOperationAudience(message));
-            default:
-                throw new NotImplementedException(a + ".not.implemented");
-        }
+        return bulk.end().map(results -> {
+            if (!results.isEmpty()) {
+                //categorise
+                final List<ExplorerMessageForIngest> succeed = ingestJobResult.getSucceed();
+                final List<ExplorerMessageForIngest> failed = ingestJobResult.getFailed();
+                //
+                for (int i = 0; i < results.size(); i++) {
+                    final ElasticBulkBuilder.ElasticBulkRequestResult res = results.get(i);
+                    final MessageIngesterElasticOperation op = operations.get(i);
+                    //dont need to ACK subresources
+                    if (op instanceof MessageIngesterElasticOperation.MessageIngesterElasticOperationUpsertSubResource) {
+                        continue;
+                    }
+                    if (res.isOk()) {
+                        succeed.add(op.message);
+                    } else {
+                        //if deleted is not found => suceed
+                        if (ExplorerMessage.ExplorerAction.Delete.name().equals(op.getMessage().getAction()) && "not_found".equals(res.getMessage())) {
+                            succeed.add(op.message);
+                        } else {
+                            op.message.setError(res.getMessage());
+                            op.message.setErrorDetails(res.getDetails());
+                            failed.add(op.message);
+                        }
+                    }
+                }
+            }
+            return ingestJobResult;
+        });
     }
 
     static JsonObject beforeCreate(final JsonObject document) {
