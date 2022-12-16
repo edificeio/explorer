@@ -365,29 +365,29 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@ode-react-ui/advanced@dev":
-  version "1.0.7-dev.5"
-  resolved "https://registry.yarnpkg.com/@ode-react-ui/advanced/-/advanced-1.0.7-dev.5.tgz#df78ce056f5cb13b67e0aed4207bcad439d40ec9"
-  integrity sha512-1FHJL5k4IBWbY18MAgeAYV2UIQZ0BWN6mKW1bYhSbQWSMObvcjtHgN1Br9YzK/h4hVyCoejdm60povhAe5u8Zw==
+"@ode-react-ui/advanced@1.0.7-dev.12":
+  version "1.0.7-dev.12"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/advanced/-/advanced-1.0.7-dev.12.tgz#cc465ef4c05317f32366bde9306b46257ae08478"
+  integrity sha512-Eb/s1rs608Gce3E8MPJ0kLFjLHQau50IWMW1PqJiImtrQyL8x+qP8P2LvaE5szfkK15ihnFKgnH5lOcHDlrq8Q==
 
-"@ode-react-ui/core@dev":
+"@ode-react-ui/core@1.0.7-dev.12":
+  version "1.0.7-dev.12"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/core/-/core-1.0.7-dev.12.tgz#d1edd6c682028b11ed89dfbdc31ba967a79bf2c1"
+  integrity sha512-Ix3HBPB8uJ0MjDrtUn4PCLCOAWJ7oEL6QHyJNSePp8Rp2lZqN0QehOvNW+VxUPzXi2viBFV5Z/068ylkKMLrbg==
+
+"@ode-react-ui/hooks@1.0.7-dev.11":
   version "1.0.7-dev.11"
-  resolved "https://registry.yarnpkg.com/@ode-react-ui/core/-/core-1.0.7-dev.11.tgz#376045c18ea10035324611ca98bde7e6058d1213"
-  integrity sha512-ljsmmGEdoeyPgPURKmtKWoC09jvhDccGiRYoSK5VLbyBkOfOmKO5TTtr8tBY+dz16xNrfT75+wDfyDYmEXmCuQ==
-
-"@ode-react-ui/hooks@dev":
-  version "1.0.7-dev.3"
-  resolved "https://registry.yarnpkg.com/@ode-react-ui/hooks/-/hooks-1.0.7-dev.3.tgz#0b1b6d8530829b5c057fd71a886d3753c5e010f2"
-  integrity sha512-lrgKpctOodwrXOJ3/Cf8lUFNd9Vs+lAlUqzMY/HU8OXo7Bud64GbeDQtGX7oW355HT/4dy4kW8FeBch2elpXcA==
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/hooks/-/hooks-1.0.7-dev.11.tgz#0ca9a85ce184dfbfc6161f5e860a016bd4b13e80"
+  integrity sha512-JbokP0oaLWGGPS41Jp646n4NJGvRKDh0Hjwps1LSyhfuLXOMDL4OusNwsSKXfAg4MneOWV6qPqhP+oWpxsyuTg==
   dependencies:
     clsx "1.2.1"
     react "18.2.0"
     react-dom "18.2.0"
 
-"@ode-react-ui/icons@dev":
-  version "1.0.7-dev.1"
-  resolved "https://registry.yarnpkg.com/@ode-react-ui/icons/-/icons-1.0.7-dev.1.tgz#974057736424263cea0380f5f18520ba29077ddf"
-  integrity sha512-rNZKXF9mLjL5ezADjSpqWNA3O10YyfJLfPKk9soB4jPUFwEvWSvOu6bPqOR5MIPnmCW176gycpmBkECycpIB9w==
+"@ode-react-ui/icons@1.0.7-dev.12":
+  version "1.0.7-dev.12"
+  resolved "https://registry.yarnpkg.com/@ode-react-ui/icons/-/icons-1.0.7-dev.12.tgz#fe61348012dd01652a46efe5c41ea524f43df78a"
+  integrity sha512-Qxr2gJMNdiKi/kWO8PNZ5SB6GL9BCN8WC3AZdYqoaRK7SDt6ObCpBMBaYQljOr8V3nOiS34zNF7QiaEM61NMOg==
 
 "@remix-run/router@1.0.1":
   version "1.0.1"

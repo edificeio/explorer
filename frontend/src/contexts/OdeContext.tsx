@@ -59,7 +59,10 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
 
   function getCurrentApp(list: [], param: App) {
     const { apps }: Apps = list;
-    const filteredList = apps.filter((item: any) => item.displayName === param);
+    const filteredList = apps.filter((item: any) => {
+      const prefix = item.prefix.replace("/", "");
+      return prefix === param;
+    });
     const [app] = filteredList;
     return app;
   }

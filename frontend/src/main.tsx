@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "./app/App";
-import "./i18n";
+// import "./i18n";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
 if (rootElement && rootElement.dataset && rootElement.dataset.odeApp) {
