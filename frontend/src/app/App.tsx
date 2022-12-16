@@ -68,16 +68,10 @@ function App() {
     );
   }
 
-  // TODO initialize search parameters. Here and/or in the dedicated React component
-  context.getSearchParameters().pagination.pageSize = 1;
-  // Do explore...
-  context.initialize();
-  // ...results (latestResources()) are observed in treeview adapter
-  //
-
-  /* function searchMore() {
+  function handleViewMore() {
     context.getResources();
-  } */
+  }
+
   return (
     <div className="App">
       <Header />
@@ -161,7 +155,9 @@ function App() {
                       </AppCard>
                       <div>
                         <h3 className="card-title body">
-                          <strong>{item?.application}</strong>
+                          <strong>
+                            {item?.name} ({item?.application})
+                          </strong>
                         </h3>
                         <span className="card-text small">
                           <em>{item?.updatedAt}</em>
@@ -182,11 +178,11 @@ function App() {
               })}
             </ul>
           </Grid.Col>
-          {/* <div className="row">
-            <button type="button" onClick={() => searchMore()}>
+          <div className="row">
+            <button type="button" onClick={handleViewMore}>
               Voir plus
             </button>
-          </div> */}
+          </div>
         </Grid>
       </main>
     </div>

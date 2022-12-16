@@ -36,17 +36,9 @@ export default function useExplorerAdapter() {
 
   function wrapResourceData(resources?: IResource[]) {
     if (resources && resources.length) {
-      setListData(resources);
+      setListData((d) => d.concat(resources));
     }
   }
-
-  /* function wrapResourceData(resources?: IResource[]) {
-    if (resources && resources.length) {
-      setListData((d) =>
-        d.concat(resources.map((r) => new ResourceCardWrapper(r))),
-      );
-    }
-  } */
 
   // Observe streamed search results
   useEffect(() => {
@@ -62,7 +54,7 @@ export default function useExplorerAdapter() {
         subscription.unsubscribe();
       }
     };
-  }, [treeData, listData]); // execute effect only once
+  }, []); // execute effect only once
 
   return {
     treeData,
