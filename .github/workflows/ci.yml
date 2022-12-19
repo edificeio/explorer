@@ -1,4 +1,4 @@
-name: CI
+name: Google Lighthouse CI
 on: [push]
 jobs:
   lighthouseci:
