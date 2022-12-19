@@ -43,6 +43,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URI;
 import java.util.UUID;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimes;
 
 @RunWith(VertxUnitRunner.class)
@@ -90,6 +91,7 @@ public class ExplorerControllerTest {
         UpdateFilter.setFolderService(folderService);
         FolderServiceTest.createMapping(esClientManager, context, folderIndex).onComplete(context.asyncAssertSuccess());
         IngestJobTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
+        createScript(test.vertx(), esClientManager).onComplete(context.asyncAssertSuccess());
         //flush redis
         final Async async = context.async();
         redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {

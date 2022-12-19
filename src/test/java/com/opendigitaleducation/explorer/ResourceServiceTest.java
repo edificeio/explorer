@@ -9,6 +9,7 @@ import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -35,6 +36,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URI;
 import java.util.Arrays;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
+
 @RunWith(VertxUnitRunner.class)
 public class ResourceServiceTest {
 
@@ -60,12 +63,15 @@ public class ResourceServiceTest {
         IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
-        final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         application = FakePostgresPlugin.FAKE_APPLICATION;
         System.out.println("Using index: " + esIndex);
-        createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());
+        final Promise<Void> promiseMapping = Promise.promise();
+        final Promise<Void> promiseScript = Promise.promise();
+        createMapping(elasticClientManager, context, esIndex).onComplete(r -> promiseMapping.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
+
         final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
         final RedisClient redisClient = new RedisClient(test.vertx(), redisConfig);
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));

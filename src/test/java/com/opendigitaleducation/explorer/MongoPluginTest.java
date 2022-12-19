@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.singletonList;
 
@@ -86,8 +87,11 @@ public class MongoPluginTest {
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
         plugin = FakeMongoPlugin.withPostgresChannel(test.vertx(), postgresClient, mongoClient);
         application = plugin.getApplication();
-        final Async async = context.async();
-        createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> async.complete());
+        final Promise<Void> promiseMapping = Promise.promise();
+        final Promise<Void> promiseScript = Promise.promise();
+        createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> promiseMapping.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
+
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
