@@ -8,6 +8,7 @@ import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -32,6 +33,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URI;
 import java.util.*;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
+import static io.vertx.core.CompositeFuture.all;
 import static java.lang.System.currentTimeMillis;
 
 @RunWith(VertxUnitRunner.class)
@@ -65,7 +68,12 @@ public class FolderServiceTest {
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         final Async async = context.async();
-        createMapping(elasticClientManager, context, index).onComplete(r -> async.complete());
+        final Promise<Void> promiseMapping = Promise.promise();
+        final Promise<Void> promiseScript = Promise.promise();
+        all(Arrays.asList(promiseMapping.future(), promiseScript.future()))
+                .onComplete(e -> async.complete());
+        createMapping(elasticClientManager, context, index).onComplete(r -> promiseMapping.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
         job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
     }

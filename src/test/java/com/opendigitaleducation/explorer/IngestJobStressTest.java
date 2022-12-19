@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static io.vertx.core.CompositeFuture.all;
 import static java.util.Collections.singletonList;
 
@@ -98,8 +99,10 @@ public class IngestJobStressTest {
         final Async async = context.async();
         final Promise<Void> promiseMongo = Promise.promise();
         final Promise<Void> promiseRedis = Promise.promise();
-        all(Arrays.asList(promiseRedis.future(), promiseRedis.future())).onComplete(e -> async.complete());
+        final Promise<Void> promiseScript = Promise.promise();
+        all(Arrays.asList(promiseRedis.future(), promiseRedis.future(), promiseScript.future())).onComplete(e -> async.complete());
         createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> promiseMongo.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final JsonObject jobConf = new JsonObject()
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)

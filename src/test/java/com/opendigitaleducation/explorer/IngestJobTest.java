@@ -29,6 +29,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import java.net.URI;
 import java.util.*;
 
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.singletonList;
 
@@ -68,7 +69,11 @@ public abstract class IngestJobTest {
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
-        createMapping(elasticClientManager, context, esIndex).onComplete(r -> async.complete());
+        final Promise<Void> promiseMapping = Promise.promise();
+        final Promise<Void> promiseScript = Promise.promise();
+        createMapping(elasticClientManager, context, esIndex).onComplete(r -> promiseMapping.complete());
+        createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
+
     }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager,TestContext context, String index) {
