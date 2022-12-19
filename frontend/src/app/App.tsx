@@ -27,6 +27,7 @@ function App() {
   const { i18n } = useI18n();
   const { context, onOpen, onCreate } = useExplorerContext();
   const { treeData, listData } = useExplorerAdapter();
+  // const { is1d } = useThemeContext();
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
@@ -67,6 +68,9 @@ function App() {
   return (
     <div className="App">
       <Header />
+      {/* <button type="button" onClick={handleSwitchTheme}>
+        Switch theme
+      </button> */}
       <main className="container-fluid bg-white">
         <AppHeader>
           <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
@@ -84,7 +88,7 @@ function App() {
             {i18n("blog.create.title")}
           </Button>
         </AppHeader>
-        <Grid style={{ minHeight: "calc(100vh - 14rem)" }}>
+        <Grid>
           <Grid.Col
             sm="3"
             className="border-end pt-16 pe-16 d-none d-lg-block"

@@ -25,9 +25,16 @@ export default defineConfig({
       },
     ],
   },
-  /* build: {
+  build: {
     assetsDir: "assets/js/explorer/",
-  }, */
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/js/explorer/[name].js`,
+        chunkFileNames: `assets/js/explorer/[name].js`,
+        assetFileNames: `assets/js/explorer/[name].[ext]`,
+      },
+    },
+  },
   plugins: [react()],
   /* server: {
     host: "0.0.0.0",
