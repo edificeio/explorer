@@ -9,8 +9,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
-import org.entcore.common.redis.RedisBatch;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.redis.RedisTransaction;
 
 import java.util.*;
 import java.util.function.Function;
@@ -229,17 +229,17 @@ public class MessageReaderRedis implements MessageReader {
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult ingestResult, final int maxAttempt) {
         //prepare
-        final RedisBatch batch = redisClient.batch();
+        final List<Future> transactions = new ArrayList<>();
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
         for (final ExplorerMessageForIngest mess : ingestResult.succeed) {
             if(mess.getIdQueue().isPresent()) {
                 final String idQueue = mess.getIdQueue().get();
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
-                batch.beginTransaction();
-                batch.xAck(stream, consumerGroup, idQueue);
-                batch.xDel(stream, idQueue);
-                batch.commitTransaction();
+                //final RedisTransaction batch = redisClient.transaction();
+                redisClient.xAck(stream, consumerGroup, idQueue);
+                redisClient.xDel(stream, idQueue);
+                //transactions.add(batch.commit());
             }
         }
         //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
@@ -249,20 +249,20 @@ public class MessageReaderRedis implements MessageReader {
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM, "");
                 final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT, 0);
                 final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
-                batch.beginTransaction();
+                //final RedisTransaction batch = redisClient.transaction();
                 //if already failed => do not add suffix to stream name
                 if (stream.contains(streamFailSuffix)) {
-                    batch.xAdd(stream, json);
+                    redisClient.xAdd(stream, json);
                 } else {
-                    batch.xAdd(stream + streamFailSuffix, json);
+                    redisClient.xAdd(stream + streamFailSuffix, json);
                 }
-                batch.xAck(stream, consumerGroup, idQueue);
-                batch.xDel(stream, idQueue);
-                batch.commitTransaction();
+                redisClient.xAck(stream, consumerGroup, idQueue);
+                redisClient.xDel(stream, idQueue);
+                //transactions.add(batch.commit());
             }
         }
         //execute batch
-        return batch.end().onFailure(e -> {
+        return CompositeFuture.all(transactions).onFailure(e -> {
             log.error("Could not update resource status on queue: ", e);
         }).mapEmpty();
     }

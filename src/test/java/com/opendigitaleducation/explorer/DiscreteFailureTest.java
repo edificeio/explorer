@@ -118,7 +118,7 @@ public class DiscreteFailureTest {
         rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
         ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
         //flush redis
-        redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
+        redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, redisConfig);
             job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
             //start job to create streams

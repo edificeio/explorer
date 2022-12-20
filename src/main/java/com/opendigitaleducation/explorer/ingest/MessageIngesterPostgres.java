@@ -224,7 +224,7 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<JsonObject> overrides = messages.stream().map(e -> e.getOverride()).collect(Collectors.toList());
         //get parentIds
         final Set<Integer> ids = messages.stream().map(e -> Integer.valueOf(e.getId())).collect(Collectors.toSet());
-        final Set<Integer> parentIds = overrides.stream().filter(e -> e!= null && e.containsKey("parentId")).map(e -> {
+        final Set<Integer> parentIds = overrides.stream().filter(e -> e!= null && e.containsKey("parentId") && !ExplorerConfig.ROOT_FOLDER_ID.equals(e.getValue("parentId"))).map(e -> {
             final String tmp = e.getValue("parentId").toString();
             return Integer.valueOf(tmp);
         }).collect(Collectors.toSet());
