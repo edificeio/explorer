@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.*;
 
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
+import static io.vertx.core.CompositeFuture.all;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.singletonList;
 
@@ -73,6 +74,8 @@ public abstract class IngestJobTest {
         final Promise<Void> promiseScript = Promise.promise();
         createMapping(elasticClientManager, context, esIndex).onComplete(r -> promiseMapping.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
+        all(Arrays.asList(promiseMapping.future(), promiseScript.future(), promiseScript.future()))
+                .onComplete(e -> async.complete());
 
     }
 
