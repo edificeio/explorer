@@ -24,6 +24,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.ArrayList;
+
 @RunWith(VertxUnitRunner.class)
 public class IngestJobTestRedis extends IngestJobTest {
     private static JsonObject redisConfig;
@@ -42,7 +44,7 @@ public class IngestJobTestRedis extends IngestJobTest {
     @BeforeClass
     public static void setupAll(TestContext context){
         final Async async = context.async();
-        new RedisClient(test.vertx(),getRedisConfig()).getClient().send(Request.cmd(Command.FLUSHALL), e -> {
+        new RedisClient(test.vertx(),getRedisConfig()).getClient().flushall(new ArrayList<>(), e -> {
             async.complete();
         });
     }

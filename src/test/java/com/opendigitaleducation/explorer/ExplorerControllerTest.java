@@ -41,6 +41,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
@@ -94,7 +95,7 @@ public class ExplorerControllerTest {
         createScript(test.vertx(), esClientManager).onComplete(context.asyncAssertSuccess());
         //flush redis
         final Async async = context.async();
-        redisClient.getClient().send(Request.cmd(Command.FLUSHALL), e -> {
+        redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
             job = IngestJob.create(test.vertx(), esClientManager, postgresClient, new JsonObject(), reader);
             //start job too create streams
