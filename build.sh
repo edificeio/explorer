@@ -136,22 +136,6 @@ publishNPM () {
 #   tar cfzh ${MVN_MOD_NAME}.tar.gz dist/* ode-explorer/conf.j2
 # }
 
-publishNexus () {
-  case "$MVN_MOD_VERSION" in
-    *SNAPSHOT) nexusRepository='snapshots' ;;
-    *)         nexusRepository='releases' ;;
-  esac
-  mvn deploy:deploy-file \
-    --batch-mode \
-    -DgroupId=$MVN_MOD_GROUPID \
-    -DartifactId=$MVN_MOD_NAME \
-    -Dversion=$MVN_MOD_VERSION \
-    -Dpackaging=tar.gz \
-    -Dfile=${MVN_MOD_NAME}.tar.gz \
-    -DrepositoryId=wse \
-    -Durl=https://maven.opendigitaleducation.com/nexus/content/repositories/$nexusRepository/
-}
-
 publishMavenLocal (){
   mvn install:install-file \
     --batch-mode \
@@ -188,9 +172,6 @@ do
       ;;
     publishNPM)
       publishNPM
-      ;;
-    publishNexus)
-      publishNexus
       ;;
     *)
       echo "Invalid argument : $param"
