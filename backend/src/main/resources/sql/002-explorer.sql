@@ -1,1 +1,0 @@
-ALTER TABLE explorer.folders  ADD CONSTRAINT folder_parent_diff CHECK ( parent_id <> id);

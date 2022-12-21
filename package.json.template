@@ -1,0 +1,83 @@
+{
+  "name": "ode-explorer",
+  "version": "1.0.0-feat-explorer.%generateVersion%",
+  "description": "Open Digital Education Explorer",
+  "homepage": "https://github.com/opendigitaleducation/explorer#readme",
+  "bugs": {
+    "url": "https://github.com/opendigitaleducation/explorer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opendigitaleducation/explorer.git"
+  },
+  "license": "GPL-3.0",
+  "author": "Open Digital Education",
+  "scripts": {
+    "build": "tsc && vite build",
+    "clean": "concurrently \"yarn:clean:*\"",
+    "clean:dist": "rm -rf dist",
+    "clean:lighthouse": "rm -rf .lighthouseci",
+    "clean:modules": "rm -rf node_modules",
+    "clean:package": "rm -rf yarn.lock",
+    "dev": "vite",
+    "fix": "eslint --fix .",
+    "format": "concurrently \"yarn:format:*\"",
+    "format:check": "yarn prettier --check .",
+    "format:write": "yarn prettier --write .",
+    "lighthouse": "yarn clean:lighthouse && lhci autorun",
+    "lint": "eslint .",
+    "pre-commit": "lint-staged",
+    "prepare": "husky install .husky",
+    "preview": "vite preview"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "yarn format:write",
+      "yarn fix"
+    ]
+  },
+  "dependencies": {
+    "@ode-react-ui/core": "dev",
+    "@ode-react-ui/hooks": "dev",
+    "@ode-react-ui/icons": "dev",
+    "clsx": "1.2.1",
+    "i18next": "21.9.2",
+    "i18next-browser-languagedetector": "6.1.5",
+    "i18next-http-backend": "1.4.4",
+    "ode-ts-client": "%odeTsClientVersion%",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-error-boundary": "3.1.4",
+    "react-i18next": "11.18.6",
+    "react-router-dom": "6.4.1",
+    "swr": "1.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.7.23",
+    "@types/react": "18.0.21",
+    "@types/react-dom": "18.0.6",
+    "@typescript-eslint/eslint-plugin": "5.38.1",
+    "@typescript-eslint/parser": "5.38.1",
+    "@vitejs/plugin-react": "2.1.0",
+    "concurrently": "7.4.0",
+    "eslint": "8.24.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "17.0.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-jsx-a11y": "6.6.1",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-react": "7.31.8",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3",
+    "prettier": "2.7.1",
+    "typescript": "4.8.3",
+    "vite": "3.1.3"
+  }
+}
