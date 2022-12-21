@@ -27,11 +27,6 @@ pipeline {
         }
       }
     }
-    stage('Publish Nexus') {
-      steps {
-        sh './build.sh publishNexus'
-      }
-    }
   }
 }
 
