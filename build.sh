@@ -1,22 +1,38 @@
 #!/bin/bash
 
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <clean|init|localDep|build|install|watch>"
+  echo "Example: $0 clean"
+  echo "Example: $0 init"
+  echo "Example: $0 localDep   Use this option to update the ode-ts-client NPM dependency with a local version"
+  echo "Example: $0 build"
+  echo "Example: $0 install"
+  echo "Example: $0 [--springboard=recette] watch"
+  exit 1
+fi
+
+MVN_MOD_GROUPID=`grep 'modowner=' gradle.properties | sed 's/modowner=//'`
+MVN_MOD_NAME=`grep 'modname=' gradle.properties | sed 's/modname=//'`
+MVN_MOD_VERSION=`grep 'version=' gradle.properties | sed 's/version=//'`
+
 if [ ! -e node_modules ]
 then
   mkdir node_modules
 fi
 
-case `uname -s` in
-  MINGW* | Darwin*)
-    USER_UID=1000
-    GROUP_UID=1000
-    ;;
-  *)
-    if [ -z ${USER_UID:+x} ]
-    then
-      USER_UID=`id -u`
-      GROUP_GID=`id -g`
-    fi
-esac
+if [ -z ${USER_UID:+x} ]
+then
+  export USER_UID=1000
+  export GROUP_GID=1000
+fi
+
+if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
+then
+  echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
+  echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
+  echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
+  echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
+fi
 
 # options
 SPRINGBOARD="recette"
@@ -32,76 +48,118 @@ case $i in
 esac
 done
 
-# Read value of a key from gradle.properties.
-function prop {
-    grep "^\\s*${1}=" gradle.properties|cut -d'=' -f2
-}
-
 clean () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
+  rm -rf node_modules 
+  rm -rf dist 
+  rm -rf build 
+  rm -rf .gradle 
+  rm -rf package.json 
+  rm -rf deployment 
+  rm -rf yarn.lock
 }
 
-buildNode () {
-  #jenkins
-  echo "[buildNode] Get branch name from jenkins env..."
+doInit () {
+  echo "[init] Get branch name from jenkins env..."
   BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git..."
+    echo "[init] Get branch name from git..."
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
-  fi
 
-  if [ "$BRANCH_NAME" = 'master' ]; then
-      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm update entcore && node_modules/gulp/bin/gulp.js build"
-      esac
-  else
-      echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-      esac
-  fi
-}
+  echo "[init] Generate deployment file from conf.deployment..."
+  mkdir -p deployment/$MVN_MOD_NAME
+  cp conf.deployment deployment/$MVN_MOD_NAME/conf.json.template
+  sed -i "s/%MODNAME%/${MVN_MOD_NAME}/" deployment/$MVN_MOD_NAME/conf.json.template
+  sed -i "s/%VERSION%/${MVN_MOD_VERSION}/" deployment/$MVN_MOD_NAME/conf.json.template
 
-buildGradle () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle shadowJar install publishToMavenLocal
-}
+  echo "[init] Generate package.json from package.json.template..."
+  NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
+  cp package.json.template package.json
+  sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
 
-publish () {
-  if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
+  if [ "$1" == "Dev" ]
   then
-    echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
-    echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
-    echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
-    echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
+    sed -i "s/%odeTsClientVersion%/link:..\/ode-ts-client\//" package.json
+  else
+    sed -i "s/%odeTsClientVersion%/${BRANCH_NAME}/" package.json
   fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
+
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --production=false"
 }
 
-buildStatic () {
-    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-save ode-bootstrap-neo@feat-explorer && npm run dev:build"
+init() {
+  doInit
 }
 
-watch () {
-  BUILD_APP="$(prop 'modowner')~$(prop 'modname')~$(prop 'version')"
-  echo "Watching app $BUILD_APP"
-  docker-compose run \
-    --rm \
-    -u "$USER_UID:$GROUP_GID" \
-    -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
-    node sh -c "npm run watch --springboard=/home/node/$SPRINGBOARD --app=\"$BUILD_APP\""
+initDev () {
+  doInit "Dev"
+}
+
+# Install local dependencies as tarball (installing as folder creates symlinks which won't resolve in the docker container)
+localDep () {
+  if [ -e $PWD/../ode-ts-client ]; then
+    rm -rf ode-ts-client.tar ode-ts-client.tar.gz
+    mkdir ode-ts-client.tar && mkdir ode-ts-client.tar/dist \
+      && cp -R $PWD/../ode-ts-client/dist $PWD/../ode-ts-client/package.json ode-ts-client.tar
+    tar cfzh ode-ts-client.tar.gz ode-ts-client.tar
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-save ode-ts-client.tar.gz"
+    rm -rf ode-ts-client.tar ode-ts-client.tar.gz
+  fi
+}
+
+build () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn build"
+  status=$?
+  if [ $status != 0 ];
+  then
+    exit $status
+  fi
+
+  VERSION=`grep "version="  gradle.properties| sed 's/version=//g'`
+  echo "ode-explorer=$VERSION `date +'%d/%m/%Y %H:%M:%S'`" >> dist/version.txt
+}
+
+# watch () {
+#   docker-compose run --rm \
+#     -u "$USER_UID:$GROUP_GID" \
+#     -v $PWD/../$SPRINGBOARD:/home/node/springboard \
+#     node sh -c "npm run watch --watch_springboard=/home/node/springboard"
+# }
+
+publishNPM () {
+  LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
+}
+
+# archive() {
+#   echo "[archive] Archiving dist folder and conf.j2 file..."
+#   tar cfzh ${MVN_MOD_NAME}.tar.gz dist/* ode-explorer/conf.j2
+# }
+
+publishNexus () {
+  case "$MVN_MOD_VERSION" in
+    *SNAPSHOT) nexusRepository='snapshots' ;;
+    *)         nexusRepository='releases' ;;
+  esac
+  mvn deploy:deploy-file \
+    --batch-mode \
+    -DgroupId=$MVN_MOD_GROUPID \
+    -DartifactId=$MVN_MOD_NAME \
+    -Dversion=$MVN_MOD_VERSION \
+    -Dpackaging=tar.gz \
+    -Dfile=${MVN_MOD_NAME}.tar.gz \
+    -DrepositoryId=wse \
+    -Durl=https://maven.opendigitaleducation.com/nexus/content/repositories/$nexusRepository/
+}
+
+publishMavenLocal (){
+  mvn install:install-file \
+    --batch-mode \
+    -DgroupId=$MVN_MOD_GROUPID \
+    -DartifactId=$MVN_MOD_NAME \
+    -Dversion=$MVN_MOD_VERSION \
+    -Dpackaging=tar.gz \
+    -Dfile=${MVN_MOD_NAME}.tar.gz
 }
 
 for param in "$@"
@@ -110,20 +168,29 @@ do
     clean)
       clean
       ;;
-    buildNode)
-      buildNode
+    init)
+      init
       ;;
-    buildGradle)
-      buildGradle
+    localDep)
+      localDep
+      ;;
+    build)
+      build
       ;;
     install)
-      buildGradle
+      build && archive && publishMavenLocal && rm -rf build
       ;;
     watch)
       watch
       ;;
-    publish)
-      publish
+    archive)
+      archive
+      ;;
+    publishNPM)
+      publishNPM
+      ;;
+    publishNexus)
+      publishNexus
       ;;
     *)
       echo "Invalid argument : $param"
@@ -132,4 +199,3 @@ do
     exit 1
   fi
 done
-
