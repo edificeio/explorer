@@ -45,10 +45,6 @@ interface OdeProviderProps {
   params: OdeProviderParams;
 }
 
-type Apps = {
-  [key: string]: any;
-};
-
 export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
@@ -57,27 +53,19 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
 
   const [currentApp, setCurrentApp] = useState<IWebApp>(null!);
 
-  function getCurrentApp(list: [], param: App) {
-    const { apps }: Apps = list;
-    const filteredList = apps.filter((item: any) => {
-      const prefix = item.prefix.replace("/", "");
-      return prefix === param;
-    });
-    const [app] = filteredList;
-    return app;
-  }
-
   useEffect(() => {
     console.log("OdeContext INIT ONLY ONCE, PLEASE !");
     const initOnce = async () => {
       try {
         console.log(`init ${params.app}`);
-        await configure.Platform.apps.initialize(
-          params.app,
-          params.alternativeApp,
-        );
-        const appsList = await configure.Platform.apps.getAppsList();
-        setCurrentApp(getCurrentApp(appsList, params.app));
+        await Promise.all([
+          configure.Platform.apps.initialize(params.app, params.alternativeApp),
+          configure.Platform.apps.getWebAppConf(params.app),
+        ]).then((results) => {
+          if (results && results[1]) {
+            setCurrentApp(results[1]);
+          }
+        });
         setIdiom(configure.Platform.idiom); // ...same object, but triggers React.
       } catch (e) {
         console.log(e);
