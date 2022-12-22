@@ -17,7 +17,6 @@ import java.util.function.Function;
 
 public class MessageReaderRedis implements MessageReader {
     static final Logger log = LoggerFactory.getLogger(MessageReaderRedis.class);
-    static final String ATTEMPT_COUNT = "attempt_count";
     static final Integer DEFAULT_BLOCK_MS = 0;//infinity
     static final String DEFAULT_CONSUMER_NAME = "message_reader";
     static final String DEFAULT_STREAM_FAIL = "_fail";
@@ -202,7 +201,7 @@ public class MessageReaderRedis implements MessageReader {
             final JsonObject json = new JsonObject(row.getString("payload"));
             final ExplorerMessageForIngest message = new ExplorerMessageForIngest(resourceAction, idQueue, idResource, json);
             message.getMetadata().put(RedisClient.NAME_STREAM, nameStream);
-            message.getMetadata().put(ATTEMPT_COUNT, attemptCount);
+            message.setAttemptCount(attemptCount);
             messages.add(message);
         }
         return messages;
@@ -247,14 +246,20 @@ public class MessageReaderRedis implements MessageReader {
             if(mess.getIdQueue().isPresent()) {
                 final String idQueue = mess.getIdQueue().get();
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM, "");
-                final Integer attemptCount = mess.getMetadata().getInteger(ATTEMPT_COUNT, 0);
-                final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1).put("attempted_at", new Date().getTime()).put("error", mess.getError());
-                //final RedisTransaction batch = redisClient.transaction();
-                //if already failed => do not add suffix to stream name
-                if (stream.contains(streamFailSuffix)) {
-                    redisClient.xAdd(stream, json);
+                final int attemptCount = mess.getAttemptCount();
+                if(attemptCount > maxAttempt) {
+                    log.warn("A message has been dropped because it was attempted " + attemptCount + " : " + mess);
                 } else {
-                    redisClient.xAdd(stream + streamFailSuffix, json);
+                    final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1)
+                            .put("attempted_at", new Date().getTime())
+                            .put("error", mess.getError());
+                    //final RedisTransaction batch = redisClient.transaction();
+                    //if already failed => do not add suffix to stream name
+                    if (stream.contains(streamFailSuffix)) {
+                        redisClient.xAdd(stream, json);
+                    } else {
+                        redisClient.xAdd(stream + streamFailSuffix, json);
+                    }
                 }
                 redisClient.xAck(stream, consumerGroup, idQueue);
                 redisClient.xDel(stream, idQueue);
