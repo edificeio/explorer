@@ -4,6 +4,7 @@ import "../index.css";
 
 import AppHeader from "@components/AppHeader";
 import FakeCard from "@components/FakeCard";
+import FakeToaster from "@components/FakeToaster";
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
 import useExplorerAdapter from "@hooks/adapters/explorer/useExplorerAdapter";
@@ -19,12 +20,14 @@ import {
   TreeView,
 } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
+import { IResource } from "ode-ts-client";
 
 import libraryIMG from "../assets/images/library.jpg";
 
 function App() {
   const { i18n } = useI18n();
-  const { context, onOpen, onCreate } = useExplorerContext();
+  const { context, selectResource, onOpen, onCreate, isResourceSelected } =
+    useExplorerContext();
   const { session, currentApp } = useOdeContext();
   const { treeData, listData } = useExplorerAdapter();
 
@@ -43,9 +46,14 @@ function App() {
     e.preventDefault();
   }
 
-  function handleKeyDown(assetId: string) {
+  function handleSelect(item: IResource) {
+    selectResource(item);
+    onOpen();
+  }
+
+  function handleKeyDown(item: IResource) {
     window.addEventListener("keydown", () => {
-      onOpen(assetId);
+      handleSelect(item);
     });
   }
 
@@ -131,8 +139,9 @@ function App() {
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...item}
                     currentApp={currentApp}
-                    onClick={() => onOpen(item.assetId)}
-                    onKeyDown={() => handleKeyDown(item.assetId)}
+                    className={isResourceSelected(item) ? "selected" : ""}
+                    onClick={() => handleSelect(item)}
+                    onKeyDown={() => handleKeyDown(item)}
                   />
                 );
               })}
@@ -149,6 +158,10 @@ function App() {
               </Button>
             </div>
           </Grid.Col>
+          <br />
+          Toaster below
+          <hr />
+          <FakeToaster />
         </Grid>
       </main>
     </div>

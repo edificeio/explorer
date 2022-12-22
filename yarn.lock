@@ -2148,14 +2148,9 @@ object.values@^1.1.5:
     define-properties "^1.1.4"
     es-abstract "^1.20.4"
 
-ode-ts-client@feat-explorer:
-  version "1.0.0-explorer.202212191615"
-  resolved "https://registry.yarnpkg.com/ode-ts-client/-/ode-ts-client-1.0.0-explorer.202212191615.tgz#a27b276ab119e8c1f95dee66f3a6ae1deb9dcbf1"
-  integrity sha512-koecyGqf/4TFDLPj8dKg70n4QdnFn0UnZOG/zyHkXiPsUK9UKuN2v9wnPLuLDeWMi/n3AkA6Z8F0LUO1BRaoBg==
-  dependencies:
-    axios "~0.21.1"
-    core-js "3.8.3"
-    rxjs "7.3.0"
+"ode-ts-client@link:../ode-ts-client":
+  version "0.0.0"
+  uid ""
 
 once@^1.3.0:
   version "1.4.0"
