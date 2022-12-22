@@ -39,9 +39,10 @@ public interface IngestJobMetricsRecorder {
      * Register the fact that pending executions of ingestion cycles are changing.
      * It lets us know if execution cycles are piling up (because of degraded performance or some process that did not
      * gracefully exit).
-     * @param size The current number of pending ingestion cycles
      */
-    void onPendingIngestCycleExecutionChanged(int size);
+    void onPendingIngestCycleExecutionChanged();
+
+    void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes);
 
     class NoopIngestJobMetricsRecorder implements IngestJobMetricsRecorder {
         @Override
@@ -80,7 +81,12 @@ public interface IngestJobMetricsRecorder {
         }
 
         @Override
-        public void onPendingIngestCycleExecutionChanged(int size) {
+        public void onPendingIngestCycleExecutionChanged() {
+
+        }
+
+        @Override
+        public void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes) {
 
         }
 

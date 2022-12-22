@@ -6,6 +6,7 @@ import org.entcore.common.explorer.ExplorerMessage;
 import java.util.Optional;
 
 public class ExplorerMessageForIngest extends ExplorerMessage {
+    public static final String ATTEMPT_COUNT = "attempt_count";
     private final Optional<String> idQueue;
     private String error = "";
     private String errorDetails = "";
@@ -75,5 +76,13 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
 
     public boolean isSynthetic() {
         return !idQueue.isPresent();
+    }
+
+    public int getAttemptCount() {
+        return metadata.getInteger(ATTEMPT_COUNT, 0);
+    }
+
+    public void setAttemptCount(final int attemptCount) {
+        metadata.put(ATTEMPT_COUNT, attemptCount);
     }
 }
