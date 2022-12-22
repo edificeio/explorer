@@ -23,8 +23,10 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter ingestCycleSucceededCounter;
     private final Counter ingestCycleFailedCounter;
     private final Counter ingestCycleCompletedCounter;
+    private final Counter ingestCyclePendingCounter;
     private final Counter failedMessagesCounter;
     private final Counter succeededMessagesCounter;
+    private final Counter messagesAttemptedTooManyTimesCounter;
     private final Counter jobCounter;
     private final Timer ingestionTimes;
 
@@ -58,6 +60,12 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
                 .description("ingestion time of messages")
                 .maximumExpectedValue(Duration.ofMinutes(2L))
                 .publishPercentileHistogram()
+                .register(registry);
+        ingestCyclePendingCounter = Counter.builder("ingest.cycle.pending")
+                .description("number of pending cycles")
+                .register(registry);
+        messagesAttemptedTooManyTimesCounter = Counter.builder("ingest.message.too.much.attempts")
+                .description("number of messages that were attempted too many times")
                 .register(registry);
     }
 
@@ -110,8 +118,13 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     }
 
     @Override
-    public void onPendingIngestCycleExecutionChanged(int size) {
+    public void onPendingIngestCycleExecutionChanged() {
+        ingestCyclePendingCounter.increment();
+    }
 
+    @Override
+    public void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes) {
+        messagesAttemptedTooManyTimesCounter.increment(nbMessagesAttemptedTooManyTimes);
     }
 
 }

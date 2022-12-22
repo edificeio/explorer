@@ -161,7 +161,7 @@ public class IngestJob {
         final Promise<Void> current = Promise.promise();
         pending.add(current.future());
         idExecution++;
-        this.ingestJobMetricsRecorder.onPendingIngestCycleExecutionChanged(pending.size());
+        this.ingestJobMetricsRecorder.onPendingIngestCycleExecutionChanged();
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 this.ingestJobMetricsRecorder.onIngestCycleStarted();
@@ -179,7 +179,9 @@ public class IngestJob {
                     final Future<IngestJobResult> future;
                     this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight());
                     if (ingestResult.size() > 0) {
-                        future = this.messageReader.updateStatus(transformIngestResult(ingestResult, ingestResultAndJobResult.getRight()), maxAttempt).map(ingestResult);
+                        updateMessagesAttemptedTooManyTimes(ingestResult);
+                        future = this.messageReader.updateStatus(transformIngestResult(ingestResult, ingestResultAndJobResult.getRight()), maxAttempt)
+                                .map(ingestResult);
                     } else {
                         future = Future.succeededFuture(ingestResult);
                     }
@@ -212,6 +214,16 @@ public class IngestJob {
             }
         });
         return current.future();
+    }
+
+    private void updateMessagesAttemptedTooManyTimes(IngestJobResult ingestResult) {
+        if(ingestResult.getFailed() != null) {
+            final int nbMessagesAttemptedTooManyTimes = (int) ingestResult.getFailed().stream()
+                    .mapToInt(ExplorerMessageForIngest::getAttemptCount)
+                    .filter(attemptCount -> attemptCount > maxAttempt)
+                    .count();
+            this.ingestJobMetricsRecorder.onMessagesAttempedTooManyTimes(nbMessagesAttemptedTooManyTimes);
+        }
     }
 
     private void notifyMessageStateUpdate(final List<ExplorerMessageForIngest> readMessages, final IngestJobState state) {
