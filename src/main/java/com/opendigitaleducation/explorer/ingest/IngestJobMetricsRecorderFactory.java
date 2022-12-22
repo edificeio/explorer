@@ -22,7 +22,7 @@ public class IngestJobMetricsRecorderFactory {
                 IngestJobMetricsRecorderFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
             }
         } else {
-            metricsOptions = config.getJsonObject("metricsOptions").mapTo(MetricsOptions.class);
+            metricsOptions = new MetricsOptions(config.getJsonObject("metricsOptions"));
         }
     }
 
