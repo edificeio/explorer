@@ -4,7 +4,6 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.ingest.ExplorerMessageForIngest;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -12,24 +11,28 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.postgres.PostgresClientPool;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.System.currentTimeMillis;
+
 public class FolderExplorerDbSql {
     static Logger log = LoggerFactory.getLogger(FolderExplorerDbSql.class);
     private final IPostgresClient client;
+
+    public static final String TABLE = "explorer.folders";
     public FolderExplorerDbSql(final IPostgresClient client) {
         this.client = client;
     }
 
     public ResourceExplorerDbSql getResourceHelper() { return new ResourceExplorerDbSql(client); }
 
-    protected String getTableName() { return "explorer.folders"; }
+    protected String getTableName() { return TABLE; }
 
     protected List<String> getUpdateColumns() { return Arrays.asList("name", "parent_id"); }
 
@@ -83,6 +86,7 @@ public class FolderExplorerDbSql {
     }
 
     public Future<Map<String, ExplorerMessageForIngest>> updateParentEnt(){
+        final long now = currentTimeMillis();
         final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
         final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL AND subquery.id <> folders.id RETURNING * ";
         final String update = String.format(updateTpl, updateSubQuery);
@@ -101,7 +105,10 @@ public class FolderExplorerDbSql {
                 user.setUserId(creator_id);
                 user.setUsername(creator_name);
                 // TODO JBER check version to set
-                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(ExplorerMessage.upsert(id.toString(), user, false));
+                final ExplorerMessageForIngest message = new ExplorerMessageForIngest(ExplorerMessage.upsert(
+                        new IdAndVersion(id.toString(), currentTimeMillis()), user, false,
+                        row.getString("application"), row.getString("resource_type"), row.getString("resource_type")
+                        ));
                 message.withParentId(Optional.ofNullable(parent_id).map(e -> Long.valueOf(e.toString())));
                 message.withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                 upserted.put(ent_id, message);

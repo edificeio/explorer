@@ -1,10 +1,13 @@
 package com.opendigitaleducation.explorer;
 
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -20,6 +23,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
@@ -37,6 +41,7 @@ import java.net.URI;
 import java.util.Arrays;
 
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
+import static java.lang.System.currentTimeMillis;
 
 @RunWith(VertxUnitRunner.class)
 public class ResourceServiceTest {
@@ -63,7 +68,7 @@ public class ResourceServiceTest {
         IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
-        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         application = FakePostgresPlugin.FAKE_APPLICATION;
         System.out.println("Using index: " + esIndex);
@@ -80,7 +85,8 @@ public class ResourceServiceTest {
         job = IngestJob.createForTest(test.vertx(), elasticClientManager,postgresClient, new JsonObject(), reader);
         plugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
-        resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, plugin.getCommunication(), postgresClient);
+        final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
+        resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, plugin.getCommunication(), postgresClient, muteService);
     }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager,TestContext context, String index) {
@@ -137,10 +143,10 @@ public class ResourceServiceTest {
     @Test
     public void shouldSearchResourceWithSubresources(TestContext context) {
         final UserInfos user = test.directory().generateUser("usernested");
-        final ExplorerMessage f1 = ExplorerMessage.upsert("id1", user, false).withCreator(user).withVersion(1L);
+        final ExplorerMessage f1 = ExplorerMessage.upsert(new IdAndVersion("id1", 1L), user, false, plugin.getApplication(), plugin.getResourceType(), plugin.getResourceType()).withCreator(user);
         f1.withSubResourceContent("id1_1", "content1_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_1", "<h1>html1_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f1.withSubResourceContent("id1_2", "content1_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_2", "<h1>html1_2</h1>", ExplorerMessage.ExplorerContentType.Html);
-        final ExplorerMessage f2 = ExplorerMessage.upsert("id2", user, false).withCreator(user).withVersion(1L);
+        final ExplorerMessage f2 = ExplorerMessage.upsert(new IdAndVersion("id2", 1L), user, false, plugin.getApplication(), plugin.getResourceType(), plugin.getResourceType()).withCreator(user);
         f2.withSubResourceContent("id2_1", "content2_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_1", "<h1>html2_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f2.withSubResourceContent("id2_2", "content2_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_2", "<h1>html2_2</h1>", ExplorerMessage.ExplorerContentType.Html);
         final Async async = context.async(3);

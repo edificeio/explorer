@@ -9,10 +9,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.user.UserInfos;
@@ -25,9 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MessageIngesterPostgres implements MessageIngester {
+import static java.lang.System.currentTimeMillis;
 
-    static Logger log = LoggerFactory.getLogger(MessageIngesterPostgres.class);
+public class MessageIngesterPostgres implements MessageIngester {
+    private static final Logger log = LoggerFactory.getLogger(MessageIngesterPostgres.class);
     private final ResourceExplorerDbSql sql;
     private final FolderExplorerDbSql folderSql;
     private final MessageIngester ingester;
@@ -51,25 +56,33 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<ExplorerMessageForIngest> upsertFolders = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteResources = new ArrayList<>();
+        final List<ExplorerMessageForIngest> muteResources = new ArrayList<>();
         for (final ExplorerMessageForIngest message : messages) {
             final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
-            switch (a) {
-                case Delete:
-                    if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
-                        deleteFolders.add(message);
-                    } else {
-                        deleteResources.add(message);
-                    }
-                    break;
-                case Upsert:
-                    if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
-                        upsertFolders.add(message);
-                    } else {
-                        upsertResources.add(message);
-                    }
-                    break;
-                case Audience:
-                    break;
+            final String resourceType = message.getResourceType();
+            if(StringUtils.isBlank(resourceType)) {
+                log.error("Message is missing resource type so we will not retry it : " + message);
+                message.setAttemptCount(Integer.MAX_VALUE - 1);
+            } else {
+                switch (a) {
+                    case Delete:
+                        if (resourceType.equals(ExplorerConfig.FOLDER_TYPE)) {
+                            deleteFolders.add(message);
+                        } else {
+                            deleteResources.add(message);
+                        }
+                        break;
+                    case Upsert:
+                        if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
+                            upsertFolders.add(message);
+                        } else {
+                            upsertResources.add(message);
+                        }
+                        break;
+                    case Mute:
+                        muteResources.add(message);
+                        break;
+                }
             }
         }
         //create or delete resources in postgres
@@ -77,7 +90,8 @@ public class MessageIngesterPostgres implements MessageIngester {
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
             final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
+            final Future<List<ExplorerMessageForIngest>> beforeMuteFuture = onMuteResources(muteResources);
+            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture, beforeMuteFuture).compose(all -> {
                 recordDelay(messages, start);
                 if(all.succeeded()) {
                     //ingest only resources created or deleted successfully in postgres
@@ -91,6 +105,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                         //add to failed all resources that cannot be deleted or created into postgres
                         final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
                         prepareFailed.removeAll(toIngest);
+                        prepareFailed.removeAll(muteResources);
                         for (final ExplorerMessageForIngest failedMessage : prepareFailed) {
                             if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
                                 failedMessage.setError("psql.error");
@@ -98,9 +113,10 @@ public class MessageIngesterPostgres implements MessageIngester {
                             }
                         }
                         ingestResult.getFailed().addAll(prepareFailed);
+                    ingestResult.getSucceed().addAll(beforeMuteFuture.result());
                         return ingestResult;
                     }).compose(ingestResult -> {
-                        //delete definitly all resources deleted from ES
+                    //delete definitely all resources deleted from ES
                         final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
                         final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
                             final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
@@ -152,6 +168,18 @@ public class MessageIngesterPostgres implements MessageIngester {
     private void recordDelay(final List<ExplorerMessageForIngest> messages, final long start) {
         final long delay = System.currentTimeMillis() - start;
         ingestJobMetricsRecorder.onIngestPostgresResult(delay / (messages.size() + 1));
+    }
+
+    private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
+        if (messages.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        return sql.muteResources(messages).map(resources -> {
+            final Set<String> entIds = resources.stream().map(resource -> resource.entId).collect(Collectors.toSet());
+            return messages.stream()
+                    .filter(message -> entIds.contains(message.getId()))
+                    .collect(Collectors.toList());
+        });
     }
 
     protected Future<List<ExplorerMessageForIngest>> onUpsertResources(final List<ExplorerMessageForIngest> messages) {
@@ -209,9 +237,9 @@ public class MessageIngesterPostgres implements MessageIngester {
 
     protected Future<Void> migrate(final List<ExplorerMessageForIngest> upsertFolders, final List<ExplorerMessageForIngest> upsertResources){
         //migrated folders
-        final List<ExplorerMessageForIngest> toMigrate = upsertFolders.stream().filter(message -> {
-            return message.getMigrationFlag();
-        }).collect(Collectors.toList());
+        final List<ExplorerMessageForIngest> toMigrate = upsertFolders.stream()
+                .filter(ExplorerMessage::getMigrationFlag)
+                .collect(Collectors.toList());
         //upsert resources before computing links
         final Future<List<ResourceExplorerDbSql.ResouceSql>> futureResources = sql.upsertResources(upsertResources);
         final  Future<FolderExplorerDbSql.FolderUpsertResult> futureFolders = folderSql.upsert(toMigrate);
@@ -247,9 +275,9 @@ public class MessageIngesterPostgres implements MessageIngester {
                         final Optional<ExplorerMessageForIngest> found = upsertResources.stream().filter(e-> e.getId().equals(r.entId)).findFirst();
                         if(!found.isPresent()){
                             //use id because upsertResource already done
-                            final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
-                            // TODO JBER change here the last resourceType to get the entity type
-                            mess.withType(r.application, r.resourceType, r.resourceType);
+                            final ExplorerMessage mess = ExplorerMessage.upsert(
+                                    new IdAndVersion(r.entId, r.version), creator, false,
+                                    r.application, r.resourceType, r.resourceType);
                             mess.withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                             // TODO JBER check version to set
                             upsertResources.add(new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString()));

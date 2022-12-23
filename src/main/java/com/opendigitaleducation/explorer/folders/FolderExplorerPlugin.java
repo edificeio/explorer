@@ -110,7 +110,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
         return ExplorerConfig.FOLDER_TYPE;
     }
     @Override
-    protected String getTableName() { return this.dbHelper.getTableName(); }
+    protected String getTableName() { return FolderExplorerDbSql.TABLE; }
     @Override
     protected List<String> getColumns() { return this.dbHelper.getColumns(); }
     @Override

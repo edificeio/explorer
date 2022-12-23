@@ -2,12 +2,15 @@ package com.opendigitaleducation.explorer.tests;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -74,7 +77,8 @@ public class ExplorerTestHelper implements TestRule {
             final PostgresClient postgresClient = new PostgresClient(testHelper.vertx(), postgresqlConfig);
             final ShareTableManager shareTableManager = new DefaultShareTableManager();
             communication = new ExplorerPluginCommunicationPostgres(testHelper.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
-            resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
+            final MuteService muteService = new DefaultMuteService(testHelper.vertx(), new ResourceExplorerDbSql(postgresClient));
+            resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
             job = IngestJob.createForTest(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
             final JsonObject config = new JsonObject().put("stream", "postgres");
@@ -155,6 +159,14 @@ public class ExplorerTestHelper implements TestRule {
         },description);
     }
 
+    public static Future<JsonObject> executeJobAndFetchUniqueResult(final IngestJob job,
+                                                                    final String application,
+                                                                    final ResourceService resourceService,
+                                                                    final UserInfos user,
+                                                                    final String resourceName,
+                                                                    final TestContext context) {
+        return executeJobNTimesAndFetchUniqueResult(job, 1, application, resourceService, user, resourceName, context);
+    }
 
     public static Future<JsonObject> executeJobNTimesAndFetchUniqueResult(final IngestJob job,
                                                                           final int nbBatchExecutions,

@@ -3,11 +3,14 @@ package com.opendigitaleducation.explorer;
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -20,8 +23,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.redis.client.Command;
-import io.vertx.redis.client.Request;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
@@ -83,7 +84,8 @@ public class ExplorerControllerTest {
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin);
-        final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient);
+        final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
+        final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient, muteService);
         controller = new ExplorerController(folderService, resourceService);
         controller.init(test.vertx(), new JsonObject(), null, null);
         fakePlugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
@@ -98,7 +100,7 @@ public class ExplorerControllerTest {
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
             job = IngestJob.createForTest(test.vertx(), esClientManager, postgresClient, new JsonObject(), reader);
-            //start job too create streams
+            //start job to create streams
             job.start().compose(ee -> {
                 return job.stop();
             }).onComplete(context.asyncAssertSuccess(eee -> {

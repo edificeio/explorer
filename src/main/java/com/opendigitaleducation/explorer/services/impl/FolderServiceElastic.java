@@ -11,9 +11,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
-import org.entcore.common.explorer.ExplorerMessage;
-import org.entcore.common.explorer.IExplorerPluginClient;
-import org.entcore.common.explorer.IngestJobState;
+import org.entcore.common.explorer.*;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -222,7 +220,10 @@ public class FolderServiceElastic implements FolderService {
                         final List<ExplorerMessage> messages = new ArrayList<>();
                         for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
                             //use entid to push resource message
-                            final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
+                            // TODO JBER check version
+                            final ExplorerMessage mess = ExplorerMessage.upsert(
+                                    new IdAndVersion(trash.entId.get(), now), creator, false,
+                                    trash.application.get(), trash.resourceType.get(), trash.resourceType.get()).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                             // TODO JBER check entityType
                             mess.withType(trash.application.get(), trash.resourceType.get(), trash.resourceType.get());
                             mess.withTrashed(isTrash);

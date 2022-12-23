@@ -24,11 +24,15 @@ package com.opendigitaleducation.explorer;
 
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
+import com.opendigitaleducation.explorer.controllers.MuteController;
 import com.opendigitaleducation.explorer.filters.AbstractFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJobWorker;
 import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
@@ -117,14 +121,17 @@ public class Explorer extends BaseServer {
         //create resources service
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
-        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
+        final MuteService muteService = new DefaultMuteService(vertx, new ResourceExplorerDbSql(postgresClient));
+        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
         //create controller
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);
+        addController(new MuteController(muteService));
         //configure filter
         AbstractFilter.setResourceService(resourceService);
         AbstractFilter.setFolderService(folderService);
         //deploy ingest worker
+        folderPlugin.start();
         if(config.getBoolean("enable-job", true)){
             final Promise<String> onWorkerDeploy = Promise.promise();
             final DeploymentOptions dep = new DeploymentOptions().setConfig(config);

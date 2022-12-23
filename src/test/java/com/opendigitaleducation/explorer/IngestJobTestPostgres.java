@@ -1,8 +1,11 @@
 package com.opendigitaleducation.explorer;
 
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
@@ -69,7 +72,8 @@ public class IngestJobTestPostgres extends IngestJobTest {
     public ResourceService getResourceService() {
         if(resourceService == null){
             final IExplorerPluginCommunication comm = getExplorerPlugin().getCommunication();
-            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), comm, getPostgresClient());
+            final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
+            resourceService = new ResourceServiceElastic(elasticClientManager, getShareTableManager(), comm, getPostgresClient(), muteService);
         }
         return resourceService;
     }
