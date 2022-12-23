@@ -111,18 +111,13 @@ public class ResourceExplorerDbSql {
         if(folderId != null){
             resource.folders.add(new FolderSql(folderId, userId));
         }
-        if(shared != null){
-            if(shared instanceof JsonArray){
+        if(shared != null) {
+            if (shared instanceof JsonArray) {
                 resource.shared.addAll((JsonArray) shared);
             }
         }
         if(mutedBy instanceof JsonObject) {
             resource.mutedBy.mergeIn((JsonObject) mutedBy);
-        }
-        if(shared != null) {
-            if (shared instanceof JsonArray) {
-                resource.shared.addAll((JsonArray) shared);
-            }
         }
         return resource;
     }
@@ -219,6 +214,9 @@ public class ResourceExplorerDbSql {
                     if(rights instanceof JsonArray){
                         results.get(id).rights.addAll((JsonArray) rights);
                     }
+                }
+                if(mutedBy instanceof JsonObject) {
+                    resource.mutedBy.mergeIn((JsonObject) mutedBy);
                 }
             }
             return new ArrayList<>(results.values());
