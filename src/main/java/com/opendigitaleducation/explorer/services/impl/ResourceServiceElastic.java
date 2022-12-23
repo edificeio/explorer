@@ -185,10 +185,8 @@ public class ResourceServiceElastic implements ResourceService {
                         final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
                         //use entid to push message
                         final FolderExplorerDbSql.FolderTrashResult model = e.getValue();
-                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get())
-                                .withTrashed(isTrash)
-                                .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
-                    }).collect(Collectors.toList());
+                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash)
+                    .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);}).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 });
                 trashFutures.add(trashForEverybodyFuture);

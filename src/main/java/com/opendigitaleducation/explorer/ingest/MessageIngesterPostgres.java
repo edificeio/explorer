@@ -90,8 +90,7 @@ public class MessageIngesterPostgres implements MessageIngester {
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
             final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-            final Future<List<ExplorerMessageForIngest>> beforeMuteFuture = onMuteResources(muteResources);
-            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture, beforeMuteFuture).compose(all -> {
+            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
                 recordDelay(messages, start);
                 if(all.succeeded()) {
                     //ingest only resources created or deleted successfully in postgres
@@ -113,7 +112,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                             }
                         }
                         ingestResult.getFailed().addAll(prepareFailed);
-                    ingestResult.getSucceed().addAll(beforeMuteFuture.result());
                         return ingestResult;
                     }).compose(ingestResult -> {
                     //delete definitely all resources deleted from ES
@@ -168,6 +166,18 @@ public class MessageIngesterPostgres implements MessageIngester {
     private void recordDelay(final List<ExplorerMessageForIngest> messages, final long start) {
         final long delay = System.currentTimeMillis() - start;
         ingestJobMetricsRecorder.onIngestPostgresResult(delay / (messages.size() + 1));
+    }
+
+    private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
+        if (messages.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        return sql.muteResources(messages).map(resources -> {
+            final Set<String> entIds = resources.stream().map(resource -> resource.entId).collect(Collectors.toSet());
+            return messages.stream()
+                    .filter(message -> entIds.contains(message.getId()))
+                    .collect(Collectors.toList());
+        });
     }
 
     private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
