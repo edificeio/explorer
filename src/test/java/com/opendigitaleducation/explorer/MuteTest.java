@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.explorer.to.TrashRequest;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.HttpTestHelper;
 import org.junit.Test;
@@ -67,7 +68,7 @@ public class MuteTest extends FullExplorerStackTest {
         final Set<String> userIds = new HashSet<>();
         userIds.add(reader1.getUserId());
         userIds.add(reader2.getUserId());
-        final JsonObject shares = createShareForUsers(userIds, singletonList(ExplorerConfig.RIGHT_READ));
+        final JsonObject shares = createShareForUsers(userIds, singletonList(ShareRoles.Read.key));
         plugin.start();
         createUsersAndTheirGroups(creator, reader1, reader2)
         .compose(e -> plugin.create(creator, mutedResource, false))
