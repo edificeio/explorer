@@ -19,6 +19,8 @@ export default function FakeToaster() {
     switch (action.id) {
       case ACTION.OPEN:
         return explorer.onOpen();
+      case ACTION.CREATE:
+        return explorer.onCreate();
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
