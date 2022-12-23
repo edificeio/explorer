@@ -8,8 +8,8 @@ import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
-import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -30,6 +30,7 @@ import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.TrashRequest;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserInfos;
@@ -47,7 +48,7 @@ public class ExplorerController extends BaseController {
     private final EventHelper eventHelper;
     private final FolderService folderService;
     private final ResourceService resourceService;
-    static long DEFAULT_PAGESIZE = 20l;
+    static long DEFAULT_PAGESIZE = 20L;
 
     public ExplorerController(final FolderService folderService, final ResourceService resourceService) {
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Explorer.class.getSimpleName());
@@ -102,7 +103,7 @@ public class ExplorerController extends BaseController {
                     return resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                         json.put("resources", adaptResource(e.rows));
                         //pagination details
-                        final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0l));
+                        final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0L));
                         pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
                         pagination.put("maxIdx", e.count);
                         json.put("pagination", pagination);
@@ -142,7 +143,7 @@ public class ExplorerController extends BaseController {
                 final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
                     json.put("resources", adaptResource(e.rows));
                     //pagination details
-                    final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0l));
+                    final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0L));
                     pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
                     pagination.put("maxIdx", e.count);
                     json.put("pagination", pagination);
@@ -303,13 +304,13 @@ public class ExplorerController extends BaseController {
 
 
     @Put("trash")
-    //check foldes and resources inside service method
+    //check folders and resources inside service method
     @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
     public void trashBatch(final HttpServerRequest request) {
         trashBatch(request, true);
     }
     @Put("restore")
-    //check foldes and resources inside service method
+    //check folders and resources inside service method
     @SecuredAction(value = "explorer.contrib", type = ActionType.AUTHENTICATED)
     public void restoreBatch(final HttpServerRequest request){
         trashBatch(request, false);
@@ -317,19 +318,16 @@ public class ExplorerController extends BaseController {
 
     private void trashBatch(final HttpServerRequest request, final boolean isTrashed){
         //same for delete
-        UserUtils.getUserInfos(eb, request, user -> {
-            if (user == null) {
-                unauthorized(request);
-                return;
-            }
+        UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(user -> {
             RequestUtils.bodyToJson(request, pathPrefix + "trashBatch", body -> {
-                final Set<Integer> resourceIds = body.getJsonArray("resourceIds").stream().map(e->(String)e).map(e-> Integer.valueOf(e)).collect(Collectors.toSet());
-                final Set<String> folderIds = body.getJsonArray("folderIds").stream().map(e->(String)e).collect(Collectors.toSet());
-                final String application = body.getString("application");
+                final TrashRequest trashRequest = body.mapTo(TrashRequest.class);
+                final Set<Integer> resourceIds = trashRequest.getResourceIds().stream().map(Integer::valueOf).collect(Collectors.toSet());
+                final Set<String> folderIds = trashRequest.getFolderIds();
+                final String application = trashRequest.getApplication();
                 final List<Future> futures = new ArrayList<>();
                 final JsonObject results = new JsonObject();
                 futures.add(folderService.trash(user, folderIds, application, isTrashed).onSuccess(all->{
-                    final List<JsonObject> transformed = all.stream().map(fold-> adaptFolder(fold)).collect(Collectors.toList());
+                    final List<JsonObject> transformed = all.stream().map(this::adaptFolder).collect(Collectors.toList());
                     results.put("folders",new JsonArray(transformed));
                 }));
                 futures.add(resourceService.trash(user, application, resourceIds, isTrashed).onSuccess(all->{

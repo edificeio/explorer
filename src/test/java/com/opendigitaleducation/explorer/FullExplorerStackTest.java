@@ -1,44 +1,48 @@
 package com.opendigitaleducation.explorer;
 
+import com.opendigitaleducation.explorer.controllers.ExplorerController;
+import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.ingest.impl.ErrorMessageTransformer;
+import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.MuteService;
-import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
+import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import com.opendigitaleducation.explorer.tests.ExplorerTestHelper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Timeout;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.redis.client.Command;
-import io.vertx.redis.client.Request;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.postgres.PostgresClient;
-import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -52,12 +56,12 @@ import java.util.stream.IntStream;
 
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static io.vertx.core.CompositeFuture.all;
-import static java.util.Collections.singletonList;
 
-@RunWith(VertxUnitRunner.class)
-public class IngestJobStressTest {
-    private static final int BATCH_SIZE = 5;
-    private static final TestHelper test = TestHelper.helper();
+public class FullExplorerStackTest {
+    protected static final int BATCH_SIZE = 5;
+    protected static final TestHelper test = TestHelper.helper();
+    @ClassRule
+    public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     @ClassRule
     public static ElasticsearchContainer esContainer = test.database().createOpenSearchContainer().withReuse(true);
     @ClassRule
@@ -70,6 +74,7 @@ public class IngestJobStressTest {
     public Timeout timeoutRule = Timeout.seconds(360000);
     static ElasticClientManager elasticClientManager;
     static ResourceService resourceService;
+    static FolderService folderService;
     static FakeMongoPlugin plugin;
     static FaillibleRedisClient redisClient;
     static String application;
@@ -78,17 +83,22 @@ public class IngestJobStressTest {
     static ExplorerPluginClient pluginClient;
     static AtomicInteger idtResource = new AtomicInteger(0);
     static AtomicInteger indexMessage = new AtomicInteger(0);
-
+    static ExplorerController controller;
+    static MuteHelper muteHelper;
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
+        test.database().initNeo4j(context, neo4jContainer);
         test.database().initMongo(context, mongoDBContainer);
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
+        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        final String folderIndex = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
+        System.out.println("Using index: " + resourceIndex);
         IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
-        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
-        System.out.println("Using index: " + resourceIndex);
+        ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
+        EventStoreFactory.getFactory().setVertx(test.vertx());
         final JsonObject redisConfig = new JsonObject().put("host", redisContainer.getHost()).put("port", redisContainer.getMappedPort(6379));
         final JsonObject mongoConfig = new JsonObject().put("connection_string", mongoDBContainer.getReplicaSetUrl());
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
@@ -97,31 +107,43 @@ public class IngestJobStressTest {
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(test.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
         mongoClient = MongoClient.createShared(test.vertx(), mongoConfig);
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
+        folderPlugin.start();
         final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
+        muteHelper = new MuteHelper(test.vertx());
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         plugin = FakeMongoPlugin.withRedisStream(test.vertx(), redisClient, mongoClient);
+        plugin.start();
         application = plugin.getApplication();
+        controller = new ExplorerController(folderService, resourceService);
+        controller.init(test.vertx(), new JsonObject(), null, null);
         final Async async = context.async();
         final Promise<Void> promiseMongo = Promise.promise();
         final Promise<Void> promiseRedis = Promise.promise();
         final Promise<Void> promiseScript = Promise.promise();
         all(Arrays.asList(promiseRedis.future(), promiseRedis.future(), promiseScript.future())).onComplete(e -> async.complete());
-        createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> promiseMongo.complete());
+        ExplorerTestHelper.createMapping(test.vertx(), elasticClientManager, resourceIndex).onComplete(r -> promiseMongo.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
+        test.http().mockJsonValidator();
         final JsonObject jobConf = new JsonObject()
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
                 .put("max-delay-ms", 2000)
-                .put("message-merger", "default")
-                .put("opensearch-options", new JsonObject().put("wait-for", true));
+                .put("message-merger", "noop");
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
+        final JsonObject rights = new JsonObject();
+        rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
+        rights.put(ExplorerConfig.RIGHT_CONTRIB, ExplorerConfig.RIGHT_CONTRIB);
+        rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
+        ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, redisConfig);
-            job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
+            job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> job.stop())
-                .onComplete(context.asyncAssertSuccess(eee -> promiseRedis.complete()));
+                    .onComplete(context.asyncAssertSuccess(eee -> promiseRedis.complete()));
         });
     }
 
@@ -131,67 +153,104 @@ public class IngestJobStressTest {
         clearErrorRules();
     }
 
-
-    static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
-        final Buffer mapping = test.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
-        return elasticClientManager.getClient().createMapping(index, mapping);
+    protected void clearErrorRules() {
+        job.getMessageTransformer().clearChain();
     }
 
-    static JsonObject resource(final String name, final UserInfos user) {
-        return new JsonObject().put("name", name).put("version", 1).put("creatorId", user.getUserId());
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> evictionRuleES(final String attributeName, final String attributeValue) {
+        return evictionRules(attributeName, attributeValue, "es");
     }
 
-    /**
-     * <u>Goal : </u> Call ES many times to make it crash and expect the job to yield a result everytime.
-     * @param context Test context
-     */
-    @Test
-    public void stress(TestContext context) {
-        final int nbFirstMessagesOk = 1;
-        final int nbMessagesKO = 100 * BATCH_SIZE + 1;
-        final int nbLastMessagesOk = 1;
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = createErrorRulesForES();
-        final String resourceName = "resource" + idtResource.incrementAndGet();
-        final UserInfos user = test.directory().generateUser("usermove");
-        final JsonObject f1 = resource(resourceName, user);
-        f1.put("content", "initial");
-        final Async async = context.async();
-        final int nbTimesToExecuteJob = 10;
-        resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
-            context.assertTrue(
-                    fetch0.stream().noneMatch(resource -> ((JsonObject)resource).getString("name", "").equals(f1.getString("name"))),
-                    "The user already had a resource called " + f1.getString("name")
-            );
-            plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
-                executeJobNTimesAndFetchUniqueResult(1, user, resourceName, context).compose(createdResource -> {
-                    ////////////////////////////
-                    // Generate update messages
-                    final List<JsonObject> modifications = new ArrayList<>();
-                    final String expectedFinalMessage = "after first error message";
-                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbFirstMessagesOk, "before error messages"));
-                    modifications.addAll(generateModifiedResourcesToFail(createdResource, nbMessagesKO));
-                    modifications.addAll(generateModifiedResourcesToSucceed(createdResource, nbLastMessagesOk, expectedFinalMessage));
-                    setErrorRules(errors);
-                    return pluginNotifyUpsert(user, modifications).onComplete(context.asyncAssertSuccess(r2 -> {
-                        executeJobNTimesAndFetchUniqueResult(nbTimesToExecuteJob, user, resourceName, context).onComplete(context.asyncAssertSuccess(asReturnedByFetch -> {
-                            async.complete();
-                        }));
-                    }));
-                });
-            }));
-        }));
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> evictionRulePG(final String attributeName, final String attributeValue) {
+        return evictionRules(attributeName, attributeValue, "pg-ingest");
     }
 
-    private void setErrorRules(List<ErrorMessageTransformer.IngestJobErrorRule> errors) {
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> evictionRules(final String attributeName, final String attributeValue, final String pointOfFailure) {
+        return evictionRules(attributeName, attributeValue, pointOfFailure, null);
+    }
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> evictionRules(final String attributeName, final String attributeValue, final String pointOfFailure, final String trigger) {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> rules = new ArrayList<>();
+        rules.add(new ErrorMessageTransformer.IngestJobErrorRuleBuilder()
+                .withValueToTarget(attributeName, attributeValue)
+                .setPointOfFailure(pointOfFailure)
+                .setTriggeredAction(trigger)
+                .createIngestJobErrorRule());
+        return rules;
+    }
+
+    public static List<JsonObject> generateModifiedResourcesToFail(JsonObject originalResource, final int numberOfMessages) {
+        return IntStream.range(0, numberOfMessages).mapToObj(i -> {
+            final JsonObject modifiedResource = originalResource.copy();
+            final int idxMessage = indexMessage.incrementAndGet();
+            modifiedResource.put("content", "modified for failure number " + idxMessage);
+            modifiedResource.put("my_flag", "fail " + idxMessage);
+            modifiedResource.put("_id", originalResource.getString("assetId"));
+            modifiedResource.put("version", indexMessage.get());
+            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
+            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
+            final JsonObject subResource = new JsonObject().put("id", subResourceId);
+            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of failed resource " + idxMessage + " <div>");
+            subResource.put("deleted", false);
+            subResource.put("version", indexMessage.get());
+            subResources.add(subResource);
+            modifiedResource.put("subresources", subResources);
+            return modifiedResource;
+        }).collect(Collectors.toList());
+    }
+
+    public static List<JsonObject> generateModifiedResourcesToSucceed(JsonObject originalResource, int numberOfMessages,
+                                                                final String messagePrefix) {
+        final String prefix = messagePrefix == null ? "modified for success number " : messagePrefix;
+        return IntStream.range(0, numberOfMessages).mapToObj(i -> {
+            final int idxMessage = indexMessage.incrementAndGet();
+            final JsonObject modifiedResource = originalResource.copy();
+            modifiedResource.put("content", prefix + indexMessage.incrementAndGet());
+            modifiedResource.put("_id", originalResource.getString("assetId"));
+            modifiedResource.put("version", indexMessage.get());
+            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
+            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
+            final JsonObject subResource = new JsonObject().put("id", subResourceId);
+            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of succeeded resource " + idxMessage + " <div>");
+            subResource.put("deleted", false);
+            subResource.put("version", indexMessage.get());
+            subResources.add(subResource);
+            modifiedResource.put("subresources", subResources);
+            return modifiedResource;
+        }).collect(Collectors.toList());
+    }
+
+
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForES() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRuleES("my_flag", ".*fail.*");
+        errors.addAll(evictionRuleES("content", ".*fail.*"));
+        return errors;
+    }
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForPG() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRulePG("my_flag", ".*fail.*");
+        errors.addAll(evictionRulePG("content", ".*fail.*"));
+        return errors;
+    }
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedisXAdd() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-xadd");
+        errors.addAll(evictionRulePG("content", ".*fail.*"));
+        return errors;
+    }
+    public static List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedisRead() {
+        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-read");
+        errors.addAll(evictionRulePG("content", ".*fail.*"));
+        return errors;
+    }
+
+    protected void setErrorRules(List<ErrorMessageTransformer.IngestJobErrorRule> errors) {
         job.getMessageTransformer()
                 .clearChain()
                 .withTransformer(new ErrorMessageTransformer(errors));
     }
 
-    private Future<Void> pluginNotifyUpsert(UserInfos user, List<JsonObject> modifications) {
+    protected Future<Void> pluginNotifyUpsert(UserInfos user, List<JsonObject> modifications) {
         return pluginNotifyUpsert(user, modifications, 0);
     }
-    private Future<Void> pluginNotifyUpsert(UserInfos user, List<JsonObject> modifications, final int position) {
+    protected Future<Void> pluginNotifyUpsert(UserInfos user, List<JsonObject> modifications, final int position) {
         final Future<Void> done;
         if(modifications == null || modifications.isEmpty() || position >= modifications.size()) {
             done = Future.succeededFuture();
@@ -202,104 +261,9 @@ public class IngestJobStressTest {
         return done;
     }
 
-    private Future<JsonObject> executeJobNTimesAndFetchUniqueResult(final int nbBatchExecutions, final UserInfos user,
-                                                                    final String resourceName, final TestContext context) {
-        return executeJobNTimes(nbBatchExecutions, context).flatMap(e ->
-            resourceService.fetch(user, application, new ResourceSearchOperation())
-            .map(results -> {
-                final List<JsonObject> resultsForMyResource = results.stream().map(r -> ((JsonObject)r))
-                    .filter(r -> r.getString("name", "").equals(resourceName))
-                    .collect(Collectors.toList());
-                context.assertEquals(1, resultsForMyResource.size());
-                return resultsForMyResource.get(0);
-            })
-            .onFailure(Throwable::printStackTrace)
-        )
-        .onFailure(Throwable::printStackTrace);
-    }
-
-    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForES() {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRuleES("my_flag", ".*fail.*");
-        errors.addAll(evictionRuleES("content", ".*fail.*"));
-        return errors;
-    }
-    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForPG() {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRulePG("my_flag", ".*fail.*");
-        errors.addAll(evictionRulePG("content", ".*fail.*"));
-        return errors;
-    }
-    private List<ErrorMessageTransformer.IngestJobErrorRule> createErrorRulesForRedis() {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "xAdd");
-        errors.addAll(evictionRulePG("content", ".*fail.*"));
-        return errors;
-    }
-
-    private void clearErrorRules() {
-        job.getMessageTransformer().clearChain();
-    }
-
-    private Future<Object> executeJobNTimes(int nbTimesToExecute, final TestContext context) {
-        final Future<Object> onDone;
-        if (nbTimesToExecute <= 0) {
-            onDone = Future.succeededFuture();
-        } else {
-            System.out.println("Still " + nbTimesToExecute + " times to execute the job");
-            onDone = job.execute(true).compose(e -> executeJobNTimes(nbTimesToExecute - 1, context));
-        }
-        return onDone.onFailure(e -> context.asyncAssertFailure());
-    }
-
-    private List<JsonObject> generateModifiedResourcesToFail(JsonObject originalResource, final int numberOfMessages) {
-        return IntStream.range(0, numberOfMessages).mapToObj(i -> {
-            final JsonObject modifiedResource = originalResource.copy();
-            final int idxMessage = indexMessage.incrementAndGet();
-            modifiedResource.put("content", "modified for failure number " + idxMessage);
-            modifiedResource.put("my_flag", "fail " + idxMessage);
-            modifiedResource.put("_id", originalResource.getString("assetId"));
-            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
-            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
-            final JsonObject subResource = new JsonObject().put("id", subResourceId);
-            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of failed resource " + idxMessage + " <div>");
-            subResource.put("deleted", false);
-            subResources.add(subResource);
-            modifiedResource.put("subresources", subResources);
-            return modifiedResource;
-        }).collect(Collectors.toList());
-    }
-
-    private List<JsonObject> generateModifiedResourcesToSucceed(JsonObject originalResource, int numberOfMessages,
-                                                                final String messagePrefix) {
-        final String prefix = messagePrefix == null ? "modified for success number " : messagePrefix;
-        return IntStream.range(0, numberOfMessages).mapToObj(i -> {
-            final int idxMessage = indexMessage.incrementAndGet();
-            final JsonObject modifiedResource = originalResource.copy();
-            modifiedResource.put("content", prefix + indexMessage.incrementAndGet());
-            modifiedResource.put("_id", originalResource.getString("assetId"));
-            final JsonArray subResources = originalResource.getJsonArray("subresources", new JsonArray());
-            final String subResourceId = String.valueOf(indexMessage.incrementAndGet());
-            final JsonObject subResource = new JsonObject().put("id", subResourceId);
-            subResource.put("contentHtml", "<div>Sub resource " + subResourceId + " of succeeded resource " + idxMessage + " <div>");
-            subResource.put("deleted", false);
-            subResources.add(subResource);
-            modifiedResource.put("subresources", subResources);
-            return modifiedResource;
-        }).collect(Collectors.toList());
-    }
-
-    private List<ErrorMessageTransformer.IngestJobErrorRule> evictionRuleES(final String attributeName, final String attributeValue) {
-        return evictionRules(attributeName, attributeValue, "es");
-    }
-
-    private List<ErrorMessageTransformer.IngestJobErrorRule> evictionRulePG(final String attributeName, final String attributeValue) {
-        return evictionRules(attributeName, attributeValue, "pg-ingest");
-    }
-
-    private List<ErrorMessageTransformer.IngestJobErrorRule> evictionRules(final String attributeName, final String attributeValue, final String pointOfFailure) {
-        final List<ErrorMessageTransformer.IngestJobErrorRule> rules = new ArrayList<>();
-        rules.add(new ErrorMessageTransformer.IngestJobErrorRuleBuilder()
-                .withValueToTarget(attributeName, attributeValue)
-                .setPointOfFailure(pointOfFailure)
-                .createIngestJobErrorRule());
-        return rules;
+    public static JsonObject resource(final String name) {
+        return new JsonObject()
+                .put("name", name)
+                .put("version", 1);
     }
 }

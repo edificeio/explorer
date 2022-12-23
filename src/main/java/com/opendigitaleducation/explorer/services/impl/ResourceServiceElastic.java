@@ -3,9 +3,11 @@ package com.opendigitaleducation.explorer.services.impl;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
+import com.opendigitaleducation.explorer.services.MuteService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -19,7 +21,9 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.explorer.to.MuteRequest;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
@@ -27,6 +31,7 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.opendigitaleducation.explorer.ExplorerConfig.*;
 import static java.lang.System.currentTimeMillis;
 
 public class ResourceServiceElastic implements ResourceService {
@@ -37,8 +42,14 @@ public class ResourceServiceElastic implements ResourceService {
     final IExplorerPluginCommunication communication;
     final MessageConsumer messageConsumer;
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final IPostgresClient sql) {
-        this(aManager, shareTableManager, communication, new ResourceExplorerDbSql(sql));
+    private final MuteService muteService;
+
+    public ResourceServiceElastic(final ElasticClientManager aManager,
+                                  final ShareTableManager shareTableManager,
+                                  final IExplorerPluginCommunication communication,
+                                  final IPostgresClient sql,
+                                  final MuteService muteService) {
+        this(aManager, shareTableManager, communication, new ResourceExplorerDbSql(sql), muteService);
     }
 
     @Override
@@ -65,11 +76,14 @@ public class ResourceServiceElastic implements ResourceService {
         }
     }
 
-    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager, final IExplorerPluginCommunication communication, final ResourceExplorerDbSql sql) {
+    public ResourceServiceElastic(final ElasticClientManager aManager, final ShareTableManager shareTableManager,
+                                  final IExplorerPluginCommunication communication, final ResourceExplorerDbSql sql,
+                                  final MuteService muteService) {
         this.manager = aManager;
         this.sql = sql;
         this.communication = communication;
         this.shareTableManager = shareTableManager;
+        this.muteService = muteService;
         this.messageConsumer = communication.vertx().eventBus().consumer(ExplorerPlugin.RESOURCES_ADDRESS, message->{
             final String action = message.headers().get("action");
             switch (action) {
@@ -136,35 +150,84 @@ public class ResourceServiceElastic implements ResourceService {
 
     @Override
     public Future<JsonArray> trash(final UserInfos user, final String application, final Set<Integer> ids, final boolean isTrash) {
+        final long now = currentTimeMillis();
         if(ids.isEmpty()){
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
         final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true).setRightType(ShareRoles.Manager);
-        final Future<Integer> futureCheck = count(user, application, search);
-        return futureCheck.compose(count->{
-            if(count < ids.size()){
+        final Future<FetchResult> futureFetch = fetchWithMeta(user, application, search);
+        return futureFetch.compose(fetch->{
+            if(fetch.count < ids.size()){
+                log.warn("User tried to trash resources that do not exist in OpenSearch. Expected to find " +
+                        ids.size() + " elements but only " + fetch.count + " found");
                 return Future.failedFuture("resource.trash.id.invalid");
             }
-            //TODO remove previous parent if it is not trashed
-            return sql.trash(ids, isTrash).compose(entIds -> {
-                final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e->{
-                    return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
-                }).map(e -> {
-                    //final Integer id = e.getKey();
-                    final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
-                    //use entid to push message
-                    // TODO JBER check entityType
-                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false)
-                            .withType(value.application.get(), value.resourceType.get(), value.resourceType.get())
-                            .withTrashed(isTrash).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
-                }).collect(Collectors.toList());
-                return communication.pushMessage(messages);
-            }).compose(e->{
-                final ResourceSearchOperation search2 = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+            final Set<Integer> idsToTrashForEverybody = new HashSet<>();
+            final Set<IdAndVersion> idsToTrashForUserOnly = new HashSet<>();
+            for (JsonObject row : fetch.rows) {
+                if(isManager(row, user)) {
+                    final int id = Integer.parseInt(row.getString("_id"));
+                    idsToTrashForEverybody.add(id);
+                } else {
+                    idsToTrashForUserOnly.add(new IdAndVersion(row.getString("assetId"), row.getLong("version")));
+                }
+            }
+            final List<Future> trashFutures = new ArrayList<>();
+            if(!idsToTrashForEverybody.isEmpty()) {
+                log.debug("Trashing (" + isTrash + ") " + idsToTrashForEverybody.size() + " resources for everybody");
+                //TODO remove previous parent if it is not trashed
+                Future trashForEverybodyFuture = sql.trash(idsToTrashForEverybody, isTrash).compose(entIds -> {
+                    final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e -> {
+                        return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
+                    }).map(e -> {
+                        //final Integer id = e.getKey();
+                        final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
+                        //use entid to push message
+                        final FolderExplorerDbSql.FolderTrashResult model = e.getValue();
+                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
+                    }).collect(Collectors.toList());
+                    return communication.pushMessage(messages);
+                });
+                trashFutures.add(trashForEverybodyFuture);
+            }
+            if(!idsToTrashForUserOnly.isEmpty()) {
+                log.debug("Trashing (" + isTrash + ") " + idsToTrashForUserOnly.size() + " resources for everybody");
+                trashFutures.add(muteService.mute(user, new MuteRequest(isTrash, idsToTrashForUserOnly)));
+            }
+            return CompositeFuture.all(trashFutures).compose(e -> {
+                final ResourceSearchOperation search2 = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(Object::toString).collect(Collectors.toSet()));
                 return fetch(user, application, search2);
             });
         });
+    }
+
+    // TODO JBER move to a more central location
+    /**
+     * @param resource
+     * @param user
+     * @return
+     */
+    private boolean isManager(final JsonObject resource, final UserInfos user) {
+        final String userId = user.getUserId();
+        final JsonArray rights = resource.getJsonArray("rights");
+        final boolean manage;
+        if(rights == null) {
+            // Check if we are the creator
+            manage = userId.equals(resource.getString("creatorId"));
+        } else {
+            final Set<String> myAdminRights = new HashSet<>();
+            myAdminRights.add(getCreatorRight(userId));
+            myAdminRights.add(getManageByUser(userId));
+            final List<String> groupIds = user.getGroupsIds();
+            if(groupIds != null) {
+                for (String groupId : user.getGroupsIds()) {
+                    myAdminRights.add(getManageByGroup(groupId));
+                }
+            }
+            manage = rights.stream().anyMatch(myAdminRights::contains);
+        }
+        return manage;
     }
 
     @Override

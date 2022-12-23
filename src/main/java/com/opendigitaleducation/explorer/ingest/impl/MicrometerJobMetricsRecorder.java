@@ -13,6 +13,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -186,6 +188,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private Optional<Long> getMessageCreationTime(final ExplorerMessageForIngest explorerMessageForIngest) {
         final JsonObject message = explorerMessageForIngest.getMessage();
         return Stream.of("createdAt", "deletedAt")
+            .filter(message::containsKey)
             .map(message::getLong)
             .findAny();
     }

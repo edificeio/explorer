@@ -34,6 +34,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
+
 public class IngestJob {
     static Logger log = LoggerFactory.getLogger(IngestJob.class);
     public static final String INGESTOR_JOB_ADDRESS = "explorer.ingestjob";
@@ -189,6 +192,7 @@ public class IngestJob {
                 this.ingestJobMetricsRecorder.onIngestCycleStarted();
                 final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
+
                 messages.onSuccess(readMessages -> notifyMessageStateUpdate(readMessages, IngestJobState.RECEIVED))
                 .onFailure(current::fail)
                 .map(this.messageMerger::mergeMessages)
