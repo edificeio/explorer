@@ -265,6 +265,7 @@ public class ResourceServiceElastic implements ResourceService {
                         //use entid to push message
                         //
                         // TODO JBER check entityType
+                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType);
                         return ExplorerMessage.upsert(e.entId, user, false)
                                 .withType(e.application, e.resourceType, e.resourceType)
                                 .withVersion(now).withSkipCheckVersion(true);
@@ -279,9 +280,8 @@ public class ResourceServiceElastic implements ResourceService {
                     final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                         //use entid to push message
                         // TODO JBER check entityType
-                        return ExplorerMessage.upsert(e.entId, user, false)
-                                .withType(e.application, e.resourceType, e.resourceType)
-                                .withVersion(now).withSkipCheckVersion(true);
+                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
+                                .withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -343,11 +343,9 @@ public class ResourceServiceElastic implements ResourceService {
         return sql.getModelByIds(ids).compose(entIds -> {
             final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                 //use entid to push message
-                // TODO JBER check entityType
-                return ExplorerMessage.upsert(e.entId, user, false)
-                        .withType(e.application, e.resourceType, e.resourceType)
+                return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
                         .withShared(shared, new ArrayList<>(normalizedRights))
-                        .withVersion(now).withSkipCheckVersion(true);
+                        .withSkipCheckVersion(true);;
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);
