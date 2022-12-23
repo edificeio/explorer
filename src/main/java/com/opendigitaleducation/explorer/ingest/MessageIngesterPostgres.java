@@ -56,7 +56,6 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<ExplorerMessageForIngest> upsertFolders = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteResources = new ArrayList<>();
-        final List<ExplorerMessageForIngest> muteResources = new ArrayList<>();
         for (final ExplorerMessageForIngest message : messages) {
             final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
             final String resourceType = message.getResourceType();
@@ -78,9 +77,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                         } else {
                             upsertResources.add(message);
                         }
-                        break;
-                    case Mute:
-                        muteResources.add(message);
                         break;
                 }
             }
@@ -104,7 +100,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                         //add to failed all resources that cannot be deleted or created into postgres
                         final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
                         prepareFailed.removeAll(toIngest);
-                        prepareFailed.removeAll(muteResources);
                         for (final ExplorerMessageForIngest failedMessage : prepareFailed) {
                             if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
                                 failedMessage.setError("psql.error");
@@ -166,30 +161,6 @@ public class MessageIngesterPostgres implements MessageIngester {
     private void recordDelay(final List<ExplorerMessageForIngest> messages, final long start) {
         final long delay = System.currentTimeMillis() - start;
         ingestJobMetricsRecorder.onIngestPostgresResult(delay / (messages.size() + 1));
-    }
-
-    private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
-        if (messages.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        return sql.muteResources(messages).map(resources -> {
-            final Set<String> entIds = resources.stream().map(resource -> resource.entId).collect(Collectors.toSet());
-            return messages.stream()
-                    .filter(message -> entIds.contains(message.getId()))
-                    .collect(Collectors.toList());
-        });
-    }
-
-    private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
-        if (messages.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        return sql.muteResources(messages).map(resources -> {
-            final Set<String> entIds = resources.stream().map(resource -> resource.entId).collect(Collectors.toSet());
-            return messages.stream()
-                    .filter(message -> entIds.contains(message.getId()))
-                    .collect(Collectors.toList());
-        });
     }
 
     protected Future<List<ExplorerMessageForIngest>> onUpsertResources(final List<ExplorerMessageForIngest> messages) {
@@ -349,9 +320,8 @@ public class MessageIngesterPostgres implements MessageIngester {
                     // TODO JBER check if that is the right thing to do. Should we not fetch the folder information first.
                     // This seems to be why the test FolderServiceTest.shouldCreateFolderTree fails
                     // When version is set to System.currentTimeMillis() then it still fails and another one fails
-                    final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false)
-                            .withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
-                            .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
+                    final ExplorerMessage mess = ExplorerMessage.upsert(new IdAndVersion(parentIdStr, System.currentTimeMillis()), new UserInfos(), false, ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
+                            .withSkipCheckVersion(true);
                     return new ExplorerMessageForIngest(mess);
                 });
                 final JsonObject override = new JsonObject();

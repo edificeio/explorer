@@ -155,7 +155,7 @@ public class ResourceServiceElastic implements ResourceService {
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
-        final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true).setRightType(ShareRoles.Manager);
+        final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true);
         final Future<FetchResult> futureFetch = fetchWithMeta(user, application, search);
         return futureFetch.compose(fetch->{
             if(fetch.count < ids.size()){
@@ -185,9 +185,8 @@ public class ResourceServiceElastic implements ResourceService {
                         final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
                         //use entid to push message
                         final FolderExplorerDbSql.FolderTrashResult model = e.getValue();
-                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get())
-                                .withTrashed(isTrash)
-                                .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);}).collect(Collectors.toList());
+                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
+                    }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 });
                 trashFutures.add(trashForEverybodyFuture);
@@ -218,12 +217,12 @@ public class ResourceServiceElastic implements ResourceService {
             manage = userId.equals(resource.getString("creatorId"));
         } else {
             final Set<String> myAdminRights = new HashSet<>();
-            myAdminRights.add(getCreatorRight(userId));
-            myAdminRights.add(getManageByUser(userId));
+            myAdminRights.add(ShareRoles.Manager.getSerializedForUser(userId));
+            myAdminRights.add(ShareRoles.getSerializedForCreator(userId));
             final List<String> groupIds = user.getGroupsIds();
             if(groupIds != null) {
                 for (String groupId : user.getGroupsIds()) {
-                    myAdminRights.add(getManageByGroup(groupId));
+                    myAdminRights.add(ShareRoles.Manager.getSerializedForGroup(groupId));
                 }
             }
             manage = rights.stream().anyMatch(myAdminRights::contains);
@@ -262,9 +261,8 @@ public class ResourceServiceElastic implements ResourceService {
                 return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
                         //use entid to push message
-                        return ExplorerMessage.upsert(e.entId, user, false)
-                                .withType(e.application, e.resourceType, e.resourceType)
-                                .withVersion(now).withSkipCheckVersion(true);
+                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
+                                .withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{

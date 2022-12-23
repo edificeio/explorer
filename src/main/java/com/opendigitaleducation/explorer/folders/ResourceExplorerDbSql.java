@@ -2,7 +2,6 @@ package com.opendigitaleducation.explorer.folders;
 
 import io.vertx.core.CompositeFuture;
 import com.opendigitaleducation.explorer.ExplorerConfig;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -12,7 +11,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
@@ -58,19 +56,17 @@ public class ResourceExplorerDbSql {
         return client.preparedQuery(query, tuple).map(rows-> resourcesToMap(resources, rows));
     }
 
-    public Future<List<ResouceSql>> muteResources(final Collection<? extends ExplorerMessage> mutedResources) {
-        if(mutedResources.isEmpty()){
+    public Future<List<ResouceSql>> muteResources(String userId, Set<String> resourceToMuteEntIds, boolean mute) {
+        if(resourceToMuteEntIds.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
+        HashMap<String, Boolean> mutedBy = new HashMap<>();
+        mutedBy.put(userId, mute);
         //must do update to return
-        final List<JsonObject> resourcesColl = mutedResources.stream().map(e->{
+        final List<JsonObject> resourcesColl = resourceToMuteEntIds.stream().map(entId -> {
             final JsonObject params = new JsonObject()
-                    .put("ent_id", e.getId());
-            if(e.getMute() != null && !e.getMute().isEmpty()) {
-                params.put("muted_by", e.getMute());
-            } else {
-                params.put("muted_by", new HashMap<>());
-            }
+                    .put("ent_id", entId)
+                    .put("muted_by", mutedBy);
             return params;
         }).collect(Collectors.toList());
         final List<Future> futureUpdates = new ArrayList<>();
@@ -173,11 +169,11 @@ public class ResourceExplorerDbSql {
         final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "muted_by", "rights");
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
-        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, rights) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
+        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by, rights) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), muted_by=EXCLUDED.muted_by, rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
         queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");

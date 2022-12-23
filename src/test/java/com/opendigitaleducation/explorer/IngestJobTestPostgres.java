@@ -55,7 +55,8 @@ public class IngestJobTestPostgres extends IngestJobTest {
     protected IngestJob getIngestJob() {
         if (job == null) {
             final MessageReader reader = MessageReader.postgres(getPostgresClient(), new JsonObject());
-            job = IngestJob.createForTest(test.vertx(), elasticClientManager,getPostgresClient(), new JsonObject(), reader);
+            final JsonObject jobConfig = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true));
+            job = IngestJob.createForTest(test.vertx(), elasticClientManager,getPostgresClient(), jobConfig, reader);
         }
         return job;
     }

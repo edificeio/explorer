@@ -34,6 +34,7 @@ import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.Before;
@@ -130,13 +131,10 @@ public class FullExplorerStackTest {
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
                 .put("max-delay-ms", 2000)
-                .put("message-merger", "noop");
+                .put("message-merger", "noop")
+                .put("opensearch-options", new JsonObject().put("wait-for", true));
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
-        rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
-        rights.put(ExplorerConfig.RIGHT_CONTRIB, ExplorerConfig.RIGHT_CONTRIB);
-        rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
-        ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, redisConfig);

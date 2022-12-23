@@ -95,11 +95,12 @@ public class ExplorerControllerTest {
         FolderServiceTest.createMapping(esClientManager, context, folderIndex).onComplete(context.asyncAssertSuccess());
         IngestJobTest.createMapping(esClientManager, context, resourceIndex).onComplete(context.asyncAssertSuccess());
         createScript(test.vertx(), esClientManager).onComplete(context.asyncAssertSuccess());
+        final JsonObject jobConf = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true));
         //flush redis
         final Async async = context.async();
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-            job = IngestJob.createForTest(test.vertx(), esClientManager, postgresClient, new JsonObject(), reader);
+            job = IngestJob.createForTest(test.vertx(), esClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> {
                 return job.stop();
