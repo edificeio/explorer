@@ -3,7 +3,14 @@ import { AppCard } from "@ode-react-ui/core";
 import { Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
 
-function FakeCard({ name, updatedAt, creatorName, onClick, onKeyDown }: any) {
+function FakeCard({
+  name,
+  updatedAt,
+  creatorName,
+  onClick,
+  onKeyDown,
+  selected,
+}: any) {
   const { currentApp } = useOdeContext();
   return (
     <div
@@ -12,6 +19,7 @@ function FakeCard({ name, updatedAt, creatorName, onClick, onKeyDown }: any) {
       tabIndex={0}
       onClick={onClick}
       onKeyDown={onKeyDown}
+      style={{ backgroundColor: selected ? "#4bafd540" : "transparent" }}
     >
       <div className="card-body p-16 d-flex align-items-center gap-12">
         <AppCard app={currentApp} variant="square">

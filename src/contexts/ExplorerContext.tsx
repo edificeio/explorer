@@ -53,18 +53,28 @@ function selectionReducer<T extends { [id: ID]: ThingWithAnID }>(
     case 0: {
       // select
       if (action.thing && !Object.hasOwn(state, action.thing.id)) {
-        // eslint-disable-next-line no-param-reassign
-        (state as any)[action.thing.id] = action.thing;
+        return Object.defineProperty({ ...state }, `${action.thing.id}`, {
+          value: action.thing,
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        });
       }
-      return state; // warn: same object
+      return state; // no change
     }
     case 1: {
       // deselect
       if (action.thing && Object.hasOwn(state, action.thing.id)) {
-        // eslint-disable-next-line no-param-reassign
-        delete state[`${action.thing.id}`];
+        const copy = Object.defineProperty({ ...state }, `${action.thing.id}`, {
+          value: action.thing,
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        });
+        delete copy[`${action.thing.id}`];
+        return copy;
       }
-      return state;
+      return state; // no change
     }
     case 2: {
       // deselect all
@@ -161,7 +171,7 @@ export default function ExplorerContextProvider({
       isFolderSelected,
       isResourceSelected,
     }),
-    [],
+    [selectedFolders, selectedResources],
   );
 
   // Observe streamed search results

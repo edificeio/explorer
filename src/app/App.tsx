@@ -26,8 +26,13 @@ import libraryIMG from "../assets/images/library.jpg";
 
 function App() {
   const { i18n } = useI18n();
-  const { context, selectResource, onOpen, onCreate, isResourceSelected } =
-    useExplorerContext();
+  const {
+    context,
+    selectResource,
+    deselectResource,
+    onCreate,
+    isResourceSelected,
+  } = useExplorerContext();
   const { session, currentApp } = useOdeContext();
   const { treeData, listData } = useExplorerAdapter();
 
@@ -46,15 +51,12 @@ function App() {
     e.preventDefault();
   }
 
-  function handleSelect(item: IResource) {
-    selectResource(item);
-    onOpen();
-  }
-
-  function handleKeyDown(item: IResource) {
-    window.addEventListener("keydown", () => {
-      handleSelect(item);
-    });
+  function toggleSelect(item: IResource) {
+    if (isResourceSelected(item)) {
+      deselectResource(item);
+    } else {
+      selectResource(item);
+    }
   }
 
   if (!session || session.notLoggedIn) {
@@ -139,9 +141,9 @@ function App() {
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...item}
                     currentApp={currentApp}
-                    className={isResourceSelected(item) ? "selected" : ""}
-                    onClick={() => handleSelect(item)}
-                    onKeyDown={() => handleKeyDown(item)}
+                    selected={isResourceSelected(item)}
+                    onClick={() => toggleSelect(item)}
+                    onKeyDown={() => toggleSelect(item)}
                   />
                 );
               })}
