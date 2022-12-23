@@ -31,7 +31,6 @@ import org.entcore.common.user.UserInfos;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.opendigitaleducation.explorer.ExplorerConfig.*;
 import static java.lang.System.currentTimeMillis;
 
 public class ResourceServiceElastic implements ResourceService {
