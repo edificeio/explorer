@@ -7,12 +7,16 @@ import com.opendigitaleducation.explorer.ingest.MergeMessagesResult;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -30,7 +34,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter jobCounter;
     private final Timer ingestionTimes;
 
-    public MicrometerJobMetricsRecorder() {
+    public MicrometerJobMetricsRecorder(final Configuration configuration) {
         final MeterRegistry registry = BackendRegistries.getDefaultNow();
         if(registry == null) {
             throw new IllegalStateException("micrometer.registries.empty");
@@ -56,11 +60,16 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         jobCounter = Counter.builder("ingest.job")
                 .description("number of launched jobs")
                 .register(registry);
-        ingestionTimes = Timer.builder("ingest.ingestion.time")
-                .description("ingestion time of messages")
-                .maximumExpectedValue(Duration.ofMinutes(2L))
-                .publishPercentileHistogram()
-                .register(registry);
+        final Timer.Builder ingestionTimesBuilder = Timer.builder("ingest.ingestion.time")
+                .description("ingestion time of messages");
+        if(configuration.sla.isEmpty()) {
+            ingestionTimesBuilder
+                    .publishPercentileHistogram()
+                    .maximumExpectedValue(Duration.ofMinutes(2L));
+        } else {
+            ingestionTimesBuilder.sla(configuration.sla.toArray(new Duration[0]));
+        }
+        ingestionTimes = ingestionTimesBuilder.register(registry);
         ingestCyclePendingCounter = Counter.builder("ingest.cycle.pending")
                 .description("number of pending cycles")
                 .register(registry);
@@ -125,6 +134,41 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     @Override
     public void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes) {
         messagesAttemptedTooManyTimesCounter.increment(nbMessagesAttemptedTooManyTimes);
+    }
+
+    public static class Configuration {
+        private final List<Duration> sla;
+
+        public Configuration(List<Duration> sla) {
+            this.sla = sla;
+        }
+
+        /**
+         * <p>Creates the configuration of the metrics recorder based on the global configuration file.</p>
+         * <p>
+         *     It expects that the configuration contains a property <strong>metrics</strong> that contains the
+         *     following fields :
+         *     <ul>
+         *         <li>sla, the desired buckets (in milliseconds) for the time of ingestion of messages</li>
+         *     </ul>
+         * </p>
+         * @param conf
+         * @return
+         */
+        public static Configuration fromJson(final JsonObject conf) {
+            final List<Duration> sla;
+            if(conf == null || !conf.containsKey("metrics")) {
+                sla = Collections.emptyList();
+            } else {
+                final JsonObject metrics = conf.getJsonObject("metrics");
+                sla = metrics.getJsonArray("sla", new JsonArray()).stream()
+                        .mapToInt(slaBucket -> (int)slaBucket)
+                        .sorted()
+                        .mapToObj(Duration::ofMillis)
+                        .collect(Collectors.toList());
+            }
+            return new Configuration(sla);
+        }
     }
 
 }

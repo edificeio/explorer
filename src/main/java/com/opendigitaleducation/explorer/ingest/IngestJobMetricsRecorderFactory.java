@@ -13,7 +13,9 @@ import io.vertx.core.metrics.MetricsOptions;
 public class IngestJobMetricsRecorderFactory {
     private static MetricsOptions metricsOptions;
     private static IngestJobMetricsRecorder ingestJobMetricsRecorder;
+    private static JsonObject config;
     public static void init(final Vertx vertx, final JsonObject config){
+        IngestJobMetricsRecorderFactory.config = config;
         if(config.getJsonObject("metricsOptions") == null) {
             final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
             if(metricsOptions == null){
@@ -36,7 +38,7 @@ public class IngestJobMetricsRecorderFactory {
                 throw new IllegalStateException("ingest.job.metricsrecorder.factory.not.set");
             }
             if(metricsOptions.isEnabled()) {
-                ingestJobMetricsRecorder = new MicrometerJobMetricsRecorder();
+                ingestJobMetricsRecorder = new MicrometerJobMetricsRecorder(MicrometerJobMetricsRecorder.Configuration.fromJson(config));
             } else {
                 ingestJobMetricsRecorder = new IngestJobMetricsRecorder.NoopIngestJobMetricsRecorder();
             }
