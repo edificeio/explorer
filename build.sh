@@ -91,7 +91,7 @@ init() {
   doInit
 }
 
-initDev () {
+initDev() {
   doInit "Dev"
 }
 
@@ -154,6 +154,9 @@ do
       ;;
     init)
       init
+      ;;
+    initDev)
+      initDev
       ;;
     localDep)
       localDep
