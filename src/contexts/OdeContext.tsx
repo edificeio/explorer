@@ -28,6 +28,7 @@ interface OdeContextProps {
   idiom: IIdiom;
   params: OdeProviderParams;
   currentApp: IWebApp;
+  appCode?: string;
   login: () => void;
   logout: () => void;
 }
@@ -52,6 +53,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const [idiom, setIdiom] = useState<IIdiom>(configure.Platform.idiom);
 
   const [currentApp, setCurrentApp] = useState<IWebApp>(null!);
+  const appCode = currentApp?.address.replace("/", "");
 
   useEffect(() => {
     console.log("OdeContext INIT ONLY ONCE, PLEASE !");
@@ -78,6 +80,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
     () => ({
       configure,
       currentApp,
+      appCode,
       explorer,
       http,
       idiom,

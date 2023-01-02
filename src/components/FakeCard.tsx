@@ -1,5 +1,5 @@
 import { useOdeContext } from "@contexts/OdeContext";
-import { AppCard } from "@ode-react-ui/core";
+import { Avatar } from "@ode-react-ui/core";
 import { Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
 
@@ -11,7 +11,7 @@ function FakeCard({
   onKeyDown,
   selected,
 }: any) {
-  const { currentApp } = useOdeContext();
+  const { appCode } = useOdeContext();
   return (
     <div
       className="card g-col-4 shadow border-0"
@@ -22,9 +22,7 @@ function FakeCard({
       style={{ backgroundColor: selected ? "#4bafd540" : "transparent" }}
     >
       <div className="card-body p-16 d-flex align-items-center gap-12">
-        <AppCard app={currentApp} variant="square">
-          <AppCard.Icon size="48" />
-        </AppCard>
+        <Avatar variant="square" appCode={appCode} />
         <div>
           <h3 className="card-title body">
             <strong>{name}</strong>
