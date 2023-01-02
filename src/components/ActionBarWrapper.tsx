@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext";
-import { Button } from "@ode-react-ui/core";
+import { Button, ActionBar } from "@ode-react-ui/core";
 import { ACTION, IAction } from "ode-ts-client";
 
-export default function FakeToaster() {
+export default function FakeToaster({ isOpen }: { isOpen: boolean }) {
   const [actions, setActions] = useState<Array<IAction>>([]);
   const explorer = useExplorerContext();
 
@@ -56,7 +56,7 @@ export default function FakeToaster() {
       <Button
         key={action.id}
         type="button"
-        color="secondary"
+        color="primary"
         variant="filled"
         disabled={!isActivable(action)}
         // eslint-disable-next-line react/jsx-no-bind
@@ -67,11 +67,13 @@ export default function FakeToaster() {
     );
   }
 
-  return (
-    <div className="d-grid">
-      {actions
-        .filter((action) => action.available)
-        .map((action: IAction) => generateButtonFor(action))}
+  return isOpen ? (
+    <div className="position-fixed bottom-0 start-0 end-0">
+      <ActionBar>
+        {actions
+          .filter((action) => action.available)
+          .map((action: IAction) => generateButtonFor(action))}
+      </ActionBar>
     </div>
-  );
+  ) : null;
 }

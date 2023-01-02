@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import "../index.css";
 
+import ActionBarWrapper from "@components/ActionBarWrapper";
 import AppHeader from "@components/AppHeader";
 import FakeCard from "@components/FakeCard";
-import FakeToaster from "@components/FakeToaster";
 import { useExplorerContext } from "@contexts/ExplorerContext";
 import { useOdeContext } from "@contexts/OdeContext";
 import useExplorerAdapter from "@hooks/adapters/explorer/useExplorerAdapter";
@@ -36,6 +36,9 @@ function App() {
   const { session, currentApp } = useOdeContext();
   const { treeData, listData } = useExplorerAdapter();
 
+  /* Open / Hide Toaster */
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
     context.getSearchParameters().pagination.pageSize = 2;
@@ -51,13 +54,28 @@ function App() {
     e.preventDefault();
   }
 
+  const [selectedResources, setSelectedResources] = useState<any[]>([]);
+
   function toggleSelect(item: IResource) {
     if (isResourceSelected(item)) {
       deselectResource(item);
+      setSelectedResources(
+        selectedResources.filter(
+          (selectRes) => selectRes.assetId !== item.assetId,
+        ),
+      );
     } else {
+      setSelectedResources([...selectedResources, item]);
       selectResource(item);
+      setIsOpen(true);
     }
   }
+
+  useEffect(() => {
+    if (selectedResources.length === 0) {
+      setIsOpen(false);
+    }
+  }, [selectedResources]);
 
   if (!session || session.notLoggedIn) {
     return (
@@ -160,10 +178,7 @@ function App() {
               </Button>
             </div>
           </Grid.Col>
-          <br />
-          Toaster below
-          <hr />
-          <FakeToaster />
+          <ActionBarWrapper isOpen={isOpen} />
         </Grid>
       </main>
     </div>
