@@ -45,7 +45,7 @@
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
-    ""clsx": "1.2.1",
+    "clsx": "1.2.1",
     "i18next": "22.4.6",
     "i18next-browser-languagedetector": "7.0.1",
     "i18next-http-backend": "2.1.1",
