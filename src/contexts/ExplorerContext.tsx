@@ -121,6 +121,7 @@ export default function ExplorerContextProvider({
   function deselectAllFolders() {
     actionOnFolder({ type: 2 });
   }
+
   function isFolderSelected(folder: IFolder) {
     return Object.hasOwn(selectedFolders, folder.id);
   }
