@@ -10,7 +10,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationRedis;
 import org.entcore.common.redis.RedisClient;
-import org.entcore.common.redis.RedisTransaction;
 
 import java.util.*;
 import java.util.function.Function;
@@ -47,7 +46,7 @@ public class MessageReaderRedis implements MessageReader {
             this.streams.add(stream.toString());
             //stream to init
             initStreams.add(stream.toString());
-            initStreams.add(stream.toString() + streamFailSuffix);
+            initStreams.add(stream + streamFailSuffix);
         }
         if (this.streams.isEmpty()) {
             log.error("Missing streams list");
@@ -153,7 +152,6 @@ public class MessageReaderRedis implements MessageReader {
 
     protected Future<List<ExplorerMessageForIngest>> fetchAllStreams(final List<JsonObject> result, final int maxBatchSize, final Optional<String> suffix, final Optional<Integer> maxAttempt) {
         //iterate over streams by priority and fill results list
-        // TODO JBE shady ?
         final Iterator<String> it = streams.iterator();
         Future<List<JsonObject>> futureIt = Future.succeededFuture(new ArrayList<>());
         do {
@@ -180,6 +178,7 @@ public class MessageReaderRedis implements MessageReader {
             });
         } while (it.hasNext());
         return futureIt.map(r -> {
+            result.addAll(r);
             //metrics
             metrics.put("last_fetch_max_attempt", maxAttempt.orElse(0));
             metrics.put("last_fetch_max_batch_size", maxBatchSize);
