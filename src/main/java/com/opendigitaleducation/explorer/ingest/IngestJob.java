@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
 
 public class IngestJob {
@@ -32,7 +33,8 @@ public class IngestJob {
     static final int DEFAULT_BATCH_SIZE = 100;
     static final int DEFAULT_MAX_ATTEMPT = 10;
     static final int DEFAULT_MAX_DELAY_MS = 45000;
-    private final int batchSize;
+    private final int maxBatchSize;
+    private int batchSize;
     private final int maxAttempt;
     private final Vertx vertx;
     private final MessageReader messageReader;
@@ -60,7 +62,8 @@ public class IngestJob {
         this.messageIngester = messageIngester;
         this.messageMerger = MessageMergerRepository.getMerger(config.getString("message-merger", "default"));
         this.maxAttempt = config.getInteger("max-attempt", DEFAULT_MAX_ATTEMPT);
-        this.batchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
+        this.maxBatchSize = config.getInteger("batch-size", DEFAULT_BATCH_SIZE);
+        this.batchSize = maxBatchSize;
         this.maxDelayBetweenExecutionMs = config.getInteger("max-delay-ms", DEFAULT_MAX_DELAY_MS);
         this.messageTransformer = new MessageTransformerChain();
         this.messageConsumer = getRouter(vertx);
@@ -172,7 +175,16 @@ public class IngestJob {
                 .map(this.messageMerger::mergeMessages)
                 .compose(result -> {
                     final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
-                    return this.messageIngester.ingest(messagesToTreat).map(jobResult -> Pair.of(jobResult, result));
+                    return this.messageIngester
+                            .ingest(messagesToTreat)
+                            .map(jobResult -> Pair.of(jobResult, result))
+                            .otherwise(cause -> {
+                                // Fail everything
+                                final IngestJobResult jobResult = new IngestJobResult(
+                                        emptyList(),
+                                        messagesToTreat);
+                                return Pair.of(jobResult, result);
+                            });
                 })
                 .compose(ingestResultAndJobResult -> {
                     final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
@@ -196,16 +208,17 @@ public class IngestJob {
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
                         } else {
                             this.ingestJobMetricsRecorder.onIngestCycleFailed();
-                            log.error("Failed to load messages on search engine:", messageRes.cause());
+                            log.error("Failed to ingest messages:", messageRes.cause());
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
                         }
                     } catch (Exception exc) {
                     } finally {
                         this.ingestJobMetricsRecorder.onIngestCycleCompleted();
+                        this.modifyBatchSizeAfterCycleCompleted(messageRes.succeeded(), messageRes.result());
                         onTaskComplete(current);
                         //if no pending execution => trigger next execution
                         if (tmpIdExecution == idExecution) {
-                            scheduleNextExecution(messageRes.otherwise(IngestJobResult.empty()).result());
+                            scheduleNextExecution(messageRes);
                         }
                     }
                 });
@@ -214,6 +227,21 @@ public class IngestJob {
             }
         });
         return current.future();
+    }
+
+    private void modifyBatchSizeAfterCycleCompleted(final boolean succeeded, IngestJobResult result) {
+        if(succeeded) {
+            if(this.batchSize != maxBatchSize) {
+                this.batchSize = maxBatchSize;
+                log.info("Reverting back batch size to " + this.batchSize + " after a successful cycle");
+            }
+        } else if(result == null ||
+                (result.succeed == null || result.succeed.isEmpty()) &&
+                (result.failed != null && result.failed.size() > 0)) {
+            final int newBatchSize = Math.max(1, this.batchSize / 2);
+            log.warn("Ingest cycle failed so we are going to shrink the batch size from " + this.batchSize + " to " + newBatchSize);
+            this.batchSize = newBatchSize;
+        }
     }
 
     private void updateMessagesAttemptedTooManyTimes(IngestJobResult ingestResult) {
@@ -257,9 +285,10 @@ public class IngestJob {
         current.complete();
     }
 
-    private void scheduleNextExecution(final IngestJobResult newMessages) {
+    private void scheduleNextExecution(final AsyncResult<IngestJobResult> result) {
         vertx.cancelTimer(nextExecutionTimerId);
-        if (newMessages.size() >= this.batchSize || newMessages.failed.size() > 0) {
+        final IngestJobResult messages = result.otherwise(IngestJobResult.empty()).result();
+        if (result.failed() || messages.size() >= this.batchSize || messages.failed.size() > 0) {
             //messagereader seems to have still some message pending so trigger now
             execute();
         } else {
