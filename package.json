@@ -81,6 +81,9 @@
     "vite": "4.0.3"
   },
   "files": [
-    "dist/**/*"
+    "dist/assets/js/explorer/index.css",
+    "dist/assets/js/explorer/index.js",
+    "dist/assets/js/explorer/library.jpg",
+    "dist/**/**"
   ]
 }
