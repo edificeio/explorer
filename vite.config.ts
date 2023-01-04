@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import path from "path";
 import react from "@vitejs/plugin-react";
+/* import pkg from "./package.json"; */
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -26,12 +27,13 @@ export default defineConfig({
     ],
   },
   build: {
-    assetsDir: "assets/js/explorer/",
+    assetsDir: "assets/js/ode-explorer/",
     rollupOptions: {
+      /* external: [...Object.keys(pkg.dependencies)], */
       output: {
-        entryFileNames: `assets/js/explorer/[name].js`,
-        chunkFileNames: `assets/js/explorer/[name].js`,
-        assetFileNames: `assets/js/explorer/[name].[ext]`,
+        entryFileNames: `assets/js/ode-explorer/[name].js`,
+        chunkFileNames: `assets/js/ode-explorer/[name].js`,
+        assetFileNames: `assets/js/ode-explorer/[name].[ext]`,
       },
     },
   },
