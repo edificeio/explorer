@@ -51,11 +51,11 @@ module.exports = {
     ],
   },
   ignorePatterns: [
-    "prettier.config.js",
-    "node_modules",
-    "public",
-    "dist",
-    "vite.config.ts",
     ".eslintrc.cjs",
+    "dist",
+    "node_modules",
+    "prettier.config.js",
+    "public",
+    "vite.config.ts",
   ],
 };
