@@ -27,13 +27,13 @@ export default defineConfig({
     ],
   },
   build: {
-    assetsDir: "assets/js/ode-explorer/",
+    manifest: true,
+    assetsDir: ".",
     rollupOptions: {
-      /* external: [...Object.keys(pkg.dependencies)], */
       output: {
-        entryFileNames: `assets/js/ode-explorer/[name].js`,
-        chunkFileNames: `assets/js/ode-explorer/[name].js`,
-        assetFileNames: `assets/js/ode-explorer/[name].[ext]`,
+        entryFileNames: `[name].js`,
+        chunkFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`,
       },
     },
   },
