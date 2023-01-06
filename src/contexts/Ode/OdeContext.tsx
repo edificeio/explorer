@@ -20,7 +20,8 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
 
-  const { getDegreeSchool, getBootstrapSkinPath, getTheme } = useThemeHelper();
+  const { getDegreeSchool, getBootstrapSkinPath, getThemeName } =
+    useThemeHelper();
 
   const { Platform } = configure;
 
@@ -28,13 +29,24 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const [idiom, setIdiom] = useState<IIdiom>(Platform.idiom);
   const [currentApp, setCurrentApp] = useState<IWebApp>(null!);
   const [is1D, setIs1D] = useState<boolean>(false);
-  const [theme, setTheme] = useState({});
+  const [theme, setTheme] = useState("");
 
-  const appCode = currentApp?.address.replace("/", "");
+  useLayoutEffect(() => {
+    (async () => {
+      const resDegreeSchool = await getDegreeSchool();
+      setIs1D(resDegreeSchool);
+
+      const resThemeName = await getThemeName();
+      setTheme(resThemeName);
+
+      const resBoostrapSkin = await getBootstrapSkinPath();
+
+      const link = document.getElementById("theme") as HTMLAnchorElement;
+      link.href = `${resBoostrapSkin}/theme.css`;
+    })();
+  }, []);
 
   useEffect(() => {
-    console.log("OdeContext INIT ONLY ONCE, PLEASE !");
-
     const initOnce = async () => {
       try {
         await Promise.all([
@@ -53,24 +65,9 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
     initOnce();
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      const response = await getDegreeSchool();
-      setIs1D(response);
-
-      const theme = await getTheme();
-      setTheme(theme);
-    })();
-  }, []);
-
-  useLayoutEffect(() => {
-    (async () => {
-      const response = await getBootstrapSkinPath();
-
-      const link = document.getElementById("theme") as HTMLAnchorElement;
-      link.href = `${response}/theme.css`;
-    })();
-  }, []);
+  /* Computed properties => Based on a state */
+  const appCode = currentApp?.address.replace("/", "");
+  const imgBasePath = theme && `/assets/themes/${theme}/`;
 
   const values = useMemo(
     () => ({
@@ -86,7 +83,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
       params,
       session,
       is1D,
-      theme,
+      imgBasePath,
     }),
     [
       configure,
@@ -101,7 +98,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
       params,
       session,
       is1D,
-      theme,
+      imgBasePath,
     ],
   );
 

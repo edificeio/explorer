@@ -39,7 +39,7 @@ function App() {
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
   /* ode context @hook */
-  const { session, currentApp, is1D, theme } = useOdeContext();
+  const { session, currentApp, is1D, imgBasePath } = useOdeContext();
   /* feature explorer @hook */
   const { treeData, listData } = useExplorerAdapter();
 
@@ -47,10 +47,11 @@ function App() {
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 10;
+    context.getSearchParameters().pagination.pageSize = 4;
     context.getSearchParameters().filters.folder = "default";
     // Do explore...
     context.initialize();
+
     // ...results (latestResources()) are observed in treeview adapter
   }, []);
 
@@ -70,7 +71,6 @@ function App() {
   }
 
   function handleViewMore() {
-    console.log("handleViewMore");
     context.getResources();
   }
 
@@ -96,10 +96,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header
-        is1d={is1D}
-        src={`/assets/themes/${theme?.skin}/img/illustrations/logo.png`}
-      />
+      <Header is1d={is1D} src={`${imgBasePath}/img/illustrations/logo.png`} />
       <main className={mainClasses}>
         <AppHeader>
           <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
