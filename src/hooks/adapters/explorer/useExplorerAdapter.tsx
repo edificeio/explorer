@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext";
+import { TreeNode } from "@ode-react-ui/core";
 import { IFolder, IResource } from "ode-ts-client";
 
 // import ResourceCardWrapper from "./ResourceCardWrapper";
 import TreeNodeFolderWrapper from "./TreeNodeFolderWrapper";
-import { TreeNode } from "./types";
 
 /**
  * This hook acts as a data-model adapter.
