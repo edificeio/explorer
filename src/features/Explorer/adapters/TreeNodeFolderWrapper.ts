@@ -1,14 +1,14 @@
 import { IFolder } from "ode-ts-client";
 
-import { TreeNode } from "./types";
+import { TreeNode } from "../types";
 
 /** Utility inner class that wraps an IFolder into a TreeNode. */
 export default class TreeNodeFolderWrapper implements TreeNode {
-  constructor(private folder: IFolder) {}
+  constructor(private readonly folder: IFolder) {}
 
   public section = false;
 
-  public readonly children: Array<TreeNode> = [];
+  public readonly children: TreeNode[] = [];
 
   get id() {
     return this.folder.id;

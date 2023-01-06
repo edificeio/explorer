@@ -1,16 +1,17 @@
-import { useOdeContext } from "@contexts/OdeContext";
+import dayjs from "@config/dayjs";
+import { useOdeContext } from "@contexts/Ode/OdeContext";
 import { Avatar } from "@ode-react-ui/core";
 import { Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
 
-function FakeCard({
+export const FakeCard = ({
   name,
   updatedAt,
   creatorName,
   onClick,
   onKeyDown,
   selected,
-}: any) {
+}: any) => {
   const { appCode } = useOdeContext();
   return (
     <div
@@ -24,11 +25,12 @@ function FakeCard({
       <div className="card-body p-16 d-flex align-items-center gap-12">
         <Avatar variant="square" appCode={appCode} />
         <div>
-          <h3 className="card-title body">
+          <h3 className="card-title body text-truncate text-truncate--2">
             <strong>{name}</strong>
           </h3>
           <span className="card-text small">
-            <em>{updatedAt}</em>
+            {/* <em>{dayjs(updatedAt).format("DD/MM/YYYY")}</em> */}
+            <em>{dayjs(updatedAt).fromNow()}</em>
           </span>
         </div>
       </div>
@@ -43,6 +45,4 @@ function FakeCard({
       </div>
     </div>
   );
-}
-
-export default FakeCard;
+};

@@ -13,22 +13,30 @@ export default defineConfig({
         replacement: path.resolve(__dirname, "./src/components"),
       },
       {
-        find: "@pages",
-        replacement: path.resolve(__dirname, "./src/pages"),
+        find: "@config",
+        replacement: path.resolve(__dirname, "./src/config"),
+      },
+      {
+        find: "@contexts",
+        replacement: path.resolve(__dirname, "./src/contexts"),
+      },
+      {
+        find: "@features",
+        replacement: path.resolve(__dirname, "./src/features"),
       },
       {
         find: "@hooks",
         replacement: path.resolve(__dirname, "./src/hooks"),
       },
       {
-        find: "@contexts",
-        replacement: path.resolve(__dirname, "./src/contexts"),
+        find: "@pages",
+        replacement: path.resolve(__dirname, "./src/pages"),
       },
     ],
   },
   build: {
     manifest: true,
-    assetsDir: ".",
+    assetsDir: "assets/js/ode-explorer/",
     rollupOptions: {
       output: {
         entryFileNames: `[name].js`,

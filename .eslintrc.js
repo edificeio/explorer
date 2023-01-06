@@ -1,14 +1,16 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true,
+    es2021: true
   },
   extends: [
-    "plugin:react/recommended",
-    "airbnb",
-    "airbnb-typescript",
+    'plugin:react/recommended',
+    'standard-with-typescript',
     "plugin:import/typescript",
     "plugin:prettier/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  overrides: [
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -20,15 +22,28 @@ module.exports = {
     project: "./tsconfig.json",
     tsconfigRootDir: __dirname,
   },
-  plugins: ["react", "@typescript-eslint", "prettier"],
+  plugins: [
+    'react',
+    "jsx-a11y"
+  ],
   rules: {
     "arrow-parens": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-uses-react": ["off"],
-    "react/jsx-props-no-spreading": ["warn"],
+    'react/jsx-props-no-spreading': 'off',
     "react/no-unescaped-entities": ["off"],
     "react/jsx-one-expression-per-line": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/quotes": "off",
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/no-confusing-void-expression": "off",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/triple-slash-reference": "off",
     "no-console": "off",
     "import/order": [
       "error",
@@ -50,12 +65,17 @@ module.exports = {
       },
     ],
   },
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   ignorePatterns: [
-    ".eslintrc.cjs",
+    ".eslintrc.js",
     "dist",
     "node_modules",
     "prettier.config.js",
     "public",
     "vite.config.ts",
   ],
-};
+}
