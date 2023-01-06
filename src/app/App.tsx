@@ -17,10 +17,11 @@ import {
   Header,
   Input,
   SearchButton,
+  TreeNode,
   TreeView,
 } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
-import { IResource } from "ode-ts-client";
+import { IResource, RESOURCE } from "ode-ts-client";
 
 import libraryIMG from "../assets/images/library.jpg";
 
@@ -41,7 +42,8 @@ function App() {
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 2;
+    context.getSearchParameters().pagination.pageSize = 10;
+    context.getSearchParameters().filters.folder = "default";
     // Do explore...
     context.initialize();
     // ...results (latestResources()) are observed in treeview adapter
@@ -89,8 +91,40 @@ function App() {
   }
 
   function handleViewMore() {
+    console.log("handleViewMore");
     context.getResources();
   }
+
+  const handleTreeItemSelect = (folderId: string) => {
+    console.log("tree item selected = ", folderId);
+    context.getSearchParameters().filters.folder = folderId;
+    context.getSearchParameters().types = ["blog"];
+    context.getResources();
+  };
+
+  const handleTreeItemFold = (folderId: any) => {
+    console.log("tree item folded = ", folderId);
+  };
+
+  const hasChildren = (folderId: string, data: TreeNode): boolean => {
+    if (data.id === folderId && data.children) {
+      return data.children.length > 0;
+    }
+    if (data.children) {
+      return data.children.some((child) => hasChildren(data.id, child));
+    }
+    return false;
+  };
+
+  const handleTreeItemUnfold = (folderId: any) => {
+    console.log("tree item unfolded = ", folderId);
+
+    if (!hasChildren(folderId, treeData)) {
+      context.getSearchParameters().filters.folder = folderId;
+      context.getSearchParameters().types = [RESOURCE.FOLDER];
+      context.getResources();
+    }
+  };
 
   return (
     <div className="App">
@@ -118,7 +152,12 @@ function App() {
             className="border-end pt-16 pe-16 d-none d-lg-block"
             as="aside"
           >
-            <TreeView data={treeData} />
+            <TreeView
+              data={treeData}
+              onTreeItemSelect={handleTreeItemSelect}
+              onTreeItemFold={handleTreeItemFold}
+              onTreeItemUnfold={handleTreeItemUnfold}
+            />
             <div className="d-grid my-16">
               <Button
                 type="button"
