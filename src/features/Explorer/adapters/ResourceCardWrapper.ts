@@ -1,9 +1,9 @@
 import { IResource } from "ode-ts-client";
 
-import { Card } from "./types";
+import { Card } from "../types";
 
 export default class ResourceCardWrapper implements Card {
-  constructor(private res: IResource) {}
+  constructor(private readonly res: IResource) {}
 
   get id() {
     return this.res.id;

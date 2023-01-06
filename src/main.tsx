@@ -1,6 +1,6 @@
-// import { StrictMode } from "react";
-import ExplorerContextProvider from "@contexts/ExplorerContext";
-import OdeProvider, { OdeProviderParams } from "@contexts/OdeContext";
+import ExplorerProvider from "@contexts/Explorer/ExplorerContext";
+import OdeProvider from "@contexts/Ode/OdeContext";
+import { OdeProviderParams } from "@contexts/Ode/types";
 import { APP, App as AppName, RESOURCE } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -9,7 +9,7 @@ import App from "./app/App";
 // import "./i18n";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
-if (rootElement && rootElement.dataset && rootElement.dataset.odeApp) {
+if (rootElement?.dataset?.odeApp) {
   const { odeApp } = rootElement.dataset;
   const params: OdeProviderParams = { app: APP.PORTAL };
   // Inject params (JSON object or string) read from index.html in OdeProvider
@@ -23,9 +23,9 @@ if (rootElement && rootElement.dataset && rootElement.dataset.odeApp) {
   createRoot(rootElement!).render(
     <BrowserRouter>
       <OdeProvider params={params}>
-        <ExplorerContextProvider types={[RESOURCE.BLOG]}>
+        <ExplorerProvider types={[RESOURCE.BLOG]}>
           <App />
-        </ExplorerContextProvider>
+        </ExplorerProvider>
       </OdeProvider>
     </BrowserRouter>,
   );

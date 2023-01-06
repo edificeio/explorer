@@ -18,9 +18,11 @@
     "useDefineForClassFields": true,
     "paths": {
       "@components/*": ["./components/*"],
-      "@pages/*": ["./pages/*"],
+      "@config/*": ["./config/*"],
+      "@contexts/*": ["./contexts/*"],
+      "@features/*": ["./features/*"],
       "@hooks/*": ["./hooks/*"],
-      "@contexts/*": ["./contexts/*"]
+      "@pages/*": ["./pages/*"],
     }
   },
   "include": ["src","./vite.config.ts"],

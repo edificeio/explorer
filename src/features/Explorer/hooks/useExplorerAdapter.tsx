@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { useExplorerContext } from "@contexts/ExplorerContext";
-import { TreeNode } from "@ode-react-ui/core";
+import { useExplorerContext } from "@contexts/index";
 import { IFolder, IResource } from "ode-ts-client";
 
+import { TreeNodeFolderWrapper } from "../adapters";
+import { TreeNode } from "../types";
+
 // import ResourceCardWrapper from "./ResourceCardWrapper";
-import TreeNodeFolderWrapper from "./TreeNodeFolderWrapper";
 
 /**
  * This hook acts as a data-model adapter.
@@ -31,7 +32,7 @@ export default function useExplorerAdapter() {
       return data;
     }
     if (data?.children?.length) {
-      data?.children?.every((childNode) => {
+      data?.children?.every((childNode: any) => {
         res = findNodeById(id, childNode);
         return res === undefined; // break loop if res is found
       });
@@ -42,8 +43,10 @@ export default function useExplorerAdapter() {
   function wrapTreeData(folders?: IFolder[]) {
     folders?.forEach((folder) => {
       const parentFolder = findNodeById(folder.parentId, treeData);
-      if (!parentFolder?.children?.find((child) => child.id === folder.id)) {
-        if (parentFolder && parentFolder.children) {
+      if (
+        !parentFolder?.children?.find((child: any) => child.id === folder.id)
+      ) {
+        if (parentFolder?.children) {
           parentFolder.children = [
             ...parentFolder.children,
             new TreeNodeFolderWrapper(folder),
@@ -56,7 +59,7 @@ export default function useExplorerAdapter() {
   }
 
   function wrapResourceData(resources?: IResource[]) {
-    if (resources && resources.length) {
+    if (resources?.length) {
       setListData((d) => d.concat(resources));
     }
   }
