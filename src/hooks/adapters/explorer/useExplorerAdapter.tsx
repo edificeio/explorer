@@ -15,7 +15,7 @@ export default function useExplorerAdapter() {
   const { context } = useExplorerContext();
 
   const [treeData, setTreeData] = useState<TreeNode>({
-    id: "root",
+    id: "default",
     name: "Blogs",
     section: true,
     children: [],
@@ -25,13 +25,34 @@ export default function useExplorerAdapter() {
 
   // TODO  const selectedNode = treeData;
 
-  function wrapTreeData(folders?: IFolder[]) {
-    if (treeData && treeData.children && folders && folders.length) {
-      treeData.children.push(
-        ...folders.map((f) => new TreeNodeFolderWrapper(f)),
-      );
-      setTreeData(treeData); // ça ressemble à un hack :)
+  function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
+    let res: TreeNode | undefined;
+    if (data?.id === id) {
+      return data;
     }
+    if (data?.children?.length) {
+      data?.children?.every((childNode) => {
+        res = findNodeById(id, childNode);
+        return res === undefined; // break loop if res is found
+      });
+    }
+    return res;
+  }
+
+  function wrapTreeData(folders?: IFolder[]) {
+    folders?.forEach((folder) => {
+      const parentFolder = findNodeById(folder.parentId, treeData);
+      if (!parentFolder?.children?.find((child) => child.id === folder.id)) {
+        if (parentFolder && parentFolder.children) {
+          parentFolder.children = [
+            ...parentFolder.children,
+            new TreeNodeFolderWrapper(folder),
+          ];
+        }
+      }
+    });
+
+    setTreeData({ ...treeData });
   }
 
   function wrapResourceData(resources?: IResource[]) {
@@ -43,7 +64,7 @@ export default function useExplorerAdapter() {
   // Observe streamed search results
   useEffect(() => {
     const subscription = context.latestResources().subscribe({
-      next: (resultset) => {
+      next: (resultset: any) => {
         wrapTreeData(resultset?.output?.folders);
         wrapResourceData(resultset?.output?.resources);
       },
