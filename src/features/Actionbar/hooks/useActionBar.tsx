@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { useExplorerContext } from "@contexts/Explorer/ExplorerContext";
+import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { useModal } from "@ode-react-ui/hooks";
 import { IAction, ACTION } from "ode-ts-client";
 

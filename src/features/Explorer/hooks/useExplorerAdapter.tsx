@@ -42,6 +42,7 @@ export default function useExplorerAdapter() {
 
   function wrapTreeData(folders?: IFolder[]) {
     folders?.forEach((folder) => {
+      // @ts-expect-error
       const parentFolder = findNodeById(folder.parentId, treeData);
       if (
         !parentFolder?.children?.find((child: any) => child.id === folder.id)

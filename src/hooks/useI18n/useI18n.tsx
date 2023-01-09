@@ -1,4 +1,4 @@
-import { useOdeContext } from "@contexts/Ode/OdeContext";
+import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 
 /** Custom Hook for ode-ts-client integration */
 export default function useI18n() {

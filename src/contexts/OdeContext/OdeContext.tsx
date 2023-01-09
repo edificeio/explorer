@@ -20,8 +20,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
 
-  const { getDegreeSchool, getBootstrapSkinPath, getThemeName } =
-    useThemeHelper();
+  const { getDegreeSchool, getBootstrapSkinPath } = useThemeHelper();
 
   const { Platform } = configure;
 
@@ -29,19 +28,17 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const [idiom, setIdiom] = useState<IIdiom>(Platform.idiom);
   const [currentApp, setCurrentApp] = useState<IWebApp>(null!);
   const [is1D, setIs1D] = useState<boolean>(false);
-  const [theme, setTheme] = useState("");
 
   useLayoutEffect(() => {
     (async () => {
       const resDegreeSchool = await getDegreeSchool();
-      setIs1D(resDegreeSchool);
-
-      const resThemeName = await getThemeName();
-      setTheme(resThemeName);
-
       const resBoostrapSkin = await getBootstrapSkinPath();
 
       const link = document.getElementById("theme") as HTMLAnchorElement;
+
+      setIs1D(resDegreeSchool);
+
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       link.href = `${resBoostrapSkin}/theme.css`;
     })();
   }, []);
@@ -67,7 +64,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
 
   /* Computed properties => Based on a state */
   const appCode = currentApp?.address.replace("/", "");
-  const imgBasePath = theme && `/assets/themes/${theme}/`;
+  const themeBasePath = Platform.theme.basePath;
 
   const values = useMemo(
     () => ({
@@ -83,7 +80,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
       params,
       session,
       is1D,
-      imgBasePath,
+      themeBasePath,
     }),
     [
       configure,
@@ -98,7 +95,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
       params,
       session,
       is1D,
-      imgBasePath,
+      themeBasePath,
     ],
   );
 

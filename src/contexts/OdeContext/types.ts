@@ -34,7 +34,7 @@ export interface OdeContextProps {
   currentApp: IWebApp;
   appCode?: string;
   is1D: boolean;
-  imgBasePath: string;
+  themeBasePath: string;
   login: () => void;
   logout: () => void;
 }

@@ -1,5 +1,5 @@
 import dayjs from "@config/dayjs";
-import { useOdeContext } from "@contexts/Ode/OdeContext";
+import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 import { Avatar } from "@ode-react-ui/core";
 import { Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
