@@ -8,7 +8,7 @@ import {
 
 import { ACTION, ID, IFolder, IResource } from "ode-ts-client";
 
-import { useOdeContext } from "../Ode/OdeContext";
+import { useOdeContext } from "../OdeContext/OdeContext";
 import {
   ExplorerContextProps,
   ThingWithAnID,
@@ -18,19 +18,32 @@ import {
 
 const Context = createContext<ExplorerContextProps | null>(null!);
 
+/**
+ * These actions are used with selectionReducer
+ */
+const SELECT_ELEMENT = "SELECT_ELEMENT";
+const DESELECT_ELEMENT = "DESELECT_ELEMENT";
+const DESELECT_ALL = "DESELECT_ALL";
+
+/**
+ * This React Reducer is used to:
+ * select folder or resource
+ * deselect folder or resource
+ * deselect all folders or resources.
+ */
 function selectionReducer<T extends Record<ID, ThingWithAnID>>(
   state: T,
   action: ActionOnThingsWithAnId,
 ) {
   switch (action.type) {
-    case 0: {
+    case SELECT_ELEMENT: {
       const { payload } = action;
       const id = payload?.id as string;
 
       /* Add Object in Object with spread syntax and computed value */
       return { ...state, [id]: { ...payload } };
     }
-    case 1: {
+    case DESELECT_ELEMENT: {
       const { payload } = action;
       const id = payload?.id as string;
 
@@ -38,7 +51,7 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
       const { [id]: value, ...rest } = state;
       return { ...rest };
     }
-    case 2: {
+    case DESELECT_ALL: {
       /* Reset state with empty Object */
       return {};
     }
@@ -72,15 +85,15 @@ export default function ExplorerProvider({
   );
 
   function selectFolder(folder: IFolder) {
-    dispatchOnFolder({ type: 0, payload: folder });
+    dispatchOnFolder({ type: "SELECT_ELEMENT", payload: folder });
   }
 
   function deselectFolder(folder: IFolder) {
-    dispatchOnFolder({ type: 1, payload: folder });
+    dispatchOnFolder({ type: "DESELECT_ELEMENT", payload: folder });
   }
 
   function deselectAllFolders() {
-    dispatchOnFolder({ type: 2 });
+    dispatchOnFolder({ type: "DESELECT_ALL" });
   }
 
   function isFolderSelected(folder: IFolder) {
@@ -88,15 +101,15 @@ export default function ExplorerProvider({
   }
 
   function selectResource(res: IResource) {
-    dispatchOnResource({ type: 0, payload: res });
+    dispatchOnResource({ type: "SELECT_ELEMENT", payload: res });
   }
 
   function deselectResource(res: IResource) {
-    dispatchOnResource({ type: 1, payload: res });
+    dispatchOnResource({ type: "DESELECT_ELEMENT", payload: res });
   }
 
   function deselectAllResources() {
-    dispatchOnResource({ type: 2 });
+    dispatchOnResource({ type: "DESELECT_ALL" });
   }
 
   function isResourceSelected(res: IResource) {

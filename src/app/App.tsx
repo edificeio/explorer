@@ -3,10 +3,10 @@ import React, { useEffect, useRef } from "react";
 import { AppHeader, FakeCard } from "@components/index";
 import { clsx } from "@config/index";
 import { useExplorerContext, useOdeContext } from "@contexts/index";
+import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
-import ActionBarContainer from "@features/Actionbar/ui/ActionBarContainer";
 import useExplorerAdapter from "@features/Explorer/hooks/useExplorerAdapter";
-import { TreeViewContainer } from "@features/TreeView/ui/TreeViewContainer";
+import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import { useI18n } from "@hooks/index";
 import {
   AppCard,
@@ -39,7 +39,7 @@ function App() {
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
   /* ode context @hook */
-  const { session, currentApp, is1D, imgBasePath } = useOdeContext();
+  const { session, currentApp, is1D, themeBasePath } = useOdeContext();
   /* feature explorer @hook */
   const { treeData, listData } = useExplorerAdapter();
 
@@ -96,7 +96,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header is1d={is1D} src={`${imgBasePath}/img/illustrations/logo.png`} />
+      <Header is1d={is1D} src={`${themeBasePath}/img/illustrations/logo.png`} />
       <main className={mainClasses}>
         <AppHeader>
           <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">

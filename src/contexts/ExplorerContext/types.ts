@@ -16,7 +16,7 @@ export interface ExplorerProviderProps {
 /** The resources/folders selection reducer */
 export type ThingWithAnID = IFolder | IResource;
 export interface ActionOnThingsWithAnId {
-  type: number;
+  type: string;
   payload?: ThingWithAnID;
 }
 

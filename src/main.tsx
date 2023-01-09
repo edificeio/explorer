@@ -1,6 +1,6 @@
-import ExplorerProvider from "@contexts/Explorer/ExplorerContext";
-import OdeProvider from "@contexts/Ode/OdeContext";
-import { OdeProviderParams } from "@contexts/Ode/types";
+import ExplorerProvider from "@contexts/ExplorerContext/ExplorerContext";
+import OdeProvider from "@contexts/OdeContext/OdeContext";
+import { OdeProviderParams } from "@contexts/OdeContext/types";
 import { APP, App as AppName, RESOURCE } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
