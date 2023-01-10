@@ -23,6 +23,7 @@
       "@features/*": ["./features/*"],
       "@hooks/*": ["./hooks/*"],
       "@pages/*": ["./pages/*"],
+      "@shared/*": ["./shared/*"],
     }
   },
   "include": ["src","./vite.config.ts"],

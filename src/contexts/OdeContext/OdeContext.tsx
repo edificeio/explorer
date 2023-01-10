@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import useOdeBackend from "@hooks/useOdeBackend/useOdeBackend";
-import { useThemeHelper } from "@ode-react-ui/hooks";
+import { useOdeBootstrap } from "@ode-react-ui/hooks";
 import { IIdiom, IWebApp } from "ode-ts-client";
 
 import { OdeContextProps, OdeProviderProps } from "./types";
@@ -20,7 +20,7 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
 
-  const { getDegreeSchool, getBootstrapSkinPath } = useThemeHelper();
+  const { getDegreeSchool, getOdeBoostrapThemePath } = useOdeBootstrap();
 
   const { Platform } = configure;
 
@@ -32,14 +32,12 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   useLayoutEffect(() => {
     (async () => {
       const resDegreeSchool = await getDegreeSchool();
-      const resBoostrapSkin = await getBootstrapSkinPath();
+      const resBoostrapSkin = await getOdeBoostrapThemePath();
 
       const link = document.getElementById("theme") as HTMLAnchorElement;
+      link.href = resBoostrapSkin;
 
       setIs1D(resDegreeSchool);
-
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      link.href = `${resBoostrapSkin}/theme.css`;
     })();
   }, []);
 
