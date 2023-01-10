@@ -13,10 +13,6 @@ export default defineConfig({
         replacement: path.resolve(__dirname, "./src/components"),
       },
       {
-        find: "@config",
-        replacement: path.resolve(__dirname, "./src/config"),
-      },
-      {
         find: "@contexts",
         replacement: path.resolve(__dirname, "./src/contexts"),
       },
@@ -31,6 +27,10 @@ export default defineConfig({
       {
         find: "@pages",
         replacement: path.resolve(__dirname, "./src/pages"),
+      },
+      {
+        find: "@shared",
+        replacement: path.resolve(__dirname, "./src/shared"),
       },
     ],
   },

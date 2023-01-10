@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-import { AppHeader, FakeCard } from "@components/index";
-import { clsx } from "@config/index";
 import { useExplorerContext, useOdeContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
@@ -21,9 +19,11 @@ import {
 } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
+import { AppHeader, FakeCard, EPub } from "@shared/components/index";
+import { clsx } from "@shared/config/index";
 import { IResource } from "ode-ts-client";
 
-import libraryIMG from "../assets/images/library.jpg";
+/* import libraryIMG from "../assets/images/library.jpg"; */
 
 function App() {
   /* i18n @hook */
@@ -121,9 +121,13 @@ function App() {
             as="aside"
           >
             <TreeViewContainer />
-            <div>
-              <img src={libraryIMG} alt="ODE Library" />
-            </div>
+            <EPub
+              src="/assets/themes/ode-bootstrap/images/image-library.png"
+              alt="library"
+              text="Découvrez plein d'activités à réutiliser dans la bibliothèque !"
+              url=""
+              linkText="Découvrir"
+            />
           </Grid.Col>
           <Grid.Col sm="4" md="8" lg="9">
             <form
