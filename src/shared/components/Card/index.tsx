@@ -2,7 +2,6 @@ import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 import { Avatar } from "@ode-react-ui/core";
 import { Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
-import dayjs from "@shared/config/dayjs";
 
 export const FakeCard = ({
   name,
@@ -30,7 +29,7 @@ export const FakeCard = ({
           </h3>
           <span className="card-text small">
             {/* <em>{dayjs(updatedAt).format("DD/MM/YYYY")}</em> */}
-            <em>{dayjs(updatedAt).fromNow()}</em>
+            {/* <em>{dayjs(updatedAt).fromNow()}</em> */}
           </span>
         </div>
       </div>
