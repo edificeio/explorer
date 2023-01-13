@@ -1,16 +1,19 @@
-import { useCallback } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 
 import { TreeNode } from "@features/Explorer/types";
-import { IExplorerContext, RESOURCE } from "ode-ts-client";
+import { IExplorerContext, IResource, RESOURCE } from "ode-ts-client";
 
 export default function useTreeView(
   context: IExplorerContext,
   treeData: TreeNode,
+  setListData: Dispatch<SetStateAction<IResource[]>>,
 ) {
   const handleTreeItemSelect = useCallback((folderId: string) => {
-    console.log("tree item selected = ", folderId);
+    setListData([]);
+
     context.getSearchParameters().filters.folder = folderId;
     context.getSearchParameters().types = ["blog"];
+    context.getSearchParameters().pagination.startIdx = 0;
     context.getResources();
   }, []);
 
@@ -37,6 +40,7 @@ export default function useTreeView(
     if (!hasChildren(folderId, treeData)) {
       context.getSearchParameters().filters.folder = folderId;
       context.getSearchParameters().types = [RESOURCE.FOLDER];
+      context.getSearchParameters().pagination.startIdx = 0;
       context.getResources();
     }
   }, []);
