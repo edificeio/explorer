@@ -13,11 +13,8 @@ import {
   Grid,
   Header,
   Input,
-  Modal,
   SearchButton,
-  TreeView,
 } from "@ode-react-ui/core";
-import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import { AppHeader, FakeCard, EPub } from "@shared/components/index";
 import { clsx } from "@shared/config/index";
@@ -41,9 +38,7 @@ function App() {
   /* ode context @hook */
   const { session, currentApp, is1D, themeBasePath } = useOdeContext();
   /* feature explorer @hook */
-  const { treeData, listData } = useExplorerAdapter();
-
-  const { isOpen, toggle: toggleModal } = useModal(false);
+  const { listData } = useExplorerAdapter();
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
@@ -72,10 +67,6 @@ function App() {
 
   function handleViewMore() {
     context.getResources();
-  }
-
-  function handleCloseModal() {
-    toggleModal(false);
   }
 
   const mainClasses = clsx("container-fluid bg-white", {
@@ -176,49 +167,6 @@ function App() {
           <ActionBarContainer isOpen={isActionBarOpen} />
         </Grid>
       </main>
-      <Modal id="move" isOpen={isOpen} onModalClose={handleCloseModal}>
-        <Modal.Header onModalClose={handleCloseModal}>Déplacer</Modal.Header>
-        <Modal.Subtitle>
-          Sélectionner le dossier vers lequel déplacer les éléments
-        </Modal.Subtitle>
-        <Modal.Body>
-          <TreeView data={treeData} />
-
-          <div className="mt-48">
-            <FormControl id="folder-name" className="d-flex gap-8">
-              <Input type="text" placeholder="Saisir un nom" size="md" />
-              <Button
-                color="primary"
-                onClick={() => {}}
-                type="button"
-                leftIcon={<Plus />}
-                variant="ghost"
-                className="text-nowrap"
-              >
-                Créer dossier
-              </Button>
-            </FormControl>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            type="button"
-            color="tertiary"
-            variant="ghost"
-            onClick={handleCloseModal}
-          >
-            Annuler
-          </Button>
-          <Button
-            type="button"
-            color="primary"
-            variant="filled"
-            onClick={handleCloseModal}
-          >
-            Déplacer
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }
