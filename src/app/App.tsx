@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from "react";
 import { useExplorerContext, useOdeContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
-import useExplorerAdapter from "@features/Explorer/hooks/useExplorerAdapter";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import { useI18n } from "@hooks/index";
 import {
@@ -32,22 +31,26 @@ function App() {
     deselectResource,
     createResource,
     isResourceSelected,
+    listData,
   } = useExplorerContext();
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
   /* ode context @hook */
   const { session, currentApp, is1D, themeBasePath } = useOdeContext();
-  /* feature explorer @hook */
-  const { listData } = useExplorerAdapter();
 
   useEffect(() => {
+    console.log("*** App useEffect ***");
+
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 4;
+    context.getSearchParameters().pagination.pageSize = 2;
     context.getSearchParameters().filters.folder = "default";
     // Do explore...
     context.initialize();
 
     // ...results (latestResources()) are observed in treeview adapter
+    return () => {
+      console.log("*** App useEffect clean ***");
+    };
   }, []);
 
   // Form

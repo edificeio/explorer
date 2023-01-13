@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 
+import { TreeNode } from "@ode-react-ui/core";
 import {
   ResourceType,
   IFolder,
@@ -23,6 +24,10 @@ export interface ActionOnThingsWithAnId {
 export interface ExplorerContextProps {
   context: IExplorerContext;
   explorer: IExplorerFramework;
+  treeData: TreeNode;
+  setTreeData: Dispatch<SetStateAction<TreeNode>>;
+  listData: IResource[];
+  setListData: Dispatch<SetStateAction<IResource[]>>;
   selectedFolders: IFolder[];
   selectedResources: IResource[];
   isFolderSelected: (folder: IFolder) => boolean;

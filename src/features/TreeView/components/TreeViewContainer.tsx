@@ -1,5 +1,4 @@
 import { useExplorerContext } from "@contexts/index";
-import useExplorerAdapter from "@features/Explorer/hooks/useExplorerAdapter";
 import { useI18n } from "@hooks/useI18n";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
@@ -8,11 +7,10 @@ import useTreeView from "../hooks/useTreeView";
 
 export const TreeViewContainer = () => {
   const { i18n } = useI18n();
-  const { context } = useExplorerContext();
-  const { treeData } = useExplorerAdapter();
+  const { context, treeData, setListData } = useExplorerContext();
   /* feature treeview @hook */
-  const { handleTreeItemFold, handleTreeItemSelect, handleTreeItemUnfold } =
-    useTreeView(context, treeData);
+  const { handleTreeItemSelect, handleTreeItemFold, handleTreeItemUnfold } =
+    useTreeView(context, treeData, setListData);
 
   return (
     <>

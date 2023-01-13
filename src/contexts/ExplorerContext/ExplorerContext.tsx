@@ -4,9 +4,18 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useState,
 } from "react";
 
-import { ACTION, ID, IFolder, IResource } from "ode-ts-client";
+import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
+import { TreeNode } from "@ode-react-ui/core";
+import {
+  ACTION,
+  ID,
+  IExplorerContext,
+  IFolder,
+  IResource,
+} from "ode-ts-client";
 
 import { useOdeContext } from "../OdeContext/OdeContext";
 import {
@@ -66,6 +75,7 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
  * - memoizes current folder,
  * - memoizes selected resources and folders,
  * - exports functions to select and deselect folders and resources,
+ * - memoizes Treeview data (treeData) and Ressources list data (listData)
  * - ...
  */
 export default function ExplorerProvider({
@@ -75,7 +85,19 @@ export default function ExplorerProvider({
   const { params, explorer } = useOdeContext();
 
   // Exploration context
-  const context = explorer.createContext(types, params.app);
+  // const context = explorer.createContext(types, params.app);
+  const [context] = useState<IExplorerContext>(() =>
+    explorer.createContext(types, params.app),
+  );
+
+  const [treeData, setTreeData] = useState<TreeNode>({
+    id: "default",
+    name: "Blogs",
+    section: true,
+    children: [],
+  });
+
+  const [listData, setListData] = useState<IResource[]>([]);
 
   // Selected folders and resources
   const [selectedFolders, dispatchOnFolder] = useReducer(selectionReducer, {});
@@ -83,6 +105,48 @@ export default function ExplorerProvider({
     selectionReducer,
     {},
   );
+
+  // Observe streamed search results
+  useEffect(() => {
+    console.log("*** ExplorerContext useEffect ***");
+
+    const subscription = context.latestResources().subscribe({
+      next: (resultset) => {
+        console.log("*** ExplorerContext > subscribe > next ***");
+
+        wrapTreeData(resultset?.output?.folders);
+        wrapResourceData(resultset?.output?.resources);
+
+        // Prepare searching next page
+        const { pagination } = context.getSearchParameters();
+        pagination.maxIdx = resultset.output.pagination.maxIdx;
+        pagination.startIdx =
+          resultset.output.pagination.startIdx +
+          resultset.output.pagination.pageSize;
+        if (
+          typeof pagination.maxIdx !== "undefined" &&
+          pagination.startIdx > pagination.maxIdx
+        ) {
+          pagination.startIdx = pagination.maxIdx;
+        }
+      },
+      error(err) {
+        console.error("something wrong occurred: ", err);
+      },
+      complete() {
+        console.log("done");
+      },
+    });
+
+    return () => {
+      console.log("*** ExplorerContext useEffect clean ***");
+
+      if (subscription) {
+        subscription.unsubscribe();
+        console.log("*** ExplorerContext > UNSUBSCRIBE ***");
+      }
+    };
+  }, []); // execute effect only once
 
   function selectFolder(folder: IFolder) {
     dispatchOnFolder({ type: "SELECT_ELEMENT", payload: folder });
@@ -140,6 +204,10 @@ export default function ExplorerProvider({
     () => ({
       context,
       explorer,
+      treeData,
+      setTreeData,
+      listData,
+      setListData,
       selectedFolders: Object.values(selectedFolders) as IFolder[],
       selectedResources: Object.values(selectedResources) as IResource[],
       isFolderSelected,
@@ -153,34 +221,54 @@ export default function ExplorerProvider({
       selectFolder,
       selectResource,
     }),
-    [selectedFolders, selectedResources],
+    [selectedFolders, selectedResources, treeData, listData],
   );
 
-  // Observe streamed search results
-  useEffect(() => {
-    const subscription = context.latestResources().subscribe({
-      next: (resultset) => {
-        // Prepare searching next page
-        const { pagination } = context.getSearchParameters();
-        pagination.maxIdx = resultset.output.pagination.maxIdx;
-        pagination.startIdx =
-          resultset.output.pagination.startIdx +
-          resultset.output.pagination.pageSize;
-        if (
-          typeof pagination.maxIdx !== "undefined" &&
-          pagination.startIdx > pagination.maxIdx
-        ) {
-          pagination.startIdx = pagination.maxIdx;
+  function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
+    let res: TreeNode | undefined;
+    if (data?.id === id) {
+      return data;
+    }
+    if (data?.children?.length) {
+      data?.children?.every((childNode: any) => {
+        res = findNodeById(id, childNode);
+        return res === undefined; // break loop if res is found
+      });
+    }
+    return res;
+  }
+
+  function wrapTreeData(folders?: IFolder[]) {
+    folders?.forEach((folder) => {
+      const parentFolder = findNodeById(folder.parentId, treeData);
+      if (
+        !parentFolder?.children?.find((child: any) => child.id === folder.id)
+      ) {
+        if (parentFolder?.children) {
+          parentFolder.children = [
+            ...parentFolder.children,
+            new TreeNodeFolderWrapper(folder),
+          ];
         }
-      },
+      }
     });
 
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, []); // execute effect only once
+    setTreeData({ ...treeData });
+  }
+
+  function wrapResourceData(resources?: IResource[]) {
+    if (resources?.length) {
+      setListData((prevListData) => {
+        let newListData = [...prevListData];
+        resources.forEach((resource) => {
+          if (!prevListData.find((data) => resource.assetId === data.assetId)) {
+            newListData = [...newListData, resource];
+          }
+        });
+        return newListData;
+      });
+    }
+  }
 
   return <Context.Provider value={values}>{children}</Context.Provider>;
 }
