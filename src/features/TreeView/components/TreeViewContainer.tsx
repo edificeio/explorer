@@ -7,10 +7,11 @@ import useTreeView from "../hooks/useTreeView";
 
 export const TreeViewContainer = () => {
   const { i18n } = useI18n();
-  const { context, treeData, setListData } = useExplorerContext();
+  const { context, state } = useExplorerContext();
+  const { treeData } = state;
   /* feature treeview @hook */
   const { handleTreeItemSelect, handleTreeItemFold, handleTreeItemUnfold } =
-    useTreeView(context, treeData, setListData);
+    useTreeView(context, treeData);
 
   return (
     <>

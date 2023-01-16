@@ -15,7 +15,7 @@ import { OdeContextProps, OdeProviderProps } from "./types";
 
 const OdeContext = createContext<OdeContextProps | null>(null!);
 
-export default function OdeProvider({ children, params }: OdeProviderProps) {
+function OdeProvider({ children, params }: OdeProviderProps) {
   /* Hooks */
   const { session, configure, notif, explorer, http, login, logout } =
     useOdeBackend(params.version || null, params.cdnDomain || null);
@@ -100,11 +100,13 @@ export default function OdeProvider({ children, params }: OdeProviderProps) {
   return <OdeContext.Provider value={values}>{children}</OdeContext.Provider>;
 }
 
-export const useOdeContext = () => {
+function useOdeContext() {
   const context = useContext(OdeContext);
 
   if (!context) {
     throw new Error(`Cannot be used outside of OdeProvider`);
   }
   return context;
-};
+}
+
+export { useOdeContext, OdeProvider };

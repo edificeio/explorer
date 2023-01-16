@@ -25,3 +25,4 @@ dist-ssr
 
 # Google Lighthouse
 .lighthouseci
+.pnpm-store
