@@ -1,7 +1,5 @@
-import { StrictMode } from "react";
-
-import ExplorerProvider from "@contexts/ExplorerContext/ExplorerContext";
-import OdeProvider from "@contexts/OdeContext/OdeContext";
+import { ExplorerProvider } from "@contexts/ExplorerContext/ExplorerContext";
+import { OdeProvider } from "@contexts/OdeContext/OdeContext";
 import { OdeProviderParams } from "@contexts/OdeContext/types";
 import { APP, App as AppName, RESOURCE } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
@@ -23,15 +21,15 @@ if (rootElement?.dataset?.odeApp) {
   }
 
   createRoot(rootElement!).render(
-    <StrictMode>
-      <BrowserRouter>
-        <OdeProvider params={params}>
-          <ExplorerProvider types={[RESOURCE.BLOG]}>
-            <App />
-          </ExplorerProvider>
-        </OdeProvider>
-      </BrowserRouter>
-    </StrictMode>,
+    // <StrictMode>
+    <BrowserRouter>
+      <OdeProvider params={params}>
+        <ExplorerProvider types={[RESOURCE.BLOG]}>
+          <App />
+        </ExplorerProvider>
+      </OdeProvider>
+    </BrowserRouter>,
+    // </StrictMode>,
   );
 } else {
   // HTTP 500 screen ?

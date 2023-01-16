@@ -1,15 +1,17 @@
-import { Dispatch, SetStateAction, useCallback } from "react";
+import { useCallback } from "react";
 
+import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
-import { IExplorerContext, IResource, RESOURCE } from "ode-ts-client";
+import { IExplorerContext, RESOURCE } from "ode-ts-client";
 
 export default function useTreeView(
   context: IExplorerContext,
   treeData: TreeNode,
-  setListData: Dispatch<SetStateAction<IResource[]>>,
 ) {
+  const { dispatch } = useExplorerContext();
+
   const handleTreeItemSelect = useCallback((folderId: string) => {
-    setListData([]);
+    dispatch({ type: "CLEAR_RESOURCES" });
 
     context.getSearchParameters().filters.folder = folderId;
     context.getSearchParameters().types = ["blog"];

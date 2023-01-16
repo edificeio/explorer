@@ -55,7 +55,8 @@ clean () {
   rm -rf .gradle 
   rm -rf package.json 
   rm -rf deployment 
-  rm -rf yarn.lock
+  rm -rf .pnpm-store
+  rm -f pnpm-lock.yaml
 }
 
 doInit () {
@@ -84,7 +85,7 @@ doInit () {
     sed -i "s/%odeTsClientVersion%/${BRANCH_NAME}/" package.json
   fi
 
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --production=false"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install"
 }
 
 init() {
@@ -102,13 +103,13 @@ localDep () {
     mkdir ode-ts-client.tar && mkdir ode-ts-client.tar/dist \
       && cp -R $PWD/../ode-ts-client/dist $PWD/../ode-ts-client/package.json ode-ts-client.tar
     tar cfzh ode-ts-client.tar.gz ode-ts-client.tar
-    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-save ode-ts-client.tar.gz"
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install --no-save ode-ts-client.tar.gz"
     rm -rf ode-ts-client.tar ode-ts-client.tar.gz
   fi
 }
 
 build () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn build"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm build"
   status=$?
   if [ $status != 0 ];
   then
@@ -119,22 +120,10 @@ build () {
   echo "ode-explorer=$VERSION `date +'%d/%m/%Y %H:%M:%S'`" >> dist/version.txt
 }
 
-# watch () {
-#   docker-compose run --rm \
-#     -u "$USER_UID:$GROUP_GID" \
-#     -v $PWD/../$SPRINGBOARD:/home/node/springboard \
-#     node sh -c "npm run watch --watch_springboard=/home/node/springboard"
-# }
-
 publishNPM () {
   LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
 }
-
-# archive() {
-#   echo "[archive] Archiving dist folder and conf.j2 file..."
-#   tar cfzh ${MVN_MOD_NAME}.tar.gz dist/* ode-explorer/conf.j2
-# }
 
 publishMavenLocal (){
   mvn install:install-file \

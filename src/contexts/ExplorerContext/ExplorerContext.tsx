@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 
+import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { TreeNode } from "@ode-react-ui/core";
 import {
@@ -17,15 +18,53 @@ import {
   IResource,
 } from "ode-ts-client";
 
-import { useOdeContext } from "../OdeContext/OdeContext";
 import {
   ExplorerContextProps,
   ThingWithAnID,
   ActionOnThingsWithAnId,
   ExplorerProviderProps,
+  State,
+  Action,
 } from "./types";
 
 const Context = createContext<ExplorerContextProps | null>(null!);
+
+const initialState = {
+  treeData: {
+    id: "default",
+    name: "Blogs",
+    section: true,
+    children: [],
+  },
+  folders: [],
+  resources: [],
+};
+
+const reducer = (state: State = initialState, action: Action) => {
+  switch (action.type) {
+    case "GET_RESOURCES": {
+      const { payload } = action;
+      return {
+        ...state,
+        resources: [...state.resources, ...payload],
+      };
+    }
+    case "CLEAR_RESOURCES": {
+      return { ...state, resources: [] };
+    }
+    case "GET_FOLDERS": {
+      const { payload } = action;
+      return { ...state, folders: payload };
+    }
+    case "GET_TREEDATA": {
+      const { payload } = action;
+
+      return { ...state, treeData: { ...payload } };
+    }
+    default:
+      return state;
+  }
+};
 
 /**
  * These actions are used with selectionReducer
@@ -78,10 +117,7 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
  * - memoizes Treeview data (treeData) and Ressources list data (listData)
  * - ...
  */
-export default function ExplorerProvider({
-  children,
-  types,
-}: ExplorerProviderProps) {
+function ExplorerProvider({ children, types }: ExplorerProviderProps) {
   const { params, explorer } = useOdeContext();
 
   // Exploration context
@@ -90,14 +126,7 @@ export default function ExplorerProvider({
     explorer.createContext(types, params.app),
   );
 
-  const [treeData, setTreeData] = useState<TreeNode>({
-    id: "default",
-    name: "Blogs",
-    section: true,
-    children: [],
-  });
-
-  const [listData, setListData] = useState<IResource[]>([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   // Selected folders and resources
   const [selectedFolders, dispatchOnFolder] = useReducer(selectionReducer, {});
@@ -106,17 +135,18 @@ export default function ExplorerProvider({
     {},
   );
 
+  useEffect(() => {
+    // TODO initialize search parameters. Here and/or in the dedicated React component
+    context.getSearchParameters().pagination.pageSize = 2;
+    context.getSearchParameters().filters.folder = "default";
+    // Do explore...
+    context.initialize();
+  }, []);
+
   // Observe streamed search results
   useEffect(() => {
-    console.log("*** ExplorerContext useEffect ***");
-
     const subscription = context.latestResources().subscribe({
       next: (resultset) => {
-        console.log("*** ExplorerContext > subscribe > next ***");
-
-        wrapTreeData(resultset?.output?.folders);
-        wrapResourceData(resultset?.output?.resources);
-
         // Prepare searching next page
         const { pagination } = context.getSearchParameters();
         pagination.maxIdx = resultset.output.pagination.maxIdx;
@@ -129,6 +159,9 @@ export default function ExplorerProvider({
         ) {
           pagination.startIdx = pagination.maxIdx;
         }
+        wrapTreeData(resultset?.output?.folders);
+        wrapFolderData(resultset?.output?.folders);
+        wrapResourceData(resultset?.output?.resources);
       },
       error(err) {
         console.error("something wrong occurred: ", err);
@@ -139,11 +172,8 @@ export default function ExplorerProvider({
     });
 
     return () => {
-      console.log("*** ExplorerContext useEffect clean ***");
-
       if (subscription) {
         subscription.unsubscribe();
-        console.log("*** ExplorerContext > UNSUBSCRIBE ***");
       }
     };
   }, []); // execute effect only once
@@ -200,30 +230,6 @@ export default function ExplorerProvider({
       .publish(types[0], ACTION.CREATE, "test proto");
   }
 
-  const values = useMemo(
-    () => ({
-      context,
-      explorer,
-      treeData,
-      setTreeData,
-      listData,
-      setListData,
-      selectedFolders: Object.values(selectedFolders) as IFolder[],
-      selectedResources: Object.values(selectedResources) as IResource[],
-      isFolderSelected,
-      isResourceSelected,
-      openResource,
-      createResource,
-      deselectAllFolders,
-      deselectAllResources,
-      deselectFolder,
-      deselectResource,
-      selectFolder,
-      selectResource,
-    }),
-    [selectedFolders, selectedResources, treeData, listData],
-  );
-
   function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
     let res: TreeNode | undefined;
     if (data?.id === id) {
@@ -240,7 +246,7 @@ export default function ExplorerProvider({
 
   function wrapTreeData(folders?: IFolder[]) {
     folders?.forEach((folder) => {
-      const parentFolder = findNodeById(folder.parentId, treeData);
+      const parentFolder = findNodeById(folder.parentId, state.treeData);
       if (
         !parentFolder?.children?.find((child: any) => child.id === folder.id)
       ) {
@@ -253,27 +259,55 @@ export default function ExplorerProvider({
       }
     });
 
-    setTreeData({ ...treeData });
+    dispatch({ type: "GET_TREEDATA", payload: state.treeData });
   }
 
   function wrapResourceData(resources?: IResource[]) {
     if (resources?.length) {
-      setListData((prevListData) => {
-        let newListData = [...prevListData];
-        resources.forEach((resource) => {
-          if (!prevListData.find((data) => resource.assetId === data.assetId)) {
-            newListData = [...newListData, resource];
-          }
-        });
-        return newListData;
+      dispatch({
+        type: "GET_RESOURCES",
+        payload: resources,
       });
     }
   }
 
+  function wrapFolderData(folders?: IFolder[]) {
+    if (folders?.length) {
+      dispatch({ type: "GET_FOLDERS", payload: folders });
+    }
+  }
+
+  function handleNextPage() {
+    context.getResources();
+  }
+
+  const values = useMemo(
+    () => ({
+      context,
+      explorer,
+      state,
+      selectedFolders: Object.values(selectedFolders) as IFolder[],
+      selectedResources: Object.values(selectedResources) as IResource[],
+      dispatch,
+      isFolderSelected,
+      isResourceSelected,
+      handleNextPage,
+      openResource,
+      createResource,
+      deselectAllFolders,
+      deselectAllResources,
+      deselectFolder,
+      deselectResource,
+      selectFolder,
+      selectResource,
+    }),
+    [selectedFolders, selectedResources, context, state],
+  );
+
   return <Context.Provider value={values}>{children}</Context.Provider>;
 }
 
-export function useExplorerContext() {
+function useExplorerContext() {
   const context = useContext(Context);
 
   if (!context) {
@@ -281,3 +315,5 @@ export function useExplorerContext() {
   }
   return context;
 }
+
+export { ExplorerProvider, useExplorerContext };
