@@ -24,7 +24,6 @@ export default function useOdeBackend(
 
   // Exécuté au premier render du Composant
   useEffect(() => {
-    console.log("useOdeBackend INIT ONLY ONCE, PLEASE !");
     const initOnce = async () => {
       try {
         await sessionFramework.initialize();
