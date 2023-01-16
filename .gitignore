@@ -26,3 +26,7 @@ dist-ssr
 # Google Lighthouse
 .lighthouseci
 .pnpm-store
+
+.env
+.env.dev
+.env.prod
