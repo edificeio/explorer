@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
-import { useModal } from "@ode-react-ui/hooks";
 import { IAction, ACTION } from "ode-ts-client";
+
+type ModalName = "move" | "delete" | "void";
 
 export default function useActionBar() {
   const [actions, setActions] = useState<IAction[]>([]);
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
-
-  const { toggle: toggleModal } = useModal(false);
+  const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
   const {
     openResource,
+    printResource,
     createResource,
+    refreshFolder,
     context,
     selectedResources,
     selectedFolders,
@@ -33,10 +35,6 @@ export default function useActionBar() {
     setIsActionBarOpen(true);
   }, [selectedResources]);
 
-  function handleOpenModal() {
-    toggleModal(true);
-  }
-
   function handleClick(action: IAction) {
     switch (action.id) {
       case ACTION.OPEN:
@@ -44,7 +42,9 @@ export default function useActionBar() {
       case ACTION.CREATE:
         return createResource();
       case ACTION.MOVE:
-        return handleOpenModal();
+        return setOpenedModalName("move");
+      case ACTION.PRINT:
+        return printResource();
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
@@ -74,5 +74,23 @@ export default function useActionBar() {
     }
   }
 
-  return { actions, isActivable, handleClick, isActionBarOpen };
+  function onMoveCancel() {
+    setOpenedModalName("void");
+    setIsActionBarOpen(false);
+  }
+
+  function onMoveSuccess() {
+    onMoveCancel();
+    refreshFolder();
+  }
+
+  return {
+    actions,
+    isActivable,
+    handleClick,
+    isActionBarOpen,
+    isMoveModalOpen: openedModalName === "move",
+    onMoveCancel,
+    onMoveSuccess,
+  };
 }

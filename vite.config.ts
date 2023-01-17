@@ -10,8 +10,10 @@ export default ({mode}: {mode:string}) => {
   const hasEnvFile = Object.keys(envFile).length;
 
   // Proxy variables
-  const headers = { cookie: `oneSessionId=${envs.VITE_RD}` };
-
+  const headers = { cookie: `oneSessionId=${envs.VITE_RD};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF}` }
+  const resHeaders = { 
+    "set-cookie": [`oneSessionId=${envs.VITE_RD}`,`XSRF-TOKEN=${envs.VITE_XSRF}`]
+  }
   const proxyObj = hasEnvFile ? {
     target: "https://rd.opendigitaleducation.com",
     changeOrigin: true, headers
@@ -85,7 +87,7 @@ export default ({mode}: {mode:string}) => {
         "/conf/public": proxyObj,
         "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
         // Entcore urls
-        "^/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace)":
+        "^/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
         proxyObj,
         // App urls
         "/blog": proxyObj,
@@ -93,6 +95,7 @@ export default ({mode}: {mode:string}) => {
       },
       host: "0.0.0.0",
       port: 3000,
+      headers: resHeaders,
       //open: true,
     },
   });
