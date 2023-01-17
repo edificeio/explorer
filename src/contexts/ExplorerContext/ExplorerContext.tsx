@@ -206,22 +206,38 @@ function ExplorerProvider({ children, types }: ExplorerProviderProps) {
     dispatchOnResource({ type: "DESELECT_ALL" });
   }
 
-  function isResourceSelected(res: IResource) {
-    return Object.hasOwn(selectedResources, res.id);
+  async function openResource() {
+    const items = Object.values(selectedResources) as IResource[];
+    if (items.length !== 1) {
+      // TODO display alert
+      throw new Error("Cannot open more than 1 resource");
+    }
+    const item = items[0];
+    await explorer
+      .getBus()
+      .publish(types[0], ACTION.OPEN, { resourceId: item.assetId });
   }
 
-  async function openResource() {
-    return await Promise.resolve(
-      Object.values(selectedResources) as IResource[],
-    )
-      .then((items) => (items.length === 1 ? items[0] : null))
-      .then(async (item) => {
-        return !item
-          ? await Promise.reject(new Error("Cannot open more than 1 resource"))
-          : await explorer
-              .getBus()
-              .publish(types[0], ACTION.OPEN, { resourceId: item.assetId });
-      });
+  async function printResource() {
+    const items = Object.values(selectedResources) as IResource[];
+    if (items.length !== 1) {
+      // TODO display alert
+      throw new Error("Cannot open more than 1 resource");
+    }
+    const item = items[0];
+    await explorer
+      .getBus()
+      .publish(types[0], ACTION.PRINT, { resourceId: item.assetId });
+  }
+
+  async function refreshFolder() {
+    const resultset = await context.getResources();
+    wrapFolderData(resultset.folders);
+    wrapResourceData(resultset.resources);
+  }
+
+  function isResourceSelected(res: IResource) {
+    return Object.hasOwn(selectedResources, res.id);
   }
 
   async function createResource() {
@@ -300,6 +316,8 @@ function ExplorerProvider({ children, types }: ExplorerProviderProps) {
       deselectResource,
       selectFolder,
       selectResource,
+      refreshFolder,
+      printResource,
     }),
     [selectedFolders, selectedResources, context, state],
   );

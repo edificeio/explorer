@@ -37,7 +37,6 @@ export interface ExplorerContextProps {
   isFolderSelected: (folder: IFolder) => boolean;
   isResourceSelected: (res: IResource) => boolean;
   createResource: () => void;
-  openResource: () => void;
   handleNextPage: () => void;
   selectFolder: (folder: IFolder) => void;
   selectResource: (res: IResource) => void;
@@ -45,6 +44,8 @@ export interface ExplorerContextProps {
   deselectAllResources: () => void;
   deselectFolder: (folder: IFolder) => void;
   deselectResource: (res: IResource) => void;
+  refreshFolder: () => void;
+  printResource: () => void;
 }
 
 export type Action =

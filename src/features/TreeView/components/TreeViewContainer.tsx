@@ -1,9 +1,8 @@
 import { useExplorerContext } from "@contexts/index";
+import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { useI18n } from "@hooks/useI18n";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
-
-import useTreeView from "../hooks/useTreeView";
 
 export const TreeViewContainer = () => {
   const { i18n } = useI18n();
