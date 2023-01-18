@@ -24,9 +24,9 @@ export default function MoveModal({
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
       <Modal.Header onModalClose={onCancel}>
-        {i18n("blog.move.title")}
+        {i18n("explorer.move.title")}
       </Modal.Header>
-      <Modal.Subtitle>{i18n("blog.move.subtitle")}</Modal.Subtitle>
+      <Modal.Subtitle>{i18n("explorer.move.subtitle")}</Modal.Subtitle>
       <Modal.Body>
         <TreeView
           data={treeData}
