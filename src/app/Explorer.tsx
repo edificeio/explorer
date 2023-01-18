@@ -32,7 +32,6 @@ export default function Explorer() {
   function handleOnSubmit(e: React.FormEvent): void {
     e.preventDefault();
   }
-
   return (
     <>
       <AppHeader>
