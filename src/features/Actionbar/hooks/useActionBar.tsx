@@ -5,9 +5,11 @@ import { IAction, ACTION } from "ode-ts-client";
 
 type ModalName = "move" | "delete" | "void";
 
-export default function useActionBar() {
+export default function useActionBar(isOpen?: boolean) {
   const [actions, setActions] = useState<IAction[]>([]);
-  const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
+  const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(
+    isOpen || false,
+  );
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
   const {
@@ -15,6 +17,7 @@ export default function useActionBar() {
     printResource,
     createResource,
     refreshFolder,
+    deselectAllResources,
     context,
     selectedResources,
     selectedFolders,
@@ -74,14 +77,23 @@ export default function useActionBar() {
     }
   }
 
-  function onMoveCancel() {
+  function onClearActionBar() {
     setOpenedModalName("void");
     setIsActionBarOpen(false);
+    deselectAllResources();
+  }
+
+  function onMoveCancel() {
+    if (openedModalName === "move") {
+      onClearActionBar();
+    }
   }
 
   function onMoveSuccess() {
-    onMoveCancel();
-    refreshFolder();
+    if (openedModalName === "move") {
+      onClearActionBar();
+      refreshFolder();
+    }
   }
 
   return {

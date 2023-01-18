@@ -7,12 +7,13 @@ export default function ActionBarContainer({ isOpen }: { isOpen: boolean }) {
   const {
     actions,
     isMoveModalOpen,
+    isActionBarOpen,
     onMoveCancel,
     onMoveSuccess,
     isActivable,
     handleClick,
-  } = useActionBar();
-  return isOpen ? (
+  } = useActionBar(isOpen);
+  return isActionBarOpen ? (
     <div className="position-fixed bottom-0 start-0 end-0">
       <ActionBar>
         {actions
