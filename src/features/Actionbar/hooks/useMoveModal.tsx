@@ -21,7 +21,7 @@ export default function useMoveModal({ onSuccess }: MoveModalArg) {
   async function onMove() {
     try {
       if (!selectedFolder) {
-        throw new Error("blog.move.selection.empty");
+        throw new Error("explorer.move.selection.empty");
       }
       const resourceIds = selectedResources.map((e) => e.id);
       const folderIds = selectedFolders.map((e) => e.id);

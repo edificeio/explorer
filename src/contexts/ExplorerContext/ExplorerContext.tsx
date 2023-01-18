@@ -5,6 +5,7 @@ import {
   useEffect,
   useReducer,
   useState,
+  Reducer,
 } from "react";
 
 import { useOdeContext } from "@contexts/OdeContext/OdeContext";
@@ -40,8 +41,25 @@ const initialState = {
   resources: [],
 };
 
-const reducer = (state: State = initialState, action: Action) => {
+const reducer: Reducer<State, Action> = (
+  state: State = initialState,
+  action: Action,
+) => {
   switch (action.type) {
+    case "HIDE_SELECTION": {
+      const { selectedFolders, selectedResources } = action.payload;
+      const resources = state.resources.filter(
+        (e) => !selectedResources.includes(e.id),
+      );
+      const folders = state.folders.filter(
+        (e) => !selectedFolders.includes(e.id),
+      );
+      return {
+        ...state,
+        resources,
+        folders,
+      };
+    }
     case "GET_RESOURCES": {
       const { payload } = action;
       return {
@@ -177,6 +195,15 @@ function ExplorerProvider({ children, types }: ExplorerProviderProps) {
       }
     };
   }, []); // execute effect only once
+
+  function hideSelectedElement() {
+    const folderIds = Object.keys(selectedFolders);
+    const resourceIds = Object.keys(selectedResources);
+    dispatch({
+      type: "HIDE_SELECTION",
+      payload: { selectedFolders: folderIds, selectedResources: resourceIds },
+    });
+  }
 
   function selectFolder(folder: IFolder) {
     dispatchOnFolder({ type: "SELECT_ELEMENT", payload: folder });
@@ -318,6 +345,7 @@ function ExplorerProvider({ children, types }: ExplorerProviderProps) {
       selectResource,
       refreshFolder,
       printResource,
+      hideSelectedElement,
     }),
     [selectedFolders, selectedResources, context, state],
   );

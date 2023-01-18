@@ -47,6 +47,7 @@ export interface ExplorerContextProps {
   refreshFolder: () => void;
   printResource: () => void;
   openResource: () => void;
+  hideSelectedElement: () => void;
 }
 
 export type Action =
@@ -54,4 +55,11 @@ export type Action =
   | { type: "CLEAR_RESOURCES" }
   | { type: "GET_FOLDERS"; payload: IFolder[] }
   | { type: "GET_TREEDATA"; payload: TreeNode }
-  | { type: "SELECT_FOLDER"; payload: ThingWithAnID };
+  | { type: "SELECT_FOLDER"; payload: ThingWithAnID }
+  | {
+      type: "HIDE_SELECTION";
+      payload: {
+        selectedFolders: string[];
+        selectedResources: string[];
+      };
+    };

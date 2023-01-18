@@ -16,8 +16,9 @@ export default function useActionBar(isOpen?: boolean) {
     openResource,
     printResource,
     createResource,
-    refreshFolder,
+    hideSelectedElement,
     deselectAllResources,
+    deselectAllFolders,
     context,
     selectedResources,
     selectedFolders,
@@ -31,7 +32,7 @@ export default function useActionBar(isOpen?: boolean) {
   }, [context]);
 
   useEffect(() => {
-    if (selectedResources.length === 0) {
+    if (selectedResources.length === 0 && selectedFolders.length === 0) {
       setIsActionBarOpen(false);
       return;
     }
@@ -81,6 +82,7 @@ export default function useActionBar(isOpen?: boolean) {
     setOpenedModalName("void");
     setIsActionBarOpen(false);
     deselectAllResources();
+    deselectAllFolders();
   }
 
   function onMoveCancel() {
@@ -92,7 +94,7 @@ export default function useActionBar(isOpen?: boolean) {
   function onMoveSuccess() {
     if (openedModalName === "move") {
       onClearActionBar();
-      refreshFolder();
+      hideSelectedElement();
     }
   }
 
