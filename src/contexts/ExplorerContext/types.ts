@@ -46,6 +46,7 @@ export interface ExplorerContextProps {
   deselectResource: (res: IResource) => void;
   refreshFolder: () => void;
   printResource: () => void;
+  openResource: () => void;
 }
 
 export type Action =
