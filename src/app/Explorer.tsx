@@ -47,7 +47,7 @@ export default function Explorer() {
           className="ms-auto"
           onClick={createResource}
         >
-          {i18n("blog.create.title")}
+          {i18n("explorer.create.title")}
         </Button>
       </AppHeader>
       <Grid>
@@ -75,14 +75,17 @@ export default function Explorer() {
             <FormControl id="search" className="input-group">
               <Input
                 type="search"
-                placeholder={i18n("label.search")}
+                placeholder={i18n("explorer.label.search")}
                 size="lg"
                 noValidationIcon
               />
-              <SearchButton type="submit" aria-label={i18n("label.search")} />
+              <SearchButton
+                type="submit"
+                aria-label={i18n("explorer.label.search")}
+              />
             </FormControl>
           </form>
-          <h2 className="py-24 body">{i18n("filters.mine")}</h2>
+          <h2 className="py-24 body">{i18n("explorer.filters.mine")}</h2>
           <FoldersList />
           <ResourcesList />
           <div className="d-grid">
@@ -92,7 +95,7 @@ export default function Explorer() {
               variant="filled"
               onClick={handleNextPage}
             >
-              Voir plus
+              {i18n("explorer.see.more")}
             </Button>
           </div>
         </Grid.Col>

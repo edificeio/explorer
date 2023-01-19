@@ -27,7 +27,7 @@ export const TreeViewContainer = () => {
           variant="outline"
           leftIcon={<Plus />}
         >
-          {i18n("blog.folder.new")}
+          {i18n("explorer.folder.new")}
         </Button>
       </div>
     </>

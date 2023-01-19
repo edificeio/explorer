@@ -49,6 +49,8 @@ export default function useActionBar(isOpen?: boolean) {
         return setOpenedModalName("move");
       case ACTION.PRINT:
         return printResource();
+      case ACTION.DELETE:
+        return setOpenedModalName("delete");
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
@@ -98,6 +100,19 @@ export default function useActionBar(isOpen?: boolean) {
     }
   }
 
+  function onDeleteCancel() {
+    if (openedModalName === "delete") {
+      onClearActionBar();
+    }
+  }
+
+  function onDeleteSuccess() {
+    if (openedModalName === "delete") {
+      onClearActionBar();
+      hideSelectedElement();
+    }
+  }
+
   return {
     actions,
     isActivable,
@@ -106,5 +121,8 @@ export default function useActionBar(isOpen?: boolean) {
     isMoveModalOpen: openedModalName === "move",
     onMoveCancel,
     onMoveSuccess,
+    isDeleteModalOpen: openedModalName === "delete",
+    onDeleteCancel,
+    onDeleteSuccess,
   };
 }

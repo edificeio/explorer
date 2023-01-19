@@ -42,7 +42,7 @@ export default function MoveModal({
           type="button"
           variant="ghost"
         >
-          {i18n("cancel")}
+          {i18n("explorer.cancel")}
         </Button>
         <Button
           color="primary"
@@ -50,7 +50,7 @@ export default function MoveModal({
           type="button"
           variant="filled"
         >
-          {i18n("move")}
+          {i18n("explorer.move")}
         </Button>
       </Modal.Footer>
     </Modal>

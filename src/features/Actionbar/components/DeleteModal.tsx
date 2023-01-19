@@ -14,13 +14,15 @@ export default function DeleteModal({
   onCancel = () => {},
 }: DeleteModalProps) {
   const { i18n } = useI18n();
-  const { onDelete } = useDeleteModal({ onSuccess });
+  const { isTrash, onDelete } = useDeleteModal({ onSuccess });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
       <Modal.Header onModalClose={onCancel}>
-        {i18n("explorer.delete.title")}
+        {i18n(isTrash ? "explorer.trash.title" : "explorer.delete.title")}
       </Modal.Header>
-      <Modal.Subtitle>{i18n("explorer.delete.subtitle")}</Modal.Subtitle>
+      <Modal.Subtitle>
+        {i18n(isTrash ? "explorer.trash.subtitle" : "explorer.delete.subtitle")}
+      </Modal.Subtitle>
       <Modal.Footer>
         <Button
           color="tertiary"
@@ -28,7 +30,7 @@ export default function DeleteModal({
           type="button"
           variant="ghost"
         >
-          {i18n("cancel")}
+          {i18n("explorer.cancel")}
         </Button>
         <Button
           color="primary"
@@ -36,7 +38,7 @@ export default function DeleteModal({
           type="button"
           variant="filled"
         >
-          {i18n("move")}
+          {i18n(isTrash ? "explorer.trash" : "explorer.delete")}
         </Button>
       </Modal.Footer>
     </Modal>
