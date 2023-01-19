@@ -1,7 +1,7 @@
-import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 import { Avatar } from "@ode-react-ui/core";
 import { Files, Users } from "@ode-react-ui/icons";
 import { OneProfile } from "@ode-react-ui/icons/nav";
+import { useCurrentApp } from "@store/useOdeStore";
 
 export const FakeCard = ({
   name,
@@ -12,7 +12,9 @@ export const FakeCard = ({
   selected,
   isFolder,
 }: any) => {
-  const { appCode } = useOdeContext();
+  const currentApp = useCurrentApp();
+  const appCode = currentApp?.address.replace("/", "");
+
   return (
     <li
       className="card g-col-4 shadow border-0"
@@ -34,10 +36,7 @@ export const FakeCard = ({
           <h3 className="card-title body text-truncate text-truncate--2">
             <strong>{name}</strong>
           </h3>
-          <span className="card-text small">
-            {/* <em>{dayjs(updatedAt).format("DD/MM/YYYY")}</em> */}
-            {/* <em>{dayjs(updatedAt).fromNow()}</em> */}
-          </span>
+          <span className="card-text small"></span>
         </div>
       </div>
       {!isFolder && (

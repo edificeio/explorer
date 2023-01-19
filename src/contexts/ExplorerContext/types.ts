@@ -1,5 +1,6 @@
 import { Dispatch, ReactNode } from "react";
 
+import { OdeProviderParams } from "@contexts/OdeContext/types";
 import { TreeNode } from "@ode-react-ui/core";
 import {
   ResourceType,
@@ -12,6 +13,7 @@ import {
 export interface ExplorerProviderProps {
   children: ReactNode;
   types: ResourceType[];
+  params: OdeProviderParams;
 }
 
 /** The resources/folders selection reducer */
