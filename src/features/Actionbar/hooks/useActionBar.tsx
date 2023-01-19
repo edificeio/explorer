@@ -25,10 +25,10 @@ export default function useActionBar(isOpen?: boolean) {
   } = useExplorerContext();
 
   useEffect(() => {
-    const ctx = context.getContext();
-    if (ctx?.actions) {
+    (async () => {
+      const ctx = context.getContext() || (await context.initialize());
       setActions(ctx.actions);
-    }
+    })();
   }, [context]);
 
   useEffect(() => {
