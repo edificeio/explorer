@@ -4,7 +4,6 @@ import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
-import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { useI18n } from "@hooks/useI18n";
 import {
   AppCard,
@@ -13,9 +12,8 @@ import {
   FormControl,
   Input,
   SearchButton,
-  IconButton,
 } from "@ode-react-ui/core";
-import { ArrowLeft, Plus } from "@ode-react-ui/icons";
+import { Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
@@ -29,7 +27,6 @@ export default function Explorer() {
 
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
-  const { previousId, handleTreeItemSelect } = useTreeView();
 
   // Form
   const formRef = useRef(null);
@@ -37,8 +34,6 @@ export default function Explorer() {
   function handleOnSubmit(e: React.FormEvent): void {
     e.preventDefault();
   }
-
-  console.log("previousId", previousId);
 
   return (
     <>
@@ -94,7 +89,8 @@ export default function Explorer() {
             </FormControl>
           </form>
           <div className="py-24">
-            {!previousId ? (
+            <h2 className="body">{i18n("explorer.filters.mine")}</h2>
+            {/* {previousId === "default" ? (
               <h2 className="body">{i18n("explorer.filters.mine")}</h2>
             ) : (
               <div className="d-flex align-items-center gap-8">
@@ -106,7 +102,7 @@ export default function Explorer() {
                 />
                 <p className="body">Retour</p>
               </div>
-            )}
+            )} */}
           </div>
           <FoldersList />
           <ResourcesList />

@@ -13,27 +13,24 @@ function FoldersList() {
 
   const { handleTreeItemSelect } = useTreeView();
 
-  function toggleSelect(item: IFolder) {
-    if (isFolderSelected(item)) {
-      deselectFolder(item);
+  function toggleSelect(folder: IFolder) {
+    if (isFolderSelected(folder)) {
+      deselectFolder(folder);
     } else {
-      selectFolder(item);
+      selectFolder(folder);
     }
   }
   return folders.length ? (
     <ul className="grid ps-0 list-unstyled">
       {folders.map((folder: IFolder) => {
         return (
-          <li
-            className="g-col-4"
-            key={folder.id}
-            onClick={() => handleTreeItemSelect(folder.id)}
-          >
+          <li className="g-col-4" key={folder.id}>
             <Card
               name={folder.name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onClick={() => toggleSelect(folder)}
+              onOpen={() => handleTreeItemSelect(folder.id)}
+              onSelect={() => toggleSelect(folder)}
             />
           </li>
         );

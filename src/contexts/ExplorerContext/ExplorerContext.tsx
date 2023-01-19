@@ -1,4 +1,4 @@
-import {
+import React, {
   useMemo,
   createContext,
   useContext,
@@ -235,9 +235,15 @@ function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
     dispatchOnResource({ type: "DESELECT_ALL" });
   }
 
+  async function openSingleResource(assetId: ID) {
+    return await explorer
+      .getBus()
+      .publish(types[0], ACTION.OPEN, { resourceId: assetId });
+  }
+
   async function openResource() {
     const items = Object.values(selectedResources) as IResource[];
-    if (items.length !== 1) {
+    if (items.length === 1) {
       // TODO display alert
       throw new Error("Cannot open more than 1 resource");
     }
@@ -322,8 +328,8 @@ function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
     }
   }
 
-  function handleNextPage() {
-    context.getResources();
+  async function handleNextPage() {
+    await context.getResources();
   }
 
   const values = useMemo(
@@ -338,6 +344,7 @@ function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
       isResourceSelected,
       handleNextPage,
       openResource,
+      openSingleResource,
       createResource,
       deselectAllFolders,
       deselectAllResources,
