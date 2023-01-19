@@ -10,14 +10,20 @@ interface DeleteModalProps {
 
 export default function DeleteModal({
   isOpen,
-  onSuccess = () => {},
-  onCancel = () => {},
+  onSuccess = () => ({}),
+  onCancel = () => ({}),
 }: DeleteModalProps) {
   const { i18n } = useI18n();
   const { isTrash, onDelete } = useDeleteModal({ onSuccess });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
-      <Modal.Header onModalClose={onCancel}>
+      <Modal.Header
+        onModalClose={() => {
+          // TODO fix onModalClose type to avoid this hack
+          onCancel();
+          return {};
+        }}
+      >
         {i18n(isTrash ? "explorer.trash.title" : "explorer.delete.title")}
       </Modal.Header>
       <Modal.Subtitle>

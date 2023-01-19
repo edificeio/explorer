@@ -23,7 +23,13 @@ export default function MoveModal({
   } = useMoveModal({ onSuccess });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
-      <Modal.Header onModalClose={onCancel}>
+      <Modal.Header
+        onModalClose={() => {
+          // TODO fix onModalClose type to avoid this hack
+          onCancel();
+          return {};
+        }}
+      >
         {i18n("explorer.move.title")}
       </Modal.Header>
       <Modal.Subtitle>{i18n("explorer.move.subtitle")}</Modal.Subtitle>
