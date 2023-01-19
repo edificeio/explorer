@@ -1,7 +1,13 @@
 import { useExplorerContext } from "@contexts/index";
 import { Card } from "@ode-react-ui/core";
 import { useCurrentApp } from "@store/useOdeStore";
+// TODO: Global export
+import * as dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+// TODO
 import { IResource } from "ode-ts-client";
+
+dayjs.extend(relativeTime);
 
 export default function ResourcesList() {
   const currentApp = useCurrentApp();
@@ -9,16 +15,17 @@ export default function ResourcesList() {
 
   const {
     state: { resources },
+    openSingleResource,
     selectResource,
     deselectResource,
     isResourceSelected,
   } = useExplorerContext();
 
-  function toggleSelect(item: IResource) {
-    if (isResourceSelected(item)) {
-      deselectResource(item);
+  function toggleSelect(resource: IResource) {
+    if (isResourceSelected(resource)) {
+      deselectResource(resource);
     } else {
-      selectResource(item);
+      selectResource(resource);
     }
   }
 
@@ -28,12 +35,15 @@ export default function ResourcesList() {
         return (
           <li className="g-col-4" key={resource.assetId}>
             <Card
-              name={resource.name}
-              creatorName={resource.creatorName}
-              updatedAt={resource.updatedAt}
               appCode={appCode}
+              className="c-pointer"
+              creatorName={resource.creatorName}
               isSelected={isResourceSelected(resource)}
-              onClick={() => toggleSelect(resource)}
+              name={resource.name}
+              onOpen={() => openSingleResource(resource.assetId)}
+              onSelect={() => toggleSelect(resource)}
+              updatedAt={dayjs(resource.updatedAt).fromNow()}
+              src="https://media.istockphoto.com/id/1322277517/fr/photo/herbe-sauvage-dans-les-montagnes-au-coucher-du-soleil.jpg?s=612x612&w=0&k=20&c=tQ19uZQLlIFy8J6QWMyOL6lPt3pdSHBSDFHoXr1K_g0="
             />
           </li>
         );

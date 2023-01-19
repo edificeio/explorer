@@ -38,18 +38,18 @@ specifiers:
   swr: 2.0.0
   typescript: 4.9.4
   vite: 4.0.4
-  zustand: ^4.3.2
+  zustand: 4.3.2
 
 dependencies:
   '@ode-react-ui/core': 1.0.7-dev.24_lf5lpaeix7ef7rlt7wulmgnrpa
-  '@ode-react-ui/hooks': 1.0.7-dev.23_zmbeh5gqniuw6ip6sx4ee6h5ea
+  '@ode-react-ui/hooks': 1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
   dayjs: 1.11.7
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202301101703
+  ode-ts-client: 1.1.0-explorer.202301191127
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -619,20 +619,20 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.23_zmbeh5gqniuw6ip6sx4ee6h5ea
+      '@ode-react-ui/hooks': 1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.23_zmbeh5gqniuw6ip6sx4ee6h5ea:
+  /@ode-react-ui/hooks/1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu:
     resolution: {integrity: sha512-LxA6GQjU8aiIuB64JhH02zdwTBYxSs2Fs1mbxTVsTlOltDFb9h0O3CmH5CAgX2wGFnGhSXGHaZIRSUGdVwwaTg==}
     peerDependencies:
       ode-ts-client: feat-explorer
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      ode-ts-client: 1.1.0-explorer.202301101703
+      ode-ts-client: 1.1.0-explorer.202301191127
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
@@ -2610,8 +2610,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202301101703:
-    resolution: {integrity: sha512-3qiRyP4PlRyCsvMyAN/dM3GxWnDulHTa+09yW8B/zbxCk4APFSWiY9MAPX9JngIrZ5jSaVopMyB/3rLi8qrSpA==}
+  /ode-ts-client/1.1.0-explorer.202301191127:
+    resolution: {integrity: sha512-E5O14mTEON+5Tjd7M54CCzhuwRD1EutxyQoPYEpA+d61/UEWPthVB79CrUt7lf0m/g0omZWOmHGNo3Hj6pV0Fw==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3

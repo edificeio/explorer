@@ -8,6 +8,7 @@ import {
   IResource,
   IExplorerContext,
   IExplorerFramework,
+  ID,
 } from "ode-ts-client";
 
 export interface ExplorerProviderProps {
@@ -49,6 +50,7 @@ export interface ExplorerContextProps {
   refreshFolder: () => void;
   printResource: () => void;
   openResource: () => void;
+  openSingleResource: (assetId: ID) => void;
   hideSelectedElement: () => void;
 }
 
