@@ -22,21 +22,6 @@ export default ({mode}: {mode:string}) => {
     changeOrigin: false
   }
 
-  /* If we need different endpoint prod/dev mode */
-  /* const proxyconf = () => {
-    if (mode === "production") {
-      return {
-        target: "http://localhost:8090",
-        changeOrigin: false
-      }
-    } else {
-      return {
-        target: "https://rd.opendigitaleducation.com",
-        changeOrigin: true, headers
-      }
-    }
-  } */
-
   return defineConfig({
     resolve: {
       alias: [
@@ -64,6 +49,10 @@ export default ({mode}: {mode:string}) => {
         {
           find: "@shared",
           replacement: path.resolve(__dirname, "./src/shared"),
+        },
+        {
+          find: "@store",
+          replacement: path.resolve(__dirname, "./src/store"),
         },
       ],
     },

@@ -1,10 +1,11 @@
-import { useExplorerContext, useOdeContext } from "@contexts/index";
+import { useExplorerContext } from "@contexts/index";
+import { useCurrentApp } from "@store/useOdeStore";
 import { IResource } from "ode-ts-client";
 
 import { FakeCard } from "../Card";
 
 export default function ResourcesList() {
-  const { currentApp } = useOdeContext();
+  const currentApp = useCurrentApp();
 
   const {
     state: { resources },

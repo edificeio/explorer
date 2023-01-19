@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { useExplorerContext, useOdeContext } from "@contexts/index";
+import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
@@ -17,11 +17,13 @@ import { Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
+import { useCurrentApp } from "@store/useOdeStore";
 
 export default function Explorer() {
   const { i18n } = useI18n();
-  const { currentApp } = useOdeContext();
   const { createResource, handleNextPage } = useExplorerContext();
+
+  const currentApp = useCurrentApp();
 
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
