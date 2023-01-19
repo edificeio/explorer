@@ -1,23 +1,44 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
-import { IExplorerContext, RESOURCE } from "ode-ts-client";
+import { ID, RESOURCE } from "ode-ts-client";
 
-export default function useTreeView(
-  context: IExplorerContext,
-  treeData: TreeNode,
-) {
-  const { dispatch } = useExplorerContext();
+export default function useTreeView() {
+  const {
+    dispatch,
+    context,
+    state: { treeData },
+  } = useExplorerContext();
 
-  const handleTreeItemSelect = useCallback((folderId: string) => {
-    dispatch({ type: "CLEAR_RESOURCES" });
+  /* const [folderId, setFolderId] = useState<ID>(
+    context.getSearchParameters().filters.folder,
+  );
+  const lastValue = usePrevious(folderId); */
 
-    context.getSearchParameters().filters.folder = folderId;
-    context.getSearchParameters().types = ["blog"];
-    context.getSearchParameters().pagination.startIdx = 0;
-    context.getResources();
-  }, []);
+  const [previousId, setPreviousId] = useState<ID>();
+
+  const handleTreeItemSelect = useCallback(
+    (folderId: string) => {
+      const previous = context.getSearchParameters().filters.folder;
+      setPreviousId(previous);
+
+      console.log("previous", context.getSearchParameters().filters.folder);
+      console.log("folderId", folderId);
+
+      dispatch({ type: "CLEAR_RESOURCES" });
+
+      context.getSearchParameters().filters.folder = folderId;
+      context.getSearchParameters().types = ["blog"];
+      context.getSearchParameters().pagination.startIdx = 0;
+      context.getResources();
+    },
+    [previousId],
+  );
+
+  useEffect(() => {
+    console.log("previousId", previousId);
+  }, [previousId]);
 
   const handleTreeItemFold = useCallback((folderId: any) => {
     console.log("tree item folded = ", folderId);
@@ -48,6 +69,7 @@ export default function useTreeView(
   }, []);
 
   return {
+    previousId,
     handleTreeItemSelect,
     handleTreeItemFold,
     handleTreeItemUnfold,

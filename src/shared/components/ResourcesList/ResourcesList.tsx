@@ -1,11 +1,11 @@
 import { useExplorerContext } from "@contexts/index";
+import { Card } from "@ode-react-ui/core";
 import { useCurrentApp } from "@store/useOdeStore";
 import { IResource } from "ode-ts-client";
 
-import { FakeCard } from "../Card";
-
 export default function ResourcesList() {
   const currentApp = useCurrentApp();
+  const appCode = currentApp?.address.replace("/", "");
 
   const {
     state: { resources },
@@ -23,16 +23,19 @@ export default function ResourcesList() {
   }
 
   return resources.length ? (
-    <ul className="grid ps-0">
+    <ul className="grid ps-0 list-unstyled">
       {resources.map((resource: IResource) => {
         return (
-          <FakeCard
-            {...resource}
-            key={resource.assetId}
-            currentApp={currentApp}
-            selected={isResourceSelected(resource)}
-            onClick={() => toggleSelect(resource)}
-          />
+          <li className="g-col-4" key={resource.assetId}>
+            <Card
+              name={resource.name}
+              creatorName={resource.creatorName}
+              updatedAt={resource.updatedAt}
+              appCode={appCode}
+              isSelected={isResourceSelected(resource)}
+              onClick={() => toggleSelect(resource)}
+            />
+          </li>
         );
       })}
     </ul>
