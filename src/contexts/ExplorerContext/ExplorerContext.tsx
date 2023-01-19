@@ -64,7 +64,8 @@ const reducer: Reducer<State, Action> = (
       const { payload } = action;
       return {
         ...state,
-        resources: [...state.resources, ...payload],
+        // resources: [...state.resources, ...payload],
+        resources: payload,
       };
     }
     case "CLEAR_RESOURCES": {

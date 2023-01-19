@@ -13,10 +13,7 @@ export default function useMoveModal({ onSuccess }: MoveModalArg) {
     useExplorerContext();
   const { treeData } = state;
   /* feature treeview @hook */
-  const { handleTreeItemFold, handleTreeItemUnfold } = useTreeView(
-    context,
-    treeData,
-  );
+  const { handleTreeItemFold, handleTreeItemUnfold } = useTreeView();
 
   async function onMove() {
     try {

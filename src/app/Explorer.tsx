@@ -4,6 +4,7 @@ import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
+import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { useI18n } from "@hooks/useI18n";
 import {
   AppCard,
@@ -12,8 +13,9 @@ import {
   FormControl,
   Input,
   SearchButton,
+  IconButton,
 } from "@ode-react-ui/core";
-import { Plus } from "@ode-react-ui/icons";
+import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
@@ -27,6 +29,7 @@ export default function Explorer() {
 
   /* actionbar @hook */
   const { isActionBarOpen } = useActionBar();
+  const { previousId, handleTreeItemSelect } = useTreeView();
 
   // Form
   const formRef = useRef(null);
@@ -34,6 +37,9 @@ export default function Explorer() {
   function handleOnSubmit(e: React.FormEvent): void {
     e.preventDefault();
   }
+
+  console.log("previousId", previousId);
+
   return (
     <>
       <AppHeader>
@@ -87,7 +93,21 @@ export default function Explorer() {
               />
             </FormControl>
           </form>
-          <h2 className="py-24 body">{i18n("explorer.filters.mine")}</h2>
+          <div className="py-24">
+            {!previousId ? (
+              <h2 className="body">{i18n("explorer.filters.mine")}</h2>
+            ) : (
+              <div className="d-flex align-items-center gap-8">
+                <IconButton
+                  icon={<ArrowLeft />}
+                  variant="ghost"
+                  color="tertiary"
+                  onClick={() => handleTreeItemSelect(previousId)}
+                />
+                <p className="body">Retour</p>
+              </div>
+            )}
+          </div>
           <FoldersList />
           <ResourcesList />
           <div className="d-grid">

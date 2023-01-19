@@ -19,19 +19,8 @@ if (rootElement?.dataset?.odeApp) {
 
   createRoot(rootElement!).render(
     <BrowserRouter>
-      {/* <OdeProvider params={params}> */}
       <App params={params} />
-      {/* </OdeProvider> */}
     </BrowserRouter>,
-    // <StrictMode>
-    // <BrowserRouter>
-    //   <OdeProvider params={params}>
-    //     <ExplorerProvider types={[RESOURCE.BLOG]}>
-    //       <App />
-    //     </ExplorerProvider>
-    //   </OdeProvider>
-    // </BrowserRouter>,
-    // </StrictMode>,
   );
 } else {
   // HTTP 500 screen ?

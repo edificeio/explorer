@@ -19,23 +19,31 @@ export default function ActionBarContainer({ isOpen }: { isOpen: boolean }) {
     isActivable,
     handleClick,
   } = useActionBar(isOpen);
+
   return isActionBarOpen ? (
     <div className="position-fixed bottom-0 start-0 end-0">
       <ActionBar>
         {actions
-          .filter((action) => action.available && action.target === "actionbar")
-          .map((action: IAction) => (
-            <Button
-              key={action.id}
-              type="button"
-              color="primary"
-              variant="filled"
-              disabled={!isActivable(action)}
-              onClick={() => handleClick(action)}
-            >
-              {i18n(`explorer.actions.${action.id}`)}
-            </Button>
-          ))}
+          .filter(
+            (action: IAction) =>
+              action.available && action.target === "actionbar",
+          )
+          .map((action: IAction) => {
+            console.log("action av", action.available);
+            return (
+              isActivable(action) && (
+                <Button
+                  key={action.id}
+                  type="button"
+                  color="primary"
+                  variant="filled"
+                  onClick={() => handleClick(action)}
+                >
+                  {i18n(`explorer.actions.${action.id}`)}
+                </Button>
+              )
+            );
+          })}
       </ActionBar>
       <MoveModal
         isOpen={isMoveModalOpen}
