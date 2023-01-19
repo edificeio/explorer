@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import {
   ConfigurationFrameworkFactory,
-  ExplorerFrameworkFactory,
   ISession,
   NotifyFrameworkFactory,
   SessionFrameworkFactory,
@@ -16,7 +15,6 @@ export default function useOdeBackend(
 ) {
   const sessionFramework = SessionFrameworkFactory.instance();
   const configure = ConfigurationFrameworkFactory.instance();
-  const explorer = ExplorerFrameworkFactory.instance();
   const notif = NotifyFrameworkFactory.instance();
   const { http } = TransportFrameworkFactory.instance();
 
@@ -56,7 +54,6 @@ export default function useOdeBackend(
     logout,
     session,
     configure,
-    explorer,
     notif,
     http,
   };

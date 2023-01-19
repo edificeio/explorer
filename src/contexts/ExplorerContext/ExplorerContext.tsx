@@ -8,11 +8,11 @@ import {
   Reducer,
 } from "react";
 
-import { useOdeContext } from "@contexts/OdeContext/OdeContext";
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { TreeNode } from "@ode-react-ui/core";
 import {
   ACTION,
+  ExplorerFrameworkFactory,
   ID,
   IExplorerContext,
   IFolder,
@@ -135,8 +135,9 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
  * - memoizes Treeview data (treeData) and Ressources list data (listData)
  * - ...
  */
-function ExplorerProvider({ children, types }: ExplorerProviderProps) {
-  const { params, explorer } = useOdeContext();
+
+function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
+  const explorer = ExplorerFrameworkFactory.instance();
 
   // Exploration context
   // const context = explorer.createContext(types, params.app);
