@@ -6,12 +6,19 @@ interface DeleteModalArg {
 
 export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
   const { context, selectedResources, selectedFolders } = useExplorerContext();
-
+  const isTrashResource =
+    selectedResources.filter((e) => !e.trashed).length > 0;
+  const isTrashFolder = selectedFolders.filter((e) => !e.trashed).length > 0;
+  const isTrash = isTrashFolder || isTrashResource;
   async function onDelete() {
     try {
       const resourceIds = selectedResources.map((e) => e.id);
       const folderIds = selectedFolders.map((e) => e.id);
-      await context.delete(resourceIds, folderIds);
+      if (isTrash) {
+        await context.trash(true, resourceIds, folderIds);
+      } else {
+        await context.delete(resourceIds, folderIds);
+      }
       onSuccess?.();
     } catch (e) {
       // TODO display an alert?
@@ -20,6 +27,7 @@ export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
   }
 
   return {
+    isTrash,
     onDelete: () => {
       onDelete();
     },
