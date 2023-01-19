@@ -11,9 +11,9 @@ export default ({mode}: {mode:string}) => {
 
   // Proxy variables
   const headers = { cookie: `oneSessionId=${envs.VITE_RD};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF}` }
-  const resHeaders = { 
+  const resHeaders = hasEnvFile? { 
     "set-cookie": [`oneSessionId=${envs.VITE_RD}`,`XSRF-TOKEN=${envs.VITE_XSRF}`]
-  }
+  } : {};
   const proxyObj = hasEnvFile ? {
     target: "https://rd.opendigitaleducation.com",
     changeOrigin: true, headers
