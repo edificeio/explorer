@@ -5,11 +5,9 @@ import { IAction, ACTION } from "ode-ts-client";
 
 type ModalName = "move" | "delete" | "void";
 
-export default function useActionBar(isOpen?: boolean) {
+export default function useActionBar() {
   const [actions, setActions] = useState<IAction[]>([]);
-  const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(
-    isOpen || false,
-  );
+  const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
   const {
@@ -25,11 +23,9 @@ export default function useActionBar(isOpen?: boolean) {
   } = useExplorerContext();
 
   useEffect(() => {
-    (async () => {
-      const ctx = context.getContext() || (await context.initialize());
-      setActions(ctx.actions);
-    })();
-  }, [context]);
+    // @ts-expect-error
+    setActions(context.getContext().actions);
+  }, []);
 
   useEffect(() => {
     if (selectedResources.length === 0 && selectedFolders.length === 0) {

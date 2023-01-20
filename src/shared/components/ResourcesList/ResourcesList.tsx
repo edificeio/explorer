@@ -31,7 +31,7 @@ export default function ResourcesList() {
 
   return resources.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {resources.map((resource: IResource) => {
+      {resources.map((resource: IResource, index: number) => {
         return (
           <li className="g-col-4" key={resource.assetId}>
             <Card
@@ -43,13 +43,16 @@ export default function ResourcesList() {
               onOpen={() => openSingleResource(resource.assetId)}
               onSelect={() => toggleSelect(resource)}
               updatedAt={dayjs(resource.updatedAt).fromNow()}
-              src="https://media.istockphoto.com/id/1322277517/fr/photo/herbe-sauvage-dans-les-montagnes-au-coucher-du-soleil.jpg?s=612x612&w=0&k=20&c=tQ19uZQLlIFy8J6QWMyOL6lPt3pdSHBSDFHoXr1K_g0="
+              // src="https://media.istockphoto.com/id/1322277517/fr/photo/herbe-sauvage-dans-les-montagnes-au-coucher-du-soleil.jpg?s=612x612&w=0&k=20&c=tQ19uZQLlIFy8J6QWMyOL6lPt3pdSHBSDFHoXr1K_g0="
             />
           </li>
         );
       })}
     </ul>
   ) : (
-    <p>Aucune resource</p>
+    <img
+      src={`/assets/themes/ode-bootstrap/images/emptyscreen/illu-${appCode}.svg`}
+      alt="application emptyscreen"
+    />
   );
 }

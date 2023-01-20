@@ -34,14 +34,14 @@ specifiers:
   react-dom: 18.2.0
   react-error-boundary: 3.1.4
   react-i18next: 12.1.4
-  react-router-dom: 6.6.2
+  react-router-dom: 6.7.0
   swr: 2.0.0
   typescript: 4.9.4
   vite: 4.0.4
   zustand: 4.3.2
 
 dependencies:
-  '@ode-react-ui/core': 1.0.7-dev.24_lf5lpaeix7ef7rlt7wulmgnrpa
+  '@ode-react-ui/core': 1.0.7-dev.25_lf5lpaeix7ef7rlt7wulmgnrpa
   '@ode-react-ui/hooks': 1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
@@ -54,7 +54,7 @@ dependencies:
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
   react-i18next: 12.1.4_iakk3dtjhjpukdoa4oua5khgci
-  react-router-dom: 6.6.2_biqbaboplfbrettd7655fr4n2y
+  react-router-dom: 6.7.0_biqbaboplfbrettd7655fr4n2y
   swr: 2.0.0_react@18.2.0
   zustand: 4.3.2_react@18.2.0
 
@@ -611,8 +611,8 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.24_lf5lpaeix7ef7rlt7wulmgnrpa:
-    resolution: {integrity: sha512-BKYlJRimoUj9d+JB6w/kLX0H1h0lUXkR6VC8YRu7fsgAipSwCXSgLgYCL2WjccvDWfHM/NYn9gA2xBh3ZZ6yLA==}
+  /@ode-react-ui/core/1.0.7-dev.25_lf5lpaeix7ef7rlt7wulmgnrpa:
+    resolution: {integrity: sha512-/4EiOxVWuDhBCAF9fHgqF6Eh0ewT234Bz7/tg8LfsOhPFjMjgiNVTB3FwpPTpjwUcZjvixTTnXp5rXUItPt/WQ==}
     peerDependencies:
       '@ode-react-ui/hooks': '*'
       '@ode-react-ui/icons': '*'
@@ -647,8 +647,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@remix-run/router/1.2.1:
-    resolution: {integrity: sha512-XiY0IsyHR+DXYS5vBxpoBe/8veTeoRpMHP+vDosLZxL5bnpetzI0igkxkLZS235ldLzyfkxF+2divEwWHP3vMQ==}
+  /@remix-run/router/1.3.0:
+    resolution: {integrity: sha512-nwQoYb3m4DDpHTeOwpJEuDt8lWVcujhYYSFGLluC+9es2PyLjm+jjq3IeRBQbwBtPLJE/lkuHuGHr8uQLgmJRA==}
     engines: {node: '>=14'}
     dev: false
 
@@ -2817,26 +2817,26 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react-router-dom/6.6.2_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-6SCDXxRQqW5af8ImOqKza7icmQ47/EMbz572uFjzvcArg3lZ+04PxSPp8qGs+p2Y+q+b+S/AjXv8m8dyLndIIA==}
+  /react-router-dom/6.7.0_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-jQtXUJyhso3kFw430+0SPCbmCmY1/kJv8iRffGHwHy3CkoomGxeYzMkmeSPYo6Egzh3FKJZRAL22yg5p2tXtfg==}
     engines: {node: '>=14'}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
-      '@remix-run/router': 1.2.1
+      '@remix-run/router': 1.3.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-router: 6.6.2_react@18.2.0
+      react-router: 6.7.0_react@18.2.0
     dev: false
 
-  /react-router/6.6.2_react@18.2.0:
-    resolution: {integrity: sha512-uJPG55Pek3orClbURDvfljhqFvMgJRo59Pktywkk8hUUkTY2aRfza8Yhl/vZQXs+TNQyr6tu+uqz/fLxPICOGQ==}
+  /react-router/6.7.0_react@18.2.0:
+    resolution: {integrity: sha512-KNWlG622ddq29MAM159uUsNMdbX8USruoKnwMMQcs/QWZgFUayICSn2oB7reHce1zPj6CG18kfkZIunSSRyGHg==}
     engines: {node: '>=14'}
     peerDependencies:
       react: '>=16.8'
     dependencies:
-      '@remix-run/router': 1.2.1
+      '@remix-run/router': 1.3.0
       react: 18.2.0
     dev: false
 

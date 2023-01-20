@@ -1,8 +1,5 @@
-import { useRef } from "react";
-
 import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
-import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import { useI18n } from "@hooks/useI18n";
 import {
@@ -21,27 +18,20 @@ import { useCurrentApp } from "@store/useOdeStore";
 
 export default function Explorer() {
   const { i18n } = useI18n();
-  const { createResource, handleNextPage } = useExplorerContext();
+  const { context, createResource, handleNextPage } = useExplorerContext();
 
   const currentApp = useCurrentApp();
 
-  /* actionbar @hook */
-  const { isActionBarOpen } = useActionBar();
+  console.log("explorer");
 
-  // Form
-  const formRef = useRef(null);
-
-  function handleOnSubmit(e: React.FormEvent): void {
-    e.preventDefault();
-  }
-
-  return (
+  return context.isInitialized() ? (
     <>
       <AppHeader>
         <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
           <AppCard.Icon size="40" />
           <AppCard.Name />
         </AppCard>
+
         <Button
           type="button"
           color="primary"
@@ -69,11 +59,12 @@ export default function Explorer() {
           />
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
+          {/* {resources.length && folders.length > 1 ? ( */}
           <form
-            ref={formRef}
+            // ref={formRef}
             noValidate
             className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16"
-            onSubmit={handleOnSubmit}
+            // onSubmit={handleOnSubmit}
           >
             <FormControl id="search" className="input-group">
               <Input
@@ -88,6 +79,7 @@ export default function Explorer() {
               />
             </FormControl>
           </form>
+          {/* ) : null} */}
           <div className="py-24">
             <h2 className="body">{i18n("explorer.filters.mine")}</h2>
             {/* {previousId === "default" ? (
@@ -117,8 +109,8 @@ export default function Explorer() {
             </Button>
           </div>
         </Grid.Col>
-        <ActionBarContainer isOpen={isActionBarOpen} />
+        <ActionBarContainer />
       </Grid>
     </>
-  );
+  ) : null;
 }

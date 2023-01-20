@@ -15,6 +15,7 @@ export interface ExplorerProviderProps {
   children: ReactNode;
   types: ResourceType[];
   params: OdeProviderParams;
+  explorer: IExplorerFramework;
 }
 
 /** The resources/folders selection reducer */
@@ -32,7 +33,6 @@ export interface State {
 
 export interface ExplorerContextProps {
   context: IExplorerContext;
-  explorer: IExplorerFramework;
   state: State;
   selectedFolders: IFolder[];
   selectedResources: IResource[];

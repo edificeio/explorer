@@ -6,11 +6,11 @@ import { Plus } from "@ode-react-ui/icons";
 
 export const TreeViewContainer = () => {
   const { i18n } = useI18n();
-  const { context, state } = useExplorerContext();
+  const { state } = useExplorerContext();
   const { treeData } = state;
   /* feature treeview @hook */
   const { handleTreeItemSelect, handleTreeItemFold, handleTreeItemUnfold } =
-    useTreeView(context, treeData);
+    useTreeView();
 
   return (
     <>

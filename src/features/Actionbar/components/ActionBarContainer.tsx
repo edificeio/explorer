@@ -5,7 +5,7 @@ import { useI18n } from "@hooks/useI18n";
 import { Button, ActionBar } from "@ode-react-ui/core";
 import { IAction } from "ode-ts-client";
 
-export default function ActionBarContainer({ isOpen }: { isOpen: boolean }) {
+export default function ActionBarContainer() {
   const { i18n } = useI18n();
   const {
     actions,
@@ -18,7 +18,7 @@ export default function ActionBarContainer({ isOpen }: { isOpen: boolean }) {
     onDeleteSuccess,
     isActivable,
     handleClick,
-  } = useActionBar(isOpen);
+  } = useActionBar();
 
   return isActionBarOpen ? (
     <div className="position-fixed bottom-0 start-0 end-0">
@@ -29,7 +29,7 @@ export default function ActionBarContainer({ isOpen }: { isOpen: boolean }) {
               action.available && action.target === "actionbar",
           )
           .map((action: IAction) => {
-            console.log("action av", action.available);
+            console.log("action av", action.target);
             return (
               isActivable(action) && (
                 <Button
