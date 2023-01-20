@@ -1,12 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
 import { RESOURCE } from "ode-ts-client";
 
 export default function useTreeView() {
-  const [previousId] = useState<string>(sessionStorage.getItem("previousId"));
-
   const {
     dispatch,
     context,
@@ -15,13 +13,6 @@ export default function useTreeView() {
 
   const handleTreeItemSelect = useCallback((folderId: string) => {
     dispatch({ type: "CLEAR_RESOURCES" });
-
-    console.log(previousId === folderId);
-
-    sessionStorage.setItem(
-      "previousId",
-      context.getSearchParameters().filters.folder,
-    );
 
     context.getSearchParameters().filters.folder = folderId;
     context.getSearchParameters().types = ["blog"];

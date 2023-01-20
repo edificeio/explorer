@@ -1,5 +1,4 @@
 import React, {
-  useMemo,
   createContext,
   useContext,
   useEffect,
@@ -12,7 +11,6 @@ import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { TreeNode } from "@ode-react-ui/core";
 import {
   ACTION,
-  ExplorerFrameworkFactory,
   ID,
   IExplorerContext,
   IFolder,
@@ -64,8 +62,7 @@ const reducer: Reducer<State, Action> = (
       const { payload } = action;
       return {
         ...state,
-        // resources: [...state.resources, ...payload],
-        resources: payload,
+        resources: [...state.resources, ...payload],
       };
     }
     case "CLEAR_RESOURCES": {
@@ -137,14 +134,16 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
  * - ...
  */
 
-function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
-  const explorer = ExplorerFrameworkFactory.instance();
+function ExplorerProvider({
+  children,
+  types,
+  params,
+  explorer,
+}: ExplorerProviderProps) {
+  const createContext = explorer.createContext(types, params.app);
 
   // Exploration context
-  // const context = explorer.createContext(types, params.app);
-  const [context] = useState<IExplorerContext>(() =>
-    explorer.createContext(types, params.app),
-  );
+  const [context, setContext] = useState<IExplorerContext>(createContext);
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -157,10 +156,13 @@ function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 2;
+    context.getSearchParameters().pagination.pageSize = 4;
     context.getSearchParameters().filters.folder = "default";
     // Do explore...
-    context.initialize();
+    (async () => {
+      await context.initialize();
+      setContext(context);
+    })();
   }, []);
 
   // Observe streamed search results
@@ -332,34 +334,30 @@ function ExplorerProvider({ children, types, params }: ExplorerProviderProps) {
     await context.getResources();
   }
 
-  const values = useMemo(
-    () => ({
-      context,
-      explorer,
-      state,
-      selectedFolders: Object.values(selectedFolders) as IFolder[],
-      selectedResources: Object.values(selectedResources) as IResource[],
-      dispatch,
-      isFolderSelected,
-      isResourceSelected,
-      handleNextPage,
-      openResource,
-      openSingleResource,
-      createResource,
-      deselectAllFolders,
-      deselectAllResources,
-      deselectFolder,
-      deselectResource,
-      selectFolder,
-      selectResource,
-      refreshFolder,
-      printResource,
-      hideSelectedElement,
-    }),
-    [selectedFolders, selectedResources, context, state],
-  );
+  const store = {
+    context,
+    state,
+    selectedFolders: Object.values(selectedFolders) as IFolder[],
+    selectedResources: Object.values(selectedResources) as IResource[],
+    dispatch,
+    isFolderSelected,
+    isResourceSelected,
+    handleNextPage,
+    openResource,
+    openSingleResource,
+    createResource,
+    deselectAllFolders,
+    deselectAllResources,
+    deselectFolder,
+    deselectResource,
+    selectFolder,
+    selectResource,
+    refreshFolder,
+    printResource,
+    hideSelectedElement,
+  };
 
-  return <Context.Provider value={values}>{children}</Context.Provider>;
+  return <Context.Provider value={store}>{children}</Context.Provider>;
 }
 
 function useExplorerContext() {

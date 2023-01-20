@@ -13,6 +13,7 @@ import {
   useSetCurrentApp,
 } from "@store/useOdeStore";
 import { RESOURCE } from "ode-ts-client";
+import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
 
@@ -23,7 +24,7 @@ function App({ params }: { params: OdeProviderParams }) {
 
   const { getDegreeSchool, getOdeBoostrapThemePath } = useOdeBootstrap();
 
-  const { session } = useOdeBackend(
+  const { session, explorer } = useOdeBackend(
     params.version || null,
     params.cdnDomain || null,
   );
@@ -66,11 +67,10 @@ function App({ params }: { params: OdeProviderParams }) {
 
   if (!session || session.notLoggedIn) {
     return (
-      <div>
-        <a href="http://localhost:8090/" target="_blank" rel="noreferrer">
-          S'identifier
-        </a>
-        sur le backend...
+      <div className="d-grid min-vh-100 align-items-center justify-content-center">
+        <Link to="/auth/login" target="_blank" rel="noreferrer">
+          S'identifier sur le backend...
+        </Link>
       </div>
     );
   }
@@ -84,7 +84,11 @@ function App({ params }: { params: OdeProviderParams }) {
           "mt-24": is1d,
         })}
       >
-        <ExplorerProvider params={params} types={[RESOURCE.BLOG]}>
+        <ExplorerProvider
+          explorer={explorer}
+          params={params}
+          types={[RESOURCE.BLOG]}
+        >
           <Explorer />
         </ExplorerProvider>
       </Main>

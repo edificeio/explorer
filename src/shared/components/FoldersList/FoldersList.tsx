@@ -22,7 +22,7 @@ function FoldersList() {
   }
   return folders.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {folders.map((folder: IFolder) => {
+      {folders.map((folder: IFolder, index: number) => {
         return (
           <li className="g-col-4" key={folder.id}>
             <Card
