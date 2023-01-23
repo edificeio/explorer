@@ -1,10 +1,11 @@
-import React, {
+import {
   createContext,
+  Reducer,
   useContext,
   useEffect,
   useReducer,
-  useState,
-  Reducer,
+  useRef,
+  useMemo,
 } from "react";
 
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
@@ -18,12 +19,12 @@ import {
 } from "ode-ts-client";
 
 import {
-  ExplorerContextProps,
-  ThingWithAnID,
+  Action,
   ActionOnThingsWithAnId,
+  ExplorerContextProps,
   ExplorerProviderProps,
   State,
-  Action,
+  ThingWithAnID,
 } from "./types";
 
 const Context = createContext<ExplorerContextProps | null>(null!);
@@ -136,17 +137,16 @@ function selectionReducer<T extends Record<ID, ThingWithAnID>>(
 
 function ExplorerProvider({
   children,
-  types,
+  explorerFramework,
   params,
-  explorer,
+  types,
 }: ExplorerProviderProps) {
-  const createContext = explorer.createContext(types, params.app);
+  const createContext = explorerFramework.createContext(types, params.app);
 
   // Exploration context
-  const [context, setContext] = useState<IExplorerContext>(createContext);
-
+  const contextRef = useRef<IExplorerContext>(createContext);
+  // State
   const [state, dispatch] = useReducer(reducer, initialState);
-
   // Selected folders and resources
   const [selectedFolders, dispatchOnFolder] = useReducer(selectionReducer, {});
   const [selectedResources, dispatchOnResource] = useReducer(
@@ -156,21 +156,21 @@ function ExplorerProvider({
 
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
-    context.getSearchParameters().pagination.pageSize = 4;
-    context.getSearchParameters().filters.folder = "default";
+    contextRef.current.getSearchParameters().pagination.pageSize = 4;
+    contextRef.current.getSearchParameters().filters.folder = "default";
     // Do explore...
     (async () => {
-      await context.initialize();
-      setContext(context);
+      await contextRef.current.initialize();
+      // setContext(context);
     })();
   }, []);
 
   // Observe streamed search results
   useEffect(() => {
-    const subscription = context.latestResources().subscribe({
+    const subscription = contextRef.current.latestResources().subscribe({
       next: (resultset) => {
         // Prepare searching next page
-        const { pagination } = context.getSearchParameters();
+        const { pagination } = contextRef.current.getSearchParameters();
         pagination.maxIdx = resultset.output.pagination.maxIdx;
         pagination.startIdx =
           resultset.output.pagination.startIdx +
@@ -238,7 +238,7 @@ function ExplorerProvider({
   }
 
   async function openSingleResource(assetId: ID) {
-    return await explorer
+    return await explorerFramework
       .getBus()
       .publish(types[0], ACTION.OPEN, { resourceId: assetId });
   }
@@ -250,7 +250,7 @@ function ExplorerProvider({
       throw new Error("Cannot open more than 1 resource");
     }
     const item = items[0];
-    await explorer
+    await explorerFramework
       .getBus()
       .publish(types[0], ACTION.OPEN, { resourceId: item.assetId });
   }
@@ -262,13 +262,13 @@ function ExplorerProvider({
       throw new Error("Cannot open more than 1 resource");
     }
     const item = items[0];
-    await explorer
+    await explorerFramework
       .getBus()
       .publish(types[0], ACTION.PRINT, { resourceId: item.assetId });
   }
 
   async function refreshFolder() {
-    const resultset = await context.getResources();
+    const resultset = await contextRef.current.getResources();
     wrapFolderData(resultset.folders);
     wrapResourceData(resultset.resources);
   }
@@ -278,7 +278,7 @@ function ExplorerProvider({
   }
 
   async function createResource() {
-    return await explorer
+    return await explorerFramework
       .getBus()
       .publish(types[0], ACTION.CREATE, "test proto");
   }
@@ -331,31 +331,34 @@ function ExplorerProvider({
   }
 
   async function handleNextPage() {
-    await context.getResources();
+    await contextRef.current.getResources();
   }
 
-  const store = {
-    context,
-    state,
-    selectedFolders: Object.values(selectedFolders) as IFolder[],
-    selectedResources: Object.values(selectedResources) as IResource[],
-    dispatch,
-    isFolderSelected,
-    isResourceSelected,
-    handleNextPage,
-    openResource,
-    openSingleResource,
-    createResource,
-    deselectAllFolders,
-    deselectAllResources,
-    deselectFolder,
-    deselectResource,
-    selectFolder,
-    selectResource,
-    refreshFolder,
-    printResource,
-    hideSelectedElement,
-  };
+  const store = useMemo(
+    () => ({
+      contextRef,
+      state,
+      selectedFolders: Object.values(selectedFolders) as IFolder[],
+      selectedResources: Object.values(selectedResources) as IResource[],
+      dispatch,
+      isFolderSelected,
+      isResourceSelected,
+      handleNextPage,
+      openResource,
+      openSingleResource,
+      createResource,
+      deselectAllFolders,
+      deselectAllResources,
+      deselectFolder,
+      deselectResource,
+      selectFolder,
+      selectResource,
+      refreshFolder,
+      printResource,
+      hideSelectedElement,
+    }),
+    [state, selectedFolders, selectedResources],
+  );
 
   return <Context.Provider value={store}>{children}</Context.Provider>;
 }

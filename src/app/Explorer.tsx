@@ -1,7 +1,9 @@
 import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
+import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { useI18n } from "@hooks/useI18n";
+import { IconButton } from "@ode-react-ui/core";
 import {
   AppCard,
   Button,
@@ -10,21 +12,30 @@ import {
   Input,
   SearchButton,
 } from "@ode-react-ui/core";
-import { Plus } from "@ode-react-ui/icons";
+import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
-import { useCurrentApp } from "@store/useOdeStore";
+import {
+  useCurrentApp,
+  usePreviousFolder,
+  useSession,
+} from "@store/useOdeStore";
 
+let explorerRendered = 0;
 export default function Explorer() {
+  explorerRendered++;
+  const previousFolder = usePreviousFolder();
+  const session = useSession();
+
   const { i18n } = useI18n();
-  const { context, createResource, handleNextPage } = useExplorerContext();
+  const { contextRef, createResource, handleNextPage } = useExplorerContext();
 
   const currentApp = useCurrentApp();
 
-  console.log("explorer");
+  const { handleNavigationBack } = useTreeView();
 
-  return context.isInitialized() ? (
+  return contextRef.current.isInitialized() ? (
     <>
       <AppHeader>
         <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
@@ -43,6 +54,7 @@ export default function Explorer() {
           {i18n("explorer.create.title")}
         </Button>
       </AppHeader>
+      {explorerRendered}
       <Grid>
         <Grid.Col
           sm="3"
@@ -59,12 +71,9 @@ export default function Explorer() {
           />
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
-          {/* {resources.length && folders.length > 1 ? ( */}
           <form
-            // ref={formRef}
             noValidate
             className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16"
-            // onSubmit={handleOnSubmit}
           >
             <FormControl id="search" className="input-group">
               <Input
@@ -79,10 +88,8 @@ export default function Explorer() {
               />
             </FormControl>
           </form>
-          {/* ) : null} */}
           <div className="py-24">
-            <h2 className="body">{i18n("explorer.filters.mine")}</h2>
-            {/* {previousId === "default" ? (
+            {previousFolder.length === 0 ? (
               <h2 className="body">{i18n("explorer.filters.mine")}</h2>
             ) : (
               <div className="d-flex align-items-center gap-8">
@@ -90,14 +97,20 @@ export default function Explorer() {
                   icon={<ArrowLeft />}
                   variant="ghost"
                   color="tertiary"
-                  onClick={() => handleTreeItemSelect(previousId)}
+                  onClick={() => handleNavigationBack()}
                 />
-                <p className="body">Retour</p>
+                <p className="body">
+                  <strong>
+                    {previousFolder.length === 1
+                      ? i18n("explorer.filters.mine")
+                      : previousFolder[previousFolder.length - 2].name}
+                  </strong>
+                </p>
               </div>
-            )} */}
+            )}
           </div>
           <FoldersList />
-          <ResourcesList />
+          <ResourcesList session={session} />
           <div className="d-grid">
             <Button
               type="button"

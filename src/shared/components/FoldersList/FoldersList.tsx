@@ -11,7 +11,7 @@ function FoldersList() {
     isFolderSelected,
   } = useExplorerContext();
 
-  const { handleTreeItemSelect } = useTreeView();
+  const { handleNavigationFolder } = useTreeView();
 
   function toggleSelect(folder: IFolder) {
     if (isFolderSelected(folder)) {
@@ -22,14 +22,17 @@ function FoldersList() {
   }
   return folders.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {folders.map((folder: IFolder, index: number) => {
+      {folders.map((folder: IFolder) => {
+        const { id, name } = folder;
         return (
-          <li className="g-col-4" key={folder.id}>
+          <li className="g-col-4" key={id}>
             <Card
-              name={folder.name}
+              name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={() => handleTreeItemSelect(folder.id)}
+              onOpen={() =>
+                handleNavigationFolder({ folderId: id, folderName: name })
+              }
               onSelect={() => toggleSelect(folder)}
             />
           </li>

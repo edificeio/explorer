@@ -9,7 +9,7 @@ interface MoveModalArg {
 
 export default function useMoveModal({ onSuccess }: MoveModalArg) {
   const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
-  const { context, selectedResources, selectedFolders, state } =
+  const { contextRef, selectedResources, selectedFolders, state } =
     useExplorerContext();
   const { treeData } = state;
   /* feature treeview @hook */
@@ -22,7 +22,7 @@ export default function useMoveModal({ onSuccess }: MoveModalArg) {
       }
       const resourceIds = selectedResources.map((e) => e.id);
       const folderIds = selectedFolders.map((e) => e.id);
-      await context.move(selectedFolder, resourceIds, folderIds);
+      await contextRef.current.move(selectedFolder, resourceIds, folderIds);
       onSuccess?.();
     } catch (e) {
       // TODO display an alert?

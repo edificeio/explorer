@@ -1,34 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import {
-  ConfigurationFrameworkFactory,
-  ExplorerFrameworkFactory,
-  ISession,
-  NotifyFrameworkFactory,
-  SessionFrameworkFactory,
-  TransportFrameworkFactory,
-} from "ode-ts-client";
+import { ConfigurationFrameworkFactory } from "ode-ts-client";
 
 /** Custom Hook for ode-ts-client integration */
 export default function useOdeBackend(
   version: string | null,
   cdnDomain: string | null,
 ) {
-  const { http } = TransportFrameworkFactory.instance();
-  const configure = ConfigurationFrameworkFactory.instance();
-  const explorer = ExplorerFrameworkFactory.instance();
-  const notif = NotifyFrameworkFactory.instance();
-  const sessionFramework = SessionFrameworkFactory.instance();
-
-  const [session, setSession] = useState<ISession | null>(null);
+  const configureExplorer = ConfigurationFrameworkFactory.instance();
 
   // Exécuté au premier render du Composant
   useEffect(() => {
     const initOnce = async () => {
       try {
-        await sessionFramework.initialize();
-        await configure.initialize(version, cdnDomain);
-        setSession(sessionFramework.session); // ...same object, but triggers React.
+        await configureExplorer.initialize(version, cdnDomain);
       } catch (e) {
         console.log(e); // An unrecovable error occured
       }
@@ -54,10 +39,6 @@ export default function useOdeBackend(
   return {
     login,
     logout,
-    configure,
-    explorer,
-    http,
-    notif,
-    session,
+    configureExplorer,
   };
 }
