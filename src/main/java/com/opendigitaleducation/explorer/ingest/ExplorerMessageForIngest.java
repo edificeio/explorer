@@ -59,7 +59,7 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
     }
 
     public long getVersion() {
-        return getMessage().getLong("version");
+        return getMessage().getLong("version",0l);
     }
 
     @Override
