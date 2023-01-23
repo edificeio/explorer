@@ -30,9 +30,7 @@ function FoldersList() {
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={() =>
-                handleNavigationFolder({ folderId: id, folderName: name })
-              }
+              onOpen={() => handleNavigationFolder(id)}
               onSelect={() => toggleSelect(folder)}
             />
           </li>

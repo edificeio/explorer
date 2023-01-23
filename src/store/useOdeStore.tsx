@@ -1,49 +1,27 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import {
-  ConfigurationFrameworkFactory,
-  ExplorerFrameworkFactory,
-  IIdiom,
-  ISession,
-  IWebApp,
-  NotifyFrameworkFactory,
-  SessionFrameworkFactory,
-  TransportFrameworkFactory,
-} from "ode-ts-client";
 import { create } from "zustand";
 
-const { http } = TransportFrameworkFactory.instance();
-const configureFramework = ConfigurationFrameworkFactory.instance();
-const explorerFramework = ExplorerFrameworkFactory.instance();
-const notifyFramework = NotifyFrameworkFactory.instance();
-const sessionFramework = SessionFrameworkFactory.instance();
-
-export const { Platform } = configureFramework;
-
-export const basePath = Platform.theme.basePath + "/img/illustrations";
-
 interface State {
-  idiom: IIdiom;
-  is1d: boolean;
-  currentApp: Pick<IWebApp, "address">;
-  user: null;
-  session: ISession;
+  // idiom: IIdiom;
+  // theme: ITheme;
+  // app: Pick<IWebApp, "address">;
+  // session: ISession;
   previousFolder: string[] | any;
 }
 
 interface Action {
-  setIdiom: () => void;
-  setIs1d: (response: boolean) => void;
-  setCurrentApp: (app: IWebApp) => void;
-  setUser: () => void;
-  setSession: () => void;
+  // setIdiom: (Platform: any) => void;
+  // setTheme: (Platform: any) => void;
+  // setApp: (app: IWebApp) => void;
+  // setSession: (session: ISession) => void;
   setPreviousFolder: (previousId: string, previousName: string) => void;
   clearPreviousFolder: () => void;
 }
 
 export const useOdeStore = create<State & Action>((set, get) => ({
-  idiom: Platform.idiom,
-  is1d: false,
-  currentApp: {
+  // idiom: null!,
+  // theme: null!,
+  /* app: {
     icon: "blog",
     address: "",
     display: false,
@@ -51,27 +29,26 @@ export const useOdeStore = create<State & Action>((set, get) => ({
     isExternal: false,
     name: "Blog",
     scope: [],
-  },
+  }, */
   user: null!,
-  session: null!,
+  // session: null!,
   previousFolder: [],
-  setIdiom: () => set({ idiom: Platform.idiom }),
-  setIs1d: (response) => set({ is1d: response }),
-  setCurrentApp: (app) => set({ currentApp: app }),
-  setUser: async () => {
-    const response = await fetch("/userbook/api/person");
-    const responseJson = await response.json();
-    const user = responseJson.result[0];
-    set({ user });
-  },
-  setSession: async () => {
+  // setIdiom: (Platform) => set({ idiom: Platform.idiom }),
+  /* setTheme: async (Platform) => {
     try {
-      await sessionFramework.initialize();
-      set({ session: sessionFramework.session });
+      const theme = await Platform.theme.onSkinReady();
+      console.log(theme.is1D);
+      console.log(theme.is2D);
+
+      set({ theme }, true);
     } catch (e) {
-      console.log(e); // An unrecovable error occured
+      console.log(e);
     }
-  },
+  }, */
+  /* setApp: (app) => set({ app }, true), */
+  /* setSession: (session) => {
+    set({ session });
+  }, */
   setPreviousFolder: (previousId: string, previousName: string) =>
     set((state) => ({
       previousFolder: [
@@ -87,30 +64,19 @@ export const useOdeStore = create<State & Action>((set, get) => ({
   },
 }));
 
-export const useIdiom = () => useOdeStore((state) => state.idiom);
+// export const useIdiom = () => useOdeStore((state) => state.idiom);
+// export const useSetIdiom = () => useOdeStore((state) => state.setIdiom);
 
-export const useIs1d = () => useOdeStore((state) => state.is1d);
-export const useSetIs1d = () => useOdeStore((state) => state.setIs1d);
+// export const useTheme = () => useOdeStore((state) => state.theme);
+/* export const useSetTheme = () => useOdeStore((state) => state.setTheme); */
 
-export const useCurrentApp = () => useOdeStore((state) => state.currentApp);
-export const useSetCurrentApp = () =>
-  useOdeStore((state) => state.setCurrentApp);
+// export const useApp = () => useOdeStore((state) => state.app);
+// export const useSetApp = () => useOdeStore((state) => state.setApp);
 
-export const useUser = () => useOdeStore((state) => state.user);
-export const useSetUser = () => useOdeStore((state) => state.setUser);
-
-export const useSession = () => useOdeStore((state) => state.session);
-export const useSetSession = () => useOdeStore((state) => state.setSession);
+// export const useSession = () => useOdeStore((state) => state.session);
+// export const useSetSession = () => useOdeStore((state) => state.setSession);
 
 export const usePreviousFolder = () =>
   useOdeStore((state) => state.previousFolder);
 export const useSetPreviousFolder = () =>
   useOdeStore((state) => state.setPreviousFolder);
-
-export {
-  http,
-  configureFramework,
-  explorerFramework,
-  notifyFramework,
-  sessionFramework,
-};

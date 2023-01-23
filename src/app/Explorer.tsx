@@ -2,43 +2,42 @@ import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import useTreeView from "@features/TreeView/hooks/useTreeView";
-import { useI18n } from "@hooks/useI18n";
-import { IconButton } from "@ode-react-ui/core";
 import {
   AppCard,
   Button,
   Grid,
   FormControl,
   Input,
+  IconButton,
   SearchButton,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
-import {
-  useCurrentApp,
-  usePreviousFolder,
-  useSession,
-} from "@store/useOdeStore";
+import { usePreviousFolder } from "@store/useOdeStore";
+import { ISession, IWebApp } from "ode-ts-client";
 
-let explorerRendered = 0;
-export default function Explorer() {
-  explorerRendered++;
+export default function Explorer({
+  session,
+  app,
+}: {
+  session: ISession;
+  app: IWebApp | undefined;
+}) {
   const previousFolder = usePreviousFolder();
-  const session = useSession();
 
-  const { i18n } = useI18n();
-  const { contextRef, createResource, handleNextPage } = useExplorerContext();
-
-  const currentApp = useCurrentApp();
+  const { contextRef, createResource, handleNextPage, i18n } =
+    useExplorerContext();
 
   const { handleNavigationBack } = useTreeView();
+
+  console.count("Explorer");
 
   return contextRef.current.isInitialized() ? (
     <>
       <AppHeader>
-        <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
+        <AppCard app={app} isHeading headingStyle="h3" level="h1">
           <AppCard.Icon size="40" />
           <AppCard.Name />
         </AppCard>
@@ -54,7 +53,6 @@ export default function Explorer() {
           {i18n("explorer.create.title")}
         </Button>
       </AppHeader>
-      {explorerRendered}
       <Grid>
         <Grid.Col
           sm="3"
@@ -110,7 +108,7 @@ export default function Explorer() {
             )}
           </div>
           <FoldersList />
-          <ResourcesList session={session} />
+          <ResourcesList app={app} session={session} />
           <div className="d-grid">
             <Button
               type="button"
