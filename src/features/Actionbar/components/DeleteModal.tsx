@@ -1,5 +1,5 @@
+import { useExplorerContext } from "@contexts/index";
 import useDeleteModal from "@features/Actionbar/hooks/useDeleteModal";
-import { useI18n } from "@hooks/useI18n";
 import { Modal, Button } from "@ode-react-ui/core";
 
 interface DeleteModalProps {
@@ -13,7 +13,8 @@ export default function DeleteModal({
   onSuccess = () => ({}),
   onCancel = () => ({}),
 }: DeleteModalProps) {
-  const { i18n } = useI18n();
+  const { i18n } = useExplorerContext();
+
   const { isTrash, onDelete } = useDeleteModal({ onSuccess });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">

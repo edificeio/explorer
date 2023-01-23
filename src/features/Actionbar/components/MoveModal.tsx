@@ -1,5 +1,5 @@
+import { useExplorerContext } from "@contexts/index";
 import useMoveModal from "@features/Actionbar/hooks/useMoveModal";
-import { useI18n } from "@hooks/useI18n";
 import { Modal, Button, TreeView } from "@ode-react-ui/core";
 
 interface MoveModalProps {
@@ -13,7 +13,7 @@ export default function MoveModal({
   onSuccess = () => {},
   onCancel = () => {},
 }: MoveModalProps) {
-  const { i18n } = useI18n();
+  const { i18n } = useExplorerContext();
   const {
     handleTreeItemFold,
     handleTreeItemSelect,

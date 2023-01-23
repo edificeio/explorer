@@ -1,17 +1,22 @@
 import { useExplorerContext } from "@contexts/index";
 import { Card } from "@ode-react-ui/core";
-import { useCurrentApp } from "@store/useOdeStore";
 // TODO: Global export
 import * as dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 // TODO
-import { IResource } from "ode-ts-client";
+import { IResource, ISession, IWebApp } from "ode-ts-client";
 
 dayjs.extend(relativeTime);
 
-export default function ResourcesList({ session }) {
-  const currentApp = useCurrentApp();
-  const appCode = currentApp?.address.replace("/", "");
+export default function ResourcesList({
+  session,
+  app,
+}: {
+  session: ISession;
+  app: IWebApp | undefined;
+}) {
+  // const currentApp = useApp();
+  const appCode = app?.address.replace("/", "");
 
   const {
     state: { resources },

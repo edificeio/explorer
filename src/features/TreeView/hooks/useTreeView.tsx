@@ -12,7 +12,7 @@ export default function useTreeView() {
   const {
     dispatch,
     contextRef,
-    state: { treeData },
+    state: { treeData, folders },
   } = useExplorerContext();
 
   function getResources(types?: any) {
@@ -33,15 +33,10 @@ export default function useTreeView() {
     clearPreviousFolder();
   };
 
-  const handleNavigationFolder = ({
-    folderId,
-    folderName,
-  }: {
-    folderId: string;
-    folderName: string;
-  }) => {
+  const handleNavigationFolder = (folderId: string) => {
     dispatch({ type: "CLEAR_RESOURCES" });
 
+    const findItem = folders.find((item) => item.id === folderId);
     const previousId = contextRef.current.getSearchParameters().filters
       .folder as string;
 
@@ -51,7 +46,7 @@ export default function useTreeView() {
 
     getResources(["blog"]);
 
-    setPreviousFolder(previousId, folderName);
+    setPreviousFolder(previousId, findItem?.name as string);
   };
 
   const handleTreeItemSelect = useCallback((folderId: string) => {

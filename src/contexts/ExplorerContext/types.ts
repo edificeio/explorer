@@ -16,6 +16,7 @@ export interface ExplorerProviderProps {
   explorerFramework: IExplorerFramework;
   params: OdeProviderParams;
   types: ResourceType[];
+  i18n: any;
 }
 
 /** The resources/folders selection reducer */
@@ -36,6 +37,7 @@ export interface ExplorerContextProps {
   state: State;
   selectedFolders: IFolder[];
   selectedResources: IResource[];
+  i18n: any;
   dispatch: Dispatch<Action>;
   isFolderSelected: (folder: IFolder) => boolean;
   isResourceSelected: (res: IResource) => boolean;

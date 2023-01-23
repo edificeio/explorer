@@ -32,7 +32,7 @@ const Context = createContext<ExplorerContextProps | null>(null!);
 const initialState = {
   treeData: {
     id: "default",
-    name: "Blogs",
+    name: "Root",
     section: true,
     children: [],
   },
@@ -140,9 +140,9 @@ function ExplorerProvider({
   explorerFramework,
   params,
   types,
+  i18n,
 }: ExplorerProviderProps) {
   const createContext = explorerFramework.createContext(types, params.app);
-
   // Exploration context
   const contextRef = useRef<IExplorerContext>(createContext);
   // State
@@ -312,7 +312,12 @@ function ExplorerProvider({
       }
     });
 
-    dispatch({ type: "GET_TREEDATA", payload: state.treeData });
+    const updatedTreeData = {
+      ...state.treeData,
+      name: i18n("explorer.filters.mine"),
+    };
+
+    dispatch({ type: "GET_TREEDATA", payload: updatedTreeData });
   }
 
   function wrapResourceData(resources?: IResource[]) {
@@ -356,6 +361,7 @@ function ExplorerProvider({
       refreshFolder,
       printResource,
       hideSelectedElement,
+      i18n,
     }),
     [state, selectedFolders, selectedResources],
   );

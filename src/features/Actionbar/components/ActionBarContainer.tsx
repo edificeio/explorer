@@ -1,12 +1,12 @@
+import { useExplorerContext } from "@contexts/index";
 import DeleteModal from "@features/Actionbar/components/DeleteModal";
 import MoveModal from "@features/Actionbar/components/MoveModal";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
-import { useI18n } from "@hooks/useI18n";
 import { Button, ActionBar } from "@ode-react-ui/core";
 import { IAction } from "ode-ts-client";
 
 export default function ActionBarContainer() {
-  const { i18n } = useI18n();
+  const { i18n } = useExplorerContext();
   const {
     actions,
     isMoveModalOpen,
