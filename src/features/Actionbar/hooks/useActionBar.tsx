@@ -6,7 +6,7 @@ import { IAction, ACTION } from "ode-ts-client";
 type ModalName = "move" | "delete" | "void";
 
 export default function useActionBar() {
-  const [actions, setActions] = useState<IAction[] | undefined>([]);
+  const [actions, setActions] = useState<IAction[]>([]);
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
@@ -25,7 +25,7 @@ export default function useActionBar() {
   useEffect(() => {
     const ref = contextRef.current;
     const refActions = ref?.getContext()?.actions;
-    setActions(refActions);
+    setActions(refActions!);
   }, []);
 
   useEffect(() => {
