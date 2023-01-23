@@ -6,7 +6,7 @@ import { IAction, ACTION } from "ode-ts-client";
 type ModalName = "move" | "delete" | "void";
 
 export default function useActionBar() {
-  const [actions, setActions] = useState<IAction[]>([]);
+  const [actions, setActions] = useState<IAction[] | undefined>([]);
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
@@ -17,14 +17,15 @@ export default function useActionBar() {
     hideSelectedElement,
     deselectAllResources,
     deselectAllFolders,
-    context,
+    contextRef,
     selectedResources,
     selectedFolders,
   } = useExplorerContext();
 
   useEffect(() => {
-    // @ts-expect-error
-    setActions(context.getContext().actions);
+    const ref = contextRef.current;
+    const refActions = ref?.getContext()?.actions;
+    setActions(refActions);
   }, []);
 
   useEffect(() => {

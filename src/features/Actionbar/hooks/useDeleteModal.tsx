@@ -5,7 +5,8 @@ interface DeleteModalArg {
 }
 
 export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
-  const { context, selectedResources, selectedFolders } = useExplorerContext();
+  const { contextRef, selectedResources, selectedFolders } =
+    useExplorerContext();
   const isTrashResource =
     selectedResources.filter((e) => !e.trashed).length > 0;
   const isTrashFolder = selectedFolders.filter((e) => !e.trashed).length > 0;
@@ -15,9 +16,9 @@ export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
       const resourceIds = selectedResources.map((e) => e.id);
       const folderIds = selectedFolders.map((e) => e.id);
       if (isTrash) {
-        await context.trash(true, resourceIds, folderIds);
+        await contextRef.current.trash(true, resourceIds, folderIds);
       } else {
-        await context.delete(resourceIds, folderIds);
+        await contextRef.current.delete(resourceIds, folderIds);
       }
       onSuccess?.();
     } catch (e) {

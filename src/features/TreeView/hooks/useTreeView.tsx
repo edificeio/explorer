@@ -2,22 +2,64 @@ import { useCallback } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
+import { useOdeStore, useSetPreviousFolder } from "@store/useOdeStore";
 import { RESOURCE } from "ode-ts-client";
 
 export default function useTreeView() {
+  const previousFolder = useOdeStore((state) => state.previousFolder);
+  const setPreviousFolder = useSetPreviousFolder();
+  const clearPreviousFolder = useOdeStore((state) => state.clearPreviousFolder);
   const {
     dispatch,
-    context,
+    contextRef,
     state: { treeData },
   } = useExplorerContext();
+
+  function getResources(types?: any) {
+    contextRef.current.getSearchParameters().types = types;
+    contextRef.current.getSearchParameters().pagination.startIdx = 0;
+    contextRef.current.getResources();
+  }
+
+  const handleNavigationBack = () => {
+    dispatch({ type: "CLEAR_RESOURCES" });
+
+    const lastElement = previousFolder[previousFolder.length - 1];
+
+    contextRef.current.getSearchParameters().filters.folder = lastElement.id;
+
+    getResources(["blog"]);
+
+    clearPreviousFolder();
+  };
+
+  const handleNavigationFolder = ({
+    folderId,
+    folderName,
+  }: {
+    folderId: string;
+    folderName: string;
+  }) => {
+    dispatch({ type: "CLEAR_RESOURCES" });
+
+    const previousId = contextRef.current.getSearchParameters().filters
+      .folder as string;
+
+    if (previousId === folderId) return;
+
+    contextRef.current.getSearchParameters().filters.folder = folderId;
+
+    getResources(["blog"]);
+
+    setPreviousFolder(previousId, folderName);
+  };
 
   const handleTreeItemSelect = useCallback((folderId: string) => {
     dispatch({ type: "CLEAR_RESOURCES" });
 
-    context.getSearchParameters().filters.folder = folderId;
-    context.getSearchParameters().types = ["blog"];
-    context.getSearchParameters().pagination.startIdx = 0;
-    context.getResources();
+    contextRef.current.getSearchParameters().filters.folder = folderId;
+
+    getResources(["blog"]);
   }, []);
 
   const handleTreeItemFold = useCallback((folderId: any) => {
@@ -41,14 +83,15 @@ export default function useTreeView() {
     console.log("tree item unfolded = ", folderId);
 
     if (!hasChildren(folderId, treeData)) {
-      context.getSearchParameters().filters.folder = folderId;
-      context.getSearchParameters().types = [RESOURCE.FOLDER];
-      context.getSearchParameters().pagination.startIdx = 0;
-      context.getResources();
+      contextRef.current.getSearchParameters().filters.folder = folderId;
+
+      getResources([RESOURCE.FOLDER]);
     }
   }, []);
 
   return {
+    handleNavigationBack,
+    handleNavigationFolder,
     handleTreeItemSelect,
     handleTreeItemFold,
     handleTreeItemUnfold,
