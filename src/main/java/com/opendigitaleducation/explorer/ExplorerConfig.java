@@ -27,7 +27,17 @@ public class ExplorerConfig {
     public static final String RIGHT_CONTRIB = "contrib";
     public static final String RIGHT_MANAGE = "manage";
     protected JsonObject esIndexes = new JsonObject();
+    protected boolean skipIndexOfTrashedFolders;
     protected Map<String, JsonObject> rightsByApplication = new HashMap<>();
+
+    public boolean isSkipIndexOfTrashedFolders() {
+        return skipIndexOfTrashedFolders;
+    }
+
+    public ExplorerConfig setSkipIndexOfTrashedFolders(boolean skipIndexOfTrashedFolders) {
+        this.skipIndexOfTrashedFolders = skipIndexOfTrashedFolders;
+        return this;
+    }
 
     public ExplorerConfig setEsIndexes(final JsonObject esIndexes) {
         this.esIndexes = esIndexes;

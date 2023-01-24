@@ -39,6 +39,49 @@ public class FolderExplorerDbSql {
 
     protected String[] getColumnsExtArray() { return getColumnsExt().toArray(new String[getColumnsExt().size()]); }
 
+    public Future<List<String>> deleteTrashedFolderIds(){
+        final String query = "DELETE FROM explorer.folders WHERE trashed IS TRUE RETURNING id";
+        final Future<RowSet<Row>> updateFuture = client.preparedQuery(query, Tuple.tuple());
+        return updateFuture.onFailure(e -> {
+            log.error("Select folders failed:", e);
+        }).compose(res -> {
+            final List<String> ids = new ArrayList<>();
+            for (final Row row : res) {
+                final Object id = row.getValue("id");
+                ids.add(id.toString());
+            }
+            return Future.succeededFuture(ids);
+        });
+    }
+    public Future<List<String>> selectFolderIds(){
+        final String query = "SELECT id FROM explorer.folders";
+        final Future<RowSet<Row>> updateFuture = client.preparedQuery(query, Tuple.tuple());
+        return updateFuture.onFailure(e -> {
+            log.error("Select folders failed:", e);
+        }).compose(res -> {
+            final List<String> ids = new ArrayList<>();
+            for (final Row row : res) {
+                final Object id = row.getValue("id");
+                ids.add(id.toString());
+            }
+            return Future.succeededFuture(ids);
+        });
+    }
+    public Future<List<String>> selectTrashedFolderIds(){
+        final String query = "SELECT id FROM explorer.folders WHERE trashed IS TRUE";
+        final Future<RowSet<Row>> updateFuture = client.preparedQuery(query, Tuple.tuple());
+        return updateFuture.onFailure(e -> {
+            log.error("Select folders failed:", e);
+        }).compose(res -> {
+            final List<String> ids = new ArrayList<>();
+            for (final Row row : res) {
+                final Object id = row.getValue("id");
+                ids.add(id.toString());
+            }
+            return Future.succeededFuture(ids);
+        });
+    }
+
     public Future<Map<String, ExplorerMessageForIngest>> updateParentEnt(){
         final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
         final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL RETURNING * ";

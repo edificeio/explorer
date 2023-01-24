@@ -33,6 +33,7 @@ import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import com.opendigitaleducation.explorer.tasks.ExplorerTaskManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -48,11 +49,16 @@ import org.entcore.common.postgres.IPostgresClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class Explorer extends BaseServer {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
+    public static final boolean DELETE_FOLDER_CONFIG_DEFAULT = true;
+    public static final String DELETE_FOLDER_CONFIG = "delete-folder-definitely";
+    public static final String CLEAN_FOLDER_CRON_CONFIG = "clean-folder-cron";
 
+    private Optional<ExplorerTaskManager> taskManager = Optional.empty();
     @Override
     public void start() throws Exception {
         //TODO ajouter check de droit sur les API explorer (manage, write)
@@ -70,6 +76,8 @@ public class Explorer extends BaseServer {
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, true);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
+        //set skip folder
+        ExplorerConfig.getInstance().setSkipIndexOfTrashedFolders(config.getBoolean(DELETE_FOLDER_CONFIG, DELETE_FOLDER_CONFIG_DEFAULT));
         //init rights map
         ExplorerConfig.getInstance().setRightsByApplication(config.getJsonObject("applications", new JsonObject()));
         //init indexes
@@ -128,6 +136,9 @@ public class Explorer extends BaseServer {
             }
             vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
             futures.add(onWorkerDeploy.future());
+            if(ExplorerConfig.getInstance().skipIndexOfTrashedFolders){
+                this.taskManager = Optional.of(new ExplorerTaskManager().start(vertx, config, postgresClient));
+            }
         }
         //call start promise
         CompositeFuture.all(futures).onComplete(e -> {
@@ -149,5 +160,6 @@ public class Explorer extends BaseServer {
     public void stop() throws Exception {
         super.stop();
         log.info("Explorer application stopped ");
+        this.taskManager.ifPresent(e -> e.stop());
     }
 }
