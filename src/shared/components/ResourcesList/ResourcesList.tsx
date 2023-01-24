@@ -34,26 +34,31 @@ export default function ResourcesList({
     }
   }
 
+  function resourceIsShared(shared: any): boolean {
+    return shared.length >= 1;
+  }
+
   return resources.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {resources.map((resource: IResource, index: number) => {
-        /* const style = {
-          "--ode-enter-delay": index + "00ms",
-        } as React.CSSProperties; */
+      {resources.map((resource: IResource) => {
+        const { assetId, creatorName, name, thumbnail, shared } = resource;
+
+        console.log(typeof shared);
+
         return (
-          <li className="g-col-4" key={resource.assetId}>
+          <li className="g-col-4" key={assetId}>
             <Card
-              // style={style}
               appCode={appCode}
               className="c-pointer"
-              creatorName={resource.creatorName}
-              // isAnimated
+              creatorName={creatorName}
               isSelected={isResourceSelected(resource)}
-              name={resource.name}
-              onOpen={() => openSingleResource(resource.assetId)}
+              isPublic={resource.public}
+              isShared={resourceIsShared(shared)}
+              name={name}
+              onOpen={() => openSingleResource(assetId)}
               onSelect={() => toggleSelect(resource)}
-              updatedAt={dayjs(resource.updatedAt).fromNow()}
               userSrc={session?.avatarUrl}
+              resourceSrc={thumbnail}
             />
           </li>
         );
@@ -63,6 +68,8 @@ export default function ResourcesList({
     <img
       src={`/assets/themes/ode-bootstrap/images/emptyscreen/illu-${appCode}.svg`}
       alt="application emptyscreen"
+      className="mx-auto"
+      style={{ maxWidth: "50%" }}
     />
   );
 }
