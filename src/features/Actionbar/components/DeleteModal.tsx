@@ -27,9 +27,13 @@ export default function DeleteModal({
       >
         {i18n(isTrash ? "explorer.trash.title" : "explorer.delete.title")}
       </Modal.Header>
-      <Modal.Subtitle>
-        {i18n(isTrash ? "explorer.trash.subtitle" : "explorer.delete.subtitle")}
-      </Modal.Subtitle>
+      <Modal.Body>
+        <p className="body">
+          {i18n(
+            isTrash ? "explorer.trash.subtitle" : "explorer.delete.subtitle",
+          )}
+        </p>
+      </Modal.Body>
       <Modal.Footer>
         <Button
           color="tertiary"

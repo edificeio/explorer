@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
@@ -87,6 +88,9 @@ export default function Explorer({
             </FormControl>
           </form>
           <div className="py-24">
+            <h2 className="body">{i18n("explorer.filters.mine")}</h2>
+          </div>
+          {/* <div className="py-24">
             {previousFolder.length === 0 ? (
               <h2 className="body">{i18n("explorer.filters.mine")}</h2>
             ) : (
@@ -106,7 +110,7 @@ export default function Explorer({
                 </p>
               </div>
             )}
-          </div>
+          </div> */}
           <FoldersList />
           <ResourcesList app={app} session={session} />
           <div className="d-grid">
