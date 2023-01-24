@@ -32,10 +32,21 @@ abstract class MessageIngesterElasticOperation {
             case Delete:
                 return Arrays.asList(new MessageIngesterElasticOperationDelete(message));
             case Upsert:
-                //prepare
-                final List<MessageIngesterElasticOperation> operations = new ArrayList<>();
-                operations.add(new MessageIngesterElasticOperationUpsert(message));
-                return operations;
+                if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders() && message.isTrashed()){
+                    //specific indexation for trashed message
+                    if(message.isFolderMessage()){
+                        //folder are not indexed
+                        return Arrays.asList(new MessageIngesterElasticOperationDelete(message));
+                    }else{
+                        //break folder/resource link
+                        message.getMessage().put("folderIds", new JsonArray());
+                        message.getMessage().put("usersForFolderIds", new JsonArray());
+                        return Arrays.asList(new MessageIngesterElasticOperationUpsert(message));
+                    }
+                }else{
+                    //keep trash flag
+                    return Arrays.asList(new MessageIngesterElasticOperationUpsert(message));
+                }
             case Audience:
                 return Arrays.asList(new MessageIngesterElasticOperationAudience(message));
         }

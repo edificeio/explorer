@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
 
@@ -76,6 +77,16 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
 
     public boolean isSynthetic() {
         return !idQueue.isPresent();
+    }
+
+    public boolean isTrashed(){
+        return this.getMessage().getBoolean("trashed", false);
+    }
+
+    public boolean isFolderMessage(){
+        return ExplorerConfig.FOLDER_APPLICATION.equals(getApplication())
+                && ExplorerConfig.FOLDER_TYPE.equals(getResourceType())
+                && ExplorerConfig.FOLDER_TYPE.equals(getEntityType());
     }
 
     public int getAttemptCount() {
