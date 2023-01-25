@@ -11,7 +11,7 @@ function FoldersList() {
     isFolderSelected,
   } = useExplorerContext();
 
-  const { handleNavigationFolder } = useTreeView();
+  const { handleNavigationFolder, trashSelected } = useTreeView();
 
   function toggleSelect(folder: IFolder) {
     if (isFolderSelected(folder)) {
@@ -19,6 +19,9 @@ function FoldersList() {
     } else {
       selectFolder(folder);
     }
+  }
+  if (trashSelected) {
+    return null;
   }
   return folders.length ? (
     <ul className="grid ps-0 list-unstyled">

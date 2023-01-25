@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
 import { useOdeStore, useSetPreviousFolder } from "@store/useOdeStore";
-import { RESOURCE } from "ode-ts-client";
+import { FOLDER, RESOURCE } from "ode-ts-client";
 
 export default function useTreeView() {
   const previousFolder = useOdeStore((state) => state.previousFolder);
@@ -53,12 +53,13 @@ export default function useTreeView() {
     dispatch({ type: "CLEAR_RESOURCES" });
 
     contextRef.current.getSearchParameters().filters.folder = folderId;
+    contextRef.current.getSearchParameters().pagination.startIdx = 0;
 
     getResources(["blog"]);
   }, []);
 
   const handleTreeItemFold = useCallback((folderId: any) => {
-    console.log("tree item folded = ", folderId);
+    // console.log("tree item folded = ", folderId);
   }, []);
 
   const hasChildren = useCallback(
@@ -75,7 +76,7 @@ export default function useTreeView() {
   );
 
   const handleTreeItemUnfold = useCallback((folderId: any) => {
-    console.log("tree item unfolded = ", folderId);
+    // console.log("tree item unfolded = ", folderId);
 
     if (!hasChildren(folderId, treeData)) {
       contextRef.current.getSearchParameters().filters.folder = folderId;
@@ -83,8 +84,12 @@ export default function useTreeView() {
       getResources([RESOURCE.FOLDER]);
     }
   }, []);
-
+  const trashSelected =
+    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
   return {
+    treeData,
+    trashId: FOLDER.BIN,
+    trashSelected,
     handleNavigationBack,
     handleNavigationFolder,
     handleTreeItemSelect,

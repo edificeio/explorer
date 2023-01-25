@@ -21,8 +21,15 @@ import { usePreviousFolder } from "@store/useOdeStore";
 export default function Explorer() {
   const previousFolder = usePreviousFolder();
 
-  const { contextRef, createResource, handleNextPage, i18n, app, session } =
-    useExplorerContext();
+  const {
+    contextRef,
+    createResource,
+    handleNextPage,
+    i18n,
+    app,
+    session,
+    trashSelected,
+  } = useExplorerContext();
 
   const { handleNavigationBack } = useTreeView();
 
@@ -81,7 +88,11 @@ export default function Explorer() {
             </FormControl>
           </form>
           <div className="py-24">
-            <h2 className="body">{i18n("explorer.filters.mine")}</h2>
+            <h2 className="body">
+              {i18n(
+                trashSelected ? "explorer.tree.trash" : "explorer.filters.mine",
+              )}
+            </h2>
           </div>
           {/* <div className="py-24">
             {previousFolder.length === 0 ? (
