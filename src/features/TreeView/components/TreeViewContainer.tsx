@@ -3,12 +3,18 @@ import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
 
+import TrashButton from "./TrashButton";
 export const TreeViewContainer = () => {
-  const { state, i18n } = useExplorerContext();
-  const { treeData } = state;
+  const { i18n } = useExplorerContext();
   /* feature treeview @hook */
-  const { handleTreeItemSelect, handleTreeItemFold, handleTreeItemUnfold } =
-    useTreeView();
+  const {
+    trashId,
+    treeData,
+    trashSelected,
+    handleTreeItemSelect,
+    handleTreeItemFold,
+    handleTreeItemUnfold,
+  } = useTreeView();
 
   return (
     <>
@@ -17,6 +23,11 @@ export const TreeViewContainer = () => {
         onTreeItemSelect={handleTreeItemSelect}
         onTreeItemFold={handleTreeItemFold}
         onTreeItemUnfold={handleTreeItemUnfold}
+      />
+      <TrashButton
+        id={trashId}
+        selected={trashSelected}
+        onSelect={() => handleTreeItemSelect(trashId)}
       />
       <div className="d-grid my-16">
         <Button

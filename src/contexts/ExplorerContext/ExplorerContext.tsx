@@ -12,6 +12,8 @@ import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { TreeNode } from "@ode-react-ui/core";
 import {
   ACTION,
+  ConfigurationFrameworkFactory,
+  FOLDER,
   ID,
   IExplorerContext,
   IFolder,
@@ -31,8 +33,8 @@ const Context = createContext<ExplorerContextProps | null>(null!);
 
 const initialState = {
   treeData: {
-    id: "default",
-    name: "Root",
+    id: FOLDER.DEFAULT,
+    name: "explorer.tree.title",
     section: true,
     children: [],
   },
@@ -44,6 +46,7 @@ const reducer: Reducer<State, Action> = (
   state: State = initialState,
   action: Action,
 ) => {
+  const configureFramework = ConfigurationFrameworkFactory.instance();
   switch (action.type) {
     case "HIDE_SELECTION": {
       const { selectedFolders, selectedResources } = action.payload;
@@ -76,7 +79,13 @@ const reducer: Reducer<State, Action> = (
     case "GET_TREEDATA": {
       const { payload } = action;
 
-      return { ...state, treeData: { ...payload } };
+      return {
+        ...state,
+        treeData: {
+          ...payload,
+          name: configureFramework.Platform.idiom.translate(payload.name),
+        },
+      };
     }
     default:
       return state;
@@ -160,7 +169,7 @@ function ExplorerProvider({
   useEffect(() => {
     // TODO initialize search parameters. Here and/or in the dedicated React component
     contextRef.current.getSearchParameters().pagination.pageSize = 4;
-    contextRef.current.getSearchParameters().filters.folder = "default";
+    contextRef.current.getSearchParameters().filters.folder = FOLDER.DEFAULT;
     // Do explore...
     (async () => {
       await contextRef.current.initialize();
@@ -176,6 +185,7 @@ function ExplorerProvider({
         const { pagination } = contextRef.current.getSearchParameters();
         pagination.maxIdx = resultset.output.pagination.maxIdx;
         pagination.startIdx =
+          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
           resultset.output.pagination.startIdx +
           resultset.output.pagination.pageSize;
         if (
@@ -333,19 +343,20 @@ function ExplorerProvider({
   }
 
   function wrapFolderData(folders?: IFolder[]) {
-    if (folders?.length) {
-      dispatch({ type: "GET_FOLDERS", payload: folders });
-    }
+    dispatch({ type: "GET_FOLDERS", payload: folders || [] });
   }
 
   async function handleNextPage() {
     await contextRef.current.getResources();
   }
+  const trashSelected =
+    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
 
   const store = useMemo(
     () => ({
       contextRef,
       state,
+      trashSelected,
       selectedFolders: Object.values(selectedFolders) as IFolder[],
       selectedResources: Object.values(selectedResources) as IResource[],
       dispatch,

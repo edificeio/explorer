@@ -1,24 +1,24 @@
 import { useExplorerContext } from "@contexts/index";
-import useDeleteModal from "@features/Actionbar/hooks/useDeleteModal";
+import useRestoreModal from "@features/Actionbar/hooks/useRestoreModal";
 import { Modal, Button } from "@ode-react-ui/core";
 
-interface DeleteModalProps {
+interface RestoreModalProps {
   isOpen: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export default function DeleteModal({
+export default function RestoreModal({
   isOpen,
   onSuccess = () => ({}),
   onCancel = () => ({}),
-}: DeleteModalProps) {
+}: RestoreModalProps) {
   const { i18n } = useExplorerContext();
-  const { isAlreadyInTrash, onDelete } = useDeleteModal({
+  const { onRestore } = useRestoreModal({
     onSuccess,
   });
   return (
-    <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
+    <Modal isOpen={isOpen} onModalClose={onCancel} id="RestoreModal">
       <Modal.Header
         onModalClose={() => {
           // TODO fix onModalClose type to avoid this hack
@@ -26,18 +26,10 @@ export default function DeleteModal({
           return {};
         }}
       >
-        {i18n(
-          isAlreadyInTrash ? "explorer.delete.title" : "explorer.trash.title",
-        )}
+        {i18n("explorer.restore.title")}
       </Modal.Header>
       <Modal.Body>
-        <p className="body">
-          {i18n(
-            isAlreadyInTrash
-              ? "explorer.delete.subtitle"
-              : "explorer.trash.subtitle",
-          )}
-        </p>
+        <p className="body">{i18n("explorer.restore.subtitle")}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -50,11 +42,11 @@ export default function DeleteModal({
         </Button>
         <Button
           color="primary"
-          onClick={(_) => onDelete()}
+          onClick={(_) => onRestore()}
           type="button"
           variant="filled"
         >
-          {i18n(isAlreadyInTrash ? "explorer.delete" : "explorer.trash")}
+          {i18n("explorer.restore")}
         </Button>
       </Modal.Footer>
     </Modal>

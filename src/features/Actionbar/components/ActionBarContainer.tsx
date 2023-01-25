@@ -37,7 +37,9 @@ export default function ActionBarContainer() {
                   type="button"
                   color="primary"
                   variant="filled"
-                  onClick={() => handleClick(action)}
+                  onClick={() => {
+                    handleClick(action);
+                  }}
                 >
                   {i18n(`explorer.actions.${action.id}`)}
                 </Button>

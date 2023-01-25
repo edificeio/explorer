@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
-import { IAction, ACTION } from "ode-ts-client";
+import { IAction, ACTION, FOLDER } from "ode-ts-client";
 
 type ModalName = "move" | "delete" | "void";
 
@@ -20,8 +20,11 @@ export default function useActionBar() {
     contextRef,
     selectedResources,
     selectedFolders,
+    state,
   } = useExplorerContext();
-
+  const parentFolder = state.folders.find(
+    (e) => e.id === contextRef.current.getSearchParameters().filters.folder,
+  );
   useEffect(() => {
     const ref = contextRef.current;
     const refActions = ref?.getContext()?.actions;
@@ -48,12 +51,14 @@ export default function useActionBar() {
         return printResource();
       case ACTION.DELETE:
         return setOpenedModalName("delete");
+      case ACTION.RESTORE:
+        return onRestore();
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
       //   return explorer.onManage();
       default:
-        throw Error("Unknown action: " + action.id);
+        throw Error(`Unknown action: ${action.id}`);
     }
   }
 
@@ -74,6 +79,24 @@ export default function useActionBar() {
         return onlyOneItemSelected;
       default:
         return true;
+    }
+  }
+
+  async function onRestore() {
+    try {
+      const isAlreadyInTrash =
+        contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
+      const resourceIds = selectedResources.map((e) => e.id);
+      const folderIds = selectedFolders.map((e) => e.id);
+      if (isAlreadyInTrash) {
+        await contextRef.current.trash(false, resourceIds, folderIds);
+      } else {
+        throw new Error("Cannot restore untrashed resources");
+      }
+      onClearActionBar();
+    } catch (e) {
+      // TODO display an alert?
+      console.error(e);
     }
   }
 
@@ -109,11 +132,25 @@ export default function useActionBar() {
       hideSelectedElement();
     }
   }
-
+  const trashActions: IAction[] = [
+    {
+      id: ACTION.DELETE,
+      available: true,
+      target: "actionbar",
+    },
+    {
+      id: ACTION.RESTORE,
+      available: true,
+      target: "actionbar",
+    },
+  ];
+  const isTrashFolder =
+    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
   return {
-    actions,
-    isActivable,
+    actions: isTrashFolder ? trashActions : actions,
+    parentFolder,
     handleClick,
+    isActivable,
     isActionBarOpen,
     isMoveModalOpen: openedModalName === "move",
     onMoveCancel,
