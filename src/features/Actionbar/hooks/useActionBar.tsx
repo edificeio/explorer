@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { IAction, ACTION, FOLDER } from "ode-ts-client";
 
-type ModalName = "move" | "delete" | "void";
+type ModalName = "move" | "delete" | "publish" | "void";
 
 export default function useActionBar() {
   const [actions, setActions] = useState<IAction[]>([]);
@@ -53,6 +53,8 @@ export default function useActionBar() {
         return setOpenedModalName("delete");
       case ACTION.RESTORE:
         return onRestore();
+      case ACTION.PUBLISH:
+        return setOpenedModalName("publish");
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
@@ -76,6 +78,8 @@ export default function useActionBar() {
       case ACTION.SHARE:
         return onlyOneItemSelected;
       case ACTION.MANAGE:
+        return onlyOneItemSelected;
+      case ACTION.PUBLISH:
         return onlyOneItemSelected;
       default:
         return true;
@@ -126,6 +130,12 @@ export default function useActionBar() {
     }
   }
 
+  function onPublishCancel() {
+    if (openedModalName === "publish") {
+      onClearActionBar();
+    }
+  }
+
   function onDeleteSuccess() {
     if (openedModalName === "delete") {
       onClearActionBar();
@@ -146,6 +156,13 @@ export default function useActionBar() {
   ];
   const isTrashFolder =
     contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
+
+  function onPublishSuccess() {
+    if (openedModalName === "publish") {
+      onClearActionBar();
+    }
+  }
+
   return {
     actions: isTrashFolder ? trashActions : actions,
     parentFolder,
@@ -158,5 +175,8 @@ export default function useActionBar() {
     isDeleteModalOpen: openedModalName === "delete",
     onDeleteCancel,
     onDeleteSuccess,
+    isPublishModalOpen: openedModalName === "publish",
+    onPublishCancel,
+    onPublishSuccess,
   };
 }

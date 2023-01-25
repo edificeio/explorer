@@ -74,13 +74,10 @@ export default ({mode}: {mode:string}) => {
         "/applications-list": proxyObj,
         // Public Conf
         "/conf/public": proxyObj,
-        "^/(?=assets)": {
-          target: "http://localhost:8090",
-          changeOrigin: false
-        },
+        "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
         "^/(?=theme|locale|i18n|skin)": proxyObj,
         // Entcore urls
-        "^/(?=auth|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
+        "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
         proxyObj,
         // App urls
         "/blog": proxyObj,
