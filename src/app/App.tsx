@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Explorer from "./Explorer";
 
 function App({ params }: { params: OdeProviderParams }) {
-  const { session, theme, explorerFramework, i18n, app } =
+  const { session, theme, explorerFramework, i18n, app, http } =
     useOdeBackend(params);
 
   const is1d = theme?.is1D;
@@ -41,8 +41,11 @@ function App({ params }: { params: OdeProviderParams }) {
           params={params}
           types={[RESOURCE.BLOG]}
           i18n={i18n}
+          session={session}
+          http={http}
+          app={app}
         >
-          <Explorer app={app} session={session} />
+          <Explorer />
         </ExplorerProvider>
       </Main>
     </div>
