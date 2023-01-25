@@ -17,18 +17,11 @@ import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
 import { usePreviousFolder } from "@store/useOdeStore";
-import { ISession, IWebApp } from "ode-ts-client";
 
-export default function Explorer({
-  session,
-  app,
-}: {
-  session: ISession;
-  app: IWebApp | undefined;
-}) {
+export default function Explorer() {
   const previousFolder = usePreviousFolder();
 
-  const { contextRef, createResource, handleNextPage, i18n } =
+  const { contextRef, createResource, handleNextPage, i18n, app, session } =
     useExplorerContext();
 
   const { handleNavigationBack } = useTreeView();
@@ -112,7 +105,7 @@ export default function Explorer({
             )}
           </div> */}
           <FoldersList />
-          <ResourcesList app={app} session={session} />
+          <ResourcesList />
           <div className="d-grid">
             <Button
               type="button"

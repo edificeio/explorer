@@ -141,6 +141,9 @@ function ExplorerProvider({
   params,
   types,
   i18n,
+  http,
+  session,
+  app,
 }: ExplorerProviderProps) {
   const createContext = explorerFramework.createContext(types, params.app);
   // Exploration context
@@ -362,6 +365,9 @@ function ExplorerProvider({
       printResource,
       hideSelectedElement,
       i18n,
+      http,
+      session,
+      app,
     }),
     [state, selectedFolders, selectedResources],
   );

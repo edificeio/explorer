@@ -9,6 +9,9 @@ import {
   IExplorerContext,
   IExplorerFramework,
   ID,
+  IHttp,
+  ISession,
+  IWebApp,
 } from "ode-ts-client";
 
 export interface ExplorerProviderProps {
@@ -17,6 +20,9 @@ export interface ExplorerProviderProps {
   params: OdeProviderParams;
   types: ResourceType[];
   i18n: any;
+  http: IHttp;
+  session: ISession;
+  app: IWebApp | undefined;
 }
 
 /** The resources/folders selection reducer */
@@ -38,6 +44,9 @@ export interface ExplorerContextProps {
   selectedFolders: IFolder[];
   selectedResources: IResource[];
   i18n: any;
+  http: IHttp;
+  session: ISession;
+  app: IWebApp | undefined;
   dispatch: Dispatch<Action>;
   isFolderSelected: (folder: IFolder) => boolean;
   isResourceSelected: (res: IResource) => boolean;
