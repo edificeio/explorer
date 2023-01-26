@@ -98,6 +98,7 @@ export default function useActionBar() {
         throw new Error("Cannot restore untrashed resources");
       }
       onClearActionBar();
+      hideSelectedElement();
     } catch (e) {
       // TODO display an alert?
       console.error(e);

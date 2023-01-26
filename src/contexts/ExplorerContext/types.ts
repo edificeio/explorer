@@ -47,6 +47,8 @@ export interface ExplorerContextProps {
   http: IHttp;
   session: ISession;
   app: IWebApp | undefined;
+  appName: string;
+  resourceTypes: ResourceType[];
   trashSelected: boolean;
   dispatch: Dispatch<Action>;
   isFolderSelected: (folder: IFolder) => boolean;

@@ -379,6 +379,8 @@ function ExplorerProvider({
       http,
       session,
       app,
+      resourceTypes: types,
+      appName: params.app,
     }),
     [state, selectedFolders, selectedResources],
   );
