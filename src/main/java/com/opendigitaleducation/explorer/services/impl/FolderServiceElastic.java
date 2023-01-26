@@ -197,11 +197,16 @@ public class FolderServiceElastic implements FolderService {
                     return this.dbHelper.trash(all, resourceIdInt, isTrash).compose(trashed -> {
                         final List<JsonObject> sources = new ArrayList<>();
                         for (final Integer key : all) {
-                            final FolderExplorerDbSql.FolderTrashResult move = trashed.folders.get(key);
-                            final Optional<Integer> parentOpt = move.parentId;
                             final JsonObject source = new JsonObject().put("trashed", isTrash);
-                            if (move.application.isPresent()) {
-                                source.put("application", move.application.get());
+                            final FolderExplorerDbSql.FolderTrashResult trash = trashed.folders.get(key);
+                            if(trash == null){
+                                //folder does not exists anymore in postgres but exists in elastic
+                                sources.add(plugin.setIdForModel(source.copy(), key.toString()));
+                                continue;
+                            }
+                            final Optional<Integer> parentOpt = trash.parentId;
+                            if (trash.application.isPresent()) {
+                                source.put("application", trash.application.get());
                             }
                             //add
                             sources.add(plugin.setIdForModel(source.copy(), key.toString()));
