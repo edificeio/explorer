@@ -61,7 +61,10 @@ export interface ExplorerContextProps {
   deselectAllResources: () => void;
   deselectFolder: (folder: IFolder) => void;
   deselectResource: (res: IResource) => void;
-  refreshFolder: () => void;
+  refreshFolder: (params?: {
+    addFolder?: IFolder;
+    delFolder?: IFolder;
+  }) => void;
   printResource: () => void;
   openResource: () => void;
   openSingleResource: (assetId: ID) => void;

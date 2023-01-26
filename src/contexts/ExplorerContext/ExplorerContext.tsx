@@ -280,8 +280,27 @@ function ExplorerProvider({
       .publish(types[0], ACTION.PRINT, { resourceId: item.assetId });
   }
 
-  async function refreshFolder() {
+  async function refreshFolder({
+    addFolder,
+    delFolder,
+  }: {
+    addFolder?: IFolder;
+    delFolder?: IFolder;
+  } = {}) {
     const resultset = await contextRef.current.getResources();
+    clearResource();
+    // del before add to enable replace
+    if (delFolder) {
+      resultset.folders = resultset.folders.filter(
+        (e) => e.id !== delFolder.id,
+      );
+    }
+    if (addFolder) {
+      const found = resultset.folders.filter((e) => e.id === addFolder.id);
+      if (found.length === 0) {
+        resultset.folders.push(addFolder);
+      }
+    }
     wrapFolderData(resultset.folders);
     wrapResourceData(resultset.resources);
   }
@@ -331,6 +350,12 @@ function ExplorerProvider({
     };
 
     dispatch({ type: "GET_TREEDATA", payload: updatedTreeData });
+  }
+
+  function clearResource() {
+    dispatch({
+      type: "CLEAR_RESOURCES",
+    });
   }
 
   function wrapResourceData(resources?: IResource[]) {

@@ -1,16 +1,18 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
 import { TreeNode } from "@features/Explorer/types";
 import { useOdeStore, useSetPreviousFolder } from "@store/useOdeStore";
-import { FOLDER, RESOURCE } from "ode-ts-client";
+import { FOLDER, IFolder, RESOURCE } from "ode-ts-client";
 
 export default function useTreeView() {
+  const [isOpenedModal, setOpenedModal] = useState<boolean>(false);
   const previousFolder = useOdeStore((state) => state.previousFolder);
   const setPreviousFolder = useSetPreviousFolder();
   const clearPreviousFolder = useOdeStore((state) => state.clearPreviousFolder);
   const {
     dispatch,
+    refreshFolder,
     contextRef,
     state: { treeData, folders },
   } = useExplorerContext();
@@ -86,6 +88,17 @@ export default function useTreeView() {
   }, []);
   const trashSelected =
     contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
+
+  const onClose = () => {
+    setOpenedModal(false);
+  };
+  const onOpen = () => {
+    setOpenedModal(true);
+  };
+  const onCreateSuccess = (folder: IFolder) => {
+    setOpenedModal(false);
+    refreshFolder({ addFolder: folder });
+  };
   return {
     treeData,
     trashId: FOLDER.BIN,
@@ -95,5 +108,9 @@ export default function useTreeView() {
     handleTreeItemSelect,
     handleTreeItemFold,
     handleTreeItemUnfold,
+    isOpenedModal,
+    onOpen,
+    onClose,
+    onCreateSuccess,
   };
 }

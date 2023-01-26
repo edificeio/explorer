@@ -1,4 +1,5 @@
 import { useExplorerContext } from "@contexts/index";
+import CreateModal from "@features/Actionbar/components/FolderFormModal";
 import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
@@ -14,6 +15,10 @@ export const TreeViewContainer = () => {
     handleTreeItemSelect,
     handleTreeItemFold,
     handleTreeItemUnfold,
+    isOpenedModal,
+    onOpen,
+    onClose,
+    onCreateSuccess,
   } = useTreeView();
 
   return (
@@ -35,10 +40,17 @@ export const TreeViewContainer = () => {
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
+          onClick={onOpen}
         >
           {i18n("explorer.folder.new")}
         </Button>
       </div>
+      <CreateModal
+        edit={false}
+        isOpen={isOpenedModal}
+        onSuccess={onCreateSuccess}
+        onCancel={onClose}
+      />
     </>
   );
 };

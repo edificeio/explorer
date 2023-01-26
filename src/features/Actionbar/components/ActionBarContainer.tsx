@@ -5,7 +5,8 @@ import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import { Button, ActionBar } from "@ode-react-ui/core";
 import { IAction } from "ode-ts-client";
 
-import PublishModal from "./PublishModal";
+import FolderFormModal from "./FolderFormModal";
+// import PublishModal from "./PublishModal";
 
 export default function ActionBarContainer() {
   const { i18n } = useExplorerContext();
@@ -13,14 +14,17 @@ export default function ActionBarContainer() {
     actions,
     isMoveModalOpen,
     isDeleteModalOpen,
-    isPublishModalOpen,
+    // isPublishModalOpen,
     isActionBarOpen,
+    isEditOpen,
+    onEditCancel,
+    onEditSuccess,
     onMoveCancel,
     onMoveSuccess,
     onDeleteCancel,
     onDeleteSuccess,
-    onPublishCancel,
-    onPublishSuccess,
+    // onPublishCancel,
+    // onPublishSuccess,
     isActivable,
     handleClick,
   } = useActionBar();
@@ -34,7 +38,6 @@ export default function ActionBarContainer() {
               action.available && action.target === "actionbar",
           )
           .map((action: IAction) => {
-            console.log("action av", action.target);
             return (
               isActivable(action) && (
                 <Button
@@ -62,10 +65,16 @@ export default function ActionBarContainer() {
         onCancel={onDeleteCancel}
         onSuccess={onDeleteSuccess}
       />
-      <PublishModal
+      {/* <PublishModal
         isOpen={isPublishModalOpen}
         onCancel={onPublishCancel}
         onSuccess={onPublishSuccess}
+        /> */}
+      <FolderFormModal
+        edit
+        isOpen={isEditOpen}
+        onCancel={onEditCancel}
+        onSuccess={onEditSuccess}
       />
     </div>
   ) : null;

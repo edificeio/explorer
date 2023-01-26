@@ -1,6 +1,6 @@
 import { useExplorerContext } from "@contexts/index";
 import {
-  Alert,
+  // Alert,
   Modal,
   Button,
   Heading,
@@ -45,7 +45,13 @@ export default function PublishModal({
 
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="libraryModal" size="lg">
-      <Modal.Header onModalClose={onCancel}>
+      <Modal.Header
+        onModalClose={() => {
+          // TODO fix onModalClose type to avoid this hack
+          onCancel();
+          return {};
+        }}
+      >
         {i18n("explorer.library.title")}
       </Modal.Header>
       <Modal.Subtitle>{i18n("explorer.library.subtitle")}</Modal.Subtitle>
@@ -203,7 +209,7 @@ export default function PublishModal({
             </li>
           </ul>
 
-          <Alert type="info" className="mb-12">
+          {/* <Alert type="info" className="mb-12">
             Si votre contenu comporte des commentaires, ceux-ci ne seront pas
             publiés dans la Bibliothèque.
           </Alert>
@@ -211,7 +217,7 @@ export default function PublishModal({
           <Alert type="warning">
             Les billets actuellement en brouillon et les billets ajoutés après
             la publication du Blog dans la Bibliothèque ne seront pas visibles.
-          </Alert>
+  </Alert> */}
         </form>
       </Modal.Body>
       <Modal.Footer>
