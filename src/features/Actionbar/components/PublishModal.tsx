@@ -107,6 +107,7 @@ export default function PublishModal({
             <div className="col">
               <FormControl id="activityType" isRequired>
                 <Select
+                  model=""
                   label="Type d’activité"
                   {...register("activityType", { required: true })}
                   options={activityTypeOptions}
@@ -118,6 +119,7 @@ export default function PublishModal({
             <div className="col">
               <FormControl id="subjectArea" isRequired>
                 <Select
+                  model=""
                   label="Discipline"
                   {...register("subjectArea", { required: true })}
                   options={subjectAreaOptions}
@@ -129,6 +131,7 @@ export default function PublishModal({
             <div className="col">
               <FormControl id="language" isRequired>
                 <Select
+                  model=""
                   id="language"
                   label="Langue"
                   {...register("language", { required: true })}
@@ -148,6 +151,7 @@ export default function PublishModal({
               <div className="me-16">
                 <FormControl id="ageMin" isRequired>
                   <Select
+                    model=""
                     defaultValue="Age min."
                     id="ageMin"
                     {...register("ageMin")}
@@ -160,6 +164,7 @@ export default function PublishModal({
               <div>
                 <FormControl id="ageMax" isRequired>
                   <Select
+                    model=""
                     defaultValue="Age max."
                     id="ageMax"
                     {...register("ageMax")}
