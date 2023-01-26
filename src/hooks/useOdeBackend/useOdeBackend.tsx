@@ -101,6 +101,7 @@ export default function useOdeBackend(params: OdeProviderParams) {
     http,
     theme,
     app,
+    appName: params.app,
     i18n: idiom.translate,
   };
 }
