@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
-import { IAction, ACTION, FOLDER } from "ode-ts-client";
+import { IAction, ACTION, FOLDER, IFolder } from "ode-ts-client";
 
-type ModalName = "move" | "delete" | "publish" | "void";
+type ModalName = "move" | "delete" | "publish" | "edit" | "void";
 
 export default function useActionBar() {
   const [actions, setActions] = useState<IAction[]>([]);
@@ -17,6 +17,7 @@ export default function useActionBar() {
     hideSelectedElement,
     deselectAllResources,
     deselectAllFolders,
+    refreshFolder,
     contextRef,
     selectedResources,
     selectedFolders,
@@ -55,6 +56,10 @@ export default function useActionBar() {
         return onRestore();
       case ACTION.PUBLISH:
         return setOpenedModalName("publish");
+      // TODO fix in ode-ts
+      case ACTION.UPD_PROPS:
+      case "edit" as any:
+        return onEdit();
       // case ACTION.SHARE:
       //   return explorer.onShare();
       // case ACTION.MANAGE:
@@ -164,6 +169,23 @@ export default function useActionBar() {
     }
   }
 
+  function onEdit() {
+    setOpenedModalName("edit");
+  }
+
+  function onEditSuccess(folder: IFolder) {
+    if (openedModalName === "edit") {
+      onClearActionBar();
+      refreshFolder({ addFolder: folder, delFolder: folder });
+    }
+  }
+
+  function onEditCancel() {
+    if (openedModalName === "edit") {
+      onClearActionBar();
+    }
+  }
+
   return {
     actions: isTrashFolder ? trashActions : actions,
     parentFolder,
@@ -179,5 +201,8 @@ export default function useActionBar() {
     isPublishModalOpen: openedModalName === "publish",
     onPublishCancel,
     onPublishSuccess,
+    isEditOpen: openedModalName === "edit",
+    onEditCancel,
+    onEditSuccess,
   };
 }

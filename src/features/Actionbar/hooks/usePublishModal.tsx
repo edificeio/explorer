@@ -44,18 +44,20 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
 
       const userId = session ? session.user.userId : "";
 
-      const coverBlob = await http.get(cover.image, { responseType: "blob" });
+      const coverBlob = await http.get(cover.image, {
+        responseType: "blob",
+      } as any);
 
       console.log(coverBlob);
 
       const teacherAvatar: Blob = await http.get(
         `/userbook/avatar/${userId}?thumbnail=48x48`,
-        { responseType: "blob" },
+        { responseType: "blob" } as any,
       );
 
       const resAttachmentSchool = await http.get(
         `/directory/user/${userId}/attachment-school`,
-        { responseType: "json" },
+        { responseType: "json" } as any,
       );
 
       const parameters: PublishParameters = {
