@@ -154,7 +154,9 @@ public class ResourceServiceElastic implements ResourceService {
                     final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
                     //use entid to push message
                     // TODO JBER check entityType
-                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false).withType(value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash);
+                    return ExplorerMessage.upsert(e.getValue().entId.get(), user, false)
+                            .withType(value.application.get(), value.resourceType.get(), value.resourceType.get())
+                            .withTrashed(isTrash).withSkipCheckVersion(true);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
             }).compose(e->{
@@ -199,7 +201,7 @@ public class ResourceServiceElastic implements ResourceService {
                         // TODO JBER check entityType
                         return ExplorerMessage.upsert(e.entId, user, false)
                                 .withType(e.application, e.resourceType, e.resourceType)
-                                .withVersion(now);
+                                .withVersion(now).withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -213,7 +215,7 @@ public class ResourceServiceElastic implements ResourceService {
                         // TODO JBER check entityType
                         return ExplorerMessage.upsert(e.entId, user, false)
                                 .withType(e.application, e.resourceType, e.resourceType)
-                                .withVersion(now);
+                                .withVersion(now).withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
@@ -278,7 +280,7 @@ public class ResourceServiceElastic implements ResourceService {
                 return ExplorerMessage.upsert(e.entId, user, false)
                         .withType(e.application, e.resourceType, e.resourceType)
                         .withShared(shared)
-                        .withVersion(now);
+                        .withVersion(now).withSkipCheckVersion(true);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);

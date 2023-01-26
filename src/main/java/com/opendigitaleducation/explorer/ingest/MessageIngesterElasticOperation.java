@@ -167,6 +167,30 @@ abstract class MessageIngesterElasticOperation {
             return document;
         }
 
+        private static JsonObject beforeUpdate(final JsonObject document) {
+            //upsert should remove createdAt
+            document.remove("createdAt");
+            document.remove("creatorId");
+            document.remove("creatorName");
+            document.put("updatedAt", new Date().getTime());
+            //custom field should not override existing fields
+            final JsonObject custom = document.getJsonObject("custom", new JsonObject());
+            for (final String key : custom.fieldNames()) {
+                if (!document.containsKey(key)) {
+                    document.put(key, custom.getValue(key));
+                }
+            }
+            document.remove("custom");
+            //override field can override existing fields
+            final JsonObject override = document.getJsonObject("override", new JsonObject());
+            for (final String key : override.fieldNames()) {
+                document.put(key, override.getValue(key));
+            }
+            document.remove("override");
+            return document;
+        }
+
+
         @Override
         void execute(final ElasticBulkBuilder bulk) {
             final String application = message.getApplication();
@@ -174,12 +198,19 @@ abstract class MessageIngesterElasticOperation {
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String index = ExplorerConfig.getInstance().getIndex(application, resource);
-            final JsonObject params = new JsonObject()
-                    .put("version", version)
-                    .put("changes", changes == null ? new JsonObject() : changes)
-                    .put("subresources", subresources == null ? new JsonArray() : subresources)
-                    .put("audienceDelta", audienceDelta);
-            bulk.storedScript("explorer-upsert-ressource", params, of(id), of(index), of(routing), of(new JsonObject()));
+            if(message.getSkipCheckVersion()){
+                //copy for upsert
+                final JsonObject insert = beforeCreate(copy());
+                final JsonObject update = beforeUpdate(copy());
+                bulk.upsert(insert, update, Optional.ofNullable(id), Optional.of(index), Optional.ofNullable(routing));
+            }else{
+                final JsonObject params = new JsonObject()
+                        .put("version", version)
+                        .put("changes", changes == null ? new JsonObject() : changes)
+                        .put("subresources", subresources == null ? new JsonArray() : subresources)
+                        .put("audienceDelta", audienceDelta);
+                bulk.storedScript("explorer-upsert-ressource", params, of(id), of(index), of(routing), of(new JsonObject()));
+            }
         }
 
         private JsonObject copy(){
