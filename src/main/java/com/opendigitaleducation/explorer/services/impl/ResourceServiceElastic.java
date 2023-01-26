@@ -185,8 +185,9 @@ public class ResourceServiceElastic implements ResourceService {
                         final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
                         //use entid to push message
                         final FolderExplorerDbSql.FolderTrashResult model = e.getValue();
-                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash)
-                    .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);}).collect(Collectors.toList());
+                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get())
+                                .withTrashed(isTrash)
+                                .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);}).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 });
                 trashFutures.add(trashForEverybodyFuture);
@@ -261,7 +262,8 @@ public class ResourceServiceElastic implements ResourceService {
                 return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
                         //use entid to push message
-                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
+                        return ExplorerMessage.upsert(e.entId, user, false)
+                                .withType(e.application, e.resourceType, e.resourceType)
                                 .withVersion(now).withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
