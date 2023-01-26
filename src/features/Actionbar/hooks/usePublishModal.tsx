@@ -70,7 +70,7 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
         age: [formData.ageMin, formData.ageMax],
         description: formData.description,
         keyWords: formData.keyWords,
-        application: app?.displayName,
+        application: app?.displayName || "",
         licence: "CC-BY",
         teacherAvatar,
         resourceId: selectedResources[0].id,
