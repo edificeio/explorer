@@ -6,7 +6,7 @@ import { Button, ActionBar } from "@ode-react-ui/core";
 import { IAction } from "ode-ts-client";
 
 import FolderFormModal from "./FolderFormModal";
-// import PublishModal from "./PublishModal";
+import PublishModal from "./PublishModal";
 
 export default function ActionBarContainer() {
   const { i18n } = useExplorerContext();
@@ -14,7 +14,7 @@ export default function ActionBarContainer() {
     actions,
     isMoveModalOpen,
     isDeleteModalOpen,
-    // isPublishModalOpen,
+    isPublishModalOpen,
     isActionBarOpen,
     isEditOpen,
     onEditCancel,
@@ -23,8 +23,8 @@ export default function ActionBarContainer() {
     onMoveSuccess,
     onDeleteCancel,
     onDeleteSuccess,
-    // onPublishCancel,
-    // onPublishSuccess,
+    onPublishCancel,
+    onPublishSuccess,
     isActivable,
     handleClick,
   } = useActionBar();
@@ -65,11 +65,11 @@ export default function ActionBarContainer() {
         onCancel={onDeleteCancel}
         onSuccess={onDeleteSuccess}
       />
-      {/* <PublishModal
+      <PublishModal
         isOpen={isPublishModalOpen}
         onCancel={onPublishCancel}
         onSuccess={onPublishSuccess}
-        /> */}
+      />
       <FolderFormModal
         edit
         isOpen={isEditOpen}
