@@ -74,7 +74,7 @@ export default function PublishModal({
               {i18n("bpr.form.publication.cover.title")}
             </div>
             <ImagePicker
-              src={selectedResources[0].thumbnail}
+              src={selectedResources[0]?.thumbnail}
               label={i18n("bpr.form.publication.cover.upload.label")}
               appCode={app?.displayName}
               addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}

@@ -24,7 +24,7 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
     name: "",
     image: "",
   });
-  const { contextRef, selectedResources, selectedFolders, session, http, app } =
+  const { contextRef, selectedResources, session, http, app } =
     useExplorerContext();
 
   const {
@@ -97,7 +97,6 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
 
   return {
     selectedResources,
-    selectedFolders,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
