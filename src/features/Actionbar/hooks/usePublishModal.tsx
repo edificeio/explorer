@@ -14,8 +14,8 @@ interface PublishFormInputs {
   activityType: string;
   subjectArea: string;
   language: string;
-  ageMin: number;
-  ageMax: number;
+  ageMin: string;
+  ageMax: string;
   keyWords: string;
 }
 
@@ -44,9 +44,14 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
 
       const userId = session ? session.user.userId : "";
 
-      const coverBlob = await http.get(cover.image, {
-        responseType: "blob",
-      } as any);
+      let coverBlob = new Blob();
+      if (cover.image) {
+        coverBlob = await http.get(cover.image, { responseType: "blob" });
+      } else if (selectedResources[0].thumbnail) {
+        coverBlob = await http.get(selectedResources[0].thumbnail, {
+          responseType: "blob",
+        });
+      }
 
       console.log(coverBlob);
 
@@ -80,7 +85,8 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
 
       const resourceType = contextRef.current.getSearchParameters().types[0];
 
-      await contextRef.current.publish(resourceType, parameters);
+      const result = await contextRef.current.publish(resourceType, parameters);
+      console.log(result);
 
       onSuccess?.();
     } catch (e) {

@@ -1,6 +1,6 @@
 import { useExplorerContext } from "@contexts/index";
 import {
-  // Alert,
+  Alert,
   Modal,
   Button,
   Heading,
@@ -14,7 +14,7 @@ import {
 import usePublishModal from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
 
-interface LibraryModalProps {
+interface PublishModalProps {
   isOpen: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -24,7 +24,7 @@ export default function PublishModal({
   isOpen,
   onSuccess = () => {},
   onCancel = () => {},
-}: LibraryModalProps) {
+}: PublishModalProps) {
   const {
     selectedResources,
     register,
@@ -43,43 +43,44 @@ export default function PublishModal({
 
   const { i18n, app } = useExplorerContext();
 
+  const defaultSelectOption = i18n("portal.select");
+  const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");
+  const defaultSelectAgeMaxOption = i18n("bpr.form.publication.age.max");
+
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="libraryModal" size="lg">
-      <Modal.Header
-        onModalClose={() => {
-          // TODO fix onModalClose type to avoid this hack
-          onCancel();
-          return {};
-        }}
-      >
-        {i18n("explorer.library.title")}
-      </Modal.Header>
-      <Modal.Subtitle>{i18n("explorer.library.subtitle")}</Modal.Subtitle>
+      <Modal.Header onModalClose={onCancel}>{i18n("bpr.publish")}</Modal.Header>
+      <Modal.Subtitle>{i18n("bpr.form.tip")}</Modal.Subtitle>
       <Modal.Body>
         <Heading headingStyle="h4" level="h3" className="mb-16">
-          Général
+          {i18n("bpr.form.publication.heading.general")}
         </Heading>
 
         <form id="libraryModalForm" onSubmit={handleSubmit(publish)}>
           <FormControl id="title" className="mb-16" isRequired>
-            <Label>Titre</Label>
+            <Label requiredText="">{i18n("bpr.form.publication.title")}</Label>
             <Input
               type="text"
               defaultValue={selectedResources[0]?.name}
               {...register("title", { required: true })}
-              placeholder="Nom de la ressource"
+              placeholder={i18n("bpr.form.publication.title.placeholder")}
               size="md"
               aria-required={true}
             />
           </FormControl>
 
           <div className="mb-24">
-            <div className="form-label">Image d'illustration</div>
+            <div className="form-label">
+              {i18n("bpr.form.publication.cover.title")}
+            </div>
             <ImagePicker
-              label="Upload an image"
+              src={selectedResources[0].thumbnail}
+              label={i18n("bpr.form.publication.cover.upload.label")}
               appCode={app?.displayName}
-              addButtonLabel="Add image"
-              deleteButtonLabel="Delete image"
+              addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}
+              deleteButtonLabel={i18n(
+                "bpr.form.publication.cover.upload.remove",
+              )}
               onUploadImage={handleUploadImage}
               onDeleteImage={() => {}}
               className="align-self-center"
@@ -87,11 +88,13 @@ export default function PublishModal({
           </div>
 
           <FormControl id="description" isRequired>
-            <Label>Description et contexte pédagogique</Label>
+            <Label requiredText="">
+              {i18n("bpr.form.publication.description")}
+            </Label>
             <Input
               type="text"
               {...register("description", { required: true })}
-              placeholder="Description de la ressource"
+              placeholder={i18n("bpr.form.publication.description.placeholder")}
               size="md"
               aria-required={true}
             />
@@ -100,43 +103,57 @@ export default function PublishModal({
           <hr />
 
           <Heading headingStyle="h4" level="h3" className="mb-16">
-            Informations sur le contenu
+            {i18n("bpr.form.publication.heading.infos")}
           </Heading>
 
           <div className="row mb-24">
             <div className="col">
               <FormControl id="activityType" isRequired>
+                <Label requiredText="">
+                  {i18n("bpr.form.publication.type")}
+                </Label>
                 <Select
-                  model=""
-                  label="Type d’activité"
-                  {...register("activityType", { required: true })}
+                  {...register("activityType", {
+                    required: true,
+                    validate: (value) => value !== defaultSelectOption,
+                  })}
                   options={activityTypeOptions}
-                  placeholderOption="Sélectionner"
+                  placeholderOption={defaultSelectOption}
+                  defaultValue={defaultSelectOption}
                   aria-required={true}
                 />
               </FormControl>
             </div>
             <div className="col">
               <FormControl id="subjectArea" isRequired>
+                <Label requiredText="">
+                  {i18n("bpr.form.publication.discipline")}
+                </Label>
                 <Select
-                  model=""
-                  label="Discipline"
-                  {...register("subjectArea", { required: true })}
+                  {...register("subjectArea", {
+                    required: true,
+                    validate: (value) => value !== defaultSelectOption,
+                  })}
                   options={subjectAreaOptions}
-                  placeholderOption="Sélectionner"
+                  placeholderOption={defaultSelectOption}
+                  defaultValue={defaultSelectOption}
                   aria-required={true}
                 />
               </FormControl>
             </div>
             <div className="col">
               <FormControl id="language" isRequired>
+                <Label requiredText="">
+                  {i18n("bpr.form.publication.language")}
+                </Label>
                 <Select
-                  model=""
-                  id="language"
-                  label="Langue"
-                  {...register("language", { required: true })}
+                  {...register("language", {
+                    required: true,
+                    validate: (value) => value !== defaultSelectOption,
+                  })}
                   options={languageOptions}
-                  placeholderOption="Sélectionner"
+                  placeholderOption={defaultSelectOption}
+                  defaultValue={defaultSelectOption}
                   aria-required={true}
                 />
               </FormControl>
@@ -145,18 +162,20 @@ export default function PublishModal({
 
           <div className="mb-24">
             <label htmlFor="" className="form-label">
-              Âge conseillé des élèves
+              {i18n("bpr.form.publication.age")}
             </label>
             <div className="d-flex">
               <div className="me-16">
                 <FormControl id="ageMin" isRequired>
                   <Select
-                    model=""
-                    defaultValue="Age min."
-                    id="ageMin"
-                    {...register("ageMin")}
+                    {...register("ageMin", {
+                      required: true,
+                      validate: (value, formValues) =>
+                        parseInt(value) <= parseInt(formValues.ageMax),
+                    })}
                     options={ageOptions}
-                    placeholderOption="Age min."
+                    placeholderOption={defaultSelectAgeMinOption}
+                    defaultValue={defaultSelectAgeMinOption}
                     aria-required={true}
                   />
                 </FormControl>
@@ -164,12 +183,14 @@ export default function PublishModal({
               <div>
                 <FormControl id="ageMax" isRequired>
                   <Select
-                    model=""
-                    defaultValue="Age max."
-                    id="ageMax"
-                    {...register("ageMax")}
+                    {...register("ageMax", {
+                      required: true,
+                      validate: (value, formValues) =>
+                        parseInt(value) >= parseInt(formValues.ageMin),
+                    })}
                     options={ageOptions}
-                    placeholderOption="Age max."
+                    placeholderOption={defaultSelectAgeMaxOption}
+                    defaultValue={defaultSelectAgeMaxOption}
                     aria-required={true}
                   />
                 </FormControl>
@@ -179,12 +200,12 @@ export default function PublishModal({
 
           <div className="mb-24">
             <FormControl id="keywords" isOptional>
-              <Label>Mots-clefs (5 max), séparés par des virgules</Label>
+              <Label>{i18n("bpr.form.publication.keywords")}</Label>
               <Input
                 type="text"
                 {...register("keyWords")}
                 size="md"
-                placeholder="Mots clés"
+                placeholder={i18n("bpr.form.publication.keywords.placeholder")}
               />
             </FormControl>
           </div>
@@ -192,37 +213,29 @@ export default function PublishModal({
           <hr />
 
           <Heading headingStyle="h4" level="h3" className="mb-16">
-            En cliquant sur publier
+            {i18n("bpr.form.publication.licence.text")}
           </Heading>
 
           <ul className="mb-12">
             <li>
-              J'accepte que mon activité soit publiée sous licence Creative
-              Commons
+              {i18n("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
-                src="/assets/creative-commons.png"
+                src="/assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
                 alt="Icone licence Creative
                   Commons"
               />
             </li>
-            <li>
-              J'accepte d'être cité en tant qu'auteur, que le nom de mon
-              établissement soit affiché ainsi qu'un aperçu de mon avatar. Cela
-              permettra aux enseignants de la communauté d'échanger plus
-              facilement avec vous de manière bienveillante !
-            </li>
+            <li>{i18n("bpr.form.publication.licence.text.2")}</li>
           </ul>
 
-          {/* <Alert type="info" className="mb-12">
-            Si votre contenu comporte des commentaires, ceux-ci ne seront pas
-            publiés dans la Bibliothèque.
+          <Alert type="info" className="mb-12">
+            {i18n("bpr.form.publication.licence.text.3")}
           </Alert>
 
           <Alert type="warning">
-            Les billets actuellement en brouillon et les billets ajoutés après
-            la publication du Blog dans la Bibliothèque ne seront pas visibles.
-  </Alert> */}
+            {i18n("bpr.form.publication.licence.text.4")}
+          </Alert>
         </form>
       </Modal.Body>
       <Modal.Footer>
@@ -241,7 +254,7 @@ export default function PublishModal({
           variant="filled"
           disabled={!isDirty || !isValid}
         >
-          {i18n("publish")}
+          {i18n("bpr.form.submit")}
         </Button>
       </Modal.Footer>
     </Modal>
