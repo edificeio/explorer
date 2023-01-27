@@ -258,7 +258,7 @@ function ExplorerProvider({
 
   async function openResource() {
     const items = Object.values(selectedResources) as IResource[];
-    if (items.length === 1) {
+    if (items.length > 1) {
       // TODO display alert
       throw new Error("Cannot open more than 1 resource");
     }
