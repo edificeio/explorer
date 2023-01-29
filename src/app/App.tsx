@@ -9,8 +9,15 @@ import { Link } from "react-router-dom";
 import Explorer from "./Explorer";
 
 function App({ params }: { params: OdeProviderParams }) {
-  const { session, theme, explorerFramework, i18n, app, http } =
-    useOdeBackend(params);
+  const {
+    session,
+    theme,
+    explorerFramework,
+    i18n,
+    app,
+    http,
+    currentLanguage,
+  } = useOdeBackend(params);
 
   const is1d = theme?.is1D;
   const basePath = theme?.basePath as string;
@@ -45,7 +52,7 @@ function App({ params }: { params: OdeProviderParams }) {
           http={http}
           app={app}
         >
-          <Explorer />
+          <Explorer currentLanguage={currentLanguage} />
         </ExplorerProvider>
       </Main>
     </div>

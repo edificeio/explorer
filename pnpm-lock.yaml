@@ -33,6 +33,7 @@ specifiers:
   react: 18.2.0
   react-dom: 18.2.0
   react-error-boundary: 3.1.4
+  react-hook-form: ^7.42.1
   react-i18next: 12.1.4
   react-router-dom: 6.7.0
   swr: 2.0.0
@@ -41,18 +42,19 @@ specifiers:
   zustand: 4.3.2
 
 dependencies:
-  '@ode-react-ui/core': 1.0.7-dev.25_lf5lpaeix7ef7rlt7wulmgnrpa
-  '@ode-react-ui/hooks': 1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu
+  '@ode-react-ui/core': 1.0.7-dev.34_eqrg4a5uxqgeipnvxodzx5qoj4
+  '@ode-react-ui/hooks': 1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
   dayjs: 1.11.7
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202301191127
+  ode-ts-client: 1.1.0-explorer.202301271620
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
+  react-hook-form: 7.42.1_react@18.2.0
   react-i18next: 12.1.4_iakk3dtjhjpukdoa4oua5khgci
   react-router-dom: 6.7.0_biqbaboplfbrettd7655fr4n2y
   swr: 2.0.0_react@18.2.0
@@ -611,28 +613,29 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.25_lf5lpaeix7ef7rlt7wulmgnrpa:
-    resolution: {integrity: sha512-/4EiOxVWuDhBCAF9fHgqF6Eh0ewT234Bz7/tg8LfsOhPFjMjgiNVTB3FwpPTpjwUcZjvixTTnXp5rXUItPt/WQ==}
+  /@ode-react-ui/core/1.0.7-dev.34_eqrg4a5uxqgeipnvxodzx5qoj4:
+    resolution: {integrity: sha512-YVe12emnbFHwM/g5iz2Zp0xBnzmsL1762kzP18ZR4fVircRN73mv+PwxbKnr2YwXoHHwlEdlAvBJpP5gxSnfNg==}
     peerDependencies:
-      '@ode-react-ui/hooks': '*'
+      '@ode-react-ui/hooks': 1.0.7-dev.33
       '@ode-react-ui/icons': '*'
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu
+      '@ode-react-ui/hooks': 1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.23_4dxefersgzxnd5rsbkyuxt2qsu:
-    resolution: {integrity: sha512-LxA6GQjU8aiIuB64JhH02zdwTBYxSs2Fs1mbxTVsTlOltDFb9h0O3CmH5CAgX2wGFnGhSXGHaZIRSUGdVwwaTg==}
+  /@ode-react-ui/hooks/1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm:
+    resolution: {integrity: sha512-QwWvMMzopSDHAoD/1ispyr/GjPSe97Md2uGcNnpDk+WhXnfsTwioU5Cie7qMbFBHdgEQgvS1V9aEHWV1mDs5LA==}
     peerDependencies:
       ode-ts-client: feat-explorer
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      ode-ts-client: 1.1.0-explorer.202301191127
+      luxon: 3.2.1
+      ode-ts-client: 1.1.0-explorer.202301271620
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
@@ -2450,6 +2453,11 @@ packages:
       yallist: 4.0.0
     dev: true
 
+  /luxon/3.2.1:
+    resolution: {integrity: sha512-QrwPArQCNLAKGO/C+ZIilgIuDnEnKx5QYODdDtbFaxzsbZcc/a7WFq7MhsVYgRlwawLtvOUESTlfJ+hc/USqPg==}
+    engines: {node: '>=12'}
+    dev: false
+
   /magic-string/0.27.0:
     resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}
     engines: {node: '>=12'}
@@ -2610,8 +2618,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202301191127:
-    resolution: {integrity: sha512-E5O14mTEON+5Tjd7M54CCzhuwRD1EutxyQoPYEpA+d61/UEWPthVB79CrUt7lf0m/g0omZWOmHGNo3Hj6pV0Fw==}
+  /ode-ts-client/1.1.0-explorer.202301271620:
+    resolution: {integrity: sha512-Ud86WcADpSg8HWkX+NW0EvnVjiIMse0TIkUWJhHcqzRh8REgslQ9LUQ7xZ+ENGzyzOn671FUIFjOktVZZp/sYA==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -2785,6 +2793,15 @@ packages:
       react: '>=16.13.1'
     dependencies:
       '@babel/runtime': 7.20.7
+      react: 18.2.0
+    dev: false
+
+  /react-hook-form/7.42.1_react@18.2.0:
+    resolution: {integrity: sha512-2UIGqwMZksd5HS55crTT1ATLTr0rAI4jS7yVuqTaoRVDhY2Qc4IyjskCmpnmdYqUNOYFy04vW253tb2JRVh+IQ==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+    dependencies:
       react: 18.2.0
     dev: false
 

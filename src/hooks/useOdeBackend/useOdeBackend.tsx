@@ -22,13 +22,11 @@ export default function useOdeBackend(params: OdeProviderParams) {
   const notifyFramework = NotifyFrameworkFactory.instance();
   const { http } = TransportFrameworkFactory.instance();
 
-  const [session, setSession] = useState<ISession | null>(null);
-  /* const session = useOdeStore((state) => state.session);
-  const setSession = useOdeStore((state) => state.setSession); */
-
-  const [theme, setTheme] = useState<ITheme>(configureFramework.Platform.theme);
-  const [idiom, setIdiom] = useState<IIdiom>(configureFramework.Platform.idiom);
   const [app, setApp] = useState<IWebApp>();
+  const [currentLanguage, setCurrentLanguage] = useState<string>("fr");
+  const [idiom, setIdiom] = useState<IIdiom>(configureFramework.Platform.idiom);
+  const [session, setSession] = useState<ISession | null>(null);
+  const [theme, setTheme] = useState<ITheme>(configureFramework.Platform.theme);
 
   function setBootstrapTheme(conf: any) {
     let odeBootstrapPath: string = "";
@@ -76,6 +74,10 @@ export default function useOdeBackend(params: OdeProviderParams) {
     })();
   }, []);
 
+  useEffect(() => {
+    setCurrentLanguage(session?.currentLanguage as string);
+  }, [session]);
+
   /** The custom-hook-ized login process */
   function login(/* email: string, password: string */) {
     // sessionFramework.login(email, password).then(() => {
@@ -102,6 +104,7 @@ export default function useOdeBackend(params: OdeProviderParams) {
     theme,
     app,
     appName: params.app,
+    currentLanguage,
     i18n: idiom.translate,
   };
 }

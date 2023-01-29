@@ -3,14 +3,17 @@ import CreateModal from "@features/Actionbar/components/FolderFormModal";
 import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
+import { useOdeStore } from "@store/useOdeStore";
 
 import TrashButton from "./TrashButton";
 export const TreeViewContainer = () => {
-  const { i18n } = useExplorerContext();
+  const {
+    state: { treeData },
+    i18n,
+  } = useExplorerContext();
   /* feature treeview @hook */
   const {
     trashId,
-    treeData,
     trashSelected,
     handleTreeItemSelect,
     handleTreeItemFold,
@@ -21,10 +24,13 @@ export const TreeViewContainer = () => {
     onCreateSuccess,
   } = useTreeView();
 
+  const selectedNodesIds = useOdeStore((state) => state.selectedNodesIds);
+
   return (
     <>
       <TreeView
         data={treeData}
+        selectedNodesIds={selectedNodesIds}
         onTreeItemSelect={handleTreeItemSelect}
         onTreeItemFold={handleTreeItemFold}
         onTreeItemUnfold={handleTreeItemUnfold}

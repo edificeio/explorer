@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
-import { TreeNode } from "@ode-react-ui/core";
+import { findNodeById } from "@shared/utils/findNodeById";
 import {
   ACTION,
   ConfigurationFrameworkFactory,
@@ -40,6 +40,7 @@ const initialState = {
   },
   folders: [],
   resources: [],
+  treeviewStatus: "",
 };
 
 const reducer: Reducer<State, Action> = (
@@ -86,6 +87,11 @@ const reducer: Reducer<State, Action> = (
           name: configureFramework.Platform.idiom.translate(payload.name),
         },
       };
+    }
+    case "GET_TREEVIEW_ACTION": {
+      const { payload } = action;
+
+      return { ...state, treeviewStatus: payload };
     }
     default:
       return state;
@@ -177,6 +183,8 @@ function ExplorerProvider({
     })();
   }, []);
 
+  const { treeviewStatus } = state;
+
   // Observe streamed search results
   useEffect(() => {
     const subscription = contextRef.current.latestResources().subscribe({
@@ -195,8 +203,11 @@ function ExplorerProvider({
           pagination.startIdx = pagination.maxIdx;
         }
         wrapTreeData(resultset?.output?.folders);
-        wrapFolderData(resultset?.output?.folders);
         wrapResourceData(resultset?.output?.resources);
+
+        if (treeviewStatus !== "unfold") {
+          wrapFolderData(resultset?.output?.folders);
+        }
       },
       error(err) {
         console.error("something wrong occurred: ", err);
@@ -211,7 +222,7 @@ function ExplorerProvider({
         subscription.unsubscribe();
       }
     };
-  }, []); // execute effect only once
+  }, [treeviewStatus]); // execute effect only once
 
   function hideSelectedElement() {
     const folderIds = Object.keys(selectedFolders);
@@ -315,20 +326,6 @@ function ExplorerProvider({
       .publish(types[0], ACTION.CREATE, "test proto");
   }
 
-  function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
-    let res: TreeNode | undefined;
-    if (data?.id === id) {
-      return data;
-    }
-    if (data?.children?.length) {
-      data?.children?.every((childNode: any) => {
-        res = findNodeById(id, childNode);
-        return res === undefined; // break loop if res is found
-      });
-    }
-    return res;
-  }
-
   function wrapTreeData(folders?: IFolder[]) {
     folders?.forEach((folder) => {
       const parentFolder = findNodeById(folder.parentId, state.treeData);
@@ -344,12 +341,13 @@ function ExplorerProvider({
       }
     });
 
-    const updatedTreeData = {
-      ...state.treeData,
-      name: i18n("explorer.filters.mine"),
-    };
-
-    dispatch({ type: "GET_TREEDATA", payload: updatedTreeData });
+    dispatch({
+      type: "GET_TREEDATA",
+      payload: {
+        ...state.treeData,
+        name: i18n("explorer.filters.mine"),
+      },
+    });
   }
 
   function clearResource() {
