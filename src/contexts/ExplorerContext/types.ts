@@ -36,6 +36,7 @@ export interface State {
   treeData: TreeNode;
   folders: IFolder[];
   resources: IResource[];
+  treeviewStatus: string;
 }
 
 export interface ExplorerContextProps {
@@ -72,10 +73,11 @@ export interface ExplorerContextProps {
 }
 
 export type Action =
-  | { type: "GET_RESOURCES"; payload: IResource[] }
   | { type: "CLEAR_RESOURCES" }
+  | { type: "GET_RESOURCES"; payload: IResource[] }
   | { type: "GET_FOLDERS"; payload: IFolder[] }
   | { type: "GET_TREEDATA"; payload: TreeNode }
+  | { type: "GET_TREEVIEW_ACTION"; payload: string }
   | { type: "SELECT_FOLDER"; payload: ThingWithAnID }
   | {
       type: "HIDE_SELECTION";

@@ -16,15 +16,21 @@ import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
-import { usePreviousFolder } from "@store/useOdeStore";
+import { findNodeById } from "@shared/utils/findNodeById";
+import { useSelectedNodesIds } from "@store/useOdeStore";
 
-export default function Explorer() {
-  const previousFolder = usePreviousFolder();
+export default function Explorer({
+  currentLanguage,
+}: {
+  currentLanguage: string;
+}) {
+  const selectedNodesIds = useSelectedNodesIds();
 
   const {
     contextRef,
     createResource,
     handleNextPage,
+    state: { resources, folders, treeData },
     i18n,
     app,
     session,
@@ -33,7 +39,25 @@ export default function Explorer() {
 
   const { handleNavigationBack } = useTreeView();
 
-  console.count("Explorer");
+  const trashName = i18n("explorer.tree.trash");
+  const rootName = i18n("explorer.filters.mine");
+  const previousFolder = findNodeById(
+    selectedNodesIds[selectedNodesIds.length - 2],
+    treeData,
+  );
+
+  const previousId = previousFolder?.id;
+  const previousName = previousFolder?.name || rootName;
+
+  const hasNoSelectedNodes =
+    selectedNodesIds?.length === 0 ||
+    (selectedNodesIds.length === 1 && selectedNodesIds[0] === "default");
+  const hasSelectedNodes = selectedNodesIds?.length === 1;
+
+  const hasResourcesOrFolders = resources.length || folders.length;
+  const hasResources = resources.length;
+
+  const appCode = app?.address.replace("/", "");
 
   return contextRef.current.isInitialized() ? (
     <>
@@ -88,45 +112,51 @@ export default function Explorer() {
             </FormControl>
           </form>
           <div className="py-24">
-            <h2 className="body">
-              {i18n(
-                trashSelected ? "explorer.tree.trash" : "explorer.filters.mine",
-              )}
-            </h2>
-          </div>
-          {/* <div className="py-24">
-            {previousFolder.length === 0 ? (
-              <h2 className="body">{i18n("explorer.filters.mine")}</h2>
+            {hasNoSelectedNodes ? (
+              <h2 className="body">{trashSelected ? trashName : rootName}</h2>
             ) : (
               <div className="d-flex align-items-center gap-8">
                 <IconButton
                   icon={<ArrowLeft />}
                   variant="ghost"
                   color="tertiary"
-                  onClick={() => handleNavigationBack()}
+                  onClick={() => handleNavigationBack(previousId as string)}
                 />
                 <p className="body">
-                  <strong>
-                    {previousFolder.length === 1
-                      ? i18n("explorer.filters.mine")
-                      : previousFolder[previousFolder.length - 2].name}
-                  </strong>
+                  <strong>{hasSelectedNodes ? rootName : previousName}</strong>
                 </p>
               </div>
             )}
-          </div> */}
-          <FoldersList />
-          <ResourcesList />
-          <div className="d-grid">
-            <Button
-              type="button"
-              color="secondary"
-              variant="filled"
-              onClick={handleNextPage}
-            >
-              {i18n("explorer.see.more")}
-            </Button>
           </div>
+          {hasResourcesOrFolders ? (
+            <>
+              <FoldersList />
+              <ResourcesList
+                app={app}
+                session={session}
+                currentLanguage={currentLanguage}
+              />
+            </>
+          ) : (
+            <img
+              src={`/assets/themes/ode-bootstrap/images/emptyscreen/illu-${appCode}.svg`}
+              alt="application emptyscreen"
+              className="mx-auto"
+              style={{ maxWidth: "50%" }}
+            />
+          )}
+          {hasResources ? (
+            <div className="d-grid">
+              <Button
+                type="button"
+                color="secondary"
+                variant="filled"
+                onClick={handleNextPage}
+              >
+                {i18n("explorer.see.more")}
+              </Button>
+            </div>
+          ) : null}
         </Grid.Col>
         <ActionBarContainer />
       </Grid>

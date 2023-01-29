@@ -1,17 +1,20 @@
 import { useExplorerContext } from "@contexts/index";
 import { Card } from "@ode-react-ui/core";
-// TODO: Global export
-import * as dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-// TODO
-import { IResource } from "ode-ts-client";
+import { useLuxon } from "@ode-react-ui/hooks";
+import { IResource, ISession, IWebApp } from "ode-ts-client";
 
-dayjs.extend(relativeTime);
-
-export default function ResourcesList() {
-  const { app, session } = useExplorerContext();
-  // const currentApp = useApp();
+export default function ResourcesList({
+  session,
+  app,
+  currentLanguage,
+}: {
+  session: ISession;
+  app: IWebApp | undefined;
+  currentLanguage: string;
+}) {
   const appCode = app?.address.replace("/", "");
+
+  const { getUpdatedDate } = useLuxon(currentLanguage);
 
   const {
     state: { resources },
@@ -36,9 +39,8 @@ export default function ResourcesList() {
   return resources.length ? (
     <ul className="grid ps-0 list-unstyled">
       {resources.map((resource: IResource) => {
-        const { assetId, creatorName, name, thumbnail, shared } = resource;
-
-        console.log(typeof shared);
+        const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
+          resource;
 
         return (
           <li className="g-col-4" key={assetId}>
@@ -46,25 +48,19 @@ export default function ResourcesList() {
               appCode={appCode}
               className="c-pointer"
               creatorName={creatorName}
-              isSelected={isResourceSelected(resource)}
               isPublic={resource.public}
+              isSelected={isResourceSelected(resource)}
               isShared={resourceIsShared(shared)}
               name={name}
               onOpen={() => openSingleResource(assetId)}
               onSelect={() => toggleSelect(resource)}
-              userSrc={session?.avatarUrl}
               resourceSrc={thumbnail}
+              updatedAt={getUpdatedDate(updatedAt)}
+              userSrc={session?.avatarUrl}
             />
           </li>
         );
       })}
     </ul>
-  ) : (
-    <img
-      src={`/assets/themes/ode-bootstrap/images/emptyscreen/illu-${appCode}.svg`}
-      alt="application emptyscreen"
-      className="mx-auto"
-      style={{ maxWidth: "50%" }}
-    />
-  );
+  ) : null;
 }
