@@ -16,11 +16,9 @@ export default function useTreeView() {
     dispatch,
     refreshFolder,
     contextRef,
+    trashSelected,
     state: { treeData },
   } = useExplorerContext();
-
-  const trashSelected =
-    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
 
   /**
    *
@@ -38,7 +36,7 @@ export default function useTreeView() {
   /**
    * Select folder and get new sub folders and resources
    */
-  const handleNavigationFolder = (folderId: string) => {
+  const handleTreeByFolders = (folderId: string) => {
     const previousId = contextRef.current.getSearchParameters().filters
       .folder as string;
 
@@ -68,21 +66,32 @@ export default function useTreeView() {
   /**
    * Redirect user to previous selected folder
    */
-  const handleNavigationBack = useCallback(
+  const handleTreeItemPrevious = useCallback(
     (folderId: string) => {
-      handleNavigationFolder(folderId);
+      handleTreeByFolders(folderId);
     },
     [selectedNodesIds],
   );
+
+  const handleTreeItemTrash = (folderId: string) => {
+    setSelectedNodesIds([]);
+    dispatch({ type: "CLEAR_RESOURCES" });
+
+    contextRef.current.getSearchParameters().filters.folder = folderId;
+    contextRef.current.getSearchParameters().pagination.startIdx = 0;
+    contextRef.current.getResources();
+  };
 
   /**
    * Select folder from the TreeView Component
    * Uses handleNavigationFolder
    */
   const handleTreeItemSelect = useCallback((folderId: string) => {
+    console.log("trashId", folderId);
+
     dispatch({ type: "GET_TREEVIEW_ACTION", payload: "select" });
 
-    handleNavigationFolder(folderId);
+    handleTreeByFolders(folderId);
   }, []);
 
   /**
@@ -121,12 +130,13 @@ export default function useTreeView() {
     treeData,
     trashId: FOLDER.BIN,
     trashSelected,
-    handleNavigationBack,
-    handleNavigationFolder,
+    isOpenedModal,
+    handleTreeItemPrevious,
+    handleTreeByFolders,
     handleTreeItemSelect,
+    handleTreeItemTrash,
     handleTreeItemFold,
     handleTreeItemUnfold,
-    isOpenedModal,
     onOpen,
     onClose,
     onCreateSuccess,

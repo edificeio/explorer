@@ -9,9 +9,10 @@ function FoldersList() {
     selectFolder,
     deselectFolder,
     isFolderSelected,
+    trashSelected,
   } = useExplorerContext();
 
-  const { handleNavigationFolder } = useTreeView();
+  const { handleTreeByFolders } = useTreeView();
 
   function toggleSelect(folder: IFolder) {
     if (isFolderSelected(folder)) {
@@ -21,7 +22,7 @@ function FoldersList() {
     }
   }
 
-  return folders.length ? (
+  return folders.length && !trashSelected ? (
     <ul className="grid ps-0 list-unstyled">
       {folders.map((folder: IFolder) => {
         const { id, name } = folder;
@@ -31,7 +32,7 @@ function FoldersList() {
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={() => handleNavigationFolder(id)}
+              onOpen={() => handleTreeByFolders(id)}
               onSelect={() => toggleSelect(folder)}
             />
           </li>

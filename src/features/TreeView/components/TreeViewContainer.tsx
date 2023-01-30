@@ -13,15 +13,16 @@ export const TreeViewContainer = () => {
   } = useExplorerContext();
   /* feature treeview @hook */
   const {
+    handleTreeItemFold,
+    isOpenedModal,
     trashId,
     trashSelected,
     handleTreeItemSelect,
-    handleTreeItemFold,
+    handleTreeItemTrash,
     handleTreeItemUnfold,
-    isOpenedModal,
-    onOpen,
     onClose,
     onCreateSuccess,
+    onOpen,
   } = useTreeView();
 
   const selectedNodesIds = useOdeStore((state) => state.selectedNodesIds);
@@ -38,7 +39,7 @@ export const TreeViewContainer = () => {
       <TrashButton
         id={trashId}
         selected={trashSelected}
-        onSelect={() => handleTreeItemSelect(trashId)}
+        onSelect={() => handleTreeItemTrash(trashId)}
       />
       <div className="d-grid my-16">
         <Button
