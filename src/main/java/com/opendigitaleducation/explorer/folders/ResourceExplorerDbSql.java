@@ -1,5 +1,6 @@
 package com.opendigitaleducation.explorer.folders;
 
+import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -79,11 +80,12 @@ public class ResourceExplorerDbSql {
         queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, shared) ");
         queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, shared=COALESCE(EXCLUDED.shared, COALESCE(r.shared, '[]')) RETURNING * ");
         queryTpl.append(")  ");
-        queryTpl.append("SELECT upserted.id as resource_id,ent_id,resource_unique_id, creator_id, ");
-        queryTpl.append("       application, resource_type, shared, ");
-        queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id ");
+        queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
+        queryTpl.append("       upserted.creator_id, upserted.application, upserted.resource_type, upserted.shared, ");
+        queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
+        queryTpl.append("LEFT JOIN explorer.folders f ON fr.folder_id=f.id ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
         return client.preparedQuery(query, tuple).map(rows->{
             final Map<Integer, ResouceSql> results = new HashMap<>();
@@ -96,10 +98,18 @@ public class ResourceExplorerDbSql {
                 final String resourceUniqueId = row.getString("resource_unique_id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
+                final Boolean folder_trash = row.getBoolean("folder_trash");
                 final Object shared = row.getJson("shared");
                 results.putIfAbsent(id, new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type));
                 if(folderId != null){
-                    results.get(id).folders.add(new FolderSql(folderId, userId));
+                    if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders()){
+                        //do not link resource to folder if trashed
+                        if(!Boolean.TRUE.equals(folder_trash)){
+                            results.get(id).folders.add(new FolderSql(folderId, userId));
+                        }
+                    }else{
+                        results.get(id).folders.add(new FolderSql(folderId, userId));
+                    }
                 }
                 if(shared != null){
                     if(shared instanceof JsonArray){
