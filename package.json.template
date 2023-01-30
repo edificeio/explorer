@@ -12,8 +12,11 @@
   },
   "license": "GPL-3.0",
   "author": "Open Digital Education",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "vite build",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -21,14 +24,16 @@
     "clean:package": "rm -f pnpm-lock.yaml",
     "dev": "vite",
     "fix": "eslint --fix .",
-    "format": "concurrently \"pnpm:format:*\"",
-    "format:check": "pnpm prettier --check .",
-    "format:write": "pnpm prettier --write .",
+    "format": "pnpm format:check && pnpm format:write",
+    "format:check": "npx prettier --check .",
+    "format:write": "npx prettier --write .",
+    "preinstall": "npx only-allow pnpm",
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
     "prepare": "husky install .husky",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tsc": "tsc"
   },
   "husky": {
     "hooks": {
@@ -36,13 +41,13 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
+    "**/*.{ts,tsx}": [
       "pnpm run format",
-      "pnpm run fix",
-      "pnpm run build"
+      "pnpm run fix"
     ]
   },
   "dependencies": {
+    "@lhci/cli": "0.8.x",
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
@@ -53,10 +58,10 @@
     "ode-ts-client": "%odeTsClientVersion%",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-hook-form": "7.42.1",
     "react-error-boundary": "3.1.4",
+    "react-hook-form": "7.42.1",
     "react-i18next": "12.1.4",
-    "react-router-dom": "6.6.2",
+    "react-router-dom": "6.7.0",
     "swr": "2.0.0",
     "zustand": "4.3.2"
   },
@@ -84,7 +89,8 @@
     "typescript": "4.9.4",
     "vite": "4.0.4"
   },
-  "files": [
-    "dist/**/*"
-  ]
+  "packageManager": "pnpm@7.21.0",
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }

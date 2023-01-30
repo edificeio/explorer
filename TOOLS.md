@@ -11,7 +11,7 @@
 
 - [Vite](https://vitejs.dev)
 
-## Configuration
+## Local Dev
 
 - [TypeScript](https://www.typescriptlang.org)
 - [Eslint](https://eslint.org)
@@ -29,3 +29,7 @@
 ## Lighthouse
 
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
+
+## Turborepo
+
+- [Turborepo](https://turbo.build)

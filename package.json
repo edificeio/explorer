@@ -12,8 +12,11 @@
   },
   "license": "GPL-3.0",
   "author": "Open Digital Education",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "vite build",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -24,11 +27,13 @@
     "format": "pnpm format:check && pnpm format:write",
     "format:check": "npx prettier --check .",
     "format:write": "npx prettier --write .",
+    "preinstall": "npx only-allow pnpm",
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
     "prepare": "husky install .husky",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tsc": "tsc"
   },
   "husky": {
     "hooks": {
@@ -42,6 +47,7 @@
     ]
   },
   "dependencies": {
+    "@lhci/cli": "0.8.x",
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
@@ -83,7 +89,8 @@
     "typescript": "4.9.4",
     "vite": "4.0.4"
   },
-  "files": [
-    "dist/**/*"
-  ]
+  "packageManager": "pnpm@7.21.0",
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }
