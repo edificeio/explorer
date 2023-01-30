@@ -14,17 +14,17 @@
   "author": "Open Digital Education",
   "scripts": {
     "build": "tsc && vite build",
-    "clean": "concurrently \"yarn:clean:*\"",
+    "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
     "clean:modules": "rm -rf node_modules",
-    "clean:package": "rm -rf yarn.lock",
+    "clean:package": "rm -f pnpm-lock.yaml",
     "dev": "vite",
     "fix": "eslint --fix .",
-    "format": "concurrently \"yarn:format:*\"",
-    "format:check": "yarn prettier --check .",
-    "format:write": "yarn prettier --write .",
-    "lighthouse": "yarn clean:lighthouse && lhci autorun",
+    "format": "concurrently \"pnpm:format:*\"",
+    "format:check": "pnpm prettier --check .",
+    "format:write": "pnpm prettier --write .",
+    "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
     "prepare": "husky install .husky",
@@ -37,8 +37,9 @@
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
-      "yarn format:write",
-      "yarn fix"
+      "pnpm run format",
+      "pnpm run fix",
+      "pnpm run build"
     ]
   },
   "dependencies": {

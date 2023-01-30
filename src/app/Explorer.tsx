@@ -37,7 +37,7 @@ export default function Explorer({
     trashSelected,
   } = useExplorerContext();
 
-  const { handleNavigationBack } = useTreeView();
+  const { handleTreeItemPrevious } = useTreeView();
 
   const trashName = i18n("explorer.tree.trash");
   const rootName = i18n("explorer.filters.mine");
@@ -120,7 +120,7 @@ export default function Explorer({
                   icon={<ArrowLeft />}
                   variant="ghost"
                   color="tertiary"
-                  onClick={() => handleNavigationBack(previousId as string)}
+                  onClick={() => handleTreeItemPrevious(previousId as string)}
                 />
                 <p className="body">
                   <strong>{hasSelectedNodes ? rootName : previousName}</strong>
