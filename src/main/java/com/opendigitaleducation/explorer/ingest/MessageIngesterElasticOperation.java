@@ -120,7 +120,7 @@ abstract class MessageIngesterElasticOperation {
         }
 
         private static JsonObject beforeCreate(final JsonObject document) {
-
+            document.remove("skipCheckVersion");
             document.remove("entityType");
             if(!document.containsKey("subresources")){
                 document.put("subresources", new JsonArray());
@@ -168,6 +168,7 @@ abstract class MessageIngesterElasticOperation {
         }
 
         private static JsonObject beforeUpdate(final JsonObject document) {
+            document.remove("skipCheckVersion");
             //upsert should remove createdAt
             document.remove("createdAt");
             document.remove("creatorId");
