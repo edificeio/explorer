@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.folders;
 
-import io.vertx.core.CompositeFuture;
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
