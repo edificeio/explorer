@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202301161447",
+  "version": "1.0.0-feat-explorer.202301301559",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -21,7 +21,7 @@
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
     "clean:modules": "rm -rf node_modules",
-    "clean:package": "rm -f pnpm-lock.yaml",
+    "clean:package": "rm -f pnpm-lock.yaml && rm -f package.json",
     "dev": "vite",
     "fix": "eslint --fix .",
     "format": "pnpm format:check && pnpm format:write",
