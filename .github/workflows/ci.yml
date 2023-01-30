@@ -8,8 +8,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: yarn install && yarn global add @lhci/cli@0.8.x
-      - run: yarn build
+      - run: pnpm install && pnpm add @lhci/cli@0.8.x
+      - run: pnpm build
       - run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

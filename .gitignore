@@ -32,3 +32,6 @@ dist-ssr
 .env
 .env.dev
 .env.prod
+
+# Turborepo
+.turbo

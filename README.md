@@ -20,7 +20,7 @@ Many tools are already configured like:
 Install all dependencies.
 
 ```bash
-yarn
+pnpm install
 ```
 
 ## Dev
@@ -30,7 +30,7 @@ yarn
 Open your project with Vite Server + HMR at <http://localhost:3000>.
 
 ```bash
-yarn dev
+turbo dev
 ```
 
 ### [Server Options](https://vitejs.dev/config/server-options.html)
@@ -81,22 +81,15 @@ Add your new path to `tsconfig.json`:
 ### Lint
 
 ```bash
-yarn lint
+turbo lint
 ```
 
 ### Prettier
 
-Prettier write and check separately
-
-```bash
-yarn format:write
-yarn format:check
-```
-
 Prettier everything once
 
 ```bash
-yarn format
+turbo format
 ```
 
 ### Lighthouse
@@ -104,7 +97,7 @@ yarn format
 > LHCI will check if your app respect at least 90% of these categories: performance, a11y, Best practices and seo
 
 ```bash
-yarn lighthouse
+turbo lighthouse
 ```
 
 ### Pre-commit
@@ -114,7 +107,7 @@ When committing your work, `pre-commit` will start `yarn lint-staged`:
 > lint-staged starts lint + prettier
 
 ```bash
-yarn pre-commit
+pnpm pre-commit
 ```
 
 ## Build
@@ -122,13 +115,13 @@ yarn pre-commit
 TypeScript check + Vite Build
 
 ```bash
-yarn build
+turbo build
 ```
 
 ## Preview
 
 ```bash
-yarn preview
+turbo preview
 ```
 
 ## License
