@@ -221,7 +221,7 @@ public class FolderServiceElastic implements FolderService {
                         final List<ExplorerMessage> messages = new ArrayList<>();
                         for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
                             //use entid to push resource message
-                            final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false);
+                            final ExplorerMessage mess = ExplorerMessage.upsert(trash.entId.get(), creator, false).withSkipCheckVersion(true);
                             // TODO JBER check entityType
                             mess.withType(trash.application.get(), trash.resourceType.get(), trash.resourceType.get());
                             mess.withTrashed(isTrash);
