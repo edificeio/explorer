@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.folders;
 
-import io.vertx.core.CompositeFuture;
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -193,24 +193,26 @@ public class ResourceExplorerDbSql {
                 final String resourceUniqueId = row.getString("resource_unique_id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
+                final Boolean folder_trash = row.getBoolean("folder_trash");
                 final Object shared = row.getJson("shared");
                 final Object mutedBy = row.getJson("muted_by");
                 final long version = row.getLong("version");
                 final Object rights = row.getJson("rights");
                 results.putIfAbsent(id, new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
+                final ResouceSql resource = results.get(id);
                 if(folderId != null){
                     if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders()){
                         //do not link resource to folder if trashed
                         if(!Boolean.TRUE.equals(folder_trash)){
-                            results.get(id).folders.add(new FolderSql(folderId, userId));
+                            resource.folders.add(new FolderSql(folderId, userId));
                         }
                     }else{
-                        results.get(id).folders.add(new FolderSql(folderId, userId));
+                        resource.folders.add(new FolderSql(folderId, userId));
                     }
                 }
                 if(shared != null){
                     if(shared instanceof JsonArray){
-                        results.get(id).shared.addAll((JsonArray) shared);
+                        resource.shared.addAll((JsonArray) shared);
                     }
                 }
                 if(mutedBy instanceof JsonObject) {
