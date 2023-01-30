@@ -76,6 +76,7 @@ doInit () {
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
   cp package.json.template package.json
+  sed -i "s/%branch%/${BRANCH_NAME}/" package.json
   sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
 
   if [ "$1" == "Dev" ]

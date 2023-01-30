@@ -83,5 +83,6 @@ module.exports = {
     "prettier.config.js",
     "public",
     "vite.config.ts",
+    "scripts/"
   ],
 }
