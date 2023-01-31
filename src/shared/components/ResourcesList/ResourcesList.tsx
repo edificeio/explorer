@@ -1,7 +1,16 @@
 import { useExplorerContext } from "@contexts/index";
 import { Card } from "@ode-react-ui/core";
-import { useLuxon } from "@ode-react-ui/hooks";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { IResource, ISession, IWebApp } from "ode-ts-client";
+
+import "dayjs/locale/de";
+import "dayjs/locale/es";
+import "dayjs/locale/pt";
+import "dayjs/locale/fr";
+import "dayjs/locale/it";
+
+dayjs.extend(relativeTime);
 
 export default function ResourcesList({
   session,
@@ -13,8 +22,6 @@ export default function ResourcesList({
   currentLanguage: string;
 }): JSX.Element | null {
   const appCode = app?.address.replace("/", "");
-
-  const { getUpdatedDate } = useLuxon(currentLanguage);
 
   const {
     state: { resources },
@@ -33,7 +40,7 @@ export default function ResourcesList({
   }
 
   function resourceIsShared(shared: any): boolean {
-    return shared.length >= 1;
+    return Array.isArray(shared) && shared.length >= 1;
   }
 
   return resources.length ? (
@@ -41,6 +48,10 @@ export default function ResourcesList({
       {resources.map((resource: IResource) => {
         const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
           resource;
+
+        const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
+
+        console.log(updatedAt, time);
 
         return (
           <li className="g-col-4" key={assetId}>
@@ -55,7 +66,7 @@ export default function ResourcesList({
               onOpen={() => openSingleResource(assetId)}
               onSelect={() => toggleSelect(resource)}
               resourceSrc={thumbnail}
-              updatedAt={getUpdatedDate(updatedAt)}
+              updatedAt={time}
               userSrc={session?.avatarUrl}
             />
           </li>

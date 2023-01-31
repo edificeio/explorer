@@ -41,7 +41,6 @@ export default function useOdeBackend(params: OdeProviderParams) {
     link.href = odeBootstrapPath;
   }
 
-  // Exécuté au premier render du Composant
   useEffect(() => {
     (async () => {
       try {
