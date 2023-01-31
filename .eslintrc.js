@@ -82,7 +82,7 @@ module.exports = {
     "node_modules",
     "prettier.config.js",
     "public",
-    "vite.config.ts",
-    "scripts/"
+    "scripts/",
+    "vite.config.ts"
   ],
 }

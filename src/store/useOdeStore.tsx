@@ -9,9 +9,7 @@ interface Action {
 }
 
 export const useOdeStore = create<State & Action>((set, get) => ({
-  user: null!,
-  previousFolder: [],
-  selectedNodesIds: [],
+  selectedNodesIds: ["default"],
   setSelectedNodesIds: (ids: string[]) => {
     set({ selectedNodesIds: ids });
   },

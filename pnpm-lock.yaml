@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@lhci/cli': 0.8.x
-  '@ode-react-ui/core': dev
+  '@ode-react-ui/core': 1.0.7-dev.35
   '@ode-react-ui/hooks': dev
   '@ode-react-ui/icons': dev
   '@types/node': 18.11.18
@@ -37,20 +37,21 @@ specifiers:
   react-i18next: 12.1.4
   react-router-dom: 6.7.0
   swr: 2.0.0
+  turbo: 1.7.0
   typescript: 4.9.4
   vite: 4.0.4
   zustand: 4.3.2
 
 dependencies:
   '@lhci/cli': 0.8.2
-  '@ode-react-ui/core': 1.0.7-dev.34_eqrg4a5uxqgeipnvxodzx5qoj4
-  '@ode-react-ui/hooks': 1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm
+  '@ode-react-ui/core': 1.0.7-dev.35_eqrg4a5uxqgeipnvxodzx5qoj4
+  '@ode-react-ui/hooks': 1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202301271620
+  ode-ts-client: 1.1.0-explorer.202301301658
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -81,6 +82,7 @@ devDependencies:
   husky: 8.0.3
   lint-staged: 13.1.0
   prettier: 2.8.3
+  turbo: 1.7.0
   typescript: 4.9.4
   vite: 4.0.4_@types+node@18.11.18
 
@@ -654,21 +656,21 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.34_eqrg4a5uxqgeipnvxodzx5qoj4:
-    resolution: {integrity: sha512-YVe12emnbFHwM/g5iz2Zp0xBnzmsL1762kzP18ZR4fVircRN73mv+PwxbKnr2YwXoHHwlEdlAvBJpP5gxSnfNg==}
+  /@ode-react-ui/core/1.0.7-dev.35_eqrg4a5uxqgeipnvxodzx5qoj4:
+    resolution: {integrity: sha512-7b+txdQ3PJsSzhVm3BT54Bcz/u+rlDBtfsyXMyRy6+i8He1E6fi3h9fVTIwpxw2suh5EZz3ysxMGhWhe30WicQ==}
     peerDependencies:
       '@ode-react-ui/hooks': 1.0.7-dev.33
       '@ode-react-ui/icons': '*'
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm
+      '@ode-react-ui/hooks': 1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm:
+  /@ode-react-ui/hooks/1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e:
     resolution: {integrity: sha512-QwWvMMzopSDHAoD/1ispyr/GjPSe97Md2uGcNnpDk+WhXnfsTwioU5Cie7qMbFBHdgEQgvS1V9aEHWV1mDs5LA==}
     peerDependencies:
       ode-ts-client: feat-explorer
@@ -676,7 +678,7 @@ packages:
       react-dom: 18.2.0
     dependencies:
       luxon: 3.2.1
-      ode-ts-client: 1.1.0-explorer.202301271620
+      ode-ts-client: 1.1.0-explorer.202301301658
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
@@ -3653,8 +3655,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202301271620:
-    resolution: {integrity: sha512-Ud86WcADpSg8HWkX+NW0EvnVjiIMse0TIkUWJhHcqzRh8REgslQ9LUQ7xZ+ENGzyzOn671FUIFjOktVZZp/sYA==}
+  /ode-ts-client/1.1.0-explorer.202301301658:
+    resolution: {integrity: sha512-cOrV77+SeyfztSxqcRMNGd7pXnX3dB80IyUc+aCghThYTQQhDIFTfuJk4nih9psXib52x81xAaATt+fwaFA6AA==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -4689,6 +4691,67 @@ packages:
     dependencies:
       tslib: 1.14.1
       typescript: 4.9.4
+    dev: true
+
+  /turbo-darwin-64/1.7.0:
+    resolution: {integrity: sha512-hSGAueSf5Ko8J67mpqjpt9FsP6ePn1nMcl7IVPoJq5dHsgX3anCP/BPlexJ502bNK+87DDyhQhJ/LPSJXKrSYQ==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo-darwin-arm64/1.7.0:
+    resolution: {integrity: sha512-BLLOW5W6VZxk5+0ZOj5AO1qjM0P5isIgjbEuyAl8lHZ4s9antUbY4CtFrspT32XxPTYoDl4UjviPMcSsbcl3WQ==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo-linux-64/1.7.0:
+    resolution: {integrity: sha512-aw2qxmfZa+kT87SB3GNUoFimqEPzTlzlRqhPgHuAAT6Uf0JHnmebPt4K+ZPtDNl5yfVmtB05bhHPqw+5QV97Yg==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo-linux-arm64/1.7.0:
+    resolution: {integrity: sha512-AJEx2jX+zO5fQtJpO3r6uhTabj4oSA5ZhB7zTs/rwu/XqoydsvStA4X8NDW4poTbOjF7DcSHizqwi04tSMzpJw==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo-windows-64/1.7.0:
+    resolution: {integrity: sha512-ewj7PPv2uxqv0r31hgnBa3E5qwUu7eyVRP5M1gB/TJXfSHduU79gbxpKCyxIZv2fL/N2/3U7EPOQPSZxBAoljA==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo-windows-arm64/1.7.0:
+    resolution: {integrity: sha512-LzjOUzveWkvTD0jP8DBMYiAnYemmydsvqxdSmsUapHHJkl6wKZIOQNSO7pxsy+9XM/1/+0f9Y9F9ZNl5lePTEA==}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /turbo/1.7.0:
+    resolution: {integrity: sha512-cwympNwQNnQZ/TffBd8yT0i0O10Cf/hlxccCYgUcwhcGEb9rDjE5thDbHoHw1hlJQUF/5ua7ERJe7Zr0lNE/ww==}
+    hasBin: true
+    requiresBuild: true
+    optionalDependencies:
+      turbo-darwin-64: 1.7.0
+      turbo-darwin-arm64: 1.7.0
+      turbo-linux-64: 1.7.0
+      turbo-linux-arm64: 1.7.0
+      turbo-windows-64: 1.7.0
+      turbo-windows-arm64: 1.7.0
     dev: true
 
   /type-check/0.4.0:
