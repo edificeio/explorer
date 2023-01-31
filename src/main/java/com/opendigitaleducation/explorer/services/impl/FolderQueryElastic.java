@@ -85,6 +85,12 @@ public class FolderQueryElastic {
         if(!search.getIds().isEmpty()){
             this.id.addAll(search.getIds());
         }
+        if (search.getStartIndex().isPresent()) {
+            this.withFrom(search.getStartIndex().get().intValue());
+        }
+        if (search.getPageSize().isPresent()) {
+            this.withSize(search.getPageSize().get().intValue());
+        }
         return this;
     }
 

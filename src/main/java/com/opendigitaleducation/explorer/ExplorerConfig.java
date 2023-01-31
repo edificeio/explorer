@@ -26,6 +26,7 @@ public class ExplorerConfig {
     public static final String RIGHT_READ = "read";
     public static final String RIGHT_CONTRIB = "contrib";
     public static final String RIGHT_MANAGE = "manage";
+    public static final Integer DEFAULT_SIZE = 10000;
     protected JsonObject esIndexes = new JsonObject();
     protected boolean skipIndexOfTrashedFolders;
     protected Map<String, JsonObject> rightsByApplication = new HashMap<>();

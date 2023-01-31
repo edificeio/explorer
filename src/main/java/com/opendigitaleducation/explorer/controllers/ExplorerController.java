@@ -6,6 +6,7 @@ import com.opendigitaleducation.explorer.filters.MoveFilter;
 import com.opendigitaleducation.explorer.filters.ShareFilter;
 import com.opendigitaleducation.explorer.filters.UpdateFilter;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
@@ -89,8 +90,7 @@ public class ExplorerController extends BaseController {
                 json.put("pagination", new JsonArray());
                 json.put("resources", new JsonArray());
                 //load root folders
-                final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e->e.toString());
-                final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
+                final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
                 //load user preferences from neo4j
@@ -167,8 +167,7 @@ public class ExplorerController extends BaseController {
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
-                final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
-                final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
+                final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
                 final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
@@ -468,8 +467,7 @@ public class ExplorerController extends BaseController {
         HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
             final String application = queryParams.getString("application");
             final JsonObject json = new JsonObject();
-            final Optional<String> folderId = Optional.ofNullable(queryParams.getValue("folder")).map(e-> e.toString());
-            final Future<JsonArray> folders = folderService.fetch(user, application, folderId).onSuccess(e -> {
+            final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                 json.put("folders", adaptFolder(e));
             });
             final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
@@ -612,6 +610,14 @@ public class ExplorerController extends BaseController {
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
+        return op;
+    }
+
+    private FolderSearchOperation toFolderSearch(final JsonObject queryParams) {
+        final FolderSearchOperation op = new FolderSearchOperation();
+        op.setPageSize(queryParams.getLong("folder_page_size", ExplorerConfig.DEFAULT_SIZE.longValue()));
+        op.setStartIndex(queryParams.getLong("folder_start_idx", 0l));
+        op.setParentId(queryParams.getValue("folder"));
         return op;
     }
 
