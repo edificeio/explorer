@@ -1,6 +1,8 @@
 import { ExplorerProvider } from "@contexts/ExplorerContext/ExplorerContext";
+import HotToast from "@features/HotToast/HotToast";
+import useHotToast from "@features/HotToast/useHotToast";
 import { useOdeBackend } from "@hooks/useOdeBackend";
-import { Header, Main } from "@ode-react-ui/core";
+import { Button, Header, Main } from "@ode-react-ui/core";
 import { clsx } from "@shared/config/index";
 import { OdeProviderParams } from "@shared/types";
 import { RESOURCE } from "ode-ts-client";
@@ -21,6 +23,15 @@ function App({ params }: { params: OdeProviderParams }): JSX.Element {
 
   const is1d: boolean = theme?.is1D;
   const basePath: string = theme?.basePath;
+  const { hotToast } = useHotToast();
+
+  const infoNotify = () => hotToast.info(<h2>Info: Exemple avec un H2</h2>);
+  const warningNotify = () =>
+    hotToast.warning("Warning: Exemple avec du texte brut!");
+  const sucessNotify = () =>
+    hotToast.success("Sucess: Exemple avec du texte brut!");
+  const errorNotify = () =>
+    hotToast.error(<div>Erreur: Exemple avec un div</div>);
 
   if (!session || session.notLoggedIn) {
     return (
@@ -34,6 +45,9 @@ function App({ params }: { params: OdeProviderParams }): JSX.Element {
 
   return (
     <div className="App">
+      <div>
+        <HotToast />
+      </div>
       <Header is1d={is1d} src={`${basePath}/img/illustrations/logo.png`} />
       <Main
         className={clsx("container-fluid bg-white", {
@@ -52,6 +66,25 @@ function App({ params }: { params: OdeProviderParams }): JSX.Element {
         >
           <Explorer currentLanguage={currentLanguage} />
         </ExplorerProvider>
+
+        <div className="d-block p-24">
+          <hr />
+          <h2>React Hot Toast 🍞</h2>
+          <div className="d-flex gap-8 p-24">
+            <Button color="tertiary" onClick={sucessNotify}>
+              Make me a sucess toast
+            </Button>
+            <Button color="danger" onClick={errorNotify}>
+              Make me a error toast
+            </Button>
+            <Button color="secondary" onClick={infoNotify}>
+              Make me a info toast
+            </Button>
+            <Button color="primary" onClick={warningNotify}>
+              Make me a warning toast
+            </Button>
+          </div>
+        </div>
       </Main>
     </div>
   );
