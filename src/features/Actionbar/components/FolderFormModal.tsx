@@ -14,7 +14,7 @@ export default function FolderFormModal({
   isOpen,
   edit,
   onSuccess = () => ({}),
-  onCancel = () => ({}),
+  onCancel: onCancelOriginal = () => ({}),
 }: FolderFormModalProps) {
   const { i18n } = useExplorerContext();
   const {
@@ -23,11 +23,13 @@ export default function FolderFormModal({
     isSubmitting,
     formId,
     onSubmit,
+    onCancel,
     handleSubmit,
     register,
   } = useFolderFormModal({
     edit,
     onSuccess,
+    onCancel: onCancelOriginal,
   });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>
@@ -47,7 +49,6 @@ export default function FolderFormModal({
             <Input
               type="text"
               {...register("name", { required: true })}
-              key={`name_${formId}`}
               placeholder={i18n("explorer.create.folder.name")}
               size="md"
               aria-required={true}
