@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@lhci/cli": "0.8.x",
-    "@ode-react-ui/core": "dev",
+    "@ode-react-ui/core": "1.0.7-dev.35",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
     "clsx": "1.2.1",
@@ -86,6 +86,7 @@
     "husky": "8.0.3",
     "lint-staged": "13.1.0",
     "prettier": "2.8.3",
+    "turbo": "1.7.0",
     "typescript": "4.9.4",
     "vite": "4.0.4"
   },

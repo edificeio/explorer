@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useExplorerContext } from "@contexts/index";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
@@ -39,25 +38,25 @@ export default function Explorer({
 
   const { handleTreeItemPrevious } = useTreeView();
 
-  const trashName = i18n("explorer.tree.trash");
-  const rootName = i18n("explorer.filters.mine");
+  const trashName: string = i18n("explorer.tree.trash");
+  const rootName: string = i18n("explorer.filters.mine");
+
   const previousFolder = findNodeById(
     selectedNodesIds[selectedNodesIds.length - 2],
     treeData,
   );
+  const previousId: string | undefined = previousFolder?.id;
+  const previousName: string = previousFolder?.name || rootName;
 
-  const previousId = previousFolder?.id;
-  const previousName = previousFolder?.name || rootName;
-
-  const hasNoSelectedNodes =
+  const hasNoSelectedNodes: boolean =
     selectedNodesIds?.length === 0 ||
     (selectedNodesIds.length === 1 && selectedNodesIds[0] === "default");
-  const hasSelectedNodes = selectedNodesIds?.length === 1;
+  const hasSelectedNodes: boolean = selectedNodesIds?.length === 1;
 
-  const hasResourcesOrFolders = resources.length || folders.length;
-  const hasResources = resources.length;
+  const hasResourcesOrFolders: number = resources.length || folders.length;
+  const hasResources: number = resources.length;
 
-  const appCode = app?.address.replace("/", "");
+  const appCode: string | undefined = app?.address.replace("/", "");
 
   return contextRef.current.isInitialized() ? (
     <>
@@ -111,9 +110,11 @@ export default function Explorer({
               />
             </FormControl>
           </form>
-          <div className="py-24">
+          <div className="py-16">
             {hasNoSelectedNodes ? (
-              <h2 className="body">{trashSelected ? trashName : rootName}</h2>
+              <h2 className="body py-8">
+                {trashSelected ? trashName : rootName}
+              </h2>
             ) : (
               <div className="d-flex align-items-center gap-8">
                 <IconButton
@@ -122,7 +123,7 @@ export default function Explorer({
                   color="tertiary"
                   onClick={() => handleTreeItemPrevious(previousId as string)}
                 />
-                <p className="body">
+                <p className="body py-8">
                   <strong>{hasSelectedNodes ? rootName : previousName}</strong>
                 </p>
               </div>

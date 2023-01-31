@@ -1,13 +1,28 @@
 import { useCallback, useState } from "react";
 
 import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
+import { TreeNode } from "@ode-react-ui/core";
 import { findNodeById } from "@shared/utils/findNodeById";
 import { hasChildren } from "@shared/utils/hasChildren";
 import { useOdeStore } from "@store/useOdeStore";
-import { FOLDER, IFolder, RESOURCE, ResourceType } from "ode-ts-client";
+import { FOLDER, ID, IFolder, RESOURCE, ResourceType } from "ode-ts-client";
+
+type NodeFolder = TreeNode | undefined;
+type ModalState = boolean;
+type FolderID = ID;
+
+interface Nodes {
+  folderId: FolderID;
+  findItem: NodeFolder;
+}
+
+interface Resources {
+  folderId: string;
+  types: ResourceType[];
+}
 
 export default function useTreeView() {
-  const [isOpenedModal, setOpenedModal] = useState<boolean>(false);
+  const [isOpenedModal, setOpenedModal] = useState<ModalState>(false);
 
   const selectedNodesIds = useOdeStore((state) => state.selectedNodesIds);
   const setSelectedNodesIds = useOdeStore((state) => state.setSelectedNodesIds);
@@ -20,32 +35,7 @@ export default function useTreeView() {
     state: { treeData },
   } = useExplorerContext();
 
-  /**
-   *
-   * @param id FolderId
-   * @param types ResourceType[]
-   * return a new context and get resources
-   */
-  function getResources(id: string, types: ResourceType[]) {
-    contextRef.current.getSearchParameters().filters.folder = id;
-    contextRef.current.getSearchParameters().types = types;
-    contextRef.current.getSearchParameters().pagination.startIdx = 0;
-    contextRef.current.getResources();
-  }
-
-  /**
-   * Select folder and get new sub folders and resources
-   */
-  const handleTreeByFolders = (folderId: string) => {
-    const previousId = contextRef.current.getSearchParameters().filters
-      .folder as string;
-
-    const findItem = findNodeById(folderId, treeData);
-
-    if (previousId === folderId) return;
-
-    dispatch({ type: "CLEAR_RESOURCES" });
-
+  function getNodes({ folderId, findItem }: Nodes): string[] {
     let nodes: string[] = [];
 
     if (findItem?.folder?.ancestors) {
@@ -55,11 +45,39 @@ export default function useTreeView() {
       nodes = ["default"];
     }
 
+    return nodes;
+  }
+
+  /**
+   *
+   * @param id FolderId
+   * @param types ResourceType[]
+   * return a new context and get resources
+   */
+  function getResources({ folderId, types }: Resources) {
+    console.log({ folderId, types });
+
+    contextRef.current.getSearchParameters().filters.folder = folderId;
+    contextRef.current.getSearchParameters().types = types;
+    contextRef.current.getSearchParameters().pagination.startIdx = 0;
+    contextRef.current.getResources();
+  }
+
+  /**
+   * Select folder and get new sub folders and resources
+   */
+  const handleTreeByFolders = (folderId: FolderID) => {
+    const findItem: NodeFolder = findNodeById(folderId, treeData);
+    const nodes = getNodes({ folderId, findItem });
+
+    dispatch({ type: "CLEAR_RESOURCES" });
+    dispatch({ type: "GET_TREEVIEW_ACTION", payload: "select" });
+
     if (!hasChildren(folderId, treeData)) {
-      getResources(folderId, [RESOURCE.FOLDER]);
+      getResources({ folderId, types: [RESOURCE.FOLDER] });
     }
 
-    getResources(folderId, ["blog"]);
+    getResources({ folderId, types: ["blog"] });
     setSelectedNodesIds(nodes);
   };
 
@@ -67,16 +85,15 @@ export default function useTreeView() {
    * Redirect user to previous selected folder
    */
   const handleTreeItemPrevious = useCallback(
-    (folderId: string) => {
+    (folderId: FolderID) => {
       handleTreeByFolders(folderId);
     },
     [selectedNodesIds],
   );
 
-  const handleTreeItemTrash = (folderId: string) => {
-    setSelectedNodesIds([]);
+  const handleTreeItemTrash = (folderId: FolderID) => {
     dispatch({ type: "CLEAR_RESOURCES" });
-
+    setSelectedNodesIds([]);
     contextRef.current.getSearchParameters().filters.folder = folderId;
     contextRef.current.getSearchParameters().pagination.startIdx = 0;
     contextRef.current.getResources();
@@ -86,9 +103,7 @@ export default function useTreeView() {
    * Select folder from the TreeView Component
    * Uses handleNavigationFolder
    */
-  const handleTreeItemSelect = useCallback((folderId: string) => {
-    console.log("trashId", folderId);
-
+  const handleTreeItemSelect = useCallback((folderId: FolderID) => {
     dispatch({ type: "GET_TREEVIEW_ACTION", payload: "select" });
 
     handleTreeByFolders(folderId);
@@ -105,11 +120,11 @@ export default function useTreeView() {
    * Action when TreeItem is unfolded
    * Dispatch the action and get new folders only for TreeData
    */
-  const handleTreeItemUnfold = useCallback((folderId: any) => {
+  const handleTreeItemUnfold = useCallback((folderId: FolderID) => {
     dispatch({ type: "GET_TREEVIEW_ACTION", payload: "unfold" });
 
     if (!hasChildren(folderId, treeData)) {
-      getResources(folderId, [RESOURCE.FOLDER]);
+      getResources({ folderId, types: [RESOURCE.FOLDER] });
     }
   }, []);
 

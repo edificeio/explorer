@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
 
-function App({ params }: { params: OdeProviderParams }) {
+function App({ params }: { params: OdeProviderParams }): JSX.Element {
   const {
     session,
     theme,
@@ -19,8 +19,8 @@ function App({ params }: { params: OdeProviderParams }) {
     currentLanguage,
   } = useOdeBackend(params);
 
-  const is1d = theme?.is1D;
-  const basePath = theme?.basePath as string;
+  const is1d: boolean = theme?.is1D;
+  const basePath: string = theme?.basePath;
 
   if (!session || session.notLoggedIn) {
     return (
@@ -31,8 +31,6 @@ function App({ params }: { params: OdeProviderParams }) {
       </div>
     );
   }
-
-  console.count("App");
 
   return (
     <div className="App">

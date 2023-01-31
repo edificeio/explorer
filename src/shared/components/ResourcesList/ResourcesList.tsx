@@ -11,7 +11,7 @@ export default function ResourcesList({
   session: ISession;
   app: IWebApp | undefined;
   currentLanguage: string;
-}) {
+}): JSX.Element | null {
   const appCode = app?.address.replace("/", "");
 
   const { getUpdatedDate } = useLuxon(currentLanguage);
@@ -24,7 +24,7 @@ export default function ResourcesList({
     isResourceSelected,
   } = useExplorerContext();
 
-  function toggleSelect(resource: IResource) {
+  function toggleSelect(resource: IResource): void {
     if (isResourceSelected(resource)) {
       deselectResource(resource);
     } else {
