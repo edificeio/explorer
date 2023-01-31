@@ -5,6 +5,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 interface FolderFormModalArg {
   edit: boolean;
   onSuccess?: (folder: IFolder) => void;
+  onCancel: () => void;
 }
 
 interface FolderFormInputs {
@@ -14,10 +15,12 @@ interface FolderFormInputs {
 export default function useFolderFormModal({
   edit,
   onSuccess,
+  onCancel,
 }: FolderFormModalArg) {
   const { contextRef, resourceTypes, selectedFolders } = useExplorerContext();
   const name = edit ? selectedFolders[0]?.name : undefined;
   const {
+    reset,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
@@ -42,6 +45,7 @@ export default function useFolderFormModal({
           name,
         );
         selectedFolders[0].name = name;
+        reset();
         onSuccess?.(selectedFolders[0]);
       } else {
         const folder = await contextRef.current.createFolder(
@@ -49,6 +53,7 @@ export default function useFolderFormModal({
           parentId,
           name,
         );
+        reset();
         onSuccess?.(folder);
       }
     } catch (e) {
@@ -67,6 +72,10 @@ export default function useFolderFormModal({
     isValid,
     register,
     handleSubmit,
+    onCancel: () => {
+      reset();
+      onCancel();
+    },
     onSubmit: (name: FolderFormInputs) => {
       onSubmit(name);
     },
