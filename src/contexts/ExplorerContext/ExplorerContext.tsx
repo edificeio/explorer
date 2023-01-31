@@ -208,6 +208,8 @@ function ExplorerProvider({
         if (treeviewStatus !== "unfold") {
           wrapFolderData(resultset?.output?.folders);
         }
+
+        console.log("subscribe");
       },
       error(err) {
         console.error("something wrong occurred: ", err);

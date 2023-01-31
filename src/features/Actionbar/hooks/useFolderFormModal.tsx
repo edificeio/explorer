@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import { useExplorerContext } from "@contexts/index";
 import { FOLDER, IFolder } from "ode-ts-client";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -29,6 +31,9 @@ export default function useFolderFormModal({
     values: { name: name || "" },
   });
 
+  const now = new Date();
+  const id = useId();
+
   const onSubmit: SubmitHandler<FolderFormInputs> = async function ({
     name,
   }: FolderFormInputs) {
@@ -38,11 +43,14 @@ export default function useFolderFormModal({
         FOLDER.DEFAULT;
       if (edit) {
         const folderId = selectedFolders[0].id;
+        const updatedAt = now.getTime().toString();
+
         await contextRef.current.updateFolder(
           folderId,
           resourceTypes[0],
           parentId,
           name,
+          updatedAt,
         );
         selectedFolders[0].name = name;
         reset();
@@ -62,7 +70,7 @@ export default function useFolderFormModal({
     }
   };
 
-  const formId = `createModal_${new Date().getTime()}`;
+  const formId = `createModal_${id}`;
 
   return {
     formId,

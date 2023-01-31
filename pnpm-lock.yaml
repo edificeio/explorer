@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@lhci/cli': 0.8.x
-  '@ode-react-ui/core': 1.0.7-dev.35
+  '@ode-react-ui/core': dev
   '@ode-react-ui/hooks': dev
   '@ode-react-ui/icons': dev
   '@types/node': 18.11.18
@@ -13,6 +13,7 @@ specifiers:
   '@vitejs/plugin-react': 3.0.1
   clsx: 1.2.1
   concurrently: 7.6.0
+  dayjs: 1.11.7
   eslint: 8.32.0
   eslint-config-prettier: 8.6.0
   eslint-config-standard-with-typescript: 27.0.1
@@ -44,10 +45,11 @@ specifiers:
 
 dependencies:
   '@lhci/cli': 0.8.2
-  '@ode-react-ui/core': 1.0.7-dev.35_eqrg4a5uxqgeipnvxodzx5qoj4
+  '@ode-react-ui/core': 1.0.7-dev.37_eqrg4a5uxqgeipnvxodzx5qoj4
   '@ode-react-ui/hooks': 1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
+  dayjs: 1.11.7
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
@@ -656,8 +658,8 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.35_eqrg4a5uxqgeipnvxodzx5qoj4:
-    resolution: {integrity: sha512-7b+txdQ3PJsSzhVm3BT54Bcz/u+rlDBtfsyXMyRy6+i8He1E6fi3h9fVTIwpxw2suh5EZz3ysxMGhWhe30WicQ==}
+  /@ode-react-ui/core/1.0.7-dev.37_eqrg4a5uxqgeipnvxodzx5qoj4:
+    resolution: {integrity: sha512-fyVD63eRjVrZDX3mJeOa1Z4YNMTkYoXrUy8Wdo9DMH5A7aEbbD8Rn8JUavEhgUzhvNl3+tXV7pmoz/n/5hbYcg==}
     peerDependencies:
       '@ode-react-ui/hooks': 1.0.7-dev.33
       '@ode-react-ui/icons': '*'
@@ -1567,6 +1569,10 @@ packages:
     resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
     engines: {node: '>=0.11'}
     dev: true
+
+  /dayjs/1.11.7:
+    resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

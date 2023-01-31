@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./app/App";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
+const root = document.getElementById("root");
 if (rootElement?.dataset?.odeApp) {
   const { odeApp } = rootElement.dataset;
   const params: OdeProviderParams = { app: APP.PORTAL };
@@ -17,7 +18,7 @@ if (rootElement?.dataset?.odeApp) {
     params.app = odeApp as AppName;
   }
 
-  createRoot(rootElement!).render(
+  createRoot(root!).render(
     <BrowserRouter>
       <App params={params} />
     </BrowserRouter>,

@@ -55,8 +55,6 @@ export default function useTreeView() {
    * return a new context and get resources
    */
   function getResources({ folderId, types }: Resources) {
-    console.log({ folderId, types });
-
     contextRef.current.getSearchParameters().filters.folder = folderId;
     contextRef.current.getSearchParameters().types = types;
     contextRef.current.getSearchParameters().pagination.startIdx = 0;
