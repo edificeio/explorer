@@ -11,9 +11,25 @@ public class FolderSearchOperation {
     private boolean searchEverywhere = false;
     private Set<String> ids = new HashSet<>();
     private Optional<String> parentId = Optional.empty();
+    private Optional<Long> startIndex = Optional.empty();
+    private Optional<Long> pageSize = Optional.empty();
 
     public boolean isWaitFor() {
         return waitFor;
+    }
+
+    public Optional<Long> getStartIndex() {return startIndex;}
+
+    public FolderSearchOperation setStartIndex(final Long startIndex) {
+        this.startIndex = Optional.ofNullable(startIndex);
+        return this;
+    }
+
+    public Optional<Long> getPageSize() {return pageSize;}
+
+    public FolderSearchOperation setPageSize(final Long pageSize) {
+        this.pageSize = Optional.ofNullable(pageSize);
+        return this;
     }
 
     public FolderSearchOperation setWaitFor(boolean waitFor) {
@@ -32,6 +48,13 @@ public class FolderSearchOperation {
 
     public FolderSearchOperation setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public FolderSearchOperation setId(Object id) {
+        if(id != null){
+            this.id = id.toString();
+        }
         return this;
     }
 
@@ -63,6 +86,11 @@ public class FolderSearchOperation {
 
     public FolderSearchOperation setParentId(Optional<String> parentId) {
         this.parentId = parentId;
+        return this;
+    }
+    
+    public FolderSearchOperation setParentId(Object parentId) {
+        this.parentId = Optional.ofNullable(parentId).map(e -> e.toString());
         return this;
     }
 }

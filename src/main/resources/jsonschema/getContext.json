@@ -24,6 +24,8 @@
     "search": { "type": "string"},
     "start_idx": { "type": "number"},
     "page_size": { "type": "number"},
+    "folder_start_idx": { "type": "number"},
+    "folder_page_size": { "type": "number"},
     "search_after": { "type": "string"},
     "id": { "type": "number"}
   },

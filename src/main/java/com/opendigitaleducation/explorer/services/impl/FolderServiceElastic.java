@@ -41,7 +41,8 @@ public class FolderServiceElastic implements FolderService {
     public Future<JsonArray> fetch(final UserInfos creator, final Optional<String> application, final Optional<String> parentIdOpt) {
         final String parentId = parentIdOpt.orElse(ROOT_FOLDER_ID);
         final String creatorId = creator.getUserId();
-        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withParentId(parentId).withApplication(application);
+        final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId)
+                .withParentId(parentId).withApplication(application).withSize(ExplorerConfig.DEFAULT_SIZE);
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
         final String index = getIndex();
         return manager.getClient().search(index, query.getSearchQuery(), options);
