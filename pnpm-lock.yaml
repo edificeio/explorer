@@ -13,6 +13,7 @@ specifiers:
   '@vitejs/plugin-react': 3.0.1
   clsx: 1.2.1
   concurrently: 7.6.0
+  csstype: 3.0.10
   dayjs: 1.11.7
   eslint: 8.32.0
   eslint-config-prettier: 8.6.0
@@ -46,20 +47,21 @@ specifiers:
 
 dependencies:
   '@lhci/cli': 0.8.2
-  '@ode-react-ui/core': 1.0.7-dev.34_eqrg4a5uxqgeipnvxodzx5qoj4
-  '@ode-react-ui/hooks': 1.0.7-dev.33_476qkbg2ca7zesicc7kbfyzsmm
+  '@ode-react-ui/core': 1.0.7-dev.37_eqrg4a5uxqgeipnvxodzx5qoj4
+  '@ode-react-ui/hooks': 1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
+  csstype: 3.0.10
   dayjs: 1.11.7
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202301301658
+  ode-ts-client: 1.1.0-explorer.202302011014
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
   react-hook-form: 7.42.1_react@18.2.0
-  react-hot-toast: 2.4.0_biqbaboplfbrettd7655fr4n2y
+  react-hot-toast: 2.4.0_zunkpj6dptrfkocboupxe72lvq
   react-i18next: 12.1.4_iakk3dtjhjpukdoa4oua5khgci
   react-router-dom: 6.7.0_biqbaboplfbrettd7655fr4n2y
   swr: 2.0.0_react@18.2.0
@@ -668,13 +670,13 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e
+      '@ode-react-ui/hooks': 1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.33_h7x26uvg5fwmdttt6xzxdcza7e:
+  /@ode-react-ui/hooks/1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a:
     resolution: {integrity: sha512-QwWvMMzopSDHAoD/1ispyr/GjPSe97Md2uGcNnpDk+WhXnfsTwioU5Cie7qMbFBHdgEQgvS1V9aEHWV1mDs5LA==}
     peerDependencies:
       ode-ts-client: feat-explorer
@@ -682,7 +684,7 @@ packages:
       react-dom: 18.2.0
     dependencies:
       luxon: 3.2.1
-      ode-ts-client: 1.1.0-explorer.202301301658
+      ode-ts-client: 1.1.0-explorer.202302011014
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
@@ -1557,6 +1559,10 @@ packages:
     resolution: {integrity: sha512-7DYm8qe+gPx/h77QlCyFmX80+fGaE/6A/Ekl0zaszYOubvySO2saYFdQ78P29D0UsULxFKCetDGNaNRUdSF+2A==}
     dependencies:
       cssom: 0.3.8
+    dev: false
+
+  /csstype/3.0.10:
+    resolution: {integrity: sha512-2u44ZG2OcNUO9HDp/Jl8C07x6pU/eTR3ncV91SiK3dhG9TWvRVsCoJw14Ckx5DgWkzGA3waZWO3d7pgqpUI/XA==}
     dev: false
 
   /csstype/3.1.1:
@@ -2600,10 +2606,12 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /goober/2.1.11:
+  /goober/2.1.11_csstype@3.0.10:
     resolution: {integrity: sha512-5SS2lmxbhqH0u9ABEWq7WPU69a4i2pYcHeCxqaNq6Cw3mnrF0ghWNM4tEGid4dKy8XNIAUbuThuozDHHKJVh3A==}
     peerDependencies:
       csstype: ^3.0.10
+    dependencies:
+      csstype: 3.0.10
     dev: false
 
   /gopd/1.0.1:
@@ -3669,8 +3677,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202301301658:
-    resolution: {integrity: sha512-cOrV77+SeyfztSxqcRMNGd7pXnX3dB80IyUc+aCghThYTQQhDIFTfuJk4nih9psXib52x81xAaATt+fwaFA6AA==}
+  /ode-ts-client/1.1.0-explorer.202302011014:
+    resolution: {integrity: sha512-MpuUOl33Q2015AcLkmpqpOOJXkVwfjmIyvT/MPa5Dm3G2wWRZjWEUFx3ESH4w06W4qJVbnFXNkI2JU63Z64xyw==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -4039,14 +4047,14 @@ packages:
       react: 18.2.0
     dev: false
 
-  /react-hot-toast/2.4.0_biqbaboplfbrettd7655fr4n2y:
+  /react-hot-toast/2.4.0_zunkpj6dptrfkocboupxe72lvq:
     resolution: {integrity: sha512-qnnVbXropKuwUpriVVosgo8QrB+IaPJCpL8oBI6Ov84uvHZ5QQcTp2qg6ku2wNfgJl6rlQXJIQU5q+5lmPOutA==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
     dependencies:
-      goober: 2.1.11
+      goober: 2.1.11_csstype@3.0.10
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     transitivePeerDependencies:
