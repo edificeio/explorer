@@ -1,36 +1,26 @@
 import { useState, useEffect } from "react";
 
-import { useExplorerContext } from "@contexts/ExplorerContext/ExplorerContext";
-import { IAction, ACTION, FOLDER, IFolder } from "ode-ts-client";
+import { useExplorerContext } from "@contexts/useExplorerContext";
+import { IAction, ACTION } from "ode-ts-client";
 
 type ModalName = "move" | "delete" | "publish" | "edit" | "void";
 
 export default function useActionBar() {
-  const [actions, setActions] = useState<IAction[]>([]);
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
   const {
-    openResource,
-    printResource,
+    actions,
+    getIsTrashSelected,
+    getCurrentFolderId,
+    openSelectedResource,
+    printSelectedResource,
     createResource,
-    hideSelectedElement,
-    deselectAllResources,
-    deselectAllFolders,
-    refreshFolder,
-    contextRef,
+    deselectAll,
+    trashSelection,
     selectedResources,
     selectedFolders,
-    state,
   } = useExplorerContext();
-  const parentFolder = state.folders.find(
-    (e) => e.id === contextRef.current.getSearchParameters().filters.folder,
-  );
-  useEffect(() => {
-    const ref = contextRef.current;
-    const refActions = ref?.getContext()?.actions;
-    setActions(refActions!);
-  }, []);
 
   useEffect(() => {
     if (selectedResources.length === 0 && selectedFolders.length === 0) {
@@ -38,18 +28,18 @@ export default function useActionBar() {
       return;
     }
     setIsActionBarOpen(true);
-  }, [selectedResources]);
+  }, [selectedResources, selectedFolders]);
 
   function handleClick(action: IAction) {
     switch (action.id) {
       case ACTION.OPEN:
-        return openResource();
+        return openSelectedResource();
       case ACTION.CREATE:
         return createResource();
       case ACTION.MOVE:
         return setOpenedModalName("move");
       case ACTION.PRINT:
-        return printResource();
+        return printSelectedResource();
       case ACTION.DELETE:
         return setOpenedModalName("delete");
       case ACTION.RESTORE:
@@ -93,17 +83,12 @@ export default function useActionBar() {
 
   async function onRestore() {
     try {
-      const isAlreadyInTrash =
-        contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
-      const resourceIds = selectedResources.map((e) => e.id);
-      const folderIds = selectedFolders.map((e) => e.id);
-      if (isAlreadyInTrash) {
-        await contextRef.current.trash(false, resourceIds, folderIds);
+      if (getIsTrashSelected()) {
+        await trashSelection();
       } else {
         throw new Error("Cannot restore untrashed resources");
       }
       onClearActionBar();
-      hideSelectedElement();
     } catch (e) {
       // TODO display an alert?
       console.error(e);
@@ -113,41 +98,22 @@ export default function useActionBar() {
   function onClearActionBar() {
     setOpenedModalName("void");
     setIsActionBarOpen(false);
-    deselectAllResources();
-    deselectAllFolders();
+    deselectAll("all");
   }
-
-  function onMoveCancel() {
-    if (openedModalName === "move") {
+  const onFinish = (_modalName: ModalName) => () => {
+    if (openedModalName === _modalName) {
       onClearActionBar();
     }
-  }
+  };
+  const onMoveCancel = onFinish("move");
+  const onMoveSuccess = onFinish("move");
+  const onDeleteSuccess = onFinish("delete");
+  const onDeleteCancel = onFinish("delete");
+  const onPublishSuccess = onFinish("publish");
+  const onPublishCancel = onFinish("publish");
+  const onEditSuccess = onFinish("edit");
+  const onEditCancel = onFinish("edit");
 
-  function onMoveSuccess() {
-    if (openedModalName === "move") {
-      onClearActionBar();
-      hideSelectedElement();
-    }
-  }
-
-  function onDeleteCancel() {
-    if (openedModalName === "delete") {
-      onClearActionBar();
-    }
-  }
-
-  function onPublishCancel() {
-    if (openedModalName === "publish") {
-      onClearActionBar();
-    }
-  }
-
-  function onDeleteSuccess() {
-    if (openedModalName === "delete") {
-      onClearActionBar();
-      hideSelectedElement();
-    }
-  }
   const trashActions: IAction[] = [
     {
       id: ACTION.DELETE,
@@ -160,35 +126,15 @@ export default function useActionBar() {
       target: "actionbar",
     },
   ];
-  const isTrashFolder =
-    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
-
-  function onPublishSuccess() {
-    if (openedModalName === "publish") {
-      onClearActionBar();
-    }
-  }
+  const isTrashFolder = getIsTrashSelected();
 
   function onEdit() {
     setOpenedModalName("edit");
   }
 
-  function onEditSuccess(folder: IFolder) {
-    if (openedModalName === "edit") {
-      onClearActionBar();
-      refreshFolder({ addFolder: folder, delFolder: folder });
-    }
-  }
-
-  function onEditCancel() {
-    if (openedModalName === "edit") {
-      onClearActionBar();
-    }
-  }
-
   return {
     actions: isTrashFolder ? trashActions : actions,
-    parentFolder,
+    currentFolderId: getCurrentFolderId(),
     handleClick,
     isActivable,
     isActionBarOpen,

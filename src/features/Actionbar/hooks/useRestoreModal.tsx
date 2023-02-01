@@ -1,21 +1,15 @@
 import { useExplorerContext } from "@contexts/index";
-import { FOLDER } from "ode-ts-client";
 
 interface RestoreModalArg {
   onSuccess?: () => void;
 }
 
 export default function useRestoreModal({ onSuccess }: RestoreModalArg) {
-  const { contextRef, selectedResources, selectedFolders } =
-    useExplorerContext();
-  const isAlreadyInTrash =
-    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
+  const { getIsTrashSelected, trashSelection } = useExplorerContext();
   async function onRestore() {
     try {
-      const resourceIds = selectedResources.map((e) => e.id);
-      const folderIds = selectedFolders.map((e) => e.id);
-      if (isAlreadyInTrash) {
-        await contextRef.current.trash(false, resourceIds, folderIds);
+      if (getIsTrashSelected()) {
+        await trashSelection();
       } else {
         throw new Error("Cannot restore untrashed resources");
       }
@@ -27,7 +21,7 @@ export default function useRestoreModal({ onSuccess }: RestoreModalArg) {
   }
 
   return {
-    isAlreadyInTrash,
+    isAlreadyInTrash: getIsTrashSelected(),
     onRestore: () => {
       onRestore();
     },

@@ -4,21 +4,16 @@ import { TreeNode } from "../types";
 
 /** Utility inner class that wraps an IFolder into a TreeNode. */
 export default class TreeNodeFolderWrapper implements TreeNode {
-  constructor(private readonly folder: IFolder) {}
+  public readonly id: string;
+  public readonly name: string;
+  public readonly childNumber: number;
+  constructor(public readonly folder: IFolder) {
+    this.id = folder.id;
+    this.name = folder.name;
+    this.childNumber = folder.childNumber;
+  }
 
   public section = false;
 
   public readonly children: TreeNode[] = [];
-
-  get id() {
-    return this.folder.id;
-  }
-
-  get name() {
-    return this.folder.name;
-  }
-
-  get childNumber() {
-    return this.folder.childNumber;
-  }
 }

@@ -1,7 +1,7 @@
-import { useExplorerContext } from "@contexts/index";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useExplorerContext } from "@contexts/useExplorerContext";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
-import useTreeView from "@features/TreeView/hooks/useTreeView";
 import {
   AppCard,
   Button,
@@ -15,50 +15,38 @@ import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
-import { findNodeById } from "@shared/utils/findNodeById";
-import { useSelectedNodesIds } from "@store/useOdeStore";
 
 export default function Explorer({
   currentLanguage,
 }: {
   currentLanguage: string;
 }) {
-  const selectedNodesIds = useSelectedNodesIds();
-
   const {
-    contextRef,
-    createResource,
-    handleNextPage,
-    state: { resources, folders, treeData },
-    i18n,
     app,
+    getMoreResources,
+    getHasResourcesOrFolders,
     session,
-    trashSelected,
+    ready,
+    getIsTrashSelected,
+    getHasNoSelectedNodes,
+    getPreviousFolder,
+    getHasSelectedRoot,
+    getHasResources,
+    i18n,
+    gotoPreviousFolder,
+    createResource,
   } = useExplorerContext();
-
-  const { handleTreeItemPrevious } = useTreeView();
-
+  // must be before all
+  if (!ready) {
+    return <></>;
+  }
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
 
-  const previousFolder = findNodeById(
-    selectedNodesIds[selectedNodesIds.length - 2],
-    treeData,
-  );
-  const previousId: string | undefined = previousFolder?.id;
-  const previousName: string = previousFolder?.name || rootName;
-
-  const hasNoSelectedNodes: boolean =
-    selectedNodesIds?.length === 0 ||
-    (selectedNodesIds.length === 1 && selectedNodesIds[0] === "default");
-  const hasSelectedNodes: boolean = selectedNodesIds?.length === 1;
-
-  const hasResourcesOrFolders: number = resources.length || folders.length;
-  const hasResources: number = resources.length;
-
+  const previousName: string = getPreviousFolder()?.name || rootName;
   const appCode: string | undefined = app?.address.replace("/", "");
-
-  return contextRef.current.isInitialized() ? (
+  // console.count("Explorer.tsx");
+  return (
     <>
       <AppHeader>
         <AppCard app={app} isHeading headingStyle="h3" level="h1">
@@ -111,9 +99,9 @@ export default function Explorer({
             </FormControl>
           </form>
           <div className="py-16">
-            {hasNoSelectedNodes ? (
+            {getHasNoSelectedNodes() ? (
               <h2 className="body py-8">
-                {trashSelected ? trashName : rootName}
+                {getIsTrashSelected() ? trashName : rootName}
               </h2>
             ) : (
               <div className="d-flex align-items-center gap-8">
@@ -121,15 +109,17 @@ export default function Explorer({
                   icon={<ArrowLeft />}
                   variant="ghost"
                   color="tertiary"
-                  onClick={() => handleTreeItemPrevious(previousId as string)}
+                  onClick={() => gotoPreviousFolder()}
                 />
                 <p className="body py-8">
-                  <strong>{hasSelectedNodes ? rootName : previousName}</strong>
+                  <strong>
+                    {getHasSelectedRoot() ? rootName : previousName}
+                  </strong>
                 </p>
               </div>
             )}
           </div>
-          {hasResourcesOrFolders ? (
+          {getHasResourcesOrFolders() ? (
             <>
               <FoldersList />
               <ResourcesList
@@ -146,13 +136,13 @@ export default function Explorer({
               style={{ maxWidth: "50%" }}
             />
           )}
-          {hasResources ? (
+          {getHasResources() ? (
             <div className="d-grid">
               <Button
                 type="button"
                 color="secondary"
                 variant="filled"
-                onClick={handleNextPage}
+                onClick={getMoreResources}
               >
                 {i18n("explorer.see.more")}
               </Button>
@@ -162,5 +152,5 @@ export default function Explorer({
         <ActionBarContainer />
       </Grid>
     </>
-  ) : null;
+  );
 }

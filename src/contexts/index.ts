@@ -1,1 +1,1 @@
-export * from "./ExplorerContext/ExplorerContext";
+export * from "./useExplorerContext";

@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useExplorerContext } from "@contexts/index";
-import useTreeView from "@features/TreeView/hooks/useTreeView";
 
 interface MoveModalArg {
   onSuccess?: () => void;
@@ -9,20 +8,21 @@ interface MoveModalArg {
 
 export default function useMoveModal({ onSuccess }: MoveModalArg) {
   const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
-  const { contextRef, selectedResources, selectedFolders, state } =
-    useExplorerContext();
-  const { treeData } = state;
+  const {
+    treeData,
+    getSelectedIFolders,
+    moveSelectedTo,
+    foldTreeItem,
+    unfoldTreeItem,
+  } = useExplorerContext();
   /* feature treeview @hook */
-  const { handleTreeItemFold, handleTreeItemUnfold } = useTreeView();
 
   async function onMove() {
     try {
       if (!selectedFolder) {
         throw new Error("explorer.move.selection.empty");
       }
-      const resourceIds = selectedResources.map((e) => e.id);
-      const folderIds = selectedFolders.map((e) => e.id);
-      await contextRef.current.move(selectedFolder, resourceIds, folderIds);
+      await moveSelectedTo(selectedFolder);
       onSuccess?.();
     } catch (e) {
       // TODO display an alert?
@@ -30,12 +30,29 @@ export default function useMoveModal({ onSuccess }: MoveModalArg) {
     }
   }
 
+  const canMove = (destination: string) => {
+    for (const selectedFolder of getSelectedIFolders()) {
+      if (
+        destination === selectedFolder.id ||
+        destination === selectedFolder.parentId
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   return {
+    disableSubmit: !selectedFolder,
     handleTreeItemSelect: (folderId: string) => {
-      setSelectedFolder(folderId);
+      if (canMove(folderId)) {
+        setSelectedFolder(folderId);
+      } else {
+        setSelectedFolder(undefined);
+      }
     },
-    handleTreeItemFold,
-    handleTreeItemUnfold,
+    handleTreeItemFold: foldTreeItem,
+    handleTreeItemUnfold: unfoldTreeItem,
     onMove: () => {
       onMove();
     },

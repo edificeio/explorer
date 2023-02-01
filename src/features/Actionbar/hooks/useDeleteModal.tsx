@@ -1,23 +1,19 @@
 import { useExplorerContext } from "@contexts/index";
-import { FOLDER } from "ode-ts-client";
 
 interface DeleteModalArg {
   onSuccess?: () => void;
 }
 
 export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
-  const { contextRef, selectedResources, selectedFolders } =
+  const { getIsTrashSelected, deleteSelection, trashSelection } =
     useExplorerContext();
-  const isAlreadyInTrash =
-    contextRef.current.getSearchParameters().filters.folder === FOLDER.BIN;
+  const isAlreadyInTrash = getIsTrashSelected();
   async function onDelete() {
     try {
-      const resourceIds = selectedResources.map((e) => e.id);
-      const folderIds = selectedFolders.map((e) => e.id);
       if (isAlreadyInTrash) {
-        await contextRef.current.delete(resourceIds, folderIds);
+        await deleteSelection();
       } else {
-        await contextRef.current.trash(true, resourceIds, folderIds);
+        await trashSelection();
       }
       onSuccess?.();
     } catch (e) {

@@ -3,43 +3,35 @@ import CreateModal from "@features/Actionbar/components/FolderFormModal";
 import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { Button, TreeView } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
-import { useOdeStore } from "@store/useOdeStore";
 
 import TrashButton from "./TrashButton";
 export const TreeViewContainer = () => {
   const {
-    state: { treeData },
+    treeData,
+    selectedNodeIds,
+    getIsTrashSelected,
     i18n,
+    foldTreeItem,
+    selectTreeItem,
+    gotoTrash,
+    unfoldTreeItem,
   } = useExplorerContext();
   /* feature treeview @hook */
-  const {
-    handleTreeItemFold,
-    isOpenedModal,
-    trashId,
-    trashSelected,
-    handleTreeItemSelect,
-    handleTreeItemTrash,
-    handleTreeItemUnfold,
-    onClose,
-    onCreateSuccess,
-    onOpen,
-  } = useTreeView();
-
-  const selectedNodesIds = useOdeStore((state) => state.selectedNodesIds);
-
+  const { isOpenedModal, trashId, onClose, onCreateSuccess, onOpen } =
+    useTreeView();
   return (
     <>
       <TreeView
         data={treeData}
-        selectedNodesIds={selectedNodesIds}
-        onTreeItemSelect={handleTreeItemSelect}
-        onTreeItemFold={handleTreeItemFold}
-        onTreeItemUnfold={handleTreeItemUnfold}
+        selectedNodesIds={selectedNodeIds}
+        onTreeItemSelect={selectTreeItem}
+        onTreeItemFold={foldTreeItem}
+        onTreeItemUnfold={unfoldTreeItem}
       />
       <TrashButton
         id={trashId}
-        selected={trashSelected}
-        onSelect={() => handleTreeItemTrash(trashId)}
+        selected={getIsTrashSelected()}
+        onSelect={gotoTrash}
       />
       <div className="d-grid my-16">
         <Button

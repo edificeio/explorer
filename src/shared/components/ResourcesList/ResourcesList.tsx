@@ -23,35 +23,28 @@ export default function ResourcesList({
 }): JSX.Element | null {
   const appCode = app?.address.replace("/", "");
 
-  const {
-    state: { resources },
-    openSingleResource,
-    selectResource,
-    deselectResource,
-    isResourceSelected,
-  } = useExplorerContext();
+  const { resourceList, openResource, select, deselect, isResourceSelected } =
+    useExplorerContext();
 
   function toggleSelect(resource: IResource): void {
     if (isResourceSelected(resource)) {
-      deselectResource(resource);
+      deselect([resource.id], "resource");
     } else {
-      selectResource(resource);
+      select([resource.id], "resource");
     }
   }
 
   function resourceIsShared(shared: any): boolean {
-    return Array.isArray(shared) && shared.length >= 1;
+    return shared && shared.length >= 1;
   }
 
-  return resources.length ? (
+  return resourceList.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {resources.map((resource: IResource) => {
+      {resourceList.map((resource: IResource) => {
         const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
           resource;
 
         const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
-
-        console.log(updatedAt, time);
 
         return (
           <li className="g-col-4" key={assetId}>
@@ -63,7 +56,9 @@ export default function ResourcesList({
               isSelected={isResourceSelected(resource)}
               isShared={resourceIsShared(shared)}
               name={name}
-              onOpen={() => openSingleResource(assetId)}
+              onOpen={() => {
+                openResource(assetId);
+              }}
               onSelect={() => toggleSelect(resource)}
               resourceSrc={thumbnail}
               updatedAt={time}
