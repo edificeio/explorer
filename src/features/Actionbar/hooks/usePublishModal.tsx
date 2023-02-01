@@ -24,8 +24,15 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
     name: "",
     image: "",
   });
-  const { contextRef, selectedResources, session, http, app } =
-    useExplorerContext();
+  const {
+    selectedResources,
+    session,
+    http,
+    app,
+    types,
+    getSelectedIResources,
+    publish: publishApi,
+  } = useExplorerContext();
 
   const {
     register,
@@ -47,8 +54,8 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
       let coverBlob = new Blob();
       if (cover.image) {
         coverBlob = await http.get(cover.image, { responseType: "blob" });
-      } else if (selectedResources[0].thumbnail) {
-        coverBlob = await http.get(selectedResources[0].thumbnail, {
+      } else if (getSelectedIResources()[0].thumbnail) {
+        coverBlob = await http.get(getSelectedIResources()[0].thumbnail, {
           responseType: "blob",
         });
       }
@@ -78,14 +85,13 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
         application: app?.displayName || "",
         licence: "CC-BY",
         teacherAvatar,
-        resourceId: selectedResources[0].id,
+        resourceId: selectedResources[0],
         userStructureName:
           resAttachmentSchool.name || session?.user.structureNames[0],
       };
 
-      const resourceType = contextRef.current.getSearchParameters().types[0];
-
-      const result = await contextRef.current.publish(resourceType, parameters);
+      const resourceType = types[0];
+      const result = await publishApi(resourceType, parameters);
       console.log(result);
 
       onSuccess?.();
@@ -96,7 +102,7 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
   };
 
   return {
-    selectedResources,
+    selectedResources: getSelectedIResources(),
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },

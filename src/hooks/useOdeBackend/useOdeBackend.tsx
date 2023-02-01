@@ -62,7 +62,6 @@ export default function useOdeBackend(params: OdeProviderParams) {
           configureFramework.Platform.apps.getWebAppConf(params.app),
           configureFramework.Platform.theme.getConf(),
         ]);
-
         setApp(promise[1]);
         setBootstrapTheme(promise[2]);
         setTheme(configureFramework.Platform.theme);

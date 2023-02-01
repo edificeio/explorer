@@ -1,30 +1,28 @@
 import { useExplorerContext } from "@contexts/index";
-import useTreeView from "@features/TreeView/hooks/useTreeView";
 import { Card } from "@ode-react-ui/core";
 import { IFolder } from "ode-ts-client";
 
 function FoldersList() {
   const {
-    state: { folders },
-    selectFolder,
-    deselectFolder,
+    folderList,
+    getIsTrashSelected,
+    select,
+    deselect,
     isFolderSelected,
-    trashSelected,
+    openFolder,
   } = useExplorerContext();
-
-  const { handleTreeByFolders } = useTreeView();
 
   function toggleSelect(folder: IFolder) {
     if (isFolderSelected(folder)) {
-      deselectFolder(folder);
+      deselect([folder.id], "folder");
     } else {
-      selectFolder(folder);
+      select([folder.id], "folder");
     }
   }
 
-  return folders.length && !trashSelected ? (
+  return folderList.length && !getIsTrashSelected() ? (
     <ul className="grid ps-0 list-unstyled">
-      {folders.map((folder: IFolder) => {
+      {folderList.map((folder: IFolder) => {
         const { id, name } = folder;
         return (
           <li className="g-col-4" key={id}>
@@ -32,7 +30,9 @@ function FoldersList() {
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={() => handleTreeByFolders(id)}
+              onOpen={() => {
+                openFolder(id);
+              }}
               onSelect={() => toggleSelect(folder)}
             />
           </li>

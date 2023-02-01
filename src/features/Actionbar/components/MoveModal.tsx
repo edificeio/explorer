@@ -20,6 +20,7 @@ export default function MoveModal({
     handleTreeItemUnfold,
     onMove,
     treeData,
+    disableSubmit,
   } = useMoveModal({ onSuccess });
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
@@ -55,6 +56,7 @@ export default function MoveModal({
           onClick={(_) => onMove()}
           type="button"
           variant="filled"
+          disabled={disableSubmit}
         >
           {i18n("explorer.move")}
         </Button>

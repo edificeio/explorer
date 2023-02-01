@@ -19,8 +19,13 @@ export default function useFolderFormModal({
   onSuccess,
   onCancel,
 }: FolderFormModalArg) {
-  const { contextRef, resourceTypes, selectedFolders } = useExplorerContext();
-  const name = edit ? selectedFolders[0]?.name : undefined;
+  const {
+    getSelectedIFolders,
+    getCurrentFolderId,
+    updateFolder,
+    createFolder,
+  } = useExplorerContext();
+  const name = edit ? getSelectedIFolders()[0]?.name : undefined;
   const {
     reset,
     register,
@@ -31,36 +36,21 @@ export default function useFolderFormModal({
     values: { name: name || "" },
   });
 
-  const now = new Date();
   const id = useId();
 
   const onSubmit: SubmitHandler<FolderFormInputs> = async function ({
     name,
   }: FolderFormInputs) {
     try {
-      const parentId =
-        contextRef.current.getSearchParameters().filters.folder ||
-        FOLDER.DEFAULT;
+      const parentId = getCurrentFolderId() || FOLDER.DEFAULT;
       if (edit) {
-        const folderId = selectedFolders[0].id;
-        const updatedAt = now.getTime().toString();
-
-        await contextRef.current.updateFolder(
-          folderId,
-          resourceTypes[0],
-          parentId,
-          name,
-          updatedAt,
-        );
-        selectedFolders[0].name = name;
+        const folder = getSelectedIFolders()[0];
+        const folderId = folder!.id;
+        await updateFolder({ id: folderId, parentId, name });
         reset();
-        onSuccess?.(selectedFolders[0]);
+        onSuccess?.(folder);
       } else {
-        const folder = await contextRef.current.createFolder(
-          resourceTypes[0],
-          parentId,
-          name,
-        );
+        const folder = await createFolder(name, parentId);
         reset();
         onSuccess?.(folder);
       }

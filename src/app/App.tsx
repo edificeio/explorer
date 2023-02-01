@@ -1,4 +1,4 @@
-import { ExplorerProvider } from "@contexts/ExplorerContext/ExplorerContext";
+import { ExplorerProvider } from "@contexts/useExplorerContext";
 import HotToast from "@features/HotToast/HotToast";
 import useHotToast from "@features/HotToast/useHotToast";
 import { useOdeBackend } from "@hooks/useOdeBackend";
@@ -10,16 +10,9 @@ import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
 
-function App({ params }: { params: OdeProviderParams }): JSX.Element {
-  const {
-    session,
-    theme,
-    explorerFramework,
-    i18n,
-    app,
-    http,
-    currentLanguage,
-  } = useOdeBackend(params);
+function App({ params }: { params: OdeProviderParams }) {
+  const { session, theme, i18n, app, http, currentLanguage } =
+    useOdeBackend(params);
 
   const is1d: boolean = theme?.is1D;
   const basePath: string = theme?.basePath;
@@ -56,7 +49,6 @@ function App({ params }: { params: OdeProviderParams }): JSX.Element {
         })}
       >
         <ExplorerProvider
-          explorerFramework={explorerFramework}
           params={params}
           types={[RESOURCE.BLOG]}
           i18n={i18n}
