@@ -47,8 +47,8 @@ specifiers:
 
 dependencies:
   '@lhci/cli': 0.8.2
-  '@ode-react-ui/core': 1.0.7-dev.37_eqrg4a5uxqgeipnvxodzx5qoj4
-  '@ode-react-ui/hooks': 1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a
+  '@ode-react-ui/core': link:node_modules/@ode-react-ui/core
+  '@ode-react-ui/hooks': link:node_modules/@ode-react-ui/hooks
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
   csstype: 3.0.10
@@ -56,7 +56,7 @@ dependencies:
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202302011014
+  ode-ts-client: link:node_modules/ode-ts-client
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -662,33 +662,6 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.37_eqrg4a5uxqgeipnvxodzx5qoj4:
-    resolution: {integrity: sha512-fyVD63eRjVrZDX3mJeOa1Z4YNMTkYoXrUy8Wdo9DMH5A7aEbbD8Rn8JUavEhgUzhvNl3+tXV7pmoz/n/5hbYcg==}
-    peerDependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.33
-      '@ode-react-ui/icons': '*'
-      react: 18.2.0
-      react-dom: 18.2.0
-    dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a
-      '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
-
-  /@ode-react-ui/hooks/1.0.7-dev.33_kbzyqto4jt2eb3l55b6nriv26a:
-    resolution: {integrity: sha512-QwWvMMzopSDHAoD/1ispyr/GjPSe97Md2uGcNnpDk+WhXnfsTwioU5Cie7qMbFBHdgEQgvS1V9aEHWV1mDs5LA==}
-    peerDependencies:
-      ode-ts-client: feat-explorer
-      react: 18.2.0
-      react-dom: 18.2.0
-    dependencies:
-      luxon: 3.2.1
-      ode-ts-client: 1.1.0-explorer.202302011014
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
-
   /@ode-react-ui/icons/1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-+bR9pNEa6foXzPspYq4nOvF335+CNgEGUcrKrHsEDqhZlr9WC0YqeDVBHOLG7d9b65ip3X1+2c5aG18NjJesKg==}
     peerDependencies:
@@ -1102,14 +1075,6 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /axios/0.21.4:
-    resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
-    dependencies:
-      follow-redirects: 1.15.2
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /axobject-query/3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
     dependencies:
@@ -1500,12 +1465,6 @@ packages:
   /cookie/0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
-    dev: false
-
-  /core-js/3.8.3:
-    resolution: {integrity: sha512-KPYXeVZYemC2TkNEkX/01I+7yd+nX3KddKwZ1Ww7SKWdI2wQprSgLmrTddT8nw92AjEklTsPBoSdQBhbI1bQ6Q==}
-    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
-    requiresBuild: true
     dev: false
 
   /cross-fetch/3.1.5:
@@ -2434,16 +2393,6 @@ packages:
   /flatted/3.2.7:
     resolution: {integrity: sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==}
     dev: true
-
-  /follow-redirects/1.15.2:
-    resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dev: false
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
@@ -3401,11 +3350,6 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /luxon/3.2.1:
-    resolution: {integrity: sha512-QrwPArQCNLAKGO/C+ZIilgIuDnEnKx5QYODdDtbFaxzsbZcc/a7WFq7MhsVYgRlwawLtvOUESTlfJ+hc/USqPg==}
-    engines: {node: '>=12'}
-    dev: false
-
   /magic-string/0.27.0:
     resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}
     engines: {node: '>=12'}
@@ -3676,16 +3620,6 @@ packages:
       define-properties: 1.1.4
       es-abstract: 1.21.1
     dev: true
-
-  /ode-ts-client/1.1.0-explorer.202302011014:
-    resolution: {integrity: sha512-MpuUOl33Q2015AcLkmpqpOOJXkVwfjmIyvT/MPa5Dm3G2wWRZjWEUFx3ESH4w06W4qJVbnFXNkI2JU63Z64xyw==}
-    dependencies:
-      axios: 0.21.4
-      core-js: 3.8.3
-      rxjs: 7.3.0
-    transitivePeerDependencies:
-      - debug
-    dev: false
 
   /on-finished/2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -4256,12 +4190,6 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /rxjs/7.3.0:
-    resolution: {integrity: sha512-p2yuGIg9S1epc3vrjKf6iVb3RCaAYjYskkO+jHIaV0IjOPlJop4UnodOoFb2xeNwlguqLYvGw1b1McillYb5Gw==}
-    dependencies:
-      tslib: 2.1.0
-    dev: false
-
   /rxjs/7.8.0:
     resolution: {integrity: sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==}
     dependencies:
@@ -4710,10 +4638,6 @@ packages:
 
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
-
-  /tslib/2.1.0:
-    resolution: {integrity: sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==}
-    dev: false
 
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
