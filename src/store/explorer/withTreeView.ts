@@ -106,6 +106,9 @@ export const withTreeView = ({
     set((state) => {
       return {
         ...state,
+        // reset selection when changing folder
+        selectedFolders: [],
+        selectedResources: [],
         selectedNodeIds,
         searchParams: {
           ...searchParams,
