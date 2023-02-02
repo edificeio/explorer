@@ -204,7 +204,7 @@ public class FolderExplorerDbSql {
             columnToUpdate.remove("name");
         }
         final String updatePlaceholder = PostgresClient.updatePlaceholders(source, 2, columnToUpdate,tuple);
-        final String queryTpl = "UPDATE %s SET %s WHERE id = $1 RETURNING *";
+        final String queryTpl = "UPDATE %s SET %s, updated_at=NOW() WHERE id = $1 RETURNING *";
         final String query = String.format(queryTpl, getTableName(), updatePlaceholder);
         return client.preparedQuery(query, tuple).compose(rows->{
            for(final Row row : rows){
