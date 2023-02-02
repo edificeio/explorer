@@ -31,6 +31,5 @@ export default function useHotToast() {
       ),
     loading: toast.loading,
   };
-
   return { hotToast };
 }

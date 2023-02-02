@@ -3,6 +3,7 @@ import { createStore } from "zustand";
 
 import { withDefaultState } from "./state";
 import { ExplorerAction, ExplorerState } from "./types";
+import { withAppActions } from "./withAppActions";
 import { withGetters } from "./withGetters";
 import { withListActions } from "./withListActions";
 import { withListView } from "./withListView";
@@ -19,4 +20,5 @@ export const createExplorerStore = () =>
     ...withListView({ bus: BUS, toastDelay: TOAST_DELAY, get, set }),
     ...withTreeView({ bus: BUS, toastDelay: TOAST_DELAY, get, set }),
     ...withGetters({ get }),
+    ...withAppActions({ get, bus: BUS, set, toastDelay: TOAST_DELAY }),
   }));

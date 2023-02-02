@@ -37,6 +37,8 @@ export interface ExplorerState extends ExplorerStoreProps {
 }
 
 export interface ExplorerAction {
+  // app actions
+  popNotifications: () => Notification[];
   // getters
   getPreviousFolder: () => TreeNode | undefined;
   getIsTrashSelected: () => boolean;
@@ -89,7 +91,7 @@ export interface ExplorerAction {
 }
 export type TreeViewStatus = "fold" | "unfold" | "select";
 export interface Notification {
-  type: "error" | "success";
+  type: "error" | "success" | "info" | "warning";
   message: string;
 }
 
