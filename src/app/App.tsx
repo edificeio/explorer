@@ -1,11 +1,11 @@
 import { ExplorerProvider } from "@contexts/useExplorerContext";
-import HotToast from "@features/HotToast/HotToast";
-import useHotToast from "@features/HotToast/useHotToast";
 import { useOdeBackend } from "@hooks/useOdeBackend";
-import { Button, Header, Main } from "@ode-react-ui/core";
+import { Alert, Button, Header, Main } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks";
 import { clsx } from "@shared/config/index";
 import { OdeProviderParams } from "@shared/types";
 import { RESOURCE } from "ode-ts-client";
+import { Toaster } from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
@@ -16,7 +16,7 @@ function App({ params }: { params: OdeProviderParams }) {
 
   const is1d: boolean = theme?.is1D;
   const basePath: string = theme?.basePath;
-  const { hotToast } = useHotToast();
+  const { hotToast } = useHotToast(Alert);
 
   const infoNotify = () => hotToast.info(<h2>Info: Exemple avec un H2</h2>);
   const warningNotify = () =>
@@ -39,7 +39,7 @@ function App({ params }: { params: OdeProviderParams }) {
   return (
     <div className="App">
       <div>
-        <HotToast />
+        <Toaster />
       </div>
       <Header is1d={is1d} src={`${basePath}/img/illustrations/logo.png`} />
       <Main
