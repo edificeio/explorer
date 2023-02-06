@@ -1,11 +1,11 @@
 import { ExplorerFrameworkFactory } from "ode-ts-client";
 import { create } from "zustand";
 
-import { createExplorerSlice, type ExplorerSlice } from "./createExplorerSlice";
-import { createFolderSlice, type FolderSlice } from "./createFolderSlice";
-import { createResourceSlice, type ResourceSlice } from "./createResourceSlice";
-import { createTrashSlice, type TrashSlice } from "./createTrashSlice";
-import { createTreeviewSlice, type TreeviewSlice } from "./createTreeviewSlice";
+import { createExplorerSlice, type ExplorerSlice } from "./explorerSlice";
+import { createFolderSlice, type FolderSlice } from "./folderSlice";
+import { createResourceSlice, type ResourceSlice } from "./resourceSlice";
+import { createTrashSlice, type TrashSlice } from "./trashSlice";
+import { createTreeviewSlice, type TreeviewSlice } from "./treeviewSlice";
 
 /**
  * * Combined every slice for the combine store
