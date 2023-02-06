@@ -1,11 +1,17 @@
-import { useExplorerContext } from "@contexts/index";
+import useExplorerStore from "@store/index";
 
-interface RestoreModalArg {
+interface ModalProps {
   onSuccess?: () => void;
 }
 
-export default function useRestoreModal({ onSuccess }: RestoreModalArg) {
-  const { getIsTrashSelected, trashSelection } = useExplorerContext();
+export default function useRestoreModal({ onSuccess }: ModalProps) {
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const getIsTrashSelected = useExplorerStore(
+    (state) => state.getIsTrashSelected,
+  );
+  const trashSelection = useExplorerStore((state) => state.trashSelection);
+
   async function onRestore() {
     try {
       if (getIsTrashSelected()) {
@@ -21,7 +27,7 @@ export default function useRestoreModal({ onSuccess }: RestoreModalArg) {
   }
 
   return {
-    isAlreadyInTrash: getIsTrashSelected(),
+    isTrashFolder: getIsTrashSelected(),
     onRestore: () => {
       onRestore();
     },

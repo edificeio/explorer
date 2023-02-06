@@ -1,4 +1,4 @@
-import { App } from "ode-ts-client";
+import { type App } from "ode-ts-client";
 
 export interface OdeProviderParams {
   app: App;

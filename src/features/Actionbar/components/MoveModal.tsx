@@ -1,6 +1,5 @@
-import { useExplorerContext } from "@contexts/index";
 import useMoveModal from "@features/Actionbar/hooks/useMoveModal";
-import { Modal, Button, TreeView } from "@ode-react-ui/core";
+import { Modal, Button, TreeView, useOdeClient } from "@ode-react-ui/core";
 
 interface MoveModalProps {
   isOpen: boolean;
@@ -13,7 +12,7 @@ export default function MoveModal({
   onSuccess = () => {},
   onCancel = () => {},
 }: MoveModalProps) {
-  const { i18n } = useExplorerContext();
+  const { i18n } = useOdeClient();
   const {
     handleTreeItemFold,
     handleTreeItemSelect,
@@ -53,7 +52,7 @@ export default function MoveModal({
         </Button>
         <Button
           color="primary"
-          onClick={(_) => onMove()}
+          onClick={onMove}
           type="button"
           variant="filled"
           disabled={disableSubmit}

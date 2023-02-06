@@ -1,4 +1,4 @@
-import { TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/core";
 
 import { modifyNode } from "./modifyNode";
 

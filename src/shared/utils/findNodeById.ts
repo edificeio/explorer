@@ -1,4 +1,4 @@
-import { TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/core";
 
 export function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
   let res: TreeNode | undefined;

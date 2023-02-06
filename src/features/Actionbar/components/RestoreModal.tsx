@@ -1,6 +1,5 @@
-import { useExplorerContext } from "@contexts/index";
 import useRestoreModal from "@features/Actionbar/hooks/useRestoreModal";
-import { Modal, Button } from "@ode-react-ui/core";
+import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
 
 interface RestoreModalProps {
   isOpen: boolean;
@@ -13,7 +12,7 @@ export default function RestoreModal({
   onSuccess = () => ({}),
   onCancel = () => ({}),
 }: RestoreModalProps) {
-  const { i18n } = useExplorerContext();
+  const { i18n } = useOdeClient();
   const { onRestore } = useRestoreModal({
     onSuccess,
   });

@@ -1,8 +1,8 @@
-import { useExplorerContext } from "@contexts/index";
-import { OptionsType } from "@ode-react-ui/core/dist/Form/Select";
+import { useOdeClient } from "@ode-react-ui/core";
+import { type OptionsType } from "@ode-react-ui/core/dist/Form/Select";
 
 export default function usePublishLibraryModalOptions() {
-  const { i18n } = useExplorerContext();
+  const { i18n } = useOdeClient();
 
   const activityTypeOptions: OptionsType[] = [
     {

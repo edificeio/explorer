@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-import { useExplorerContext } from "@contexts/useExplorerContext";
-import { IAction, ACTION } from "ode-ts-client";
+import useExplorerStore from "@store/index";
+import { type IAction, ACTION } from "ode-ts-client";
 
 type ModalName = "move" | "delete" | "publish" | "edit" | "void";
 
@@ -20,7 +20,7 @@ export default function useActionBar() {
     trashSelection,
     selectedResources,
     selectedFolders,
-  } = useExplorerContext();
+  } = useExplorerStore();
 
   useEffect(() => {
     if (selectedResources.length === 0 && selectedFolders.length === 0) {
@@ -66,7 +66,7 @@ export default function useActionBar() {
    */
   function isActivable(action: IAction): boolean {
     const onlyOneItemSelected =
-      selectedResources.length === 1 && selectedFolders.length === 0;
+      selectedResources.length === 1 || selectedFolders.length === 1;
     switch (action.id) {
       case ACTION.OPEN:
         return onlyOneItemSelected;
@@ -75,6 +75,8 @@ export default function useActionBar() {
       case ACTION.MANAGE:
         return onlyOneItemSelected;
       case ACTION.PUBLISH:
+        return onlyOneItemSelected;
+      case ACTION.UPD_PROPS:
         return onlyOneItemSelected;
       default:
         return true;
@@ -100,11 +102,13 @@ export default function useActionBar() {
     setIsActionBarOpen(false);
     deselectAll("all");
   }
-  const onFinish = (_modalName: ModalName) => () => {
-    if (openedModalName === _modalName) {
+
+  const onFinish = (modalName: ModalName) => () => {
+    if (openedModalName === modalName) {
       onClearActionBar();
     }
   };
+
   const onMoveCancel = onFinish("move");
   const onMoveSuccess = onFinish("move");
   const onDeleteSuccess = onFinish("delete");
@@ -150,5 +154,6 @@ export default function useActionBar() {
     isEditOpen: openedModalName === "edit",
     onEditCancel,
     onEditSuccess,
+    onClearActionBar,
   };
 }

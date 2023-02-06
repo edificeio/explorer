@@ -1,16 +1,16 @@
-import { useExplorerContext } from "@contexts/index";
 import { Card } from "@ode-react-ui/core";
-import { IFolder } from "ode-ts-client";
+import useExplorerStore from "@store/index";
+import { type IFolder } from "ode-ts-client";
 
 function FoldersList() {
-  const {
-    folderList,
-    getIsTrashSelected,
-    select,
-    deselect,
-    isFolderSelected,
-    openFolder,
-  } = useExplorerContext();
+  const isFolderSelected = useExplorerStore((state) => state.isFolderSelected);
+
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const folders = useExplorerStore((state) => state.folders);
+  const { deselect, select, openFolder, getIsTrashSelected } = useExplorerStore(
+    (state) => state,
+  );
 
   function toggleSelect(folder: IFolder) {
     if (isFolderSelected(folder)) {
@@ -20,9 +20,9 @@ function FoldersList() {
     }
   }
 
-  return folderList.length && !getIsTrashSelected() ? (
+  return folders.length && !getIsTrashSelected() ? (
     <ul className="grid ps-0 list-unstyled">
-      {folderList.map((folder: IFolder) => {
+      {folders.map((folder: IFolder) => {
         const { id, name } = folder;
         return (
           <li className="g-col-4" key={id}>
@@ -30,9 +30,7 @@ function FoldersList() {
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={() => {
-                openFolder(id);
-              }}
+              onOpen={() => openFolder(id)}
               onSelect={() => toggleSelect(folder)}
             />
           </li>

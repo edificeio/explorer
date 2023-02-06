@@ -1,15 +1,15 @@
-import { useExplorerContext } from "@contexts/index";
 import DeleteModal from "@features/Actionbar/components/DeleteModal";
 import MoveModal from "@features/Actionbar/components/MoveModal";
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
-import { Button, ActionBar } from "@ode-react-ui/core";
-import { IAction } from "ode-ts-client";
+import { Button, ActionBar, useOdeClient } from "@ode-react-ui/core";
+// import { useClickOutside } from "@ode-react-ui/hooks";
+import { type IAction } from "ode-ts-client";
 
 import FolderFormModal from "./FolderFormModal";
 import PublishModal from "./PublishModal";
 
 export default function ActionBarContainer() {
-  const { i18n } = useExplorerContext();
+  const { i18n } = useOdeClient();
   const {
     actions,
     isMoveModalOpen,
@@ -27,11 +27,17 @@ export default function ActionBarContainer() {
     onPublishSuccess,
     isActivable,
     handleClick,
+    // onClearActionBar,
   } = useActionBar();
+
+  // * Unable to use or multi-selection not working
+  // const ref = useClickOutside(onClearActionBar);
 
   return isActionBarOpen ? (
     <div className="position-fixed bottom-0 start-0 end-0">
-      <ActionBar>
+      <ActionBar
+      // ref={ref}
+      >
         {actions
           .filter(
             (action: IAction) =>

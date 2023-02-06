@@ -1,8 +1,8 @@
-import { useExplorerContext } from "@contexts/index";
-import { Card } from "@ode-react-ui/core";
+import { Card, useOdeClient } from "@ode-react-ui/core";
+import useExplorerStore from "@store/index";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { IResource, ISession, IWebApp } from "ode-ts-client";
+import { type IResource } from "ode-ts-client";
 
 import "dayjs/locale/de";
 import "dayjs/locale/es";
@@ -12,21 +12,15 @@ import "dayjs/locale/it";
 
 dayjs.extend(relativeTime);
 
-export default function ResourcesList({
-  session,
-  app,
-  currentLanguage,
-}: {
-  session: ISession;
-  app: IWebApp | undefined;
-  currentLanguage: string;
-}): JSX.Element | null {
-  const appCode = app?.address.replace("/", "");
+export default function ResourcesList(): JSX.Element | null {
+  const { appCode, currentLanguage, session } = useOdeClient();
 
-  const { resourceList, openResource, select, deselect, isResourceSelected } =
-    useExplorerContext();
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const { resources, openResource, deselect, select, isResourceSelected } =
+    useExplorerStore((state) => state);
 
-  function toggleSelect(resource: IResource): void {
+  function toggleSelect(resource: IResource) {
     if (isResourceSelected(resource)) {
       deselect([resource.id], "resource");
     } else {
@@ -38,9 +32,9 @@ export default function ResourcesList({
     return shared && shared.length >= 1;
   }
 
-  return resourceList.length ? (
+  return resources.length ? (
     <ul className="grid ps-0 list-unstyled">
-      {resourceList.map((resource: IResource) => {
+      {resources.map((resource: IResource) => {
         const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
           resource;
 
@@ -56,9 +50,7 @@ export default function ResourcesList({
               isSelected={isResourceSelected(resource)}
               isShared={resourceIsShared(shared)}
               name={name}
-              onOpen={() => {
-                openResource(assetId);
-              }}
+              onOpen={() => openResource(assetId)}
               onSelect={() => toggleSelect(resource)}
               resourceSrc={thumbnail}
               updatedAt={time}

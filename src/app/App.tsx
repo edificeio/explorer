@@ -1,30 +1,16 @@
-import { ExplorerProvider } from "@contexts/useExplorerContext";
-import { useOdeBackend } from "@hooks/useOdeBackend";
-import { Alert, Button, Header, Main } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Toast, Main, useOdeClient } from "@ode-react-ui/core";
 import { clsx } from "@shared/config/index";
-import { OdeProviderParams } from "@shared/types";
-import { RESOURCE } from "ode-ts-client";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster, resolveValue } from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
+import { Header } from "./Header";
 
-function App({ params }: { params: OdeProviderParams }) {
-  const { session, theme, i18n, app, http, currentLanguage } =
-    useOdeBackend(params);
+function App() {
+  const { session, theme, i18n } = useOdeClient();
 
   const is1d: boolean = theme?.is1D;
   const basePath: string = theme?.basePath;
-  const { hotToast } = useHotToast(Alert);
-
-  const infoNotify = () => hotToast.info(<h2>Info: Exemple avec un H2</h2>);
-  const warningNotify = () =>
-    hotToast.warning("Warning: Exemple avec du texte brut!");
-  const sucessNotify = () =>
-    hotToast.success("Sucess: Exemple avec du texte brut!");
-  const errorNotify = () =>
-    hotToast.error(<div>Erreur: Exemple avec un div</div>);
 
   if (!session || session.notLoggedIn) {
     return (
@@ -36,48 +22,31 @@ function App({ params }: { params: OdeProviderParams }) {
     );
   }
 
+  const { dismiss } = toast;
+
+  const toastOptions = {
+    position: "top-right",
+    gutter: 8,
+  };
+
   return (
     <div className="App">
-      <div>
-        <Toaster />
-      </div>
-      <Header is1d={is1d} src={`${basePath}/img/illustrations/logo.png`} />
+      <Header is1d={is1d} src={basePath} session={session} i18n={i18n} />
       <Main
         className={clsx("container-fluid bg-white", {
           "rounded-4 border": is1d,
           "mt-24": is1d,
         })}
       >
-        <ExplorerProvider
-          params={params}
-          types={[RESOURCE.BLOG]}
-          i18n={i18n}
-          session={session}
-          http={http}
-          app={app}
-        >
-          <Explorer currentLanguage={currentLanguage} />
-        </ExplorerProvider>
-
-        <div className="d-block p-24">
-          <hr />
-          <h2>React Hot Toast 🍞</h2>
-          <div className="d-flex gap-8 p-24">
-            <Button color="tertiary" onClick={sucessNotify}>
-              Make me a sucess toast
-            </Button>
-            <Button color="danger" onClick={errorNotify}>
-              Make me a error toast
-            </Button>
-            <Button color="secondary" onClick={infoNotify}>
-              Make me a info toast
-            </Button>
-            <Button color="primary" onClick={warningNotify}>
-              Make me a warning toast
-            </Button>
-          </div>
-        </div>
+        <Explorer />
       </Main>
+      <Toast
+        Toaster={Toaster}
+        resolveValue={resolveValue}
+        dismiss={dismiss}
+        i18n={i18n}
+        toastOptions={toastOptions}
+      />
     </div>
   );
 }

@@ -1,21 +1,23 @@
 import { useState } from "react";
 
-import { useExplorerContext } from "@contexts/index";
+import useExplorerStore from "@store/index";
 
-interface MoveModalArg {
+interface ModalProps {
   onSuccess?: () => void;
 }
 
-export default function useMoveModal({ onSuccess }: MoveModalArg) {
+export default function useMoveModal({ onSuccess }: ModalProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
+
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
   const {
     treeData,
-    getSelectedIFolders,
-    moveSelectedTo,
     foldTreeItem,
     unfoldTreeItem,
-  } = useExplorerContext();
-  /* feature treeview @hook */
+    moveSelectedTo,
+    getSelectedFolders,
+  } = useExplorerStore();
 
   async function onMove() {
     try {
@@ -31,7 +33,7 @@ export default function useMoveModal({ onSuccess }: MoveModalArg) {
   }
 
   const canMove = (destination: string) => {
-    for (const selectedFolder of getSelectedIFolders()) {
+    for (const selectedFolder of getSelectedFolders()) {
       if (
         destination === selectedFolder.id ||
         destination === selectedFolder.parentId

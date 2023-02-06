@@ -1,4 +1,3 @@
-import { useExplorerContext } from "@contexts/index";
 import {
   Alert,
   Modal,
@@ -9,6 +8,7 @@ import {
   Input,
   ImagePicker,
   Select,
+  useOdeClient,
 } from "@ode-react-ui/core";
 
 import usePublishModal from "../hooks/usePublishModal";
@@ -41,7 +41,7 @@ export default function PublishModal({
     ageOptions,
   } = usePublishLibraryModalOptions();
 
-  const { i18n, app } = useExplorerContext();
+  const { i18n, app } = useOdeClient();
 
   const defaultSelectOption = i18n("portal.select");
   const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");

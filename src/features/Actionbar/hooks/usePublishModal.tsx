@@ -1,14 +1,15 @@
 import { useState } from "react";
 
-import { useExplorerContext } from "@contexts/index";
-import { PublishParameters } from "ode-ts-client";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useOdeClient } from "@ode-react-ui/core";
+import useExplorerStore from "@store/index";
+import { RESOURCE, type PublishParameters } from "ode-ts-client";
+import { type SubmitHandler, useForm } from "react-hook-form";
 
-interface PublishModalArg {
+interface ModalProps {
   onSuccess?: () => void;
 }
 
-interface PublishFormInputs {
+interface InputProps {
   title: string;
   description: string;
   activityType: string;
@@ -19,36 +20,36 @@ interface PublishFormInputs {
   keyWords: string;
 }
 
-export default function usePublishModal({ onSuccess }: PublishModalArg) {
+export default function usePublishModal({ onSuccess }: ModalProps) {
   const [cover, setCover] = useState<Record<string, string>>({
     name: "",
     image: "",
   });
-  const {
-    selectedResources,
-    session,
-    http,
-    app,
-    types,
-    getSelectedIResources,
-    publish: publishApi,
-  } = useExplorerContext();
+
+  const { session, http, app } = useOdeClient();
+
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const getSelectedIResources = useExplorerStore(
+    (state) => state.getSelectedIResources,
+  );
+  const selectedResources = useExplorerStore(
+    (state) => state.selectedResources,
+  );
+  const publishApi = useExplorerStore((state) => state.publish);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
-  } = useForm<PublishFormInputs>({ mode: "onChange" });
+  } = useForm<InputProps>({ mode: "onChange" });
 
   function handleUploadImage(preview: Record<string, string>) {
     setCover(preview);
   }
 
-  const publish: SubmitHandler<PublishFormInputs> = async (formData) => {
-    console.log("formData=", formData);
+  const publish: SubmitHandler<InputProps> = async (formData) => {
     try {
-      console.log("Publishing...");
-
       const userId = session ? session.user.userId : "";
 
       let coverBlob = new Blob();
@@ -59,8 +60,6 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
           responseType: "blob",
         });
       }
-
-      console.log(coverBlob);
 
       const teacherAvatar: Blob = await http.get(
         `/userbook/avatar/${userId}?thumbnail=48x48`,
@@ -73,24 +72,24 @@ export default function usePublishModal({ onSuccess }: PublishModalArg) {
       );
 
       const parameters: PublishParameters = {
-        userId: session?.user.userId,
-        title: formData.title,
-        cover: coverBlob,
-        language: formData.language,
         activityType: [formData.activityType],
-        subjectArea: [formData.subjectArea],
         age: [formData.ageMin, formData.ageMax],
+        application: app?.displayName || "",
+        cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,
-        application: app?.displayName || "",
+        language: formData.language,
         licence: "CC-BY",
-        teacherAvatar,
         resourceId: selectedResources[0],
+        subjectArea: [formData.subjectArea],
+        teacherAvatar,
+        title: formData.title,
+        userId: session?.user.userId,
         userStructureName:
           resAttachmentSchool.name || session?.user.structureNames[0],
       };
 
-      const resourceType = types[0];
+      const resourceType = [RESOURCE.BLOG][0];
       const result = await publishApi(resourceType, parameters);
       console.log(result);
 
