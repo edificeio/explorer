@@ -1,50 +1,56 @@
 import { useId } from "react";
 
-import { useExplorerContext } from "@contexts/index";
-import { FOLDER, IFolder } from "ode-ts-client";
-import { SubmitHandler, useForm } from "react-hook-form";
+import useExplorerStore from "@store/index";
+import { FOLDER, type IFolder } from "ode-ts-client";
+import { type SubmitHandler, useForm } from "react-hook-form";
 
-interface FolderFormModalArg {
+interface useFolderFormModalProps {
   edit: boolean;
   onSuccess?: (folder: IFolder) => void;
-  onCancel: () => void;
+  onClose: () => void;
 }
 
-interface FolderFormInputs {
+interface HandlerProps {
   name: string;
 }
 
 export default function useFolderFormModal({
   edit,
   onSuccess,
-  onCancel,
-}: FolderFormModalArg) {
-  const {
-    getSelectedIFolders,
-    getCurrentFolderId,
-    updateFolder,
-    createFolder,
-  } = useExplorerContext();
-  const name = edit ? getSelectedIFolders()[0]?.name : undefined;
+  onClose,
+}: useFolderFormModalProps) {
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const getSelectedFolders = useExplorerStore(
+    (state) => state.getSelectedFolders,
+  );
+  const getCurrentFolderId = useExplorerStore(
+    (state) => state.getCurrentFolderId,
+  );
+  const createFolder = useExplorerStore((state) => state.createFolder);
+  const updateFolder = useExplorerStore((state) => state.updateFolder);
+
+  const name = edit ? getSelectedFolders()[0]?.name : undefined;
   const {
     reset,
     register,
     handleSubmit,
+    setFocus,
     formState: { errors, isSubmitting, isDirty, isValid },
-  } = useForm<FolderFormInputs>({
+  } = useForm<HandlerProps>({
     mode: "onChange",
     values: { name: name || "" },
   });
 
   const id = useId();
 
-  const onSubmit: SubmitHandler<FolderFormInputs> = async function ({
+  const onSubmit: SubmitHandler<HandlerProps> = async function ({
     name,
-  }: FolderFormInputs) {
+  }: HandlerProps) {
     try {
       const parentId = getCurrentFolderId() || FOLDER.DEFAULT;
       if (edit) {
-        const folder = getSelectedIFolders()[0];
+        const folder = getSelectedFolders()[0];
         const folderId = folder!.id;
         await updateFolder({ id: folderId, parentId, name });
         reset();
@@ -60,6 +66,11 @@ export default function useFolderFormModal({
     }
   };
 
+  function onCancel() {
+    reset();
+    onClose();
+  }
+
   const formId = `createModal_${id}`;
 
   return {
@@ -69,13 +80,9 @@ export default function useFolderFormModal({
     isDirty,
     isValid,
     register,
+    setFocus,
     handleSubmit,
-    onCancel: () => {
-      reset();
-      onCancel();
-    },
-    onSubmit: (name: FolderFormInputs) => {
-      onSubmit(name);
-    },
+    onCancel,
+    onSubmit,
   };
 }

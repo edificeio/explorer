@@ -1,24 +1,28 @@
-import { useExplorerContext } from "@contexts/index";
 import CreateModal from "@features/Actionbar/components/FolderFormModal";
-import useTreeView from "@features/TreeView/hooks/useTreeView";
-import { Button, TreeView } from "@ode-react-ui/core";
+import { Button, TreeView, useOdeClient } from "@ode-react-ui/core";
+import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
+import useExplorerStore from "@store/index";
+import { FOLDER } from "ode-ts-client";
 
 import TrashButton from "./TrashButton";
 export const TreeViewContainer = () => {
+  const { i18n } = useOdeClient();
+
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
   const {
-    treeData,
-    selectedNodeIds,
-    getIsTrashSelected,
-    i18n,
     foldTreeItem,
-    selectTreeItem,
+    getIsTrashSelected,
     gotoTrash,
+    selectedNodeIds,
+    selectTreeItem,
+    treeData,
     unfoldTreeItem,
-  } = useExplorerContext();
-  /* feature treeview @hook */
-  const { isOpenedModal, trashId, onClose, onCreateSuccess, onOpen } =
-    useTreeView();
+  } = useExplorerStore((state) => state);
+
+  const [isOpen, toggle] = useModal();
+
   return (
     <>
       <TreeView
@@ -29,7 +33,7 @@ export const TreeViewContainer = () => {
         onTreeItemUnfold={unfoldTreeItem}
       />
       <TrashButton
-        id={trashId}
+        id={FOLDER.BIN}
         selected={getIsTrashSelected()}
         onSelect={gotoTrash}
       />
@@ -39,16 +43,17 @@ export const TreeViewContainer = () => {
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={onOpen}
+          onClick={() => toggle(true)}
         >
           {i18n("explorer.folder.new")}
         </Button>
       </div>
+      {isOpen.toString()}
       <CreateModal
         edit={false}
-        isOpen={isOpenedModal}
-        onSuccess={onCreateSuccess}
-        onCancel={onClose}
+        isOpen={isOpen}
+        onSuccess={() => toggle(false)}
+        onCancel={() => toggle(false)}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { useExplorerContext } from "@contexts/index";
+import { useOdeClient } from "@ode-react-ui/core";
 import { Delete } from "@ode-react-ui/icons";
 export interface TrashButtonProps {
   id: string;
@@ -6,7 +6,7 @@ export interface TrashButtonProps {
   onSelect: () => void;
 }
 export const TrashButton = ({ id, selected, onSelect }: TrashButtonProps) => {
-  const { i18n } = useExplorerContext();
+  const { i18n } = useOdeClient();
   return (
     <div className="treeview">
       <ul role="tree" className="m-0 p-0">

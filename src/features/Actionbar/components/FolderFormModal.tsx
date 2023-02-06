@@ -1,22 +1,30 @@
-import { useExplorerContext } from "@contexts/index";
-import useFolderFormModal from "@features/Actionbar/hooks/useFolderFormModal";
-import { Modal, Button, FormControl, Label, Input } from "@ode-react-ui/core";
-import { IFolder } from "ode-ts-client";
+import { useEffect } from "react";
 
-interface FolderFormModalProps {
+import useFolderFormModal from "@features/Actionbar/hooks/useFolderFormModal";
+import {
+  Modal,
+  Button,
+  FormControl,
+  Label,
+  Input,
+  useOdeClient,
+} from "@ode-react-ui/core";
+import { type IFolder } from "ode-ts-client";
+
+interface ModalProps {
   isOpen: boolean;
   edit: boolean;
   onSuccess?: (folder: IFolder) => void;
-  onCancel?: () => void;
+  onCancel: () => void;
 }
 
 export default function FolderFormModal({
   isOpen,
   edit,
-  onSuccess = () => ({}),
-  onCancel: onCancelOriginal = () => ({}),
-}: FolderFormModalProps) {
-  const { i18n } = useExplorerContext();
+  onSuccess,
+  onCancel: onClose,
+}: ModalProps) {
+  const { i18n } = useOdeClient();
   const {
     isDirty,
     isValid,
@@ -26,20 +34,22 @@ export default function FolderFormModal({
     onCancel,
     handleSubmit,
     register,
+    setFocus,
   } = useFolderFormModal({
     edit,
     onSuccess,
-    onCancel: onCancelOriginal,
+    onClose,
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFocus("name");
+    }
+  }, [isOpen]);
+
   return (
     <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>
-      <Modal.Header
-        onModalClose={() => {
-          // TODO fix onModalClose type to avoid this hack
-          onCancel();
-          return {};
-        }}
-      >
+      <Modal.Header onModalClose={onCancel}>
         {i18n(edit ? "explorer.rename.folder" : "explorer.create.folder")}
       </Modal.Header>
       <Modal.Body>

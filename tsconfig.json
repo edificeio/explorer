@@ -20,6 +20,7 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "paths": {
+      "@app/*": ["./app/*"],
       "@components/*": ["./components/*"],
       "@config/*": ["./config/*"],
       "@contexts/*": ["./contexts/*"],
@@ -30,5 +31,5 @@
       "@store/*": ["./store/*"],
     }
   },
-  "include": ["src","./vite.config.ts"],
+  "include": ["src", "config", "./vite.config.ts"],
 }

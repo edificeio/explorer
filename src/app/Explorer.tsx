@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useExplorerContext } from "@contexts/useExplorerContext";
+import { useEffect } from "react";
+
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import {
@@ -10,49 +10,54 @@ import {
   Input,
   IconButton,
   SearchButton,
+  useOdeClient,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { AppHeader, EPub } from "@shared/components";
 import FoldersList from "@shared/components/FoldersList/FoldersList";
 import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
+import useExplorerStore from "@store/index";
 
-export default function Explorer({
-  currentLanguage,
-}: {
-  currentLanguage: string;
-}) {
+export default function Explorer() {
+  const { i18n, params, app, appCode } = useOdeClient();
+
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
   const {
-    app,
-    getMoreResources,
+    init,
+    isReady,
     getHasResourcesOrFolders,
-    session,
-    ready,
     getIsTrashSelected,
     getHasNoSelectedNodes,
+    gotoPreviousFolder,
+    getHasResources,
+    getMoreResources,
     getPreviousFolder,
     getHasSelectedRoot,
-    getHasResources,
-    i18n,
-    gotoPreviousFolder,
     createResource,
-  } = useExplorerContext();
-  // must be before all
-  if (!ready) {
-    return <></>;
-  }
+  } = useExplorerStore((state) => state);
+
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
-
   const previousName: string = getPreviousFolder()?.name || rootName;
-  const appCode: string | undefined = app?.address.replace("/", "");
-  // console.count("Explorer.tsx");
+
+  useEffect(() => {
+    init(params);
+  }, []);
+
+  if (!isReady) {
+    return <></>;
+  }
+
   return (
     <>
       <AppHeader>
-        <AppCard app={app} isHeading headingStyle="h3" level="h1">
-          <AppCard.Icon size="40" />
-          <AppCard.Name />
-        </AppCard>
+        {app && (
+          <AppCard app={app} isHeading headingStyle="h3" level="h1">
+            <AppCard.Icon size="40" />
+            <AppCard.Name />
+          </AppCard>
+        )}
 
         <Button
           type="button"
@@ -122,11 +127,7 @@ export default function Explorer({
           {getHasResourcesOrFolders() ? (
             <>
               <FoldersList />
-              <ResourcesList
-                app={app}
-                session={session}
-                currentLanguage={currentLanguage}
-              />
+              <ResourcesList />
             </>
           ) : (
             <img
@@ -137,7 +138,7 @@ export default function Explorer({
             />
           )}
           {getHasResources() ? (
-            <div className="d-grid">
+            <div className="d-grid gap-2 col-4 mx-auto">
               <Button
                 type="button"
                 color="secondary"

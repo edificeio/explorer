@@ -1,6 +1,6 @@
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
-import { TreeNode } from "@ode-react-ui/core";
-import { IFolder } from "ode-ts-client";
+import { type TreeNode } from "@ode-react-ui/core";
+import { type IFolder } from "ode-ts-client";
 
 import { modifyNode } from "./modifyNode";
 

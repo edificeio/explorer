@@ -1,8 +1,7 @@
-import { useExplorerContext } from "@contexts/index";
 import useDeleteModal from "@features/Actionbar/hooks/useDeleteModal";
-import { Modal, Button } from "@ode-react-ui/core";
+import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
 
-interface DeleteModalProps {
+interface ModalProps {
   isOpen: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -12,9 +11,9 @@ export default function DeleteModal({
   isOpen,
   onSuccess = () => ({}),
   onCancel = () => ({}),
-}: DeleteModalProps) {
-  const { i18n } = useExplorerContext();
-  const { isAlreadyInTrash, onDelete } = useDeleteModal({
+}: ModalProps) {
+  const { i18n } = useOdeClient();
+  const { isTrashFolder, onDelete } = useDeleteModal({
     onSuccess,
   });
   return (
@@ -26,14 +25,12 @@ export default function DeleteModal({
           return {};
         }}
       >
-        {i18n(
-          isAlreadyInTrash ? "explorer.delete.title" : "explorer.trash.title",
-        )}
+        {i18n(isTrashFolder ? "explorer.delete.title" : "explorer.trash.title")}
       </Modal.Header>
       <Modal.Body>
         <p className="body">
           {i18n(
-            isAlreadyInTrash
+            isTrashFolder
               ? "explorer.delete.subtitle"
               : "explorer.trash.subtitle",
           )}
@@ -50,11 +47,11 @@ export default function DeleteModal({
         </Button>
         <Button
           color="primary"
-          onClick={(_) => onDelete()}
+          onClick={onDelete}
           type="button"
           variant="filled"
         >
-          {i18n(isAlreadyInTrash ? "explorer.delete" : "explorer.trash")}
+          {i18n(isTrashFolder ? "explorer.delete" : "explorer.trash")}
         </Button>
       </Modal.Footer>
     </Modal>

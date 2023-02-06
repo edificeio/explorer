@@ -1,17 +1,29 @@
-import { useExplorerContext } from "@contexts/index";
+/* import { Alert } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks"; */
+import useExplorerStore from "@store/index";
 
-interface DeleteModalArg {
+interface ModalProps {
   onSuccess?: () => void;
 }
 
-export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
-  const { getIsTrashSelected, deleteSelection, trashSelection } =
-    useExplorerContext();
-  const isAlreadyInTrash = getIsTrashSelected();
+export default function useDeleteModal({ onSuccess }: ModalProps) {
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
+  const { getIsTrashSelected, trashSelection, deleteSelection } =
+    useExplorerStore((state) => state);
+  const isTrashFolder = getIsTrashSelected();
+
+  // ? We could pass hotToast as argument inside deleteSelection or trashSelection ?
+  // const { hotToast } = useHotToast(Alert);
   async function onDelete() {
     try {
-      if (isAlreadyInTrash) {
+      if (isTrashFolder) {
         await deleteSelection();
+        /* toast.promise(deleteSelection, {
+          loading: "Loading",
+          success: "Got the data",
+          error: "Error when fetching",
+        }); */
       } else {
         await trashSelection();
       }
@@ -23,9 +35,7 @@ export default function useDeleteModal({ onSuccess }: DeleteModalArg) {
   }
 
   return {
-    isAlreadyInTrash,
-    onDelete: () => {
-      onDelete();
-    },
+    isTrashFolder: getIsTrashSelected(),
+    onDelete,
   };
 }
