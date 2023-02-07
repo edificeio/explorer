@@ -2,8 +2,18 @@ import { useState } from "react";
 
 import { useOdeClient } from "@ode-react-ui/core";
 import useExplorerStore from "@store/index";
-import { RESOURCE, type PublishParameters } from "ode-ts-client";
+import {
+  RESOURCE,
+  type PublishParameters,
+  type PublishResult,
+} from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+
+import {
+  PublishModalError,
+  PublishModalSuccess,
+} from "../components/PublishModal";
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -90,13 +100,22 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       };
 
       const resourceType = [RESOURCE.BLOG][0];
-      const result = await publishApi(resourceType, parameters);
-      console.log(result);
+      const result: PublishResult = await publishApi(resourceType, parameters);
 
+      if (result.success) {
+        toast.success(<PublishModalSuccess result={result} />, {
+          duration: Infinity,
+        });
+      } else {
+        toast.error(<PublishModalError />, {
+          duration: Infinity,
+        });
+      }
       onSuccess?.();
     } catch (e) {
-      // TODO display an alert?
-      console.error(e);
+      toast.error(<PublishModalError />, {
+        duration: Infinity,
+      });
     }
   };
 

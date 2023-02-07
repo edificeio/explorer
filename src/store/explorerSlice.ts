@@ -22,6 +22,7 @@ import {
   type PublishParameters,
   type IFolder,
   ConfigurationFrameworkFactory,
+  IActionResult,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
@@ -41,7 +42,10 @@ export interface ExplorerSlice {
   getHasResourcesOrFolders: () => number;
   moveSelectedTo: (destinationId: string) => PromiseVoid;
   deleteSelection: (toast: any) => PromiseVoid;
-  publish: (type: ResourceType, params: PublishParameters) => PromiseVoid;
+  publish: (
+    type: ResourceType,
+    params: PublishParameters,
+  ) => Promise<IActionResult | undefined>;
   reloadListView: () => PromiseVoid;
   clearListView: () => void;
   select: (id: string[], type: Thing) => void;
@@ -296,21 +300,11 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       ); */
     }
   },
-  publish: async (resourceType: ResourceType, params: PublishParameters) => {
-    try {
-      await BUS.publish(resourceType, ACTION.PUBLISH, params);
-    } catch (error) {
-      // if failed push error
-      console.error("explorer publish failed: ", error);
-      /* addNotification(
-        {
-          type: "error",
-          message: "explorer.publish.failed",
-        },
-        toastDelay,
-        set,
-      ); */
-    }
+  publish: async (
+    resourceType: ResourceType,
+    params: PublishParameters,
+  ): Promise<IActionResult | undefined> => {
+    return await BUS.publish(resourceType, ACTION.PUBLISH, params);
   },
   clearListView: () => {
     set((state) => {
