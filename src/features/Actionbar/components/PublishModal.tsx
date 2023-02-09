@@ -267,19 +267,26 @@ export function PublishModalSuccess({ result }: { result: PublishResult }) {
 
   return (
     <>
-      <h2>{i18n("bpr.form.publication.response.success.title")}</h2>
-      <i className="congrats"></i>
-      <p>{i18n("bpr.form.publication.response.success.content.1")}</p>
-      <p>{i18n("bpr.form.publication.response.success.content.2")}</p>
+      <h3 className="pt-24">
+        {i18n("bpr.form.publication.response.success.title")}
+      </h3>
+      <p className="pt-24">
+        {i18n("bpr.form.publication.response.success.content.1")}
+      </p>
+      <p className="pt-24">
+        {i18n("bpr.form.publication.response.success.content.2")}
+      </p>
       {result.details.front_url && (
-        <a
-          className="button right-magnet"
-          href={result.details.front_url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {i18n("bpr.form.publication.response.success.button")}
-        </a>
+        <p className="pt-24 pb-24">
+          <a
+            className="button right-magnet"
+            href={result.details.front_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {i18n("bpr.form.publication.response.success.button")}
+          </a>
+        </p>
       )}
     </>
   );
@@ -290,8 +297,10 @@ export function PublishModalError() {
 
   return (
     <>
-      <h2>{i18n("bpr.form.publication.response.error.title")}</h2>
-      <p>
+      <h3 className="pt-24">
+        {i18n("bpr.form.publication.response.error.title")}
+      </h3>
+      <p className="pt-24 pb-24">
         <strong>{i18n("bpr.form.publication.response.error.content")}</strong>
       </p>
     </>
