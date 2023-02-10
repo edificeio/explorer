@@ -3,7 +3,13 @@ import { useState, useEffect } from "react";
 import useExplorerStore from "@store/index";
 import { type IAction, ACTION } from "ode-ts-client";
 
-type ModalName = "move" | "delete" | "publish" | "edit" | "void";
+type ModalName =
+  | "move"
+  | "delete"
+  | "publish"
+  | "edit_folder"
+  | "edit_resource"
+  | "void";
 
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
@@ -115,8 +121,10 @@ export default function useActionBar() {
   const onDeleteCancel = onFinish("delete");
   const onPublishSuccess = onFinish("publish");
   const onPublishCancel = onFinish("publish");
-  const onEditSuccess = onFinish("edit");
-  const onEditCancel = onFinish("edit");
+  const onEditFolderSuccess = onFinish("edit_folder");
+  const onEditFolderCancel = onFinish("edit_folder");
+  const onEditResourceSuccess = onFinish("edit_resource");
+  const onEditResourceCancel = onFinish("edit_resource");
 
   const trashActions: IAction[] = [
     {
@@ -133,7 +141,11 @@ export default function useActionBar() {
   const isTrashFolder = getIsTrashSelected();
 
   function onEdit() {
-    setOpenedModalName("edit");
+    if (selectedResources && selectedResources.length > 0) {
+      setOpenedModalName("edit_resource");
+    } else {
+      setOpenedModalName("edit_folder");
+    }
   }
 
   return {
@@ -151,9 +163,12 @@ export default function useActionBar() {
     isPublishModalOpen: openedModalName === "publish",
     onPublishCancel,
     onPublishSuccess,
-    isEditOpen: openedModalName === "edit",
-    onEditCancel,
-    onEditSuccess,
+    isEditFolderOpen: openedModalName === "edit_folder",
+    onEditFolderCancel,
+    onEditFolderSuccess,
+    isEditResourceOpen: openedModalName === "edit_resource",
+    onEditResourceCancel,
+    onEditResourceSuccess,
     onClearActionBar,
   };
 }

@@ -1,4 +1,4 @@
-import CreateModal from "@features/Actionbar/components/FolderFormModal";
+import CreateModal from "@features/Actionbar/components/EditFolderModal";
 import { Button, TreeView, useOdeClient } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
