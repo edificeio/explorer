@@ -4,7 +4,7 @@ import useExplorerStore from "@store/index";
 import { FOLDER, type IFolder } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-interface useFolderFormModalProps {
+interface useEditFolderModalProps {
   edit: boolean;
   onSuccess?: (folder: IFolder) => void;
   onClose: () => void;
@@ -14,11 +14,11 @@ interface HandlerProps {
   name: string;
 }
 
-export default function useFolderFormModal({
+export default function useEditFolderModal({
   edit,
   onSuccess,
   onClose,
-}: useFolderFormModalProps) {
+}: useEditFolderModalProps) {
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const getSelectedFolders = useExplorerStore(

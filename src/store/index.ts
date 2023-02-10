@@ -26,7 +26,7 @@ export const BUS = ExplorerFrameworkFactory.instance().getBus();
  */
 
 // * https://docs.pmnd.rs/zustand/guides/slices-pattern
-const useExplorerStore = create<any>()((...props) => ({
+const useExplorerStore = create<State>()((...props) => ({
   ...createExplorerSlice(...props),
   ...createFolderSlice(...props),
   ...createResourceSlice(...props),

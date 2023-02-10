@@ -58,7 +58,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     setCover(preview);
   }
 
-  const publish: SubmitHandler<InputProps> = async (formData) => {
+  const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
     try {
       const userId = session ? session.user.userId : "";
 

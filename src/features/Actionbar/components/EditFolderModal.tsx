@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import useFolderFormModal from "@features/Actionbar/hooks/useFolderFormModal";
+import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
 import {
   Modal,
   Button,
@@ -11,19 +11,19 @@ import {
 } from "@ode-react-ui/core";
 import { type IFolder } from "ode-ts-client";
 
-interface ModalProps {
+interface EditFolderModalProps {
   isOpen: boolean;
   edit: boolean;
   onSuccess?: (folder: IFolder) => void;
   onCancel: () => void;
 }
 
-export default function FolderFormModal({
+export default function EditFolderModal({
   isOpen,
   edit,
   onSuccess,
   onCancel: onClose,
-}: ModalProps) {
+}: EditFolderModalProps) {
   const { i18n } = useOdeClient();
   const {
     isDirty,
@@ -35,7 +35,7 @@ export default function FolderFormModal({
     handleSubmit,
     register,
     setFocus,
-  } = useFolderFormModal({
+  } = useEditFolderModal({
     edit,
     onSuccess,
     onClose,

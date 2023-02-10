@@ -5,7 +5,8 @@ import { Button, ActionBar, useOdeClient } from "@ode-react-ui/core";
 // import { useClickOutside } from "@ode-react-ui/hooks";
 import { type IAction } from "ode-ts-client";
 
-import FolderFormModal from "./FolderFormModal";
+import EditFolderModal from "./EditFolderModal";
+import EditResourceModal from "./EditResourceModal";
 import PublishModal from "./PublishModal";
 
 export default function ActionBarContainer() {
@@ -16,9 +17,12 @@ export default function ActionBarContainer() {
     isDeleteModalOpen,
     isPublishModalOpen,
     isActionBarOpen,
-    isEditOpen,
-    onEditCancel,
-    onEditSuccess,
+    isEditFolderOpen,
+    onEditFolderCancel,
+    onEditFolderSuccess,
+    isEditResourceOpen,
+    onEditResourceCancel,
+    onEditResourceSuccess,
     onMoveCancel,
     onMoveSuccess,
     onDeleteCancel,
@@ -76,11 +80,17 @@ export default function ActionBarContainer() {
         onCancel={onPublishCancel}
         onSuccess={onPublishSuccess}
       />
-      <FolderFormModal
-        edit
-        isOpen={isEditOpen}
-        onCancel={onEditCancel}
-        onSuccess={onEditSuccess}
+      <EditFolderModal
+        edit={true}
+        isOpen={isEditFolderOpen}
+        onCancel={onEditFolderCancel}
+        onSuccess={onEditFolderSuccess}
+      />
+      <EditResourceModal
+        edit={true}
+        isOpen={isEditResourceOpen}
+        onCancel={onEditResourceCancel}
+        onSuccess={onEditResourceSuccess}
       />
     </div>
   ) : null;
