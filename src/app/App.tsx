@@ -3,7 +3,6 @@ import { Main, useOdeClient } from "@ode-react-ui/core";
 import { clsx } from "@shared/config/index";
 import { configurationFramework } from "@shared/constants";
 import { Toaster } from "react-hot-toast";
-import { Link } from "react-router-dom";
 
 import Explorer from "./Explorer";
 
@@ -16,9 +15,9 @@ function App() {
   if (!session || session.notLoggedIn) {
     return (
       <div className="d-grid min-vh-100 align-items-center justify-content-center">
-        <Link to="/auth/login" target="_blank" rel="noreferrer">
+        <a href="/auth/login" target="_blank" rel="noreferrer">
           S'identifier sur le backend...
-        </Link>
+        </a>
       </div>
     );
   }

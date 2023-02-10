@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202301301559",
+  "version": "1.0.0-feat-explorer.202302101555",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -91,7 +91,7 @@
     "husky": "8.0.3",
     "lint-staged": "13.1.0",
     "prettier": "2.8.3",
-    "react-axe": "^3.5.4",
+    "@axe-core/react": "4.6.0",
     "turbo": "1.7.2",
     "typescript": "4.9.5",
     "vite": "4.1.1"
