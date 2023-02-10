@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@axe-core/react': 4.6.0
   '@lhci/cli': 0.10.0
   '@ode-react-ui/advanced': dev
   '@ode-react-ui/core': dev
@@ -35,7 +36,6 @@ specifiers:
   ode-ts-client: feat-explorer
   prettier: 2.8.3
   react: 18.2.0
-  react-axe: ^3.5.4
   react-dom: 18.2.0
   react-error-boundary: 3.1.4
   react-hook-form: 7.43.0
@@ -61,7 +61,7 @@ dependencies:
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202302101022
+  ode-ts-client: 1.1.0-explorer.202302101519
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -73,6 +73,7 @@ dependencies:
   zustand: 4.3.2_react@18.2.0
 
 devDependencies:
+  '@axe-core/react': 4.6.0
   '@types/node': 18.11.18
   '@types/react': 18.0.27
   '@types/react-dom': 18.0.10
@@ -93,7 +94,6 @@ devDependencies:
   husky: 8.0.3
   lint-staged: 13.1.0
   prettier: 2.8.3
-  react-axe: 3.5.4
   turbo: 1.7.2
   typescript: 4.9.5
   vite: 4.1.1_@types+node@18.11.18
@@ -106,6 +106,13 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
+    dev: true
+
+  /@axe-core/react/4.6.0:
+    resolution: {integrity: sha512-ywWaIQ3cUXywTtZXtRb3YI2wTxg2DEa2cA6GW/HJreVf2qjyKq2Kt92F+vJ17IrDBcSym/vMQ0C4ixEyNysIDw==}
+    dependencies:
+      axe-core: 4.6.3
+      requestidlecallback: 0.3.0
     dev: true
 
   /@babel/code-frame/7.18.6:
@@ -740,7 +747,7 @@ packages:
       '@ode-react-ui/core': 1.0.7-dev.42_xtxxzdxi6cgdifdronkuqkiafy
       '@ode-react-ui/hooks': 1.0.7-dev.41_owo25xnefcwdq3zjgtohz6dbju
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
-      ode-ts-client: 1.1.0-explorer.202302101022
+      ode-ts-client: 1.1.0-explorer.202302101519
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     transitivePeerDependencies:
@@ -759,7 +766,7 @@ packages:
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       '@popperjs/core': 2.11.6
       framer-motion: 9.0.2_biqbaboplfbrettd7655fr4n2y
-      ode-ts-client: 1.1.0-explorer.202302101022
+      ode-ts-client: 1.1.0-explorer.202302101519
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
@@ -775,7 +782,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      ode-ts-client: 1.1.0-explorer.202302101022
+      ode-ts-client: 1.1.0-explorer.202302101519
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
@@ -1167,11 +1174,6 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /axe-core/3.5.6:
-    resolution: {integrity: sha512-LEUDjgmdJoA3LqklSTwKYqkjcZ4HKc4ddIYGSAiSkr46NTjzg2L9RNB+lekO9P7Dlpa87+hBtzc2Fzn/+GUWMQ==}
-    engines: {node: '>=4'}
-    dev: true
-
   /axe-core/4.3.5:
     resolution: {integrity: sha512-WKTW1+xAzhMS5dJsxWkliixlO/PqC4VhmO9T4juNYcaTg9jzWiJsou6m5pxWYGfigWbwzJWeFY6z47a+4neRXA==}
     engines: {node: '>=4'}
@@ -1237,8 +1239,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001450
-      electron-to-chromium: 1.4.286
+      caniuse-lite: 1.0.30001451
+      electron-to-chromium: 1.4.294
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10_browserslist@4.21.5
     dev: true
@@ -1275,8 +1277,8 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /caniuse-lite/1.0.30001450:
-    resolution: {integrity: sha512-qMBmvmQmFXaSxexkjjfMvD5rnDL0+m+dUMZKoDYsGG8iZN29RuYh9eRoMvKsT6uMAWlyUUGDEQGJJYjzCIO9ew==}
+  /caniuse-lite/1.0.30001451:
+    resolution: {integrity: sha512-XY7UbUpGRatZzoRft//5xOa69/1iGJRBlrieH6QYrkKLIFn3m7OVEJ81dSrKoy2BnKsdbX5cLrOispZNYo9v2w==}
     dev: true
 
   /chalk/2.4.2:
@@ -1683,8 +1685,8 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: false
 
-  /electron-to-chromium/1.4.286:
-    resolution: {integrity: sha512-Vp3CVhmYpgf4iXNKAucoQUDcCrBQX3XLBtwgFqP9BUXuucgvAV9zWp1kYU7LL9j4++s9O+12cb3wMtN4SJy6UQ==}
+  /electron-to-chromium/1.4.294:
+    resolution: {integrity: sha512-PuHZB3jEN7D8WPPjLmBQAsqQz8tWHlkkB4n0E2OYw8RwVdmBYV0Wn+rUFH8JqYyIRb4HQhhedgxlZL163wqLrQ==}
     dev: true
 
   /emoji-regex/8.0.0:
@@ -1724,7 +1726,7 @@ packages:
       has-property-descriptors: 1.0.0
       has-proto: 1.0.1
       has-symbols: 1.0.3
-      internal-slot: 1.0.4
+      internal-slot: 1.0.5
       is-array-buffer: 3.0.1
       is-callable: 1.2.7
       is-negative-zero: 2.0.2
@@ -2721,8 +2723,8 @@ packages:
       through: 2.3.8
     dev: false
 
-  /internal-slot/1.0.4:
-    resolution: {integrity: sha512-tA8URYccNzMo94s5MQZgH8NB/XTa6HsOo0MLfXTKKEnHVVdegzaQoFZ7Jp44bdvLvY2waT5dc+j5ICEswhi7UQ==}
+  /internal-slot/1.0.5:
+    resolution: {integrity: sha512-Y+R5hJrzs52QCG2laLn4udYVnxsfny9CpOhNhUvk/SSSVyF6T27FzRbF0sroPidSu3X8oEAkOn2K804mjpt6UQ==}
     engines: {node: '>= 0.4'}
     dependencies:
       get-intrinsic: 1.2.0
@@ -3003,7 +3005,7 @@ packages:
     resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}
     hasBin: true
     dependencies:
-      minimist: 1.2.7
+      minimist: 1.2.8
     dev: true
 
   /json5/2.2.3:
@@ -3056,8 +3058,8 @@ packages:
       - supports-color
     dev: false
 
-  /lighthouse-stack-packs/1.9.0:
-    resolution: {integrity: sha512-xV6thXsxoHWgIluhLhp4zQ09c0T2zZNIDXoKy0emRoD2xCGJAFxoabRdyZpY0VnKwW8evMNXnMdPZtukKk2lhA==}
+  /lighthouse-stack-packs/1.9.1:
+    resolution: {integrity: sha512-9prq6oMkVHz3GeCkphq4FHXXdj3M/WPiFWUvJAczLYV8j/oTxsgiHSPMqh1KVV11CP0VTxD40hFC0pDfXF+khQ==}
     dev: false
 
   /lighthouse/9.3.0:
@@ -3076,14 +3078,14 @@ packages:
       jpeg-js: 0.4.4
       js-library-detector: 6.6.0
       lighthouse-logger: 1.3.0
-      lighthouse-stack-packs: 1.9.0
+      lighthouse-stack-packs: 1.9.1
       lodash.clonedeep: 4.5.0
       lodash.get: 4.4.2
       lodash.isequal: 4.5.0
       lodash.set: 4.3.2
       lookup-closest-locale: 6.2.0
       metaviewport-parser: 0.2.0
-      open: 8.4.0
+      open: 8.4.1
       parse-cache-control: 1.0.1
       ps-list: 8.1.1
       raven: 2.6.4
@@ -3316,14 +3318,14 @@ packages:
     dependencies:
       brace-expansion: 1.1.11
 
-  /minimist/1.2.7:
-    resolution: {integrity: sha512-bzfL1YUZsP41gmu/qjrEk0Q6i2ix/cVeAhbCbqH9u3zYutS1cLg00qhrD0M2MVdCcx4Sc0UpP2eBWo9rotpq6g==}
+  /minimist/1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
   /mkdirp/0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
     dependencies:
-      minimist: 1.2.7
+      minimist: 1.2.8
     dev: false
 
   /ms/2.0.0:
@@ -3464,8 +3466,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202302101022:
-    resolution: {integrity: sha512-wIURD0ctOGjgaflgNkjd3ZMf0Hog2kQC6NPzRqwCG8FzX/eqq8fteOmP64ig43pG5nnfbqkK4I/q2IAeoFbzSw==}
+  /ode-ts-client/1.1.0-explorer.202302101519:
+    resolution: {integrity: sha512-ofjRVcKeBLO1xQFuuQDgUTGOJTdAT1kA5ddFHMTeMJSm8lIs6yS9hs6eAvlfevheFdsA7d6vhr8VWp2dZ3Ku4A==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -3520,8 +3522,8 @@ packages:
       is-wsl: 2.2.0
     dev: false
 
-  /open/8.4.0:
-    resolution: {integrity: sha512-XgFPPM+B28FtCCgSb9I+s9szOC1vZRSwgWsRUA5ylIxRTgKozqjOCrVOqGsYABPYK5qnfqClxZTFBa8PKt2v6Q==}
+  /open/8.4.1:
+    resolution: {integrity: sha512-/4b7qZNhv6Uhd7jjnREh1NjnPxlTq+XNWPG88Ydkj5AILcA5m3ajvcg57pB24EQjKv0dK62XnDqk9c/hkIG5Kg==}
     engines: {node: '>=12'}
     dependencies:
       define-lazy-prop: 2.0.0
@@ -3740,14 +3742,6 @@ packages:
       unpipe: 1.0.0
     dev: false
 
-  /react-axe/3.5.4:
-    resolution: {integrity: sha512-5xNO0QVCCEZnJiyhAGox0MGFyclgU3XL8se+5H+whdxV1VTtA9/uux9BSCF5mGNSgtSZkb+tQtrOaF+zGf/oWw==}
-    deprecated: deprecated
-    dependencies:
-      axe-core: 3.5.6
-      requestidlecallback: 0.3.0
-    dev: true
-
   /react-dom/18.2.0_react@18.2.0:
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
     peerDependencies:
@@ -3963,8 +3957,8 @@ packages:
     engines: {node: '>=0.10'}
     dev: false
 
-  /rollup/3.14.0:
-    resolution: {integrity: sha512-o23sdgCLcLSe3zIplT9nQ1+r97okuaiR+vmAPZPTDYB7/f3tgWIYNyiQveMsZwshBT0is4eGax/HH83Q7CG+/Q==}
+  /rollup/3.15.0:
+    resolution: {integrity: sha512-F9hrCAhnp5/zx/7HYmftvsNBkMfLfk/dXUh73hPSM2E3CRgap65orDNJbLetoiUFwSAk6iHPLvBrZ5iHYvzqsg==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
@@ -4177,7 +4171,7 @@ packages:
     resolution: {integrity: sha512-iCGQj+0l0HOdZ2AEeBADlsRC+vsnDsZsbdSiH1yNSjcfKM7fdpCMfqAL/dwF5BLiw/XhRft/Wax6zQbhq2BcjQ==}
     engines: {node: '>= 0.4'}
     dependencies:
-      internal-slot: 1.0.4
+      internal-slot: 1.0.5
     dev: true
 
   /string-argv/0.3.1:
@@ -4218,7 +4212,7 @@ packages:
       es-abstract: 1.21.1
       get-intrinsic: 1.2.0
       has-symbols: 1.0.3
-      internal-slot: 1.0.4
+      internal-slot: 1.0.5
       regexp.prototype.flags: 1.4.3
       side-channel: 1.0.4
     dev: true
@@ -4376,7 +4370,7 @@ packages:
     dependencies:
       '@types/json5': 0.0.29
       json5: 1.0.2
-      minimist: 1.2.7
+      minimist: 1.2.8
       strip-bom: 3.0.0
     dev: true
 
@@ -4602,7 +4596,7 @@ packages:
       esbuild: 0.16.17
       postcss: 8.4.21
       resolve: 1.22.1
-      rollup: 3.14.0
+      rollup: 3.15.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true

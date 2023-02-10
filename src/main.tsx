@@ -1,7 +1,6 @@
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 
-import { OdeClientProvider } from "@ode-react-ui/core";
-import { type OdeProviderParams } from "@ode-react-ui/core/dist/OdeClientProvider/OdeClientProps";
+import { OdeClientProvider, type OdeProviderParams } from "@ode-react-ui/core";
 import {
   configurationFramework,
   http,
@@ -33,12 +32,12 @@ function getParams() {
   return params;
 }
 
-/* if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {
   // eslint-disable-next-line global-require
-  import("react-axe").then((axe) => {
+  import("@axe-core/react").then((axe) => {
     axe.default(React, root, 1000);
   });
-} */
+}
 
 createRoot(root!).render(
   <StrictMode>
