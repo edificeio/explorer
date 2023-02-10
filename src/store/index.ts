@@ -1,4 +1,3 @@
-import { ExplorerFrameworkFactory } from "ode-ts-client";
 import { create } from "zustand";
 
 import { createExplorerSlice, type ExplorerSlice } from "./explorerSlice";
@@ -15,8 +14,6 @@ export type State = ExplorerSlice &
   ResourceSlice &
   TrashSlice &
   TreeviewSlice;
-
-export const BUS = ExplorerFrameworkFactory.instance().getBus();
 
 /**
  * ! use unique store if states don't communicate together

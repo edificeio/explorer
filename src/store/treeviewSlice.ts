@@ -1,4 +1,4 @@
-import { type TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/advanced";
 import { findNodeById } from "@shared/utils/findNodeById";
 import { hasChildren } from "@shared/utils/hasChildren";
 import { FOLDER } from "ode-ts-client";

@@ -1,6 +1,7 @@
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
-import { type TreeNode } from "@ode-react-ui/core";
-import { type OdeProviderParams } from "@ode-react-ui/core/dist/OdeClientProvider/OdeClientProps";
+import { type TreeNode } from "@ode-react-ui/advanced";
+import { type OdeProviderParams } from "@ode-react-ui/core";
+import { BUS, translate } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
 import { moveNode } from "@shared/utils/moveNode";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
@@ -21,12 +22,11 @@ import {
   type ResourceType,
   type PublishParameters,
   type IFolder,
-  ConfigurationFrameworkFactory,
-  IActionResult,
+  type IActionResult,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
-import { BUS, type State } from ".";
+import { type State } from ".";
 
 type Thing = "folder" | "resource" | "all";
 type PromiseVoid = Promise<void>;
@@ -39,9 +39,10 @@ export interface ExplorerSlice {
   preferences?: IPreferences;
   searchParams: ISearchParameters;
   notifications: Notification[];
+  init: (params: OdeProviderParams) => PromiseVoid;
   getHasResourcesOrFolders: () => number;
   moveSelectedTo: (destinationId: string) => PromiseVoid;
-  deleteSelection: (toast: any) => PromiseVoid;
+  deleteSelection: () => PromiseVoid;
   publish: (
     type: ResourceType,
     params: PublishParameters,
@@ -93,7 +94,6 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       if (!ready) {
         return;
       }
-      const configureFramework = ConfigurationFrameworkFactory.instance();
       const { actions, folders, resources, preferences, orders, filters } =
         (await BUS.publish(
           RESOURCE.FOLDER,
@@ -114,9 +114,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         treeData: {
           ...state.treeData,
           children: folders.map((folder) => new TreeNodeFolderWrapper(folder)),
-          name: configureFramework.Platform.idiom.translate(
-            state.treeData.name,
-          ),
+          name: translate(state.treeData.name),
         },
       }));
     } catch (error) {

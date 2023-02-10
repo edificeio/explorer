@@ -1,13 +1,15 @@
+import { StrictMode } from "react";
+
 import { OdeClientProvider } from "@ode-react-ui/core";
 import { type OdeProviderParams } from "@ode-react-ui/core/dist/OdeClientProvider/OdeClientProps";
 import {
-  APP,
-  ConfigurationFrameworkFactory,
-  NotifyFrameworkFactory,
-  SessionFrameworkFactory,
-  TransportFrameworkFactory,
-  type App as AppName,
-} from "ode-ts-client";
+  configurationFramework,
+  http,
+  notifyFramework,
+  sessionFramework,
+} from "@shared/constants";
+import { MotionConfig } from "framer-motion";
+import { APP, type App as AppName } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -15,11 +17,6 @@ import App from "./app/App";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
 const root = document.getElementById("root");
-
-const sessionFramework = SessionFrameworkFactory.instance();
-const configurationFramework = ConfigurationFrameworkFactory.instance();
-const notifyFramework = NotifyFrameworkFactory.instance();
-const { http } = TransportFrameworkFactory.instance();
 
 function getParams() {
   const params: OdeProviderParams = { app: APP.PORTAL };
@@ -36,18 +33,30 @@ function getParams() {
   return params;
 }
 
+/* if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line global-require
+  import("react-axe").then((axe) => {
+    axe.default(React, root, 1000);
+  });
+} */
+
 createRoot(root!).render(
-  <BrowserRouter>
-    <OdeClientProvider
-      framework={{
-        sessionFramework,
-        configurationFramework,
-        notifyFramework,
-        http,
-      }}
-      params={getParams()}
-    >
-      <App />
-    </OdeClientProvider>
-  </BrowserRouter>,
+  <StrictMode>
+    <MotionConfig reducedMotion="user">
+      <BrowserRouter>
+        <OdeClientProvider
+          framework={{
+            sessionFramework,
+            configurationFramework,
+            notifyFramework,
+            http,
+          }}
+          params={getParams()}
+        >
+          <App />
+        </OdeClientProvider>
+      </BrowserRouter>
+    </MotionConfig>
+    ,
+  </StrictMode>,
 );

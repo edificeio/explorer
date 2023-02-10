@@ -48,12 +48,14 @@
   },
   "dependencies": {
     "@lhci/cli": "0.10.0",
+    "@ode-react-ui/advanced": "dev",
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
     "clsx": "1.2.1",
     "csstype": "3.1.1",
     "dayjs": "1.11.7",
+    "framer-motion": "9.0.1",
     "i18next": "22.4.9",
     "i18next-browser-languagedetector": "7.0.1",
     "i18next-http-backend": "2.1.1",
@@ -89,6 +91,7 @@
     "husky": "8.0.3",
     "lint-staged": "13.1.0",
     "prettier": "2.8.3",
+    "react-axe": "^3.5.4",
     "turbo": "1.7.2",
     "typescript": "4.9.5",
     "vite": "4.1.1"

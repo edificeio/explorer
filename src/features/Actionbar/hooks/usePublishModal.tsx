@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { useOdeClient } from "@ode-react-ui/core";
+import { useOdeClient, Alert } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks";
 import useExplorerStore from "@store/index";
 import {
   RESOURCE,
@@ -8,7 +9,6 @@ import {
   type PublishResult,
 } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
 
 import {
   PublishModalError,
@@ -37,6 +37,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   });
 
   const { session, http, app } = useOdeClient();
+
+  const { hotToast } = useHotToast(Alert);
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -103,17 +105,17 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       const result: PublishResult = await publishApi(resourceType, parameters);
 
       if (result.success) {
-        toast.success(<PublishModalSuccess result={result} />, {
+        hotToast.success(<PublishModalSuccess result={result} />, {
           duration: Infinity,
         });
       } else {
-        toast.error(<PublishModalError />, {
+        hotToast.error(<PublishModalError />, {
           duration: Infinity,
         });
       }
       onSuccess?.();
     } catch (e) {
-      toast.error(<PublishModalError />, {
+      hotToast.error(<PublishModalError />, {
         duration: Infinity,
       });
     }

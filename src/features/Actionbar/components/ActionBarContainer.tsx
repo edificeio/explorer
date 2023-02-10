@@ -38,7 +38,7 @@ export default function ActionBarContainer() {
   // const ref = useClickOutside(onClearActionBar);
 
   return isActionBarOpen ? (
-    <div className="position-fixed bottom-0 start-0 end-0">
+    <div className="position-fixed bottom-0 start-0 end-0 z-3">
       <ActionBar
       // ref={ref}
       >

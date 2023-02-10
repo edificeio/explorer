@@ -1,4 +1,5 @@
-import { type TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/advanced";
+import { BUS } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
 import {
   ACTION,
@@ -10,7 +11,7 @@ import {
 import toast from "react-hot-toast";
 import { type StateCreator } from "zustand";
 
-import { BUS, type State } from ".";
+import { type State } from ".";
 
 export interface TrashSlice {
   trash: (props: {
