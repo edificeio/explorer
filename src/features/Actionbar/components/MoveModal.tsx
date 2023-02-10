@@ -1,5 +1,6 @@
 import useMoveModal from "@features/Actionbar/hooks/useMoveModal";
-import { Modal, Button, TreeView, useOdeClient } from "@ode-react-ui/core";
+import { TreeView } from "@ode-react-ui/advanced";
+import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
 
 interface MoveModalProps {
   isOpen: boolean;

@@ -1,5 +1,6 @@
 import CreateModal from "@features/Actionbar/components/EditFolderModal";
-import { Button, TreeView, useOdeClient } from "@ode-react-ui/core";
+import { TreeView } from "@ode-react-ui/advanced";
+import { Button, useOdeClient } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import useExplorerStore from "@store/index";
@@ -48,7 +49,6 @@ export const TreeViewContainer = () => {
           {i18n("explorer.folder.new")}
         </Button>
       </div>
-      {isOpen.toString()}
       <CreateModal
         edit={false}
         isOpen={isOpen}

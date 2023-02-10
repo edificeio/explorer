@@ -1,6 +1,6 @@
 import { type Dispatch, type ReactNode } from "react";
 
-import { type TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/advanced";
 import {
   type ResourceType,
   type IFolder,

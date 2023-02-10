@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
-import { type TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/advanced";
+import { BUS } from "@shared/constants";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
   ACTION,
@@ -11,18 +12,19 @@ import {
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
-import { BUS, type State } from ".";
+import { type State } from ".";
 
 export interface ResourceSlice {
   resources: IResource[];
   selectedResources: string[];
+  hasMoreResources: boolean;
   openResource: (assetId: string) => Promise<IActionResult | undefined>;
   openSelectedResource: () => Promise<void>;
   printSelectedResource: () => Promise<void>;
   createResource: () => Promise<void>;
   isResourceSelected: (res: IResource) => boolean;
   getMoreResources: () => Promise<void>;
-  getHasResources: () => boolean;
+  // getHasResources: () => boolean;
   getSelectedIResources: () => IResource[];
 }
 
@@ -33,6 +35,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
 ) => ({
   resources: [],
   selectedResources: [],
+  hasMoreResources: false,
   createResource: async () => {
     try {
       const { searchParams } = get();
@@ -131,6 +134,9 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
         ACTION.SEARCH,
         searchParams,
       )) as GetResourcesResult;
+
+      const hasReachLimit = pagination.startIdx === pagination.maxIdx;
+
       set(
         (state: { resources: any; treeData: TreeNode; searchParams: any }) => {
           return {
@@ -146,6 +152,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
               ...state.searchParams,
               pagination,
             },
+            hasMoreResources: hasReachLimit,
           };
         },
       );
@@ -158,11 +165,6 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
         set,
       ); */
     }
-  },
-  getHasResources() {
-    const { resources } = get();
-    const hasResources = resources.length;
-    return hasResources > 0;
   },
   getSelectedIResources(): IResource[] {
     const { selectedResources, resources } = get();

@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
+import { AppHeader, EPub } from "@features/Explorer/components";
+import FoldersList from "@features/Explorer/components/FoldersList/FoldersList";
+import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import {
   AppCard,
@@ -11,12 +14,32 @@ import {
   IconButton,
   SearchButton,
   useOdeClient,
+  AppIcon,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
-import { AppHeader, EPub } from "@shared/components";
-import FoldersList from "@shared/components/FoldersList/FoldersList";
-import ResourcesList from "@shared/components/ResourcesList/ResourcesList";
+import { imageBootstrap } from "@shared/constants";
 import useExplorerStore from "@store/index";
+
+const SearchForm = () => {
+  const { i18n } = useOdeClient();
+
+  return (
+    <form noValidate className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16">
+      <FormControl id="search" className="input-group">
+        <Input
+          type="search"
+          placeholder={i18n("explorer.label.search")}
+          size="lg"
+          noValidationIcon
+        />
+        <SearchButton
+          type="submit"
+          aria-label={i18n("explorer.label.search")}
+        />
+      </FormControl>
+    </form>
+  );
+};
 
 export default function Explorer() {
   const { i18n, params, app, appCode } = useOdeClient();
@@ -30,7 +53,7 @@ export default function Explorer() {
     getIsTrashSelected,
     getHasNoSelectedNodes,
     gotoPreviousFolder,
-    getHasResources,
+    hasMoreResources,
     getMoreResources,
     getPreviousFolder,
     getHasSelectedRoot,
@@ -52,12 +75,10 @@ export default function Explorer() {
   return (
     <>
       <AppHeader>
-        {app && (
-          <AppCard app={app} isHeading headingStyle="h3" level="h1">
-            <AppCard.Icon size="40" />
-            <AppCard.Name />
-          </AppCard>
-        )}
+        <AppCard app={app} isHeading headingStyle="h3" level="h1">
+          <AppIcon app={app} size="40" />
+          <AppCard.Name />
+        </AppCard>
 
         <Button
           type="button"
@@ -78,7 +99,7 @@ export default function Explorer() {
         >
           <TreeViewContainer />
           <EPub
-            src="/assets/themes/ode-bootstrap/images/image-library.png"
+            src={`${imageBootstrap}/image-library.png`}
             alt="library"
             text="Découvrez plein d'activités à réutiliser dans la bibliothèque !"
             url=""
@@ -86,23 +107,7 @@ export default function Explorer() {
           />
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
-          <form
-            noValidate
-            className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16"
-          >
-            <FormControl id="search" className="input-group">
-              <Input
-                type="search"
-                placeholder={i18n("explorer.label.search")}
-                size="lg"
-                noValidationIcon
-              />
-              <SearchButton
-                type="submit"
-                aria-label={i18n("explorer.label.search")}
-              />
-            </FormControl>
-          </form>
+          <SearchForm />
           <div className="py-16">
             {getHasNoSelectedNodes() ? (
               <h2 className="body py-8">
@@ -114,7 +119,9 @@ export default function Explorer() {
                   icon={<ArrowLeft />}
                   variant="ghost"
                   color="tertiary"
-                  onClick={() => gotoPreviousFolder()}
+                  aria-label={i18n("back")}
+                  className="ms-n16"
+                  onClick={gotoPreviousFolder}
                 />
                 <p className="body py-8">
                   <strong>
@@ -131,13 +138,13 @@ export default function Explorer() {
             </>
           ) : (
             <img
-              src={`/assets/themes/ode-bootstrap/images/emptyscreen/illu-${appCode}.svg`}
+              src={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
               alt="application emptyscreen"
               className="mx-auto"
               style={{ maxWidth: "50%" }}
             />
           )}
-          {getHasResources() ? (
+          {!hasMoreResources ? (
             <div className="d-grid gap-2 col-4 mx-auto">
               <Button
                 type="button"

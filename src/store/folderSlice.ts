@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { type TreeNode } from "@ode-react-ui/core";
+import { type TreeNode } from "@ode-react-ui/advanced";
+import { BUS } from "@shared/constants";
 import { addNode } from "@shared/utils/addNode";
 import { arrayUnique } from "@shared/utils/arrayUnique";
 import { getAncestors } from "@shared/utils/getAncestors";
@@ -20,7 +21,7 @@ import {
 import { toast } from "react-hot-toast";
 import { type StateCreator } from "zustand";
 
-import { BUS, type State } from ".";
+import { type State } from ".";
 
 export interface FolderSlice {
   folders: IFolder[];

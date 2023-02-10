@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@lhci/cli': 0.10.0
+  '@ode-react-ui/advanced': dev
   '@ode-react-ui/core': dev
   '@ode-react-ui/hooks': dev
   '@ode-react-ui/icons': dev
@@ -25,6 +26,7 @@ specifiers:
   eslint-plugin-promise: 6.1.1
   eslint-plugin-react: 7.32.2
   eslint-plugin-react-hooks: 4.6.0
+  framer-motion: 9.0.1
   husky: 8.0.3
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
@@ -33,6 +35,7 @@ specifiers:
   ode-ts-client: feat-explorer
   prettier: 2.8.3
   react: 18.2.0
+  react-axe: ^3.5.4
   react-dom: 18.2.0
   react-error-boundary: 3.1.4
   react-hook-form: 7.43.0
@@ -47,16 +50,18 @@ specifiers:
 
 dependencies:
   '@lhci/cli': 0.10.0
-  '@ode-react-ui/core': 1.0.7-dev.40_zqie5t2pxc2qymhqit2vgbcbua
-  '@ode-react-ui/hooks': 1.0.7-dev.40_owo25xnefcwdq3zjgtohz6dbju
+  '@ode-react-ui/advanced': 1.0.7-dev.42_cah4ruhko4bij23alstk4z7tea
+  '@ode-react-ui/core': 1.0.7-dev.42_xtxxzdxi6cgdifdronkuqkiafy
+  '@ode-react-ui/hooks': 1.0.7-dev.41_owo25xnefcwdq3zjgtohz6dbju
   '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
   clsx: 1.2.1
   csstype: 3.1.1
   dayjs: 1.11.7
+  framer-motion: 9.0.1_biqbaboplfbrettd7655fr4n2y
   i18next: 22.4.9
   i18next-browser-languagedetector: 7.0.1
   i18next-http-backend: 2.1.1
-  ode-ts-client: 1.1.0-explorer.202302011014
+  ode-ts-client: 1.1.0-explorer.202302101022
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -88,6 +93,7 @@ devDependencies:
   husky: 8.0.3
   lint-staged: 13.1.0
   prettier: 2.8.3
+  react-axe: 3.5.4
   turbo: 1.7.2
   typescript: 4.9.5
   vite: 4.1.1_@types+node@18.11.18
@@ -326,6 +332,19 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
     dev: true
+
+  /@emotion/is-prop-valid/0.8.8:
+    resolution: {integrity: sha512-u5WtneEAr5IDG2Wv65yhunPSMLIpuKsbuOktRojfrEiEvRyC85LgPMZI63cr7NUqT8ZIGdSVg8ZKGxIug4lXcA==}
+    requiresBuild: true
+    dependencies:
+      '@emotion/memoize': 0.7.4
+    dev: false
+    optional: true
+
+  /@emotion/memoize/0.7.4:
+    resolution: {integrity: sha512-Ja/Vfqe3HpuzRsG1oBtWTHk2PGZ7GR+2Vz5iYGelAw8dx32K0y7PjVuxK6z1nMpZOqAFsRUPCkK1YjJ56qJlgw==}
+    dev: false
+    optional: true
 
   /@esbuild/android-arm/0.16.17:
     resolution: {integrity: sha512-N9x1CMXVhtWEAMS7pNNONyA14f71VPQN9Cnavj1XQh6T7bskqiLLrSca4O0Vr8Wdcga943eThxnVp3JLnBMYtw==}
@@ -641,6 +660,53 @@ packages:
       - utf-8-validate
     dev: false
 
+  /@motionone/animation/10.15.1:
+    resolution: {integrity: sha512-mZcJxLjHor+bhcPuIFErMDNyrdb2vJur8lSfMCsuCB4UyV8ILZLvK+t+pg56erv8ud9xQGK/1OGPt10agPrCyQ==}
+    dependencies:
+      '@motionone/easing': 10.15.1
+      '@motionone/types': 10.15.1
+      '@motionone/utils': 10.15.1
+      tslib: 2.5.0
+    dev: false
+
+  /@motionone/dom/10.15.5:
+    resolution: {integrity: sha512-Xc5avlgyh3xukU9tydh9+8mB8+2zAq+WlLsC3eEIp7Ax7DnXgY7Bj/iv0a4X2R9z9ZFZiaXK3BO0xMYHKbAAdA==}
+    dependencies:
+      '@motionone/animation': 10.15.1
+      '@motionone/generators': 10.15.1
+      '@motionone/types': 10.15.1
+      '@motionone/utils': 10.15.1
+      hey-listen: 1.0.8
+      tslib: 2.5.0
+    dev: false
+
+  /@motionone/easing/10.15.1:
+    resolution: {integrity: sha512-6hIHBSV+ZVehf9dcKZLT7p5PEKHGhDwky2k8RKkmOvUoYP3S+dXsKupyZpqx5apjd9f+php4vXk4LuS+ADsrWw==}
+    dependencies:
+      '@motionone/utils': 10.15.1
+      tslib: 2.5.0
+    dev: false
+
+  /@motionone/generators/10.15.1:
+    resolution: {integrity: sha512-67HLsvHJbw6cIbLA/o+gsm7h+6D4Sn7AUrB/GPxvujse1cGZ38F5H7DzoH7PhX+sjvtDnt2IhFYF2Zp1QTMKWQ==}
+    dependencies:
+      '@motionone/types': 10.15.1
+      '@motionone/utils': 10.15.1
+      tslib: 2.5.0
+    dev: false
+
+  /@motionone/types/10.15.1:
+    resolution: {integrity: sha512-iIUd/EgUsRZGrvW0jqdst8st7zKTzS9EsKkP+6c6n4MPZoQHwiHuVtTQLD6Kp0bsBLhNzKIBlHXponn/SDT4hA==}
+    dev: false
+
+  /@motionone/utils/10.15.1:
+    resolution: {integrity: sha512-p0YncgU+iklvYr/Dq4NobTRdAPv9PveRDUXabPEeOjBLSO/1FNB2phNTZxOxpi1/GZwYpAoECEa0Wam+nsmhSw==}
+    dependencies:
+      '@motionone/types': 10.15.1
+      hey-listen: 1.0.8
+      tslib: 2.5.0
+    dev: false
+
   /@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -662,36 +728,60 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/core/1.0.7-dev.40_zqie5t2pxc2qymhqit2vgbcbua:
-    resolution: {integrity: sha512-of3sPuuJzX7CDhGOr5RQSsIdkrsNPExBYZwMXhYQhcXuetu5Xr+hJ4pUsIH4zsOrVYILCO03VdH7sQ9HF+4RSA==}
+  /@ode-react-ui/advanced/1.0.7-dev.42_cah4ruhko4bij23alstk4z7tea:
+    resolution: {integrity: sha512-lmscyqiAhp+jjCgt4qoG6jKHFo4EHQp/OH1VRxofr/O7lBWYybOmXF2pXjrDcvmWhkgZ+JsRrDsr/H2g0OPGWw==}
     peerDependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.40
+      '@ode-react-ui/core': 1.0.7-dev.42
+      '@ode-react-ui/hooks': 1.0.7-dev.41
       '@ode-react-ui/icons': '*'
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.40_owo25xnefcwdq3zjgtohz6dbju
+      '@ode-react-ui/core': 1.0.7-dev.42_xtxxzdxi6cgdifdronkuqkiafy
+      '@ode-react-ui/hooks': 1.0.7-dev.41_owo25xnefcwdq3zjgtohz6dbju
+      '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
+      ode-ts-client: 1.1.0-explorer.202302101022
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@ode-react-ui/core/1.0.7-dev.42_xtxxzdxi6cgdifdronkuqkiafy:
+    resolution: {integrity: sha512-ztyNIh+GYt0RNHiz9WzNoLfTX6rcstC0CgFnTmkhxxi5uXcnLdYT9o2JgR5R/Hcv/9wTfUKnNpKoHngK5MVE5w==}
+    peerDependencies:
+      '@ode-react-ui/hooks': 1.0.7-dev.41
+      '@ode-react-ui/icons': '*'
+      react: 18.2.0
+      react-dom: 18.2.0
+    dependencies:
+      '@ode-react-ui/hooks': 1.0.7-dev.41_owo25xnefcwdq3zjgtohz6dbju
       '@ode-react-ui/icons': 1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y
       '@popperjs/core': 2.11.6
+      framer-motion: 9.0.2_biqbaboplfbrettd7655fr4n2y
+      ode-ts-client: 1.1.0-explorer.202302101022
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
       react-popper: 2.3.0_r6q5zrenym2zg7je7hgi674bti
     transitivePeerDependencies:
       - csstype
+      - debug
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.40_owo25xnefcwdq3zjgtohz6dbju:
-    resolution: {integrity: sha512-to0XEo/QGKJriFH347YhbUJT9iGg6R2kf6vHcj3Os5t8I254JCIdvFAWj3M+lqcdMgYttHmEmY5HKP6gj5SMnQ==}
+  /@ode-react-ui/hooks/1.0.7-dev.41_owo25xnefcwdq3zjgtohz6dbju:
+    resolution: {integrity: sha512-FlStov2L/HA0U3nhbf00gruJw9qc5QXuB2jqPKl+ZkVuQTfmQpp+1eFKAqXnwVdFy6E2H92Mzez9dVKDfXovEA==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
+      ode-ts-client: 1.1.0-explorer.202302101022
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
     transitivePeerDependencies:
       - csstype
+      - debug
     dev: false
 
   /@ode-react-ui/icons/1.0.7-dev.23_biqbaboplfbrettd7655fr4n2y:
@@ -1075,6 +1165,11 @@ packages:
   /available-typed-arrays/1.0.5:
     resolution: {integrity: sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==}
     engines: {node: '>= 0.4'}
+    dev: true
+
+  /axe-core/3.5.6:
+    resolution: {integrity: sha512-LEUDjgmdJoA3LqklSTwKYqkjcZ4HKc4ddIYGSAiSkr46NTjzg2L9RNB+lekO9P7Dlpa87+hBtzc2Fzn/+GUWMQ==}
+    engines: {node: '>=4'}
     dev: true
 
   /axe-core/4.3.5:
@@ -2289,6 +2384,36 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /framer-motion/9.0.1_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-0EP7+b/hnsbrFOum9zU+23Fq2cJJrLOqv/yJ26fIzK4CC33ZAjXZGi1/XyblbgnUF0cxZ/SEDj5IYHeQo42qNg==}
+    peerDependencies:
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    dependencies:
+      '@motionone/dom': 10.15.5
+      hey-listen: 1.0.8
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      tslib: 2.5.0
+    optionalDependencies:
+      '@emotion/is-prop-valid': 0.8.8
+    dev: false
+
+  /framer-motion/9.0.2_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-n7ZdIUBrT1xklowQNRQ6/h54+3ysmz422CP0rrhjE1X2tshiJy0WWQ7tv6y/fcOSQd23htNA9vvbUFLYMQ5lEQ==}
+    peerDependencies:
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    dependencies:
+      '@motionone/dom': 10.15.5
+      hey-listen: 1.0.8
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      tslib: 2.5.0
+    optionalDependencies:
+      '@emotion/is-prop-valid': 0.8.8
+    dev: false
+
   /fresh/0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
@@ -2468,6 +2593,10 @@ packages:
     engines: {node: '>= 0.4.0'}
     dependencies:
       function-bind: 1.1.1
+
+  /hey-listen/1.0.8:
+    resolution: {integrity: sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==}
+    dev: false
 
   /html-parse-stringify/3.0.1:
     resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
@@ -3335,8 +3464,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.0-explorer.202302011014:
-    resolution: {integrity: sha512-MpuUOl33Q2015AcLkmpqpOOJXkVwfjmIyvT/MPa5Dm3G2wWRZjWEUFx3ESH4w06W4qJVbnFXNkI2JU63Z64xyw==}
+  /ode-ts-client/1.1.0-explorer.202302101022:
+    resolution: {integrity: sha512-wIURD0ctOGjgaflgNkjd3ZMf0Hog2kQC6NPzRqwCG8FzX/eqq8fteOmP64ig43pG5nnfbqkK4I/q2IAeoFbzSw==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -3611,6 +3740,14 @@ packages:
       unpipe: 1.0.0
     dev: false
 
+  /react-axe/3.5.4:
+    resolution: {integrity: sha512-5xNO0QVCCEZnJiyhAGox0MGFyclgU3XL8se+5H+whdxV1VTtA9/uux9BSCF5mGNSgtSZkb+tQtrOaF+zGf/oWw==}
+    deprecated: deprecated
+    dependencies:
+      axe-core: 3.5.6
+      requestidlecallback: 0.3.0
+    dev: true
+
   /react-dom/18.2.0_react@18.2.0:
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
     peerDependencies:
@@ -3746,6 +3883,10 @@ packages:
   /regexpp/3.2.0:
     resolution: {integrity: sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==}
     engines: {node: '>=8'}
+    dev: true
+
+  /requestidlecallback/0.3.0:
+    resolution: {integrity: sha512-TWHFkT7S9p7IxLC5A1hYmAYQx2Eb9w1skrXmQ+dS1URyvR8tenMLl4lHbqEOUnpEYxNKpkVMXUgknVpBZWXXfQ==}
     dev: true
 
   /require-directory/2.1.1:
@@ -4248,7 +4389,6 @@ packages:
 
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
-    dev: true
 
   /tsutils/3.21.0_typescript@4.9.5:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
