@@ -29,6 +29,7 @@ interface ModalContextProps {
 
 export const ModalContext = createContext<ModalContextProps | null>(null);
 
+// https://codesandbox.io/s/global-modal-usereducer-portal-pkjfbz
 const ModalPortal = ({ state, closeModal }: any) => {
   return (
     state.isVisible &&
