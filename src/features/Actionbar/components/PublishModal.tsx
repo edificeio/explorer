@@ -11,6 +11,7 @@ import {
   useOdeClient,
 } from "@ode-react-ui/core";
 import { type PublishResult } from "ode-ts-client";
+import { createPortal } from "react-dom";
 
 import usePublishModal from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
@@ -48,7 +49,7 @@ export default function PublishModal({
   const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");
   const defaultSelectAgeMaxOption = i18n("bpr.form.publication.age.max");
 
-  return (
+  return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="libraryModal" size="lg">
       <Modal.Header onModalClose={onCancel}>{i18n("bpr.publish")}</Modal.Header>
       <Modal.Subtitle>{i18n("bpr.form.tip")}</Modal.Subtitle>
@@ -75,9 +76,9 @@ export default function PublishModal({
               {i18n("bpr.form.publication.cover.title")}
             </div>
             <ImagePicker
+              app={app}
               src={selectedResources[0]?.thumbnail}
               label={i18n("bpr.form.publication.cover.upload.label")}
-              appCode={app?.displayName}
               addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}
               deleteButtonLabel={i18n(
                 "bpr.form.publication.cover.upload.remove",
@@ -258,7 +259,8 @@ export default function PublishModal({
           {i18n("bpr.form.submit")}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById("portal") as HTMLElement,
   );
 }
 

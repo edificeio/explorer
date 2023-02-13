@@ -18,6 +18,7 @@
     "useDefineForClassFields": true,
     "paths": {
       "@app/*": ["./app/*"],
+      "@assets/*": ["./assets/*"],
       "@components/*": ["./components/*"],
       "@config/*": ["./config/*"],
       "@contexts/*": ["./contexts/*"],

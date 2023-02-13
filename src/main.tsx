@@ -33,7 +33,6 @@ function getParams() {
 }
 
 if (process.env.NODE_ENV !== "production") {
-  // eslint-disable-next-line global-require
   import("@axe-core/react").then((axe) => {
     axe.default(React, root, 1000);
   });
@@ -52,10 +51,11 @@ createRoot(root!).render(
           }}
           params={getParams()}
         >
+          {/* <ModalProvider> */}
           <App />
+          {/* </ModalProvider> */}
         </OdeClientProvider>
       </BrowserRouter>
     </MotionConfig>
-    ,
   </StrictMode>,
 );

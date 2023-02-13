@@ -11,6 +11,7 @@ import {
 } from "@ode-react-ui/core";
 import { Copy } from "@ode-react-ui/icons";
 import useExplorerStore from "@store/index";
+import { createPortal } from "react-dom";
 
 import useEditResourceModal from "../hooks/useEditResourceModal";
 
@@ -45,7 +46,7 @@ export default function EditResourceModal({
     onCancel,
   });
 
-  return (
+  return createPortal(
     <Modal
       id="resource_edit_modal"
       size="lg"
@@ -183,6 +184,7 @@ export default function EditResourceModal({
           {i18n(edit ? "save" : "explorer.create")}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById("portal") as HTMLElement,
   );
 }

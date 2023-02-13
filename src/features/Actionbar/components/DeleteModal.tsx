@@ -1,5 +1,6 @@
 import useDeleteModal from "@features/Actionbar/hooks/useDeleteModal";
 import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export default function DeleteModal({
   const { isTrashFolder, onDelete } = useDeleteModal({
     onSuccess,
   });
-  return (
+  return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
       <Modal.Header
         onModalClose={() => {
@@ -54,6 +55,7 @@ export default function DeleteModal({
           {i18n(isTrashFolder ? "explorer.delete" : "explorer.trash")}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById("portal") as HTMLElement,
   );
 }

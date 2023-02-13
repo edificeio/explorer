@@ -10,6 +10,7 @@ import {
   useOdeClient,
 } from "@ode-react-ui/core";
 import { type IFolder } from "ode-ts-client";
+import { createPortal } from "react-dom";
 
 interface EditFolderModalProps {
   isOpen: boolean;
@@ -47,7 +48,7 @@ export default function EditFolderModal({
     }
   }, [isOpen]);
 
-  return (
+  return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>
       <Modal.Header onModalClose={onCancel}>
         {i18n(edit ? "explorer.rename.folder" : "explorer.create.folder")}
@@ -85,6 +86,7 @@ export default function EditFolderModal({
           {i18n(edit ? "explorer.rename" : "explorer.create")}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById("portal") as HTMLElement,
   );
 }

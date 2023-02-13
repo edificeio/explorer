@@ -8,6 +8,10 @@ export const resolve = {
       replacement: path.resolve(__dirname, "../src/app"),
     },
     {
+      find: "@assets",
+      replacement: path.resolve(__dirname, "../src/assets"),
+    },
+    {
       find: "@config",
       replacement: path.resolve(__dirname, "../src/config"),
     },
