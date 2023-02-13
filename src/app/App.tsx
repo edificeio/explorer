@@ -1,7 +1,8 @@
 import { Header } from "@ode-react-ui/advanced";
-import { Main, useOdeClient } from "@ode-react-ui/core";
+import { Button, Main, useOdeClient } from "@ode-react-ui/core";
 import { clsx } from "@shared/config/index";
 import { configurationFramework } from "@shared/constants";
+import { ErrorBoundary } from "react-error-boundary";
 import { Toaster } from "react-hot-toast";
 
 import Explorer from "./Explorer";
@@ -11,6 +12,25 @@ function App() {
 
   const is1d: boolean = theme?.is1D;
   const basePath: string = theme?.basePath;
+
+  const ErrorFallback = () => {
+    return (
+      <div
+        className="text-red-500 w-screen h-screen flex flex-col justify-center items-center"
+        role="alert"
+      >
+        <h2 className="text-lg font-semibold">
+          Ooops, something went wrong :({" "}
+        </h2>
+        <Button
+          className="mt-4"
+          onClick={() => window.location.assign(window.location.origin)}
+        >
+          Refresh
+        </Button>
+      </div>
+    );
+  };
 
   if (!session || session.notLoggedIn) {
     return (
@@ -29,14 +49,16 @@ function App() {
         src={basePath}
         configurationFramework={configurationFramework}
       />
-      <Main
-        className={clsx("container-fluid bg-white", {
-          "rounded-4 border": is1d,
-          "mt-24": is1d,
-        })}
-      >
-        <Explorer />
-      </Main>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Main
+          className={clsx("container-fluid bg-white", {
+            "rounded-4 border": is1d,
+            "mt-24": is1d,
+          })}
+        >
+          <Explorer />
+        </Main>
+      </ErrorBoundary>
       <Toaster
         toastOptions={{
           position: "top-right",

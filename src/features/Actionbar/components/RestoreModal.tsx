@@ -1,5 +1,6 @@
 import useRestoreModal from "@features/Actionbar/hooks/useRestoreModal";
 import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
+import { createPortal } from "react-dom";
 
 interface RestoreModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export default function RestoreModal({
   const { onRestore } = useRestoreModal({
     onSuccess,
   });
-  return (
+  return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="RestoreModal">
       <Modal.Header
         onModalClose={() => {
@@ -48,6 +49,7 @@ export default function RestoreModal({
           {i18n("explorer.restore")}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById("portal") as HTMLElement,
   );
 }
