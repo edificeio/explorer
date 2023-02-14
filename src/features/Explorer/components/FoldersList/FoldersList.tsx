@@ -1,9 +1,10 @@
-import { Card } from "@ode-react-ui/core";
+import { Card, useOdeClient } from "@ode-react-ui/core";
 import useExplorerStore from "@store/index";
 import { motion } from "framer-motion";
 import { type IFolder } from "ode-ts-client";
 
 export default function FoldersList() {
+  const { app } = useOdeClient();
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const isFolderSelected = useExplorerStore((state) => state.isFolderSelected);
@@ -49,6 +50,7 @@ export default function FoldersList() {
         return (
           <motion.li className="g-col-4" key={id} variants={item}>
             <Card
+              app={app}
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
