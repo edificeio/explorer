@@ -1,3 +1,9 @@
 {
-  "branches": ["main", "feat-explorer", {"name": "next", "prerelease": true}]
+    "plugins": [
+        "@semantic-release/commit-analyzer"
+    ],
+    "branches": ["main", "feat-explorer", {
+        "name": "next",
+        "prerelease": true
+    }]
 }
