@@ -25,11 +25,12 @@ export default ({ mode }: { mode:string}) => {
   const proxy = {
     "/applications-list": proxyObj,
     "/conf/public": proxyObj,
-    /* "^/(?=assets)": {
+    "^/(?=assets)": {
       target: envs.VITE_LOCALHOST || "http://localhost:8090",
       changeOrigin: false
-    }, */
-    "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
+    },
+    "^/(?=theme|locale|i18n|skin)": proxyObj,
+    // "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
     proxyObj,
     "/blog": proxyObj,
