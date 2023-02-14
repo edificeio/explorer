@@ -1,0 +1,3 @@
+{
+  "branches": ["main", "feat-explorer", {"name": "next", "prerelease": true}]
+}
