@@ -1,7 +1,5 @@
 {
-    "plugins": [
-        "@semantic-release/commit-analyzer"
-    ],
+    "plugins": ["@semantic-release/commit-analyzer", "@semantic-release/release-notes-generator", "@semantic-release/npm", "@semantic-release/github"],
     "branches": ["main", "feat-explorer", {
         "name": "next",
         "prerelease": true
