@@ -14,7 +14,7 @@ import "dayjs/locale/it";
 dayjs.extend(relativeTime);
 
 export default function ResourcesList(): JSX.Element | null {
-  const { app, currentLanguage, session } = useOdeClient();
+  const { app, currentLanguage, session, i18n } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -80,6 +80,8 @@ export default function ResourcesList(): JSX.Element | null {
               resourceSrc={thumbnail}
               updatedAt={time}
               userSrc={session?.avatarUrl}
+              messagePublic={i18n("tooltip.public")}
+              messageShared={i18n("tooltip.shared")}
             />
           </motion.li>
         );
