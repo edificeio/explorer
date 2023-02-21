@@ -1,8 +1,12 @@
 import { lazy, Suspense } from "react";
 
 import useActionBar from "@features/Actionbar/hooks/useActionBar";
-import { Button, ActionBar, useOdeClient } from "@ode-react-ui/core";
-import { LoadingScreen } from "@shared/components/LoadingScreen";
+import {
+  Button,
+  ActionBar,
+  useOdeClient,
+  LoadingScreen,
+} from "@ode-react-ui/core";
 import { AnimatePresence, motion } from "framer-motion";
 import { type IAction } from "ode-ts-client";
 
