@@ -57,10 +57,11 @@
                     {"id": "edit","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"},
                     {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
                     {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
-                    {"id": "move","workflow":"org.entcore.blog.controllers.BlogController|create", "target": "actionbar", "right": "read"},
-                    {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|create", "target": "actionbar", "right": "manage"},
+                    {"id": "move","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "read"},
+                    {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"},
                     {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish", "target": "actionbar", "right": "creator"},
-                    {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print", "target": "actionbar", "right": "read"}
+                    {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print", "target": "actionbar", "right": "read"},
+                    {"id": "share","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"}
                 ],
                 "rights":{
                     "read": "org-entcore-blog-controllers-BlogController|get",
