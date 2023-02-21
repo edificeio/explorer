@@ -9,10 +9,10 @@ import {
   AppCard,
   Button,
   Grid,
-  FormControl,
-  Input,
+  // FormControl,
+  // Input,
   IconButton,
-  SearchButton,
+  // SearchButton,
   useOdeClient,
   AppIcon,
 } from "@ode-react-ui/core";
@@ -20,7 +20,7 @@ import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { imageBootstrap } from "@shared/constants";
 import useExplorerStore from "@store/index";
 
-const SearchForm = () => {
+/* const SearchForm = () => {
   const { i18n } = useOdeClient();
 
   return (
@@ -39,7 +39,7 @@ const SearchForm = () => {
       </FormControl>
     </form>
   );
-};
+}; */
 
 export default function Explorer() {
   const { i18n, params, app, appCode } = useOdeClient();
@@ -107,7 +107,7 @@ export default function Explorer() {
           />
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
-          <SearchForm />
+          {/* <SearchForm /> */}
           <div className="py-16">
             {getHasNoSelectedNodes() ? (
               <h2 className="body py-8">
