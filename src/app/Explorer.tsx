@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
-import { AppHeader, EPub } from "@features/Explorer/components";
+import { AppHeader } from "@features/Explorer/components";
 import FoldersList from "@features/Explorer/components/FoldersList/FoldersList";
 import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
@@ -15,6 +15,7 @@ import {
   // SearchButton,
   useOdeClient,
   AppIcon,
+  Library,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { imageBootstrap } from "@shared/constants";
@@ -42,11 +43,12 @@ import useExplorerStore from "@store/index";
 }; */
 
 export default function Explorer() {
-  const { i18n, params, app, appCode } = useOdeClient();
+  const { i18n, params, app, appCode, getBootstrapTheme } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const {
+    actions,
     init,
     isReady,
     getHasResourcesOrFolders,
@@ -63,6 +65,7 @@ export default function Explorer() {
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
   const previousName: string = getPreviousFolder()?.name || rootName;
+  const canPuslish = actions.find((action) => action.id === "publish");
 
   useEffect(() => {
     init(params);
@@ -98,13 +101,15 @@ export default function Explorer() {
           as="aside"
         >
           <TreeViewContainer />
-          <EPub
-            src={`${imageBootstrap}/image-library.png`}
-            alt="library"
-            text="Découvrez plein d'activités à réutiliser dans la bibliothèque !"
-            url=""
-            linkText="Découvrir"
-          />
+          {canPuslish?.available && (
+            <Library
+              src={`${getBootstrapTheme()}/images/image-library.svg`}
+              alt={i18n("explorer.libray.img.alt")}
+              text={i18n("explorer.libray.title")}
+              url="#"
+              textButton={i18n("explorer.libray.btn")}
+            />
+          )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
           {/* <SearchForm /> */}
