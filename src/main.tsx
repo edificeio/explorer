@@ -7,7 +7,6 @@ import {
   notifyFramework,
   sessionFramework,
 } from "@shared/constants";
-import { MotionConfig } from "framer-motion";
 import { APP, type App as AppName } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -39,23 +38,21 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 createRoot(root!).render(
+  // <MotionConfig reducedMotion="user">
   <StrictMode>
-    <MotionConfig reducedMotion="user">
-      <BrowserRouter>
-        <OdeClientProvider
-          framework={{
-            sessionFramework,
-            configurationFramework,
-            notifyFramework,
-            http,
-          }}
-          params={getParams()}
-        >
-          {/* <ModalProvider> */}
-          <App />
-          {/* </ModalProvider> */}
-        </OdeClientProvider>
-      </BrowserRouter>
-    </MotionConfig>
+    <BrowserRouter>
+      <OdeClientProvider
+        framework={{
+          sessionFramework,
+          configurationFramework,
+          notifyFramework,
+          http,
+        }}
+        params={getParams()}
+      >
+        <App />
+      </OdeClientProvider>
+    </BrowserRouter>
   </StrictMode>,
+  // </MotionConfig>
 );

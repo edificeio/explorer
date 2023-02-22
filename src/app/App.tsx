@@ -7,30 +7,24 @@ import { Toaster } from "react-hot-toast";
 
 import Explorer from "./Explorer";
 
-function App() {
-  const { session, theme } = useOdeClient();
-
-  const is1d: boolean = theme?.is1D;
-  const basePath: string = theme?.basePath;
-
-  const ErrorFallback = () => {
-    return (
-      <div
-        className="text-red-500 w-screen h-screen flex flex-col justify-center items-center"
-        role="alert"
+const ErrorFallback = () => {
+  return (
+    <div
+      className="text-red-500 w-screen h-screen flex flex-col justify-center items-center"
+      role="alert"
+    >
+      <h2 className="text-lg font-semibold">Ooops, something went wrong :( </h2>
+      <Button
+        className="mt-4"
+        onClick={() => window.location.assign(window.location.origin)}
       >
-        <h2 className="text-lg font-semibold">
-          Ooops, something went wrong :({" "}
-        </h2>
-        <Button
-          className="mt-4"
-          onClick={() => window.location.assign(window.location.origin)}
-        >
-          Refresh
-        </Button>
-      </div>
-    );
-  };
+        Refresh
+      </Button>
+    </div>
+  );
+};
+function App() {
+  const { session, is1d, basePath } = useOdeClient();
 
   if (!session || session.notLoggedIn) {
     return (
@@ -41,6 +35,8 @@ function App() {
       </div>
     );
   }
+
+  console.count("App");
 
   return (
     <>

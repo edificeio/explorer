@@ -37,20 +37,21 @@ specifiers:
   react-hook-form: 7.43.0
   react-hot-toast: 2.4.0
   react-router-dom: 6.8.0
+  rollup-plugin-visualizer: 5.9.0
   turbo: 1.7.2
   typescript: 4.9.5
   vite: 4.1.1
   zustand: 4.3.2
 
 dependencies:
-  '@ode-react-ui/advanced': 1.0.7-dev.46_tvkchb2y2tk5a3qvpn3tirvjz4
-  '@ode-react-ui/core': 1.0.7-dev.46_huydos5b23zj3w5tbx5szd53rm
-  '@ode-react-ui/hooks': 1.0.7-dev.46_owo25xnefcwdq3zjgtohz6dbju
-  '@ode-react-ui/icons': 1.0.7-dev.46_biqbaboplfbrettd7655fr4n2y
+  '@ode-react-ui/advanced': 1.0.7-dev.50_zx5cx3oisitlcrqydhcmkskmce
+  '@ode-react-ui/core': 1.0.7-dev.50_ohvspexbjdk6miwrg52wxjeapm
+  '@ode-react-ui/hooks': 1.0.7-dev.50_owo25xnefcwdq3zjgtohz6dbju
+  '@ode-react-ui/icons': 1.0.7-dev.50_biqbaboplfbrettd7655fr4n2y
   csstype: 3.1.1
   dayjs: 1.11.7
   framer-motion: 9.0.1_biqbaboplfbrettd7655fr4n2y
-  ode-ts-client: 1.1.3-explorer.202302201120
+  ode-ts-client: 1.1.3-explorer.202302221806
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-error-boundary: 3.1.4_react@18.2.0
@@ -82,6 +83,7 @@ devDependencies:
   husky: 8.0.3
   lint-staged: 13.1.0
   prettier: 2.8.3
+  rollup-plugin-visualizer: 5.9.0
   turbo: 1.7.2
   typescript: 4.9.5
   vite: 4.1.1_@types+node@18.11.18
@@ -683,38 +685,38 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@ode-react-ui/advanced/1.0.7-dev.46_tvkchb2y2tk5a3qvpn3tirvjz4:
-    resolution: {integrity: sha512-vz/nBrZxJGH7wnmkAAyWmm8whiJklPjQQ5T9BD3Zic0AWg+MDZFuOov6trVky8/TwKxjUnLRtt7LivqWDGNpHw==}
+  /@ode-react-ui/advanced/1.0.7-dev.50_zx5cx3oisitlcrqydhcmkskmce:
+    resolution: {integrity: sha512-SrSPkLS/T7YsnOItLfWVBIJQevpjTPHUwpPD9eMzCCV+AA+Xy4/NclQQRa8B/CcGUFeCpCTccfsa53dKrm+C1A==}
     peerDependencies:
-      '@ode-react-ui/core': 1.0.7-dev.46
-      '@ode-react-ui/hooks': 1.0.7-dev.46
-      '@ode-react-ui/icons': 1.0.7-dev.46
+      '@ode-react-ui/core': 1.0.7-dev.50
+      '@ode-react-ui/hooks': 1.0.7-dev.50
+      '@ode-react-ui/icons': 1.0.7-dev.50
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/core': 1.0.7-dev.46_huydos5b23zj3w5tbx5szd53rm
-      '@ode-react-ui/hooks': 1.0.7-dev.46_owo25xnefcwdq3zjgtohz6dbju
-      '@ode-react-ui/icons': 1.0.7-dev.46_biqbaboplfbrettd7655fr4n2y
-      ode-ts-client: 1.1.3-explorer.202302201120
+      '@ode-react-ui/core': 1.0.7-dev.50_ohvspexbjdk6miwrg52wxjeapm
+      '@ode-react-ui/hooks': 1.0.7-dev.50_owo25xnefcwdq3zjgtohz6dbju
+      '@ode-react-ui/icons': 1.0.7-dev.50_biqbaboplfbrettd7655fr4n2y
+      ode-ts-client: 1.1.3-explorer.202302221806
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@ode-react-ui/core/1.0.7-dev.46_huydos5b23zj3w5tbx5szd53rm:
-    resolution: {integrity: sha512-a154LgTn0pyuWZz0dHj1/f0nIPDLsY47lCZSdhWmGpqaXtdJteTQ6y9lfkW41maumpKhgnuxPxRMB06DHQZvzQ==}
+  /@ode-react-ui/core/1.0.7-dev.50_ohvspexbjdk6miwrg52wxjeapm:
+    resolution: {integrity: sha512-hRceiFbD0U0Fr4GHKx10KSkudxPnYVBu3jOhEDA8oVmxT/cnBd31jw+QEpJOBlwufhiH+p+Sy4nY8l7pGYMYPw==}
     peerDependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.46
-      '@ode-react-ui/icons': 1.0.7-dev.46
+      '@ode-react-ui/hooks': 1.0.7-dev.50
+      '@ode-react-ui/icons': 1.0.7-dev.50
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@ode-react-ui/hooks': 1.0.7-dev.46_owo25xnefcwdq3zjgtohz6dbju
-      '@ode-react-ui/icons': 1.0.7-dev.46_biqbaboplfbrettd7655fr4n2y
+      '@ode-react-ui/hooks': 1.0.7-dev.50_owo25xnefcwdq3zjgtohz6dbju
+      '@ode-react-ui/icons': 1.0.7-dev.50_biqbaboplfbrettd7655fr4n2y
       '@popperjs/core': 2.11.6
       framer-motion: 9.0.2_biqbaboplfbrettd7655fr4n2y
-      ode-ts-client: 1.1.3-explorer.202302201120
+      ode-ts-client: 1.1.3-explorer.202302221806
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
@@ -725,13 +727,13 @@ packages:
       - debug
     dev: false
 
-  /@ode-react-ui/hooks/1.0.7-dev.46_owo25xnefcwdq3zjgtohz6dbju:
-    resolution: {integrity: sha512-XXR3pbRJCae0uJw1J3OqtRLKi4tnxGDjXw7P2PQXpLBMDYH6Xx/H9xkX1q0pDd3UVUKL05UvUN4o4OsL9T6ARA==}
+  /@ode-react-ui/hooks/1.0.7-dev.50_owo25xnefcwdq3zjgtohz6dbju:
+    resolution: {integrity: sha512-APDYzZjVG2/jlMglgXkXu0zEdyFBTn/XRU8C2kJjmcWe8vOKOznxpTBsCUKgqYaW5PXSDoL0xJNQIC8lr9TrPQ==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      ode-ts-client: 1.1.3-explorer.202302201120
+      ode-ts-client: 1.1.3-explorer.202302221806
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
@@ -740,8 +742,8 @@ packages:
       - debug
     dev: false
 
-  /@ode-react-ui/icons/1.0.7-dev.46_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-DGZOo8OmuxXbbz/OBu09u0hnk8y67uBpg84LT8cNwM9dbR8Yixq9OTr2tpIjYexhdUnBjE6XN3EuEpk2mnjkWw==}
+  /@ode-react-ui/icons/1.0.7-dev.50_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-UDOpN9pdrwsWDTG8p91hT9cj3I5J21N0EYMFljaKG6Qn2Tptbnnhw/w8JPdXiLyCUMgVMwtYq6/HfxVw6SzsVg==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -1123,7 +1125,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001457
-      electron-to-chromium: 1.4.304
+      electron-to-chromium: 1.4.305
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10_browserslist@4.21.5
     dev: true
@@ -1256,7 +1258,7 @@ packages:
       spawn-command: 0.0.2-1
       supports-color: 8.1.1
       tree-kill: 1.2.2
-      yargs: 17.7.0
+      yargs: 17.7.1
     dev: true
 
   /convert-source-map/1.9.0:
@@ -1343,6 +1345,11 @@ packages:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
     dev: true
 
+  /define-lazy-prop/2.0.0:
+    resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
+    engines: {node: '>=8'}
+    dev: true
+
   /define-properties/1.2.0:
     resolution: {integrity: sha512-xvqAVKGfT1+UAvPwKTVw/njhdQ8ZhXK4lI0bCIuCMrp2up9nPnaDftrLtmpTazqd1o+UY4zgzU+avtMbDP+ldA==}
     engines: {node: '>= 0.4'}
@@ -1376,8 +1383,8 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /electron-to-chromium/1.4.304:
-    resolution: {integrity: sha512-6c8M+ojPgDIXN2NyfGn8oHASXYnayj+gSEnGeLMKb9zjsySeVB/j7KkNAAG9yDcv8gNlhvFg5REa1N/kQU6pgA==}
+  /electron-to-chromium/1.4.305:
+    resolution: {integrity: sha512-WETy6tG0CT5gm1O+xCbyapWNsCcmIvrn4NHViIGYo2AT8FV2qUCXdaB+WqYxSv/vS5mFqhBYnfZAAkVArjBmUg==}
     dev: true
 
   /emoji-regex/8.0.0:
@@ -2286,6 +2293,12 @@ packages:
       has-tostringtag: 1.0.0
     dev: true
 
+  /is-docker/2.2.1:
+    resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
+    engines: {node: '>=8'}
+    hasBin: true
+    dev: true
+
   /is-extglob/2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
     engines: {node: '>=0.10.0'}
@@ -2397,6 +2410,13 @@ packages:
     dependencies:
       call-bind: 1.0.2
       get-intrinsic: 1.2.0
+    dev: true
+
+  /is-wsl/2.2.0:
+    resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
+    engines: {node: '>=8'}
+    dependencies:
+      is-docker: 2.2.1
     dev: true
 
   /isarray/2.0.5:
@@ -2713,8 +2733,8 @@ packages:
       es-abstract: 1.21.1
     dev: true
 
-  /ode-ts-client/1.1.3-explorer.202302201120:
-    resolution: {integrity: sha512-Vdx7mUp6qQK2cxZvOL1IOp90X58OqQEzsDg7aUiLTkXlzd2WwEG0c4JKp20JX8aBL5x32VhQdBZfUetWd9Ce+g==}
+  /ode-ts-client/1.1.3-explorer.202302221806:
+    resolution: {integrity: sha512-7+C7EH1+WwEjRxVpQ1Njljk+iI3X0bP+vJ1Lbjh/UFnzQgaVJlRytjm/RGZl5G9U62uQs73XDKsbeh4GiBxUxQ==}
     dependencies:
       axios: 0.21.4
       core-js: 3.8.3
@@ -2741,6 +2761,15 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       mimic-fn: 4.0.0
+    dev: true
+
+  /open/8.4.2:
+    resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      define-lazy-prop: 2.0.0
+      is-docker: 2.2.1
+      is-wsl: 2.2.0
     dev: true
 
   /optionator/0.9.1:
@@ -3044,6 +3073,22 @@ packages:
       glob: 7.2.3
     dev: true
 
+  /rollup-plugin-visualizer/5.9.0:
+    resolution: {integrity: sha512-bbDOv47+Bw4C/cgs0czZqfm8L82xOZssk4ayZjG40y9zbXclNk7YikrZTDao6p7+HDiGxrN0b65SgZiVm9k1Cg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    peerDependencies:
+      rollup: 2.x || 3.x
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      open: 8.4.2
+      picomatch: 2.3.1
+      source-map: 0.7.4
+      yargs: 17.7.1
+    dev: true
+
   /rollup/3.17.2:
     resolution: {integrity: sha512-qMNZdlQPCkWodrAZ3qnJtvCAl4vpQ8q77uEujVCCbC/6CLB7Lcmvjq7HyiOSnf4fxTT9XgsE36oLHJBH49xjqA==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
@@ -3159,6 +3204,11 @@ packages:
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /source-map/0.7.4:
+    resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
+    engines: {node: '>= 8'}
     dev: true
 
   /spawn-command/0.0.2-1:
@@ -3600,8 +3650,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /yargs/17.7.0:
-    resolution: {integrity: sha512-dwqOPg5trmrre9+v8SUo2q/hAwyKoVfu8OC1xPHKJGNdxAvPl4sKxL4vBnh3bQz/ZvvGAFeA5H3ou2kcOY8sQQ==}
+  /yargs/17.7.1:
+    resolution: {integrity: sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==}
     engines: {node: '>=12'}
     dependencies:
       cliui: 8.0.1
