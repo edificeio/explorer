@@ -7,6 +7,7 @@ import {
   useOdeClient,
   LoadingScreen,
 } from "@ode-react-ui/core";
+import { AccessControl } from "@shared/components/AccessControl";
 import { AnimatePresence, motion } from "framer-motion";
 import { type IAction } from "ode-ts-client";
 
@@ -29,6 +30,7 @@ export default function ActionBarContainer() {
     isPublishModalOpen,
     isActionBarOpen,
     isEditFolderOpen,
+    selectedResources,
     onEditFolderCancel,
     onEditFolderSuccess,
     isEditResourceOpen,
@@ -67,17 +69,23 @@ export default function ActionBarContainer() {
                 .map((action: IAction) => {
                   return (
                     isActivable(action) && (
-                      <Button
+                      <AccessControl
                         key={action.id}
-                        type="button"
-                        color="primary"
-                        variant="filled"
-                        onClick={() => {
-                          handleClick(action);
-                        }}
+                        resourceRights={selectedResources}
+                        roleExpected={action.right!}
                       >
-                        {i18n(`explorer.actions.${action.id}`)}
-                      </Button>
+                        <Button
+                          key={action.id}
+                          type="button"
+                          color="primary"
+                          variant="filled"
+                          onClick={() => {
+                            handleClick(action);
+                          }}
+                        >
+                          {i18n(`explorer.actions.${action.id}`)}
+                        </Button>
+                      </AccessControl>
                     )
                   );
                 })}
