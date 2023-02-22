@@ -43,7 +43,8 @@ import useExplorerStore from "@store/index";
 }; */
 
 export default function Explorer() {
-  const { i18n, params, app, appCode, getBootstrapTheme } = useOdeClient();
+  const { i18n, params, app, appCode, session, getBootstrapTheme } =
+    useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -74,6 +75,10 @@ export default function Explorer() {
   if (!isReady) {
     return <></>;
   }
+
+  const profile = session?.profile;
+
+  console.log(profile);
 
   return (
     <>

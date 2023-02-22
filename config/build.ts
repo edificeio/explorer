@@ -1,5 +1,4 @@
 export const build = {
-    manifest: true,
     assetsDir: "assets/js/ode-explorer/",
     rollupOptions: {
       output: {
