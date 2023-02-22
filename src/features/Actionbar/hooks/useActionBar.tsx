@@ -24,6 +24,7 @@ export default function useActionBar() {
     createResource,
     deselectAll,
     trashSelection,
+    getSelectedIResources,
     selectedResources,
     selectedFolders,
   } = useExplorerStore();
@@ -76,13 +77,13 @@ export default function useActionBar() {
     switch (action.id) {
       case ACTION.OPEN:
         return onlyOneItemSelected;
-      case ACTION.SHARE:
-        return onlyOneItemSelected;
       case ACTION.MANAGE:
         return onlyOneItemSelected;
       case ACTION.PUBLISH:
         return onlyOneItemSelected;
       case ACTION.UPD_PROPS:
+        return onlyOneItemSelected;
+      case "edit" as any:
         return onlyOneItemSelected;
       default:
         return true;
@@ -149,6 +150,7 @@ export default function useActionBar() {
   }
 
   return {
+    selectedResources: getSelectedIResources(),
     actions: isTrashFolder ? trashActions : actions,
     currentFolderId: getCurrentFolderId(),
     handleClick,
