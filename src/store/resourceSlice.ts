@@ -9,6 +9,7 @@ import {
   type GetResourcesResult,
   type IResource,
   type IActionResult,
+  type IFolder,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
@@ -26,6 +27,7 @@ export interface ResourceSlice {
   getMoreResources: () => Promise<void>;
   // getHasResources: () => boolean;
   getSelectedIResources: () => IResource[];
+  getSelectedIFolders: () => IFolder[];
 }
 
 // https://docs.pmnd.rs/zustand/guides/typescript#slices-pattern
@@ -170,6 +172,12 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
     const { selectedResources, resources } = get();
     return resources.filter((resource: IResource) =>
       selectedResources.includes(resource.id),
+    );
+  },
+  getSelectedIFolders(): IFolder[] {
+    const { selectedFolders, folders } = get();
+    return folders.filter((folder: IFolder) =>
+      selectedFolders.includes(folder.id),
     );
   },
 });
