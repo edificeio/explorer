@@ -11,7 +11,7 @@ import { APP, type App as AppName } from "ode-ts-client";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
-// import App from "./app/App";
+import App from "./app/App";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
 const root = document.getElementById("root");
@@ -50,7 +50,7 @@ createRoot(root!).render(
         }}
         params={getParams()}
       >
-        {/* <App /> */}
+        <App />
       </OdeClientProvider>
     </BrowserRouter>
   </StrictMode>,
