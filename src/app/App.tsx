@@ -36,7 +36,7 @@ function App() {
     );
   }
 
-  console.count("App");
+  console.count("App test");
 
   return (
     <>
