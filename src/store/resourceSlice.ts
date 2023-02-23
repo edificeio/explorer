@@ -10,6 +10,8 @@ import {
   type IResource,
   type IActionResult,
   type IFolder,
+  type UpdateParameters,
+  ode,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
@@ -23,6 +25,7 @@ export interface ResourceSlice {
   openSelectedResource: () => Promise<void>;
   printSelectedResource: () => Promise<void>;
   createResource: () => Promise<void>;
+  updateResource: (params: UpdateParameters) => Promise<void>;
   isResourceSelected: (res: IResource) => boolean;
   getMoreResources: () => Promise<void>;
   // getHasResources: () => boolean;
@@ -51,6 +54,29 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
         set,
       ); */
     }
+  },
+  updateResource: async (params: UpdateParameters) => {
+    const { searchParams } = get();
+    const result = await ode
+      .resource(searchParams.app, searchParams.types[0])
+      .update(params);
+    set((state) => {
+      const resources = state.resources.map((res) => {
+        if (res.assetId === params.entId) {
+          return {
+            ...res,
+            name: params.name,
+            thumbnail: result.thumbnail!,
+            public: params.public,
+            description: params.description,
+            slug: params.slug,
+          };
+        } else {
+          return res;
+        }
+      });
+      return { ...state, resources };
+    });
   },
   openResource: async (assetId: string) => {
     try {

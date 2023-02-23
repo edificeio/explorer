@@ -32,20 +32,28 @@ export default function EditResourceModal({
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
   );
+  const resource = getSelectedIResources()[0];
   const {
+    slug,
     formId,
     isValid,
     isSubmitting,
+    disableSlug,
+    versionSlug,
     register,
     handleSubmit,
     onSubmit,
     handleUploadImage,
+    onCopyToClipBoard,
+    onSlugChange,
+    onPublicChange,
   } = useEditResourceModal({
-    edit,
+    resource,
     onSuccess,
     onCancel,
   });
-
+  const refPublic = `${new Date().getTime()}_${disableSlug}`;
+  const refSlug = `${versionSlug}_slug`;
   return createPortal(
     <Modal
       id="resource_edit_modal"
@@ -69,7 +77,7 @@ export default function EditResourceModal({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <div className="d-flex flex-column flex-md-row gap-16 mb-24">
             <ImagePicker
-              src={getSelectedIResources()[0]?.thumbnail}
+              src={resource?.thumbnail}
               label={i18n("explorer.imagepicker.label")}
               addButtonLabel={i18n("explorer.imagepicker.button.add")}
               deleteButtonLabel={i18n("explorer.imagepicker.button.delete")}
@@ -83,7 +91,7 @@ export default function EditResourceModal({
                 <Label>{i18n("title")}</Label>
                 <Input
                   type="text"
-                  defaultValue={edit ? getSelectedIResources()[0]?.name : ""}
+                  defaultValue={edit ? resource?.name : ""}
                   {...register("title", { required: true })}
                   placeholder={i18n(
                     "explorer.resource.editModal.title.placeholder",
@@ -96,9 +104,7 @@ export default function EditResourceModal({
                 <Label>{i18n("description")}</Label>
                 <Input
                   type="text"
-                  defaultValue={
-                    edit ? getSelectedIResources()[0]?.description : ""
-                  }
+                  defaultValue={edit ? resource?.description : ""}
                   {...register("description")}
                   placeholder={i18n(
                     "explorer.resource.editModal.description.placeholder",
@@ -124,7 +130,11 @@ export default function EditResourceModal({
             <FormControl.Input
               type="checkbox"
               role="switch"
-              {...register("enablePublic")}
+              key={refPublic}
+              {...register("enablePublic", {
+                value: resource.public!,
+                onChange: (e) => onPublicChange(e.target.checked),
+              })}
               className="form-check-input"
               size="md"
             />
@@ -137,13 +147,17 @@ export default function EditResourceModal({
 
           <FormControl id="slug">
             <div className="d-flex flex-wrap align-items-center gap-4">
-              <div>https://neoconnect.opendigitaleducation.com/</div>
+              <div>{window.location.origin}/</div>
 
               <div className="flex-fill">
                 <Input
                   type="text"
-                  defaultValue={getSelectedIResources()[0]?.slug}
-                  {...register("safeSlug")}
+                  key={refSlug}
+                  {...register("safeSlug", {
+                    disabled: disableSlug,
+                    value: slug,
+                    onChange: (e) => onSlugChange(e.target.value),
+                  })}
                   size="md"
                   placeholder={i18n(
                     "explorer.resource.editModal.access.url.extension",
@@ -152,7 +166,10 @@ export default function EditResourceModal({
               </div>
               <Button
                 color="primary"
-                onClick={() => {}}
+                disabled={disableSlug}
+                onClick={() => {
+                  onCopyToClipBoard(resource.slug!);
+                }}
                 type="button"
                 leftIcon={<Copy />}
                 variant="ghost"
