@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 
-import { type IResource, type RightRole, ode } from "ode-ts-client";
+import { type RightRole, ode } from "ode-ts-client";
 // TODO move it to ode-react-ui with AccessControl
+
+export interface IObjectWithRights {
+  rights: string[];
+}
 
 interface AccessControlProps {
   roles: RightRole | RightRole[];
-  rights: string | string[] | IResource | IResource[];
+  rights: string | string[] | IObjectWithRights | IObjectWithRights[];
 }
 
 export default function useAccessControl({
@@ -49,6 +53,10 @@ export default function useAccessControl({
 
   // compute visibility according to rights
   const refreshState = async function () {
+    if (roles === undefined) {
+      setVisible(true);
+      return;
+    }
     if (rights instanceof Array) {
       // rights are of type Array
       if (rights.length > 0) {
@@ -57,7 +65,9 @@ export default function useAccessControl({
           await checkRights(rights as string[]);
         } else {
           // rights are of type IResource[]
-          const rightsArray = (rights as IResource[]).map((e) => e.rights);
+          const rightsArray = (rights as IObjectWithRights[]).map(
+            (e) => e.rights,
+          );
           await checkRightForMultipleResources(rightsArray);
         }
       } else {

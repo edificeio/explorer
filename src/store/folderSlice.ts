@@ -126,7 +126,7 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         const updatedFolders: IFolder[] = state.folders.map(
           (folder: IFolder) => {
             if (folder.id === folderId) {
-              return newFolder;
+              return { ...newFolder, rights: folder.rights };
             } else {
               return folder;
             }

@@ -52,6 +52,7 @@ export interface ExplorerSlice {
   select: (id: string[], type: Thing) => void;
   deselect: (id: string[], type: Thing) => void;
   deselectAll: (type: Thing) => void;
+  isActionAvailable: (action: "create" | "publish") => boolean;
 }
 
 // * https://docs.pmnd.rs/zustand/guides/typescript#slices-pattern
@@ -319,5 +320,10 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         },
       };
     });
+  },
+  isActionAvailable: (action) => {
+    const { actions } = get();
+    const found = actions.filter((e) => e.id === action && e.available);
+    return found.length > 0;
   },
 });

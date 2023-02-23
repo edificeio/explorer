@@ -61,6 +61,7 @@ export default function Explorer() {
     getPreviousFolder,
     getHasSelectedRoot,
     createResource,
+    isActionAvailable,
   } = useExplorerStore((state) => state);
 
   const trashName: string = i18n("explorer.tree.trash");
@@ -87,17 +88,18 @@ export default function Explorer() {
           <AppIcon app={app} size="40" />
           <AppCard.Name />
         </AppCard>
-
-        <Button
-          type="button"
-          color="primary"
-          variant="filled"
-          leftIcon={<Plus />}
-          className="ms-auto"
-          onClick={createResource}
-        >
-          {i18n("explorer.create.title")}
-        </Button>
+        {isActionAvailable("create") && (
+          <Button
+            type="button"
+            color="primary"
+            variant="filled"
+            leftIcon={<Plus />}
+            className="ms-auto"
+            onClick={createResource}
+          >
+            {i18n("explorer.create.title")}
+          </Button>
+        )}
       </AppHeader>
       <Grid>
         <Grid.Col

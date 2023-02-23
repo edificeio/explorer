@@ -25,12 +25,13 @@ export default function ActionBarContainer() {
   const { i18n } = useOdeClient();
   const {
     actions,
+    selectedElement,
     isMoveModalOpen,
     isDeleteModalOpen,
     isPublishModalOpen,
     isActionBarOpen,
     isEditFolderOpen,
-    selectedResources,
+    overrideLabel,
     onEditFolderCancel,
     onEditFolderSuccess,
     isEditResourceOpen,
@@ -71,7 +72,7 @@ export default function ActionBarContainer() {
                     isActivable(action) && (
                       <AccessControl
                         key={action.id}
-                        resourceRights={selectedResources}
+                        resourceRights={selectedElement}
                         roleExpected={action.right!}
                       >
                         <Button
@@ -83,7 +84,7 @@ export default function ActionBarContainer() {
                             handleClick(action);
                           }}
                         >
-                          {i18n(`explorer.actions.${action.id}`)}
+                          {i18n(overrideLabel(action))}
                         </Button>
                       </AccessControl>
                     )

@@ -17,6 +17,7 @@ export default function useActionBar() {
 
   const {
     actions,
+    openFolder,
     getIsTrashSelected,
     getCurrentFolderId,
     openSelectedResource,
@@ -25,6 +26,7 @@ export default function useActionBar() {
     deselectAll,
     trashSelection,
     getSelectedIResources,
+    getSelectedFolders,
     selectedResources,
     selectedFolders,
   } = useExplorerStore();
@@ -40,7 +42,11 @@ export default function useActionBar() {
   function handleClick(action: IAction) {
     switch (action.id) {
       case ACTION.OPEN:
-        return openSelectedResource();
+        if (selectedResources.length > 0) {
+          return openSelectedResource();
+        } else {
+          return openFolder(selectedFolders[0]);
+        }
       case ACTION.CREATE:
         return createResource();
       case ACTION.MOVE:
@@ -72,22 +78,32 @@ export default function useActionBar() {
    * @returns true if the action button must be visible
    */
   function isActivable(action: IAction): boolean {
+    const all = selectedResources.length + selectedFolders.length;
     const onlyOneItemSelected =
       selectedResources.length === 1 || selectedFolders.length === 1;
+    const onlyOneSelected = all === 1;
+    const noFolderSelected = selectedFolders.length === 0;
     switch (action.id) {
       case ACTION.OPEN:
-        return onlyOneItemSelected;
+        return onlyOneSelected;
       case ACTION.MANAGE:
         return onlyOneItemSelected;
       case ACTION.PUBLISH:
-        return onlyOneItemSelected;
+        return onlyOneItemSelected && noFolderSelected;
       case ACTION.UPD_PROPS:
-        return onlyOneItemSelected;
+        return onlyOneItemSelected && noFolderSelected;
+      case ACTION.SHARE:
+        return noFolderSelected;
+      case ACTION.PRINT:
+        return onlyOneItemSelected && noFolderSelected;
       case "edit" as any:
-        return onlyOneItemSelected;
+        return onlyOneSelected;
       default:
         return true;
     }
+  }
+  function isActivableForTrash(action: IAction): boolean {
+    return true;
   }
 
   async function onRestore() {
@@ -132,11 +148,13 @@ export default function useActionBar() {
       id: ACTION.DELETE,
       available: true,
       target: "actionbar",
+      workflow: "",
     },
     {
       id: ACTION.RESTORE,
       available: true,
       target: "actionbar",
+      workflow: "",
     },
   ];
   const isTrashFolder = getIsTrashSelected();
@@ -149,12 +167,20 @@ export default function useActionBar() {
     }
   }
 
+  function overrideLabel(action: IAction) {
+    if ((action.id as any) === "edit" && selectedFolders.length > 0) {
+      return "explorer.rename";
+    }
+    return `explorer.actions.${action.id}`;
+  }
+
   return {
-    selectedResources: getSelectedIResources(),
+    selectedElement: [...getSelectedIResources(), ...getSelectedFolders()],
     actions: isTrashFolder ? trashActions : actions,
     currentFolderId: getCurrentFolderId(),
+    overrideLabel,
     handleClick,
-    isActivable,
+    isActivable: isTrashFolder ? isActivableForTrash : isActivable,
     isActionBarOpen,
     isMoveModalOpen: openedModalName === "move",
     onMoveCancel,

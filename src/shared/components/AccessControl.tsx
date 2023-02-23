@@ -1,14 +1,15 @@
 import { type ReactNode, type ReactElement } from "react";
 
-import useAccessControl from "@shared/hooks/useAccessControl";
-import { type IResource } from "ode-ts-client";
+import useAccessControl, {
+  type IObjectWithRights,
+} from "@shared/hooks/useAccessControl";
 import { type RightRole } from "ode-ts-client/dist/services";
 
 // TODO move it to ode-react-ui with useAccessControl
 
 interface AccessControlProps {
   roleExpected: RightRole | RightRole[];
-  resourceRights: string | string[] | IResource | IResource[];
+  resourceRights: string | string[] | IObjectWithRights | IObjectWithRights[];
   children: ReactNode;
   renderWhenForbidden?: () => ReactElement;
 }
