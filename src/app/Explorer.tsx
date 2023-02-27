@@ -16,6 +16,7 @@ import {
   useOdeClient,
   AppIcon,
   Library,
+  EmptyScreen,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { imageBootstrap } from "@shared/constants";
@@ -43,7 +44,7 @@ import useExplorerStore from "@store/index";
 }; */
 
 export default function Explorer() {
-  const { i18n, params, app, appCode, session, getBootstrapTheme } =
+  const { i18n, params, app, appCode, getBootstrapTheme, is1d } =
     useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
@@ -52,15 +53,15 @@ export default function Explorer() {
     actions,
     init,
     isReady,
-    getHasResourcesOrFolders,
-    getIsTrashSelected,
-    getHasNoSelectedNodes,
-    gotoPreviousFolder,
+    getHasResourcesOrFolders, // Return number folder or ressources
+    getIsTrashSelected, // Return boolean : true if trash is selected, false other
+    getHasNoSelectedNodes, // Return Boolean : true if we are NOT in a folder, false if we are in a folder
+    gotoPreviousFolder, // Go to previous folder (onClick)
     hasMoreResources,
     getMoreResources,
-    getPreviousFolder,
-    getHasSelectedRoot,
-    createResource,
+    getPreviousFolder, // Return object informations previous folder (id, name, childNumber...) or return undefined if none previous folder
+    getHasSelectedRoot, // Return Boolean : true if trash or folder default selected, false other
+    createResource, // Create ressource (onClick)
     isActionAvailable,
   } = useExplorerStore((state) => state);
 
@@ -68,6 +69,19 @@ export default function Explorer() {
   const rootName: string = i18n("explorer.filters.mine");
   const previousName: string = getPreviousFolder()?.name || rootName;
   const canPuslish = actions.find((action) => action.id === "publish");
+  const canCreate = actions.find((action) => action.id === "create");
+
+  const labelEmptyScreenApp = () => {
+    if (canCreate?.available && is1d) {
+      return i18n("explorer.emptyScreen.blog.txt1d.create");
+    } else if (canCreate?.available && !is1d) {
+      return i18n("explorer.emptyScreen.blog.txt2d.create");
+    } else if (!canCreate?.available && is1d) {
+      return i18n("explorer.emptyScreen.blog.txt1d.consultation");
+    } else {
+      return i18n("explorer.emptyScreen.blog.txt2d.consultation");
+    }
+  };
 
   useEffect(() => {
     init(params);
@@ -76,10 +90,6 @@ export default function Explorer() {
   if (!isReady) {
     return <></>;
   }
-
-  const profile = session?.profile;
-
-  console.log(profile);
 
   return (
     <>
@@ -143,20 +153,59 @@ export default function Explorer() {
               </div>
             )}
           </div>
-          {getHasResourcesOrFolders() ? (
+          {getHasResourcesOrFolders() !== 0 ? (
             <>
               <FoldersList />
               <ResourcesList />
             </>
           ) : (
-            <img
-              src={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
-              alt="application emptyscreen"
-              className="mx-auto"
-              style={{ maxWidth: "50%" }}
-            />
+            <>
+              {getHasResourcesOrFolders() === 0 &&
+              !getHasSelectedRoot() &&
+              !getIsTrashSelected() ? (
+                <>
+                  <EmptyScreen
+                    imageSrc={`${imageBootstrap}/emptyscreen/illu-noContentInFolder.svg`}
+                    imageAlt={i18n("explorer.emptyScreen.folder.empty.alt")}
+                    text={i18n("explorer.emptyScreen.label")}
+                  />
+                </>
+              ) : (
+                <>
+                  {getHasResourcesOrFolders() === 0 &&
+                  getHasSelectedRoot() &&
+                  !getIsTrashSelected() ? (
+                    <>
+                      <EmptyScreen
+                        imageSrc={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
+                        imageAlt={i18n("explorer.emptyScreen.app.alt")}
+                        title={`${
+                          canCreate?.available
+                            ? i18n("explorer.emptyScreen.blog.title.create")
+                            : i18n(
+                                "explorer.emptyScreen.blog.title.consultation",
+                              )
+                        }`}
+                        text={labelEmptyScreenApp()}
+                      />
+                    </>
+                  ) : null}
+                </>
+              )}
+            </>
           )}
-          {!hasMoreResources ? (
+          {getHasResourcesOrFolders() === 0 && getIsTrashSelected() ? (
+            <>
+              <EmptyScreen
+                imageSrc={`${imageBootstrap}/emptyscreen/illu-trash.svg`}
+                imageAlt={i18n("explorer.emptyScreen.trash.alt")}
+                title={i18n("explorer.emptyScreen.trash.title")}
+                text={i18n("explorer.emptyScreen.trash.empty")}
+              />
+            </>
+          ) : null}
+
+          {!hasMoreResources && getHasResourcesOrFolders() !== 0 ? (
             <div className="d-grid gap-2 col-4 mx-auto">
               <Button
                 type="button"
