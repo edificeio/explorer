@@ -11,6 +11,8 @@ import { AccessControl } from "@shared/components/AccessControl";
 import { AnimatePresence, motion } from "framer-motion";
 import { type IAction } from "ode-ts-client";
 
+import ShareResourceModal from "./ShareResourceModal";
+
 const DeleteModal = lazy(
   async () => await import("@features/Actionbar/components/DeleteModal"),
 );
@@ -37,6 +39,9 @@ export default function ActionBarContainer() {
     isEditResourceOpen,
     onEditResourceCancel,
     onEditResourceSuccess,
+    isShareResourceOpen,
+    onShareResourceCancel,
+    onShareResourceSuccess,
     onMoveCancel,
     onMoveSuccess,
     onDeleteCancel,
@@ -130,6 +135,13 @@ export default function ActionBarContainer() {
             isOpen={isEditResourceOpen}
             onCancel={onEditResourceCancel}
             onSuccess={onEditResourceSuccess}
+          />
+        )}
+        {isShareResourceOpen && (
+          <ShareResourceModal
+            isOpen={isShareResourceOpen}
+            onCancel={onShareResourceCancel}
+            onSuccess={onShareResourceSuccess}
           />
         )}
       </Suspense>

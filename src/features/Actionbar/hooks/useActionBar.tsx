@@ -9,6 +9,7 @@ type ModalName =
   | "publish"
   | "edit_folder"
   | "edit_resource"
+  | "share"
   | "void";
 
 export default function useActionBar() {
@@ -63,8 +64,8 @@ export default function useActionBar() {
       case ACTION.UPD_PROPS:
       case "edit" as any:
         return onEdit();
-      // case ACTION.SHARE:
-      //   return explorer.onShare();
+      case ACTION.SHARE:
+        return setOpenedModalName("share");
       // case ACTION.MANAGE:
       //   return explorer.onManage();
       default:
@@ -142,6 +143,8 @@ export default function useActionBar() {
   const onEditFolderCancel = onFinish("edit_folder");
   const onEditResourceSuccess = onFinish("edit_resource");
   const onEditResourceCancel = onFinish("edit_resource");
+  const onShareResourceSuccess = onFinish("share");
+  const onShareResourceCancel = onFinish("share");
 
   const trashActions: IAction[] = [
     {
@@ -197,6 +200,9 @@ export default function useActionBar() {
     isEditResourceOpen: openedModalName === "edit_resource",
     onEditResourceCancel,
     onEditResourceSuccess,
+    isShareResourceOpen: openedModalName === "share",
+    onShareResourceCancel,
+    onShareResourceSuccess,
     onClearActionBar,
   };
 }
