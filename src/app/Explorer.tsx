@@ -20,6 +20,7 @@ import {
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { imageBootstrap } from "@shared/constants";
+import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
 import useExplorerStore from "@store/index";
 
 /* const SearchForm = () => {
@@ -123,7 +124,9 @@ export default function Explorer() {
               src={`${getBootstrapTheme()}/images/image-library.svg`}
               alt={i18n("explorer.libray.img.alt")}
               text={i18n("explorer.libray.title")}
-              url="#"
+              url={`https://library.opendigitaleducation.com/search/?application%5B0%5D=${capitalizeFirstLetter(
+                appCode,
+              )}&page=1&sort_field=views&sort_order=desc`} // TODO : mettre ça dans une conf
               textButton={i18n("explorer.libray.btn")}
             />
           )}
