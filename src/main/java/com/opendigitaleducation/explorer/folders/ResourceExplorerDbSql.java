@@ -216,9 +216,6 @@ public class ResourceExplorerDbSql {
                         results.get(id).rights.addAll((JsonArray) rights);
                     }
                 }
-                if(mutedBy instanceof JsonObject) {
-                    resource.mutedBy.mergeIn((JsonObject) mutedBy);
-                }
             }
             return new ArrayList<>(results.values());
         });
