@@ -263,29 +263,27 @@ public class ResourceServiceElastic implements ResourceService {
                 return sql.moveTo(ids, destInt.get(), user).compose(resources -> {
                     final List<ExplorerMessage> messages = resources.stream().map(e -> {
                         //use entid to push message
-                        //
-                        // TODO JBER check entityType
-                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType);
-                        return ExplorerMessage.upsert(e.entId, user, false)
-                                .withType(e.application, e.resourceType, e.resourceType)
+                        return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
                                 .withVersion(now).withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
-                    final ResourceSearchOperation search = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                    final ResourceSearchOperation search = new ResourceSearchOperation().setWaitFor(true)
+                            .setIds(ids.stream().map(Object::toString)
+                            .collect(Collectors.toSet()));
                     return fetch(user, application, search);
                 });
             }else{
                 return sql.moveToRoot(ids, user).compose(entIds -> {
                     final List<ExplorerMessage> messages = entIds.stream().map(e -> {
                         //use entid to push message
-                        // TODO JBER check entityType
                         return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
                                 .withSkipCheckVersion(true);
                     }).collect(Collectors.toList());
                     return communication.pushMessage(messages);
                 }).compose(e->{
-                    final ResourceSearchOperation search = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(id->id.toString()).collect(Collectors.toSet()));
+                    final ResourceSearchOperation search = new ResourceSearchOperation().setWaitFor(true)
+                            .setIds(ids.stream().map(Object::toString).collect(Collectors.toSet()));
                     return fetch(user, application, search);
                 });
             }
@@ -336,7 +334,7 @@ public class ResourceServiceElastic implements ResourceService {
     @Override
     public Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> resources, final List<ShareOperation> operation) throws Exception {
         final long now = currentTimeMillis();
-        final List<JsonObject> rights = operation.stream().map(o -> o.toJsonRight()).collect(Collectors.toList());
+        final List<JsonObject> rights = operation.stream().map(ShareOperation::toJsonRight).collect(Collectors.toList());
         final Set<String> normalizedRights = operation.stream().map(e -> e.getNormalizedRightsAsString()).collect(HashSet::new, Set::addAll, Set::addAll);
         final Set<Integer> ids = resources.stream().map(e -> Integer.valueOf(e.getString("_id"))).collect(Collectors.toSet());
         final JsonArray shared = new JsonArray(rights);
@@ -345,7 +343,7 @@ public class ResourceServiceElastic implements ResourceService {
                 //use entid to push message
                 return ExplorerMessage.upsert(new IdAndVersion(e.entId, now), user, false, e.application, e.resourceType, e.resourceType)
                         .withShared(shared, new ArrayList<>(normalizedRights))
-                        .withSkipCheckVersion(true);;
+                        .withSkipCheckVersion(true);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);
         }).map(resources);
