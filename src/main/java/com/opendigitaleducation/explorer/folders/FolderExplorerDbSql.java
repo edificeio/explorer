@@ -84,7 +84,7 @@ public class FolderExplorerDbSql {
 
     public Future<Map<String, ExplorerMessageForIngest>> updateParentEnt(){
         final String updateSubQuery = "(SELECT id,ent_id FROM explorer.folders) as subquery";
-        final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL RETURNING * ";
+        final String updateTpl = "UPDATE explorer.folders SET parent_id = subquery.id, parent_ent_id=NULL FROM %s WHERE subquery.ent_id = parent_ent_id AND parent_ent_id IS NOT NULL AND parent_id IS NULL AND subquery.id <> folders.id RETURNING * ";
         final String update = String.format(updateTpl, updateSubQuery);
         final Future<RowSet<Row>> updateFuture = client.preparedQuery(update, Tuple.tuple());
         return updateFuture.onFailure(e -> {
@@ -103,6 +103,7 @@ public class FolderExplorerDbSql {
                 // TODO JBER check version to set
                 final ExplorerMessageForIngest message = new ExplorerMessageForIngest(ExplorerMessage.upsert(id.toString(), user, false));
                 message.withParentId(Optional.ofNullable(parent_id).map(e -> Long.valueOf(e.toString())));
+                message.withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                 upserted.put(ent_id, message);
             }
             return Future.succeededFuture(upserted);
@@ -179,7 +180,7 @@ public class FolderExplorerDbSql {
                         iquery.append("INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
                         iquery.append("SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
                         iquery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
-                        iquery.append(" ON CONFLICT(folder_id, user_id,resource_id) DO NOTHING RETURNING * ");
+                        iquery.append(" ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
                         futures.add(transaction.addPreparedQuery(iquery.toString(), ituple).onFailure(e->{
                            log.error("Failed to insert relationship for folderId="+folderId, e);
                         }));

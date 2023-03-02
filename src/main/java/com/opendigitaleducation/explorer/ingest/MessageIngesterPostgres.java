@@ -206,6 +206,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                             final ExplorerMessage mess = ExplorerMessage.upsert(r.entId, creator, false);
                             // TODO JBER change here the last resourceType to get the entity type
                             mess.withType(r.application, r.resourceType, r.resourceType);
+                            mess.withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                             // TODO JBER check version to set
                             upsertResources.add(new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString()));
                         }
@@ -268,7 +269,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                     // When version is set to System.currentTimeMillis() then it still fails and another one fails
                     final ExplorerMessage mess = ExplorerMessage.upsert(parentIdStr, new UserInfos(), false)
                             .withType(ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
-                            .withVersion(System.currentTimeMillis());
+                            .withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                     return new ExplorerMessageForIngest(mess);
                 });
                 final JsonObject override = new JsonObject();
