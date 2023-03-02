@@ -60,6 +60,9 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
     }
 
     public long getVersion() {
+        if(getMessage().getValue("version") == null){
+            return 0l;
+        }
         return getMessage().getLong("version",0l);
     }
 

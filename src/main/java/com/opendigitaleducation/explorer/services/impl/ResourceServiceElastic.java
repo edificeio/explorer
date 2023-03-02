@@ -156,7 +156,7 @@ public class ResourceServiceElastic implements ResourceService {
                     // TODO JBER check entityType
                     return ExplorerMessage.upsert(e.getValue().entId.get(), user, false)
                             .withType(value.application.get(), value.resourceType.get(), value.resourceType.get())
-                            .withTrashed(isTrash).withSkipCheckVersion(true);
+                            .withTrashed(isTrash).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                 }).collect(Collectors.toList());
                 return communication.pushMessage(messages);
             }).compose(e->{

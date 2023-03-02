@@ -32,7 +32,7 @@
       },
       "contentHtml": {
         "type": "text",
-        "analyzer": "html_analyzer",
+        
         "copy_to": "contentAll"
       },
       "contentAll": {
@@ -94,7 +94,7 @@
             },
             "contentHtml": {
               "type": "text",
-              "analyzer": "html_analyzer",
+              
               "copy_to": "contentAll"
             },
             "deleted": {
