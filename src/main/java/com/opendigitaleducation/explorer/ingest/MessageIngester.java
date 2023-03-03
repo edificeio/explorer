@@ -8,12 +8,12 @@ import java.util.List;
 
 public interface MessageIngester {
 
-    static MessageIngester elastic(final ElasticClientManager elasticClient) {
-        return new MessageIngesterElastic(elasticClient);
+    static MessageIngester elastic(final ElasticClientManager elasticClient, final IngestJobMetricsRecorder ingestJobMetricsRecorder) {
+        return new MessageIngesterElastic(elasticClient, ingestJobMetricsRecorder);
     }
-    static MessageIngester elasticWithPgBackup(final ElasticClientManager elasticClient, final IPostgresClient sql) {
-        final MessageIngester ingester = elastic(elasticClient);
-        return new MessageIngesterPostgres(sql, ingester);
+    static MessageIngester elasticWithPgBackup(final ElasticClientManager elasticClient, final IPostgresClient sql, final IngestJobMetricsRecorder ingestJobMetricsRecorder) {
+        final MessageIngester ingester = elastic(elasticClient, ingestJobMetricsRecorder);
+        return new MessageIngesterPostgres(sql, ingester, ingestJobMetricsRecorder);
     }
 
     Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages);

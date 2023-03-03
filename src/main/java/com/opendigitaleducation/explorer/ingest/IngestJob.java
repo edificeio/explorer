@@ -2,15 +2,26 @@ package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
 import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
+import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerFactory;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static java.util.Collections.emptyList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
 import org.entcore.common.explorer.IngestJobState;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.postgres.IPostgresClient;
@@ -18,11 +29,9 @@ import org.entcore.common.postgres.IPostgresClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
-import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
 
 public class IngestJob {
     static Logger log = LoggerFactory.getLogger(IngestJob.class);
@@ -68,6 +77,7 @@ public class IngestJob {
         this.messageTransformer = new MessageTransformerChain();
         this.messageConsumer = getRouter(vertx);
         this.ingestJobMetricsRecorder = metricsRecorder;
+        loadTransformerChain(config);
     }
 
     private MessageConsumer getRouter(Vertx vertx) {
@@ -133,8 +143,9 @@ public class IngestJob {
     }
 
     public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final IPostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
-        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient);
-        return new IngestJob(vertx, reader, ingester, IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder(), config);
+        final IngestJobMetricsRecorder recorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient, recorder);
+        return new IngestJob(vertx, reader, ingester, recorder, config);
     }
 
     public Future<JsonObject> getMetrics() {
@@ -180,6 +191,14 @@ public class IngestJob {
                             .map(jobResult -> Pair.of(jobResult, result))
                             .otherwise(cause -> {
                                 // Fail everything
+                                for (final ExplorerMessageForIngest failedMessage : messagesToTreat) {
+                                    if(isBlank(failedMessage.getError())) {
+                                        failedMessage.setError("batch.error");
+                                    }
+                                    if(isBlank(failedMessage.getErrorDetails())) {
+                                        failedMessage.setErrorDetails(cause.toString());
+                                    }
+                                }
                                 final IngestJobResult jobResult = new IngestJobResult(
                                         emptyList(),
                                         messagesToTreat);
@@ -191,8 +210,9 @@ public class IngestJob {
                     final Future<IngestJobResult> future;
                     this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight());
                     if (ingestResult.size() > 0) {
-                        updateMessagesAttemptedTooManyTimes(ingestResult);
-                        future = this.messageReader.updateStatus(transformIngestResult(ingestResult, ingestResultAndJobResult.getRight()), maxAttempt)
+                        final IngestJobResult transformedJob = transformIngestResult(ingestResult, ingestResultAndJobResult.getRight());
+                        updateMessagesAttemptedTooManyTimes(transformedJob);
+                        future = this.messageReader.updateStatus(transformedJob, maxAttempt)
                                 .map(ingestResult);
                     } else {
                         future = Future.succeededFuture(ingestResult);
@@ -214,7 +234,10 @@ public class IngestJob {
                     } catch (Exception exc) {
                     } finally {
                         this.ingestJobMetricsRecorder.onIngestCycleCompleted();
-                        this.modifyBatchSizeAfterCycleCompleted(messageRes.succeeded(), messageRes.result());
+                        this.modifyBatchSizeAfterCycleCompleted(messageRes.result());
+                        if(messageRes.succeeded()) {
+                            this.logBatchResult(messageRes.result());
+                        }
                         onTaskComplete(current);
                         //if no pending execution => trigger next execution
                         if (tmpIdExecution == idExecution) {
@@ -229,15 +252,33 @@ public class IngestJob {
         return current.future();
     }
 
-    private void modifyBatchSizeAfterCycleCompleted(final boolean succeeded, IngestJobResult result) {
-        if(succeeded) {
-            if(this.batchSize != maxBatchSize) {
-                this.batchSize = maxBatchSize;
-                log.info("Reverting back batch size to " + this.batchSize + " after a successful cycle");
+    private void logBatchResult(final IngestJobResult result) {
+        final List<ExplorerMessageForIngest> succeeded = result == null ? emptyList() : result.getSucceed();
+        final List<ExplorerMessageForIngest> failed = result == null ? emptyList() : result.getFailed();
+        if(failed == null || failed.isEmpty()) {
+            log.info("[IngestResult] [id=" +idExecution+"] No error in batch ");
+        } else {
+            log.warn(failed.size() + " errors in batch " + idExecution);
+            for (final ExplorerMessageForIngest explorerMessageForIngest : failed) {
+                log.warn("[IngestResult] [id=" +idExecution+"] " + explorerMessageForIngest);
             }
-        } else if(result == null ||
-                (result.succeed == null || result.succeed.isEmpty()) &&
-                (result.failed != null && result.failed.size() > 0)) {
+        }
+        if(succeeded  == null || succeeded.isEmpty()) {
+            log.info("[IngestResult] [id=" +idExecution+"] No successes in batch ");
+        } else {
+            log.info("[IngestResult] [id=" +idExecution+"] " + succeeded.size() + " successes in batch ");
+        }
+    }
+
+    private void modifyBatchSizeAfterCycleCompleted(final IngestJobResult result) {
+        final List<ExplorerMessageForIngest> succeeded = result == null ? emptyList() : result.getSucceed();
+        final List<ExplorerMessageForIngest> failed = result == null ? emptyList() : result.getFailed();
+        if(failed == null || failed.isEmpty()) {
+            if(this.batchSize != maxBatchSize) {
+                this.batchSize = Math.min(maxBatchSize, this.batchSize * 2);
+                log.info("Growing back batch size to " + this.batchSize + " after a cycle without failures");
+            }
+        } else {
             final int newBatchSize = Math.max(1, this.batchSize / 2);
             log.warn("Ingest cycle failed so we are going to shrink the batch size from " + this.batchSize + " to " + newBatchSize);
             this.batchSize = newBatchSize;
@@ -254,15 +295,48 @@ public class IngestJob {
         }
     }
 
+    private static class ApplicationAndEntity {
+        private final String application;
+        private final String entity;
+
+        private ApplicationAndEntity(final String application, final String entity) {
+            this.application = application;
+            this.entity = entity;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ApplicationAndEntity)) {
+                return false;
+            }
+            final ApplicationAndEntity that = (ApplicationAndEntity) o;
+            return application.equals(that.application) && entity.equals(that.entity);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(application, entity);
+        }
+    }
+
     private void notifyMessageStateUpdate(final List<ExplorerMessageForIngest> readMessages, final IngestJobState state) {
         readMessages.stream()
         .filter(readMessage -> readMessage.getIdQueue().isPresent())
-        .forEach(readMessage -> {
+        .collect(Collectors.groupingBy(m -> new ApplicationAndEntity(m.getApplication(), m.getEntityType())))
+        .entrySet().stream()
+        .forEach(messagesByApplication -> {
+            final ApplicationAndEntity key = messagesByApplication.getKey();
+            final List<ExplorerMessageForIngest> messages = messagesByApplication.getValue();
             try {
-                final IngestJobStateUpdateMessage message = new IngestJobStateUpdateMessage(readMessage.getId(), readMessage.getVersion(), state);
-                vertx.eventBus().send(addressForIngestStateUpdate(readMessage.getApplication(), readMessage.getEntityType()), JsonObject.mapFrom(message));
+                final List<IngestJobStateUpdateMessage> messagesBatch = messages.stream()
+                        .map(readMessage -> new IngestJobStateUpdateMessage(readMessage.getId(), readMessage.getVersion(), state))
+                        .collect(Collectors.toList());
+                vertx.eventBus().send(addressForIngestStateUpdate(key.application, key.entity), Json.encode(messagesBatch));
             } catch (Exception e) {
-                log.error("Could not notify that we have received message" + readMessage, e);
+                log.error("Could not notify a message state update (" + state + ") : " + messages, e);
             }
         });
     }
@@ -396,5 +470,19 @@ public class IngestJob {
 
     public MessageTransformerChain getMessageTransformer() {
         return messageTransformer;
+    }
+
+    private void loadTransformerChain(final JsonObject config) {
+        final JsonArray messageTransformerConfigurations = config.getJsonArray("messageTransformers");
+        if(messageTransformerConfigurations == null) {
+            this.messageTransformer.clearChain();
+        } else {
+            final MessageTransformer[] transformers = new MessageTransformer[messageTransformerConfigurations.size()];
+            for(int i = 0; i < messageTransformerConfigurations.size(); i++) {
+                transformers[i] = MessageTransformerFactory.create(messageTransformerConfigurations.getJsonObject(i));
+            }
+            this.messageTransformer.clearChain();
+            messageTransformer.withTransformer(transformers);
+        }
     }
 }

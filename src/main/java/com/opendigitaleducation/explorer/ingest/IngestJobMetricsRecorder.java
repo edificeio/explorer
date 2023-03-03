@@ -42,7 +42,25 @@ public interface IngestJobMetricsRecorder {
      */
     void onPendingIngestCycleExecutionChanged();
 
+    /**
+     * Update metrics when messages are being dropped because they failed too many times
+     * @param nbMessagesAttemptedTooManyTimes Number of dropped messages
+     */
     void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes);
+
+    /**
+     * Register statistics about the ingestion in OpenSearch
+     * @param nbOk Number of messages that were successfully ingested
+     * @param nbKo Number of messages that failed
+     * @param elapsedTime Time taken to process these messages in OpenSearch
+     */
+    void onIngestOpenSearchResult(final int nbOk, final int nbKo, long elapsedTime);
+
+    /**
+     * Register statistics about the ingestion in Postgres
+     * @param elapsedTime Time taken to process these messages in Postgres
+     */
+    void onIngestPostgresResult(long elapsedTime);
 
     class NoopIngestJobMetricsRecorder implements IngestJobMetricsRecorder {
         @Override
@@ -87,6 +105,16 @@ public interface IngestJobMetricsRecorder {
 
         @Override
         public void onMessagesAttempedTooManyTimes(int nbMessagesAttemptedTooManyTimes) {
+
+        }
+
+        @Override
+        public void onIngestOpenSearchResult(final int nbOk, final int nbKo, final long elapsedTime) {
+
+        }
+
+        @Override
+        public void onIngestPostgresResult(final long elapsedTime) {
 
         }
 

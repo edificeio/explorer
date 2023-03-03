@@ -7,26 +7,42 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import static java.util.Collections.emptyList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.user.UserInfos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MessageIngesterPostgres implements MessageIngester {
+
+    static Logger log = LoggerFactory.getLogger(MessageIngesterPostgres.class);
     private final ResourceExplorerDbSql sql;
     private final FolderExplorerDbSql folderSql;
     private final MessageIngester ingester;
+    private final IngestJobMetricsRecorder ingestJobMetricsRecorder;
 
-    public MessageIngesterPostgres(final IPostgresClient sql, final MessageIngester ingester) {
+    public MessageIngesterPostgres(final IPostgresClient sql, final MessageIngester ingester, final IngestJobMetricsRecorder ingestJobMetricsRecorder) {
         this.ingester = ingester;
         this.sql = new ResourceExplorerDbSql(sql);
         this.folderSql = new FolderExplorerDbSql(sql);
+        this.ingestJobMetricsRecorder = ingestJobMetricsRecorder;
     }
 
     @Override
     public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
+        final long start = System.currentTimeMillis();
         if (messages.isEmpty()) {
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
@@ -60,31 +76,81 @@ public class MessageIngesterPostgres implements MessageIngester {
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
             final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-            return CompositeFuture.all(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
-                //ingest only resources created or deleted successfully in postgres
-                final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
-                //TODO on delete folders => update related resources?
-                toIngest.addAll(deleteFolders);
-                toIngest.addAll(beforeDeleteFuture.result());
-                toIngest.addAll(beforeUpsertFuture.result());
-                toIngest.addAll(beforeUpsertFolderFuture.result());
-                return ingester.ingest(toIngest).map(ingestResult -> {
-                    //add to failed all resources that cannot be deleted or created into postgres
-                    final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
-                    prepareFailed.removeAll(toIngest);
-                    ingestResult.getFailed().addAll(prepareFailed);
-                    return ingestResult;
-                }).compose(ingestResult -> {
-                    //delete definitly all resources deleted from ES
-                    final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
-                    final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
-                        final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
-                        return found.isPresent();
-                    }).collect(Collectors.toList());
-                    return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);
-                });
+            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
+                recordDelay(messages, start);
+                if(all.succeeded()) {
+                    //ingest only resources created or deleted successfully in postgres
+                    final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
+                    //TODO on delete folders => update related resources?
+                    toIngest.addAll(deleteFolders);
+                    toIngest.addAll(beforeDeleteFuture.result());
+                    toIngest.addAll(beforeUpsertFuture.result());
+                    toIngest.addAll(beforeUpsertFolderFuture.result());
+                    return ingester.ingest(toIngest).map(ingestResult -> {
+                        //add to failed all resources that cannot be deleted or created into postgres
+                        final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
+                        prepareFailed.removeAll(toIngest);
+                        for (final ExplorerMessageForIngest failedMessage : prepareFailed) {
+                            if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
+                                failedMessage.setError("psql.error");
+                                failedMessage.setErrorDetails("resource cannot be deleted or created into postgres");
+                            }
+                        }
+                        ingestResult.getFailed().addAll(prepareFailed);
+                        return ingestResult;
+                    }).compose(ingestResult -> {
+                        //delete definitly all resources deleted from ES
+                        final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
+                        final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
+                            final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
+                            return found.isPresent();
+                        }).collect(Collectors.toList());
+                        return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);
+                    });
+                } else {
+                    log.warn("Error in PostgresIngester", all.cause());
+                    final List<ExplorerMessageForIngest> failed = new ArrayList<>();
+                    failed.addAll(populateError(upsertFolders, beforeUpsertFolderFuture));
+                    failed.addAll(populateError(upsertResources, beforeUpsertFuture));
+                    failed.addAll(populateError(deleteResources, beforeDeleteFuture));
+                    final Set<String> processedErrors = failed.stream()
+                            .map(m -> m.getId()).filter(s -> isNotBlank(s))
+                            .collect(Collectors.toSet());
+                    for (final ExplorerMessageForIngest message : messages) {
+                        final String id = message.getId();
+                        if(isBlank(id) || !processedErrors.contains(id)) {
+                            message.setError("pg.error");
+                            message.setErrorDetails("pg.unprocessed.error");
+                            failed.add(message);
+                        }
+                    }
+                    final IngestJob.IngestJobResult result = new IngestJob.IngestJobResult(
+                            emptyList(),
+                            failed);
+                    return Future.failedFuture(all.cause());
+                }
             });
         });
+    }
+
+    private List<ExplorerMessageForIngest> populateError(final List<ExplorerMessageForIngest> messages, final Future<List<ExplorerMessageForIngest>> futureResult) {
+        if(futureResult.failed()) {
+            final String cause = futureResult.cause().toString();
+            for (final ExplorerMessageForIngest message : messages) {
+                if(isBlank(message.getError())) {
+                    message.setError("pg.error");
+                }
+                if(isBlank(message.getErrorDetails())) {
+                    message.setErrorDetails(cause);
+                }
+            }
+        }
+        return messages;
+    }
+
+    private void recordDelay(final List<ExplorerMessageForIngest> messages, final long start) {
+        final long delay = System.currentTimeMillis() - start;
+        ingestJobMetricsRecorder.onIngestPostgresResult(delay / (messages.size() + 1));
     }
 
     protected Future<List<ExplorerMessageForIngest>> onUpsertResources(final List<ExplorerMessageForIngest> messages) {

@@ -10,6 +10,9 @@ import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import com.opendigitaleducation.explorer.tests.ExplorerTestHelper;
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimesAndFetchUniqueResult;
+import static io.vertx.core.CompositeFuture.all;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -19,8 +22,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Timeout;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.redis.client.Command;
-import io.vertx.redis.client.Request;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
@@ -31,7 +34,11 @@ import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
@@ -46,12 +53,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
-import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.executeJobNTimesAndFetchUniqueResult;
-import static io.vertx.core.CompositeFuture.all;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 @RunWith(VertxUnitRunner.class)
 public class DiscreteFailureTest {
@@ -262,7 +263,7 @@ public class DiscreteFailureTest {
     }
 
 
-    /**
+        /**
      * <u>GOAL</u> : Test that the final result of the ingestion is the expected one even if two (or more) messages
      * do not arrive in the right order.
      *
@@ -280,6 +281,7 @@ public class DiscreteFailureTest {
      */
     @Test
     public void testMessagesThatArriveInWrongOrderAreCorrectlyProcessed(TestContext context) {
+        plugin.start();
         final List<ErrorMessageTransformer.IngestJobErrorRule> errors = evictionRules("my_flag", ".*fail.*", "redis-read", "HEAD");
         errorOnRedisOnContent(BATCH_SIZE, errors, context);
     }

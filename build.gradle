@@ -62,6 +62,7 @@ dependencies {
     compile "org.entcore:common:$entCoreVersion"
     compile "com.ongres.scram:client:$scramVersion"
     testCompile "org.entcore:test:$entCoreVersion:fat"
+    implementation "org.jsoup:jsoup:$jsoupVersion"
 }
 
 jar {
