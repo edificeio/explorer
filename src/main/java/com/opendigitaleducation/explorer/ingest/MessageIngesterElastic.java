@@ -1,9 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticBulkBuilder;
@@ -12,15 +9,17 @@ import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MessageIngesterElastic implements MessageIngester {
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
 
     private final ElasticClientManager elasticClient;
-    public MessageIngesterElastic(final ElasticClientManager elasticClient) {
+    private final IngestJobMetricsRecorder ingestJobMetricsRecorder;
+    public MessageIngesterElastic(final ElasticClientManager elasticClient,
+                                  final IngestJobMetricsRecorder ingestJobMetricsRecorder) {
         this.elasticClient = elasticClient;
+        this.ingestJobMetricsRecorder = ingestJobMetricsRecorder;
     }
 
     //TODO if 429 retry and set maxBatchSize less than
@@ -67,8 +66,15 @@ public class MessageIngesterElastic implements MessageIngester {
         for (MessageIngesterElasticOperation operation : operations) {
             operation.execute(bulk);
         }
+        long start = System.currentTimeMillis();
         return bulk.end().map(results -> {
-            if (!results.isEmpty()) {
+            long delay = System.currentTimeMillis() - start;
+            int nbOk = 0;
+            int nbKo = 0;
+            if (results.isEmpty()) {
+                nbOk = 0;
+                nbKo = operations.size();
+            } else {
                 //categorise
                 final List<ExplorerMessageForIngest> succeed = ingestJobResult.getSucceed();
                 final List<ExplorerMessageForIngest> failed = ingestJobResult.getFailed();
@@ -81,19 +87,33 @@ public class MessageIngesterElastic implements MessageIngester {
                         continue;
                     }
                     if (res.isOk()) {
+                        nbOk++;
                         succeed.add(op.message);
                     } else {
+                        nbKo++;
                         //if deleted is not found => suceed
                         if (ExplorerMessage.ExplorerAction.Delete.name().equals(op.getMessage().getAction()) && "not_found".equals(res.getMessage())) {
                             succeed.add(op.message);
                         } else {
-                            op.message.setError(res.getMessage());
+                            op.message.setError("elastic.ingestion.error: " + res.getMessage());
                             op.message.setErrorDetails(res.getDetails());
                             failed.add(op.message);
                         }
                     }
                 }
             }
+            ingestJobMetricsRecorder.onIngestOpenSearchResult(nbOk, nbKo, delay);
+            return ingestJobResult;
+        }).otherwise(th -> {
+            long delay = System.currentTimeMillis() - start;
+            final List<ExplorerMessageForIngest> failed = ingestJobResult.getFailed();
+            for (int i = 0; i < operations.size(); i++) {
+                final MessageIngesterElasticOperation op = operations.get(i);
+                op.message.setError("elastic.ingestion.error: " + th.getMessage());
+                op.message.setErrorDetails(th.toString());
+                failed.add(op.message);
+            }
+            ingestJobMetricsRecorder.onIngestOpenSearchResult(0, operations.size(), delay);
             return ingestJobResult;
         });
     }

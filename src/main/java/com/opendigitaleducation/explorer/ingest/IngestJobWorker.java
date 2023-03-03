@@ -27,9 +27,9 @@ public class IngestJobWorker extends AbstractVerticle {
         //create ingest job
         final JsonObject ingestConfig = config().getJsonObject("ingest");
         final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);
-        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient);
-        log.info("Starting ingest job worker... ");
         final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder);
+        log.info("Starting ingest job worker... ");
         job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
         final List<Future> futures = new ArrayList<>();
         futures.add(job.start());

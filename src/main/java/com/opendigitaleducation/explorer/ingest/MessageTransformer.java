@@ -1,5 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
+import io.vertx.core.json.JsonObject;
+
 import java.util.List;
 
 /**
@@ -14,4 +16,6 @@ public interface MessageTransformer {
      * @return The list of mapped messages (the order must be preserved)
      */
     List<ExplorerMessageForIngest> transform(List<ExplorerMessageForIngest> messages);
+
+    default void configure(final JsonObject configuration){};
 }
