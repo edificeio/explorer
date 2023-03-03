@@ -72,8 +72,13 @@ export default function useShareResourceModal({
     setItems((prevItems: any[]) => {
       const newItems = [...prevItems];
       const index = newItems.findIndex((x) => x.id === item.id);
-      newItems[index].actions[actionName] =
-        !newItems[index].actions[actionName];
+      const previousValue = newItems[index].actions[actionName];
+
+      newItems[index] = {
+        ...newItems[index],
+        actions: { ...newItems[index].actions, [actionName]: !previousValue },
+      };
+
       return newItems;
     });
   };
