@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-import { type TreeNode } from "@ode-react-ui/advanced";
 import { BUS } from "@shared/constants";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
@@ -165,25 +163,23 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
 
       const hasReachLimit = pagination.startIdx === pagination.maxIdx;
 
-      set(
-        (state: { resources: any; treeData: TreeNode; searchParams: any }) => {
-          return {
-            ...state,
+      set((state) => {
+        return {
+          ...state,
+          folders,
+          resources: [...state.resources, ...resources],
+          treeData: wrapTreeNode(
+            state.treeData,
             folders,
-            resources: [...state.resources, ...resources],
-            treeData: wrapTreeNode(
-              state.treeData,
-              folders,
-              searchParams.filters.folder || FOLDER.DEFAULT,
-            ),
-            searchParams: {
-              ...state.searchParams,
-              pagination,
-            },
-            hasMoreResources: hasReachLimit,
-          };
-        },
-      );
+            searchParams.filters.folder || FOLDER.DEFAULT,
+          ),
+          searchParams: {
+            ...state.searchParams,
+            pagination,
+          },
+          hasMoreResources: hasReachLimit,
+        };
+      });
     } catch (error) {
       // if failed push error
       console.error("explorer getmore failed: ", error);

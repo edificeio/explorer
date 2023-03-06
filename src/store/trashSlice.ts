@@ -7,6 +7,7 @@ import {
   RESOURCE,
   type TrashParameters,
   FOLDER,
+  type IFolder,
 } from "ode-ts-client";
 import toast from "react-hot-toast";
 import { type StateCreator } from "zustand";
@@ -49,7 +50,7 @@ export const createTrashSlice: StateCreator<State, [], [], TrashSlice> = (
         folderIds: selectedFolders,
       };
       await BUS.publish(RESOURCE.FOLDER, ACTION.TRASH, parameters);
-      set((state: { treeData: TreeNode; resources: any[]; folders: any[] }) => {
+      set((state) => {
         const treeData: TreeNode = deleteNode(state.treeData, {
           folders: selectedFolders,
         });
@@ -57,7 +58,7 @@ export const createTrashSlice: StateCreator<State, [], [], TrashSlice> = (
           (resource: IResource) => !selectedResources.includes(resource.id),
         );
         const folders = state.folders.filter(
-          (resource: IResource) => !selectedFolders.includes(resource.id),
+          (folder: IFolder) => !selectedFolders.includes(folder.id),
         );
         return { ...state, folders, resources, treeData };
       });

@@ -6,7 +6,7 @@ export function hasChildren(folderId: string, data: TreeNode): boolean {
   }
 
   if (data.children) {
-    return data.children.some((child: any) => hasChildren(data.id, child));
+    return data.children.some((child: TreeNode) => hasChildren(data.id, child));
   }
   return false;
 }

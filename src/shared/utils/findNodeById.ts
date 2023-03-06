@@ -6,7 +6,7 @@ export function findNodeById(id: string, data: TreeNode): TreeNode | undefined {
     return data;
   }
   if (data?.children?.length) {
-    data?.children?.every((childNode: any) => {
+    data?.children?.every((childNode: TreeNode) => {
       res = findNodeById(id, childNode);
       return res === undefined; // break loop if res is found
     });

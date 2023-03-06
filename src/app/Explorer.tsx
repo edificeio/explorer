@@ -44,7 +44,7 @@ import useExplorerStore from "@store/index";
   );
 }; */
 
-export default function Explorer() {
+export default function Explorer(): JSX.Element | null {
   const { i18n, params, app, appCode, getBootstrapTheme, is1d } =
     useOdeClient();
 
@@ -53,7 +53,7 @@ export default function Explorer() {
   const {
     actions,
     init,
-    isReady,
+    isAppReady,
     getHasResourcesOrFolders, // Return number folder or ressources
     getIsTrashSelected, // Return boolean : true if trash is selected, false other
     getHasNoSelectedNodes, // Return Boolean : true if we are NOT in a folder, false if we are in a folder
@@ -65,6 +65,10 @@ export default function Explorer() {
     createResource, // Create ressource (onClick)
     isActionAvailable,
   } = useExplorerStore((state) => state);
+
+  useEffect(() => {
+    init(params);
+  }, []);
 
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
@@ -84,15 +88,9 @@ export default function Explorer() {
     }
   };
 
-  useEffect(() => {
-    init(params);
-  }, []);
+  console.count("Explorer render");
 
-  if (!isReady) {
-    return <></>;
-  }
-
-  return (
+  return isAppReady ? (
     <>
       <AppHeader>
         <AppCard app={app} isHeading headingStyle="h3" level="h1">
@@ -224,5 +222,5 @@ export default function Explorer() {
         <ActionBarContainer />
       </Grid>
     </>
-  );
+  ) : null;
 }

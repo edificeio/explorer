@@ -1,8 +1,8 @@
 import { Card, useOdeClient } from "@ode-react-ui/core";
+import { useSpring, animated } from "@react-spring/web";
 import useExplorerStore from "@store/index";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { motion } from "framer-motion";
 import { type IResource } from "ode-ts-client";
 
 import "dayjs/locale/de";
@@ -33,32 +33,13 @@ export default function ResourcesList(): JSX.Element | null {
     return shared && shared.length >= 1;
   }
 
-  // * Framer Motion
-  const list = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  // * Framer Motion
-  const item = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-    },
-  };
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  });
 
   return resources.length ? (
-    <motion.ul
-      initial="hidden"
-      animate="show"
-      variants={list}
-      className="grid ps-0 list-unstyled mt-24"
-    >
+    <animated.ul className="grid ps-0 list-unstyled mt-24">
       {resources.map((resource: IResource) => {
         const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
           resource;
@@ -66,7 +47,13 @@ export default function ResourcesList(): JSX.Element | null {
         const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
 
         return (
-          <motion.li className="g-col-4" key={assetId} variants={item}>
+          <animated.li
+            className="g-col-4"
+            key={assetId}
+            style={{
+              ...springs,
+            }}
+          >
             <Card
               app={app}
               className="c-pointer"
@@ -83,9 +70,9 @@ export default function ResourcesList(): JSX.Element | null {
               messagePublic={i18n("tooltip.public")}
               messageShared={i18n("tooltip.shared")}
             />
-          </motion.li>
+          </animated.li>
         );
       })}
-    </motion.ul>
+    </animated.ul>
   ) : null;
 }
