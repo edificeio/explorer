@@ -38,7 +38,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 createRoot(root!).render(
-  // <MotionConfig reducedMotion="user">
   <StrictMode>
     <BrowserRouter>
       <OdeClientProvider
@@ -54,5 +53,4 @@ createRoot(root!).render(
       </OdeClientProvider>
     </BrowserRouter>
   </StrictMode>,
-  // </MotionConfig>
 );

@@ -10,8 +10,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:react-hooks/recommended"
   ],
-  overrides: [
-  ],
+  overrides: [],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaFeatures: {
@@ -28,6 +27,7 @@ module.exports = {
   ],
   rules: {
     "arrow-parens": "off",
+    'react/no-array-index-key': "error",
     "react/react-in-jsx-scope": "off",
     "react/jsx-uses-react": ["off"],
     'react/jsx-props-no-spreading': 'off',
@@ -35,7 +35,7 @@ module.exports = {
     "react/jsx-one-expression-per-line": "off",
     "react-hooks/exhaustive-deps": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "off",
@@ -55,13 +55,11 @@ module.exports = {
       "error",
       {
         groups: ["builtin", "external", "internal"],
-        pathGroups: [
-          {
-            pattern: "react",
-            group: "external",
-            position: "before",
-          },
-        ],
+        pathGroups: [{
+          pattern: "react",
+          group: "external",
+          position: "before",
+        }, ],
         pathGroupsExcludedImportTypes: ["react"],
         "newlines-between": "always",
         alphabetize: {

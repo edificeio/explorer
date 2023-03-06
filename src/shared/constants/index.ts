@@ -6,6 +6,8 @@ import {
   TransportFrameworkFactory,
 } from "ode-ts-client";
 
+console.log(SessionFrameworkFactory.instance());
+
 export const sessionFramework = SessionFrameworkFactory.instance();
 export const configurationFramework = ConfigurationFrameworkFactory.instance();
 export const notifyFramework = NotifyFrameworkFactory.instance();

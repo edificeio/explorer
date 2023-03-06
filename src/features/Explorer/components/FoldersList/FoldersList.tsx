@@ -1,6 +1,6 @@
 import { Card, useOdeClient } from "@ode-react-ui/core";
+import { useSpring, animated } from "@react-spring/web";
 import useExplorerStore from "@store/index";
-import { motion } from "framer-motion";
 import { type IFolder } from "ode-ts-client";
 
 export default function FoldersList() {
@@ -21,34 +21,23 @@ export default function FoldersList() {
     }
   }
 
-  const list = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-    },
-  };
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  });
 
   return folders.length && !getIsTrashSelected() ? (
-    <motion.ul
-      className="grid ps-0 list-unstyled"
-      initial="hidden"
-      animate="show"
-      variants={list}
-    >
+    <animated.ul className="grid ps-0 list-unstyled">
       {folders.map((folder: IFolder) => {
         const { id, name } = folder;
         return (
-          <motion.li className="g-col-4" key={id} variants={item}>
+          <animated.li
+            className="g-col-4"
+            key={id}
+            style={{
+              ...springs,
+            }}
+          >
             <Card
               app={app}
               name={name}
@@ -57,9 +46,9 @@ export default function FoldersList() {
               onOpen={async () => await openFolder(id)}
               onSelect={() => toggleSelect(folder)}
             />
-          </motion.li>
+          </animated.li>
         );
       })}
-    </motion.ul>
+    </animated.ul>
   ) : null;
 }

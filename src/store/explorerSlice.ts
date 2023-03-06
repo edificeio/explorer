@@ -32,7 +32,7 @@ type Thing = "folder" | "resource" | "all";
 type PromiseVoid = Promise<void>;
 
 export interface ExplorerSlice {
-  isReady: boolean;
+  isAppReady: boolean;
   actions: IAction[];
   filters: IFilter[];
   orders: IOrder[];
@@ -60,7 +60,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   set,
   get,
 ) => ({
-  isReady: false,
+  isAppReady: false,
   actions: [],
   filters: [],
   orders: [],
@@ -77,24 +77,31 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   },
   init: async (params: OdeProviderParams) => {
     const { app } = params;
+
     try {
       // get context from backend
-      const { searchParams: previousParam, isReady: previousIsReady } = get();
-      if (previousIsReady) {
+      const {
+        searchParams: previousParam,
+        // isAppReady: isPreviousReady
+      } = get();
+      /* if (isPreviousReady) {
         return;
-      }
+      } */
       const searchParams: ISearchParameters = {
         ...previousParam,
         app,
         types: [RESOURCE.BLOG],
       };
+
+      console.log("searchParams", searchParams);
+
       // copy props before
-      const ready = !!app;
-      set((state) => ({ ...state, ...params, searchParams, ready }));
+      /* const isReady = !!app;
+      set((state) => ({ ...state, ...params, searchParams, isReady })); */
       // wait until ready to load
-      if (!ready) {
+      /* if (!isReady) {
         return;
-      }
+      } */
       const { actions, folders, resources, preferences, orders, filters } =
         (await BUS.publish(
           RESOURCE.FOLDER,
@@ -104,7 +111,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
 
       set((state) => ({
         ...state,
-        isReady: true,
+        isAppReady: true,
         actions,
         preferences,
         orders,
@@ -221,7 +228,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     });
   },
   deselect: (id: string[], type: Thing) => {
-    set((state: { selectedFolders: any[]; selectedResources: any[] }) => {
+    set((state) => {
       const selectedFolders = state.selectedFolders.filter(
         (folder) => !id.includes(folder),
       );

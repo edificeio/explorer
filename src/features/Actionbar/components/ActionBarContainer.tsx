@@ -7,10 +7,11 @@ import {
   useOdeClient,
   LoadingScreen,
 } from "@ode-react-ui/core";
+import { useTransition, animated } from "@react-spring/web";
 import { AccessControl } from "@shared/components/AccessControl";
-import { AnimatePresence, motion } from "framer-motion";
 import { type IAction } from "ode-ts-client";
 
+// TODO: lazy load modal
 import ShareResourceModal from "./ShareResourceModal";
 
 const DeleteModal = lazy(
@@ -52,53 +53,56 @@ export default function ActionBarContainer() {
     handleClick,
   } = useActionBar();
 
+  const transition = useTransition(isActionBarOpen, {
+    from: { opacity: 0, transform: "translateY(100%)" },
+    enter: { opacity: 1, transform: "translateY(0)" },
+    leave: { opacity: 0, transform: "translateY(100%)" },
+  });
+
   return (
     <>
-      <AnimatePresence>
-        {isActionBarOpen ? (
-          <motion.div
-            className="position-fixed bottom-0 start-0 end-0 z-3"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{
-              y: { duration: 0.5 },
-              default: { ease: "linear" },
-            }}
-          >
-            <ActionBar>
-              {actions
-                .filter(
-                  (action: IAction) =>
-                    action.available && action.target === "actionbar",
-                )
-                .map((action: IAction) => {
-                  return (
-                    isActivable(action) && (
-                      <AccessControl
-                        key={action.id}
-                        resourceRights={selectedElement}
-                        roleExpected={action.right!}
-                      >
-                        <Button
+      {transition((style, isActionBarOpen) => {
+        return (
+          isActionBarOpen && (
+            <animated.div
+              className="position-fixed bottom-0 start-0 end-0 z-3"
+              style={style}
+            >
+              <ActionBar>
+                {actions
+                  .filter(
+                    (action: IAction) =>
+                      action.available && action.target === "actionbar",
+                  )
+                  .map((action: IAction) => {
+                    return (
+                      isActivable(action) && (
+                        <AccessControl
                           key={action.id}
-                          type="button"
-                          color="primary"
-                          variant="filled"
-                          onClick={() => {
-                            handleClick(action);
-                          }}
+                          resourceRights={selectedElement}
+                          roleExpected={action.right!}
                         >
-                          {i18n(overrideLabel(action))}
-                        </Button>
-                      </AccessControl>
-                    )
-                  );
-                })}
-            </ActionBar>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                          <Button
+                            key={action.id}
+                            type="button"
+                            color="primary"
+                            variant="filled"
+                            onClick={() => {
+                              handleClick(action);
+                            }}
+                          >
+                            {i18n(overrideLabel(action))}
+                          </Button>
+                        </AccessControl>
+                      )
+                    );
+                  })}
+              </ActionBar>
+            </animated.div>
+          )
+        );
+      })}
+
       <Suspense fallback={<LoadingScreen />}>
         {isMoveModalOpen && (
           <MoveModal

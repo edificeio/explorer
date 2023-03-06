@@ -43,13 +43,13 @@ export const createTreeviewSlice: StateCreator<State, [], [], TreeviewSlice> = (
     return previousFolder && { ...previousFolder };
   },
   foldTreeItem: () => {
-    set((state: any) => {
+    set((state) => {
       return { ...state, status: "fold" };
     });
   },
   unfoldTreeItem: (folderId: string) => {
     const { treeData, loadSubfolders } = get();
-    set((state: any) => {
+    set((state) => {
       return { ...state, status: "unfold" };
     });
     // load subfolders if needed
@@ -60,7 +60,7 @@ export const createTreeviewSlice: StateCreator<State, [], [], TreeviewSlice> = (
   selectTreeItem: (folderId: string) => {
     // select and open folder
     const { openFolder } = get();
-    set((state: any) => {
+    set((state) => {
       return { ...state, status: "select" };
     });
     openFolder(folderId);

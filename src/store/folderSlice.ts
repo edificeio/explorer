@@ -76,7 +76,7 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         parameters,
       )) as CreateFolderResult;
 
-      set((state: { treeData: TreeNode; folders: any }) => {
+      set((state: { treeData: TreeNode; folders: IFolder[] }) => {
         // add folder in tree
         const treeData = addNode(state.treeData, {
           parentId,
@@ -155,7 +155,7 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
     const selectedNodeIds = arrayUnique([...ancestors, folderId]);
     if (previousId === folderId) return;
     // set selected nodes and current folder and previous item and filter unique
-    set((state: any) => {
+    set((state) => {
       return {
         ...state,
         // reset selection when changing folder
