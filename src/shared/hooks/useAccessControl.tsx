@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { type RightRole, ode } from "ode-ts-client";
+import { type RightRole, odeServices } from "ode-ts-client";
 // TODO move it to ode-react-ui with AccessControl
 
 export interface IObjectWithRights {
@@ -26,25 +26,27 @@ export default function useAccessControl({
     const safeRight = rights instanceof Array ? rights : [rights];
     if (roles instanceof Array) {
       // roles is of type RightRole[]
-      const can = await ode
+      const can = await odeServices
         .rights()
         .sessionHasAtLeastOneResourceRight(roles, safeRight);
       setVisible(can);
     } else {
       // roles is of type RightRole
-      const can = await ode.rights().sessionHasResourceRight(roles, safeRight);
+      const can = await odeServices
+        .rights()
+        .sessionHasResourceRight(roles, safeRight);
       setVisible(can);
     }
   };
 
   const checkRightForMultipleResources = async function (rights: string[][]) {
     if (roles instanceof Array) {
-      const can = await ode
+      const can = await odeServices
         .rights()
         .sessionHasAtLeastOneResourceRightForEachList(roles, rights);
       setVisible(can);
     } else {
-      const can = await ode
+      const can = await odeServices
         .rights()
         .sessionHasResourceRightForEachList(roles, rights);
       setVisible(can);
