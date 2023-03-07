@@ -9,7 +9,7 @@ import {
   type IActionResult,
   type IFolder,
   type UpdateParameters,
-  ode,
+  odeServices,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
@@ -55,7 +55,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
   },
   updateResource: async (params: UpdateParameters) => {
     const { searchParams } = get();
-    const result = await ode
+    const result = await odeServices
       .resource(searchParams.app, searchParams.types[0])
       .update(params);
     set((state) => {
