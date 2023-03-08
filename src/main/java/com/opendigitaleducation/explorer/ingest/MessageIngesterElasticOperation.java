@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.of;
+import org.entcore.common.explorer.IExplorerFolderTree;
 
 abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
@@ -199,7 +200,7 @@ abstract class MessageIngesterElasticOperation {
             final String id = message.getPredictibleId().orElse(message.getId());
             final String routing = ResourceServiceElastic.getRoutingKey(application);
             final String index = ExplorerConfig.getInstance().getIndex(application, resource);
-            if(message.getSkipCheckVersion()){
+            if(message.getSkipCheckVersion() || IExplorerFolderTree.FOLDER_TYPE.equals(message.getEntityType())){
                 //copy for upsert
                 final JsonObject insert = beforeCreate(copy());
                 final JsonObject update = beforeUpdate(copy());

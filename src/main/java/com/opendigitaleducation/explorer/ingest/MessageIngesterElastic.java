@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticBulkBuilder;
@@ -92,9 +93,13 @@ public class MessageIngesterElastic implements MessageIngester {
                     } else {
                         nbKo++;
                         //if deleted is not found => suceed
-                        if (ExplorerMessage.ExplorerAction.Delete.name().equals(op.getMessage().getAction()) && "not_found".equals(res.getMessage())) {
+                        if ("not_found".equals(res.getMessage())) {
                             succeed.add(op.message);
+                            if(!ExplorerMessage.ExplorerAction.Delete.name().equals(op.getMessage().getAction())) {
+                                log.warn("[MessageIngesterElastic] A not_found error was raised for a " + op.getMessage().getAction() + ": " + Json.encode(operations.get(i)));
+                            }
                         } else {
+                            log.warn("[MessageIngesterElastic] Error in ES for body : " + Json.encode(operations.get(i)));
                             op.message.setError("elastic.ingestion.error: " + res.getMessage());
                             op.message.setErrorDetails(res.getDetails());
                             failed.add(op.message);

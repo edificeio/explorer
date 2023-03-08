@@ -175,7 +175,7 @@ public class IngestJob {
         final Promise<Void> current = Promise.promise();
         pending.add(current.future());
         idExecution++;
-        this.ingestJobMetricsRecorder.onPendingIngestCycleExecutionChanged();
+        this.ingestJobMetricsRecorder.onNewPendingIngestCycle();
         CompositeFuture.all(copyPending).onComplete(onReady -> {
             try {
                 this.ingestJobMetricsRecorder.onIngestCycleStarted();
@@ -232,6 +232,9 @@ public class IngestJob {
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.cause()));
                         }
                     } catch (Exception exc) {
+                        this.ingestJobMetricsRecorder.onIngestCycleFailed();
+                        log.error("Failed to clean up job execution:", exc);
+                        this.onExecutionEnd.handle(new DefaultAsyncResult<>(exc));
                     } finally {
                         this.ingestJobMetricsRecorder.onIngestCycleCompleted();
                         this.modifyBatchSizeAfterCycleCompleted(messageRes.result());
@@ -255,18 +258,22 @@ public class IngestJob {
     private void logBatchResult(final IngestJobResult result) {
         final List<ExplorerMessageForIngest> succeeded = result == null ? emptyList() : result.getSucceed();
         final List<ExplorerMessageForIngest> failed = result == null ? emptyList() : result.getFailed();
-        if(failed == null || failed.isEmpty()) {
-            log.info("[IngestResult] [id=" +idExecution+"] No error in batch ");
+        if((succeeded == null || succeeded.isEmpty()) && (failed == null || failed.isEmpty())) {
+            log.trace("[IngestResult] [id=" + idExecution + "] Nothing in this batch");
         } else {
-            log.warn(failed.size() + " errors in batch " + idExecution);
-            for (final ExplorerMessageForIngest explorerMessageForIngest : failed) {
-                log.warn("[IngestResult] [id=" +idExecution+"] " + explorerMessageForIngest);
+            if (failed == null || failed.isEmpty()) {
+                log.info("[IngestResult] [id=" + idExecution + "] No error in batch ");
+            } else {
+                log.warn(failed.size() + " errors in batch " + idExecution);
+                for (final ExplorerMessageForIngest explorerMessageForIngest : failed) {
+                    log.warn("[IngestResult] [id=" + idExecution + "] " + explorerMessageForIngest);
+                }
             }
-        }
-        if(succeeded  == null || succeeded.isEmpty()) {
-            log.info("[IngestResult] [id=" +idExecution+"] No successes in batch ");
-        } else {
-            log.info("[IngestResult] [id=" +idExecution+"] " + succeeded.size() + " successes in batch ");
+            if (succeeded == null || succeeded.isEmpty()) {
+                log.info("[IngestResult] [id=" + idExecution + "] No successes in batch ");
+            } else {
+                log.info("[IngestResult] [id=" + idExecution + "] " + succeeded.size() + " successes in batch ");
+            }
         }
     }
 

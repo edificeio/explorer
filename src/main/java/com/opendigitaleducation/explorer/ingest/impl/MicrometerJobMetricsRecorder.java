@@ -137,7 +137,6 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     @Override
     public void onIngestCycleSucceeded() {
         ingestCycleSucceededCounter.increment();
-
     }
 
     @Override
@@ -148,6 +147,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     @Override
     public void onIngestCycleCompleted() {
         ingestCycleCompletedCounter.increment();
+        ingestCyclePendingCounter.increment(-1.);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     }
 
     @Override
-    public void onPendingIngestCycleExecutionChanged() {
+    public void onNewPendingIngestCycle() {
         ingestCyclePendingCounter.increment();
     }
 
