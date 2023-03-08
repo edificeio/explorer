@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { AppHeader } from "@features/Explorer/components";
 import FoldersList from "@features/Explorer/components/FoldersList/FoldersList";
-import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
+// import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import {
   AppCard,
@@ -19,6 +19,7 @@ import {
   EmptyScreen,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
+import { OnBoardingTrash } from "@shared/components/OnBoardingModal";
 import { imageBootstrap } from "@shared/constants";
 import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
 import useExplorerStore from "@store/index";
@@ -76,6 +77,11 @@ export default function Explorer(): JSX.Element | null {
   const canPuslish = actions.find((action) => action.id === "publish");
   const canCreate = actions.find((action) => action.id === "create");
 
+  // TODO : mettre ça dans une conf
+  const LIB_URL = `https://library.opendigitaleducation.com/search/?application%5B0%5D=${capitalizeFirstLetter(
+    appCode,
+  )}&page=1&sort_field=views&sort_order=desc`;
+
   const labelEmptyScreenApp = () => {
     if (canCreate?.available && is1d) {
       return i18n("explorer.emptyScreen.blog.txt1d.create");
@@ -87,8 +93,6 @@ export default function Explorer(): JSX.Element | null {
       return i18n("explorer.emptyScreen.blog.txt2d.consultation");
     }
   };
-
-  console.count("Explorer render");
 
   return isAppReady ? (
     <>
@@ -122,9 +126,7 @@ export default function Explorer(): JSX.Element | null {
               src={`${getBootstrapTheme()}/images/image-library.svg`}
               alt={i18n("explorer.libray.img.alt")}
               text={i18n("explorer.libray.title")}
-              url={`https://library.opendigitaleducation.com/search/?application%5B0%5D=${capitalizeFirstLetter(
-                appCode,
-              )}&page=1&sort_field=views&sort_order=desc`} // TODO : mettre ça dans une conf
+              url={LIB_URL}
               textButton={i18n("explorer.libray.btn")}
             />
           )}
@@ -157,7 +159,6 @@ export default function Explorer(): JSX.Element | null {
           {getHasResourcesOrFolders() !== 0 ? (
             <>
               <FoldersList />
-              <ResourcesList />
             </>
           ) : (
             <>
@@ -220,6 +221,7 @@ export default function Explorer(): JSX.Element | null {
           ) : null}
         </Grid.Col>
         <ActionBarContainer />
+        <OnBoardingTrash />
       </Grid>
     </>
   ) : null;
