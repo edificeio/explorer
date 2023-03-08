@@ -40,7 +40,7 @@ public interface IngestJobMetricsRecorder {
      * It lets us know if execution cycles are piling up (because of degraded performance or some process that did not
      * gracefully exit).
      */
-    void onPendingIngestCycleExecutionChanged();
+    void onNewPendingIngestCycle();
 
     /**
      * Update metrics when messages are being dropped because they failed too many times
@@ -99,7 +99,7 @@ public interface IngestJobMetricsRecorder {
         }
 
         @Override
-        public void onPendingIngestCycleExecutionChanged() {
+        public void onNewPendingIngestCycle() {
 
         }
 
