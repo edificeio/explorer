@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 import {
   Avatar,
   Button,
@@ -36,10 +38,16 @@ export default function ShareResourceModal({
   onCancel,
 }: ShareResourceModalProps) {
   const {
+    myAvatar,
+    idBookmark,
     shareRightsModel,
     shareActions,
     showBookmarkInput,
     radioPublicationValue,
+    bookmarkName,
+    setBookmarkName,
+    saveBookmark,
+    canSave,
     toggleBookmarkInput,
     handleRadioPublicationChange,
     handleActionCheckbox,
@@ -48,7 +56,7 @@ export default function ShareResourceModal({
     hasRight,
   } = useShareResourceModal({ onSuccess, onCancel });
   const { i18n } = useOdeClient();
-
+  const refBookmark = useRef<HTMLInputElement>(null);
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
       <Modal.Header onModalClose={onCancel}>Partager avec ...</Modal.Header>
@@ -76,6 +84,27 @@ export default function ShareResourceModal({
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <th scope="row">
+                  <Avatar
+                    alt="alternative text"
+                    size="xs"
+                    src={myAvatar}
+                    variant="circle"
+                  />
+                </th>
+                <td>{i18n("share.me")}</td>
+                {shareActions.map((shareAction) => (
+                  <td
+                    key={shareAction.displayName}
+                    style={{ width: "80px" }}
+                    className="text-center"
+                  >
+                    <Checkbox checked={true} disabled />
+                  </td>
+                ))}
+                <td></td>
+              </tr>
               {shareRightsModel.map((shareRight: ShareRight) => (
                 <tr key={shareRight.id}>
                   <th scope="row">
@@ -147,6 +176,11 @@ export default function ShareResourceModal({
               >
                 <div className="flex-fill">
                   <FormControl.Input
+                    key={idBookmark}
+                    ref={refBookmark}
+                    onChange={() => {
+                      setBookmarkName(() => refBookmark.current?.value || "");
+                    }}
                     placeholder="Saisir le nom du favori"
                     size="sm"
                     type="text"
@@ -156,7 +190,11 @@ export default function ShareResourceModal({
                   type="button"
                   color="primary"
                   variant="ghost"
+                  disabled={bookmarkName.length === 0}
                   leftIcon={<Save />}
+                  onClick={(_) => {
+                    saveBookmark(refBookmark.current!.value!);
+                  }}
                   className="text-nowrap"
                 >
                   Enregistrer favori
@@ -220,6 +258,7 @@ export default function ShareResourceModal({
           color="primary"
           variant="filled"
           onClick={handleShare}
+          disabled={!canSave()}
         >
           Partager
         </Button>

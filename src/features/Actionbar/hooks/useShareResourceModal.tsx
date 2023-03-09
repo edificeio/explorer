@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 
-import { useOdeClient } from "@ode-react-ui/core";
+import { Alert, useOdeClient } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks";
 import useExplorerStore from "@store/index";
 import {
   odeServices,
@@ -11,7 +12,6 @@ import {
   type ShareRightActionDisplayName,
   type ShareRightWithVisibles,
 } from "ode-ts-client/dist/services/ShareService";
-import { toast } from "react-hot-toast";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;
@@ -22,6 +22,8 @@ export default function useShareResourceModal({
   onSuccess,
   onCancel,
 }: useShareResourceModalProps) {
+  const { session } = useOdeClient();
+  const [idBookmark, setIdBookmark] = useState<string>(useId());
   const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
     rights: [],
     visibleBookmarks: [],
@@ -31,6 +33,7 @@ export default function useShareResourceModal({
   const [shareRightActions, setShareRightActions] = useState<
     ShareRightAction[]
   >([]);
+  const [bookmarkName, setBookmarkName] = useState("");
   const [showBookmarkInput, toggleBookmarkInput] = useState(false);
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<string>("now");
@@ -38,6 +41,7 @@ export default function useShareResourceModal({
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
   );
+  const shareResource = useExplorerStore((state) => state.shareResource);
 
   const { appCode } = useOdeClient();
 
@@ -75,25 +79,34 @@ export default function useShareResourceModal({
     setShareRights(({ rights, ...props }: ShareRightWithVisibles) => {
       const newItems = [...rights];
       const index = newItems.findIndex((x) => x.id === item.id);
-      if (newItems[index].actions.filter((a) => a.id === actionName)) {
+      const findAction = newItems[index].actions.filter(
+        (a) => a.id === actionName,
+      );
+      const actionObject = shareRightActions.filter(
+        (a) => a.id === actionName,
+      )[0];
+      if (findAction.length > 0) {
+        // if already has right => keep only lowest rights
         newItems[index] = {
           ...newItems[index],
-          actions: {
-            ...newItems[index].actions.filter((a) => {
-              return a.id !== actionName;
-            }),
-          },
+          actions: [
+            ...shareRightActions.filter(
+              (a) => (a.priority || 0) < (actionObject.priority || 0),
+            ),
+          ],
         };
         return {
           rights: newItems,
           ...props,
         };
       } else {
+        // if not have right => keep only lowest rights and equals
         newItems[index] = {
           ...newItems[index],
           actions: [
-            ...newItems[index].actions,
-            ...shareRightActions.filter((a) => a.id === actionName),
+            ...shareRightActions.filter(
+              (a) => (a.priority || 0) <= (actionObject.priority || 0),
+            ),
           ],
         };
         return {
@@ -104,11 +117,21 @@ export default function useShareResourceModal({
     });
   };
 
-  const handleShare = () => {
-    // TODO
-    console.log("Sharing...");
-    onSuccess?.();
-    toast.success(<h3>Coming Soon :)</h3>);
+  const { hotToast } = useHotToast(Alert);
+  const handleShare = async () => {
+    try {
+      await shareResource(
+        getSelectedIResources()[0]?.assetId,
+        shareRights.rights,
+      );
+      // TODO i18n
+      hotToast.success("Partage sauvegardé");
+      onSuccess?.();
+    } catch (e) {
+      console.error("Failed to save share", e);
+      // TODO i18N
+      hotToast.error("Erreur lors du partage");
+    }
   };
 
   const handleDeleteRow = (shareRightId: string) => {
@@ -126,14 +149,63 @@ export default function useShareResourceModal({
     shareRight: ShareRight,
     shareAction: ShareRightAction,
   ): boolean => {
-    return shareRight.actions.includes(shareAction);
+    return shareRight.actions.filter((a) => shareAction.id === a.id).length > 0;
+  };
+
+  const canSave = () => {
+    // cansave only if non empty rights
+    return (
+      shareRights.rights.filter((right) => {
+        return right.actions.length > 0;
+      }).length > 0
+    );
+  };
+
+  const saveBookmark = async (name: string) => {
+    try {
+      const res = await odeServices.directory().saveBookmarks(name, {
+        users: shareRights.rights
+          .filter((right) => right.type === "user")
+          .map((u) => u.id),
+        groups: shareRights.rights
+          .filter((right) => right.type === "group")
+          .map((u) => u.id),
+        bookmarks: shareRights.rights
+          .filter((right) => right.type === "sharebookmark")
+          .map((u) => u.id),
+      });
+      hotToast.success("Favoris sauvegardé");
+      setShareRights((state) => {
+        return {
+          ...state,
+          visibleBookmarks: [
+            ...state.visibleBookmarks,
+            {
+              displayName: name,
+              id: res.id,
+            },
+          ],
+        };
+      });
+      setIdBookmark(idBookmark + new Date().getTime().toString());
+      toggleBookmarkInput(false);
+    } catch (e) {
+      console.error("Failed to save bookmark", e);
+      hotToast.error("Erreur lors de la sauvegarde");
+    }
   };
 
   return {
+    idBookmark,
+    myAvatar: session.avatarUrl,
     shareRightsModel: shareRights.rights,
     shareActions: shareRightActions,
     showBookmarkInput,
     radioPublicationValue,
+    bookmarkName,
+    setBookmarkName,
+    saveBookmark,
+    canSave,
     toggleBookmarkInput,
     handleRadioPublicationChange,
     handleActionCheckbox,
