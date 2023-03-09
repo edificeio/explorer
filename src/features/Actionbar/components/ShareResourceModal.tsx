@@ -19,6 +19,7 @@ import {
   Save,
   Search,
 } from "@ode-react-ui/icons";
+import { type ShareRight } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
 import useShareResourceModal from "../hooks/useShareResourceModal";
@@ -35,14 +36,16 @@ export default function ShareResourceModal({
   onCancel,
 }: ShareResourceModalProps) {
   const {
-    items,
-    actions,
+    shareRightsModel,
+    shareActions,
     showBookmarkInput,
     radioPublicationValue,
     toggleBookmarkInput,
     handleRadioPublicationChange,
     handleActionCheckbox,
     handleShare,
+    handleDeleteRow,
+    hasRight,
   } = useShareResourceModal({ onSuccess, onCancel });
   const { i18n } = useOdeClient();
 
@@ -60,7 +63,7 @@ export default function ShareResourceModal({
               <tr>
                 <th scope="col"></th>
                 <th scope="col"></th>
-                {actions.map((action) => (
+                {shareActions.map((action) => (
                   <th
                     key={action.displayName}
                     scope="col"
@@ -73,30 +76,30 @@ export default function ShareResourceModal({
               </tr>
             </thead>
             <tbody>
-              {items.map((item: any) => (
-                <tr key={item.id}>
+              {shareRightsModel.map((shareRight: ShareRight) => (
+                <tr key={shareRight.id}>
                   <th scope="row">
                     <Avatar
                       alt="alternative text"
                       size="xs"
-                      src={item.avatarUrl}
+                      src={shareRight.avatarUrl}
                       variant="circle"
                     />
                   </th>
-                  <td>
-                    {item.type === "user" && item.username}
-                    {item.type === "group" && item.name}
-                  </td>
-                  {actions.map((action) => (
+                  <td>{shareRight.displayName}</td>
+                  {shareActions.map((shareAction) => (
                     <td
-                      key={action.displayName}
+                      key={shareAction.displayName}
                       style={{ width: "80px" }}
                       className="text-center"
                     >
                       <Checkbox
-                        checked={item.actions[action.displayName]}
+                        checked={hasRight(shareRight, shareAction)}
                         onChange={(e) =>
-                          handleActionCheckbox(item, action.displayName)
+                          handleActionCheckbox(
+                            shareRight,
+                            shareAction.displayName,
+                          )
                         }
                       />
                     </td>
@@ -109,6 +112,7 @@ export default function ShareResourceModal({
                       type="button"
                       variant="ghost"
                       title="Delete"
+                      onClick={() => handleDeleteRow(shareRight.id)}
                     />
                   </td>
                 </tr>
