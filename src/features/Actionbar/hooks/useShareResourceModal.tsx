@@ -7,7 +7,10 @@ import {
   type ShareRight,
   type ShareRightAction,
 } from "ode-ts-client";
-import { type ShareRightWithVisibles } from "ode-ts-client/dist/services/ShareService";
+import {
+  type ShareRightActionDisplayName,
+  type ShareRightWithVisibles,
+} from "ode-ts-client/dist/services/ShareService";
 import { toast } from "react-hot-toast";
 
 interface useShareResourceModalProps {
@@ -65,21 +68,19 @@ export default function useShareResourceModal({
     setRadioPublicationValue(event.target.value);
   };
 
-  // TODO @dcau: type item
   const handleActionCheckbox = (
     item: { id: string },
-    actionName: ShareRightAction,
+    actionName: ShareRightActionDisplayName,
   ) => {
-    // TODO @dcau: type prevItems
     setShareRights(({ rights, ...props }: ShareRightWithVisibles) => {
       const newItems = [...rights];
       const index = newItems.findIndex((x) => x.id === item.id);
-      if (newItems[index].actions.includes(actionName)) {
+      if (newItems[index].actions.filter((a) => a.id === actionName)) {
         newItems[index] = {
           ...newItems[index],
           actions: {
             ...newItems[index].actions.filter((a) => {
-              return a !== actionName;
+              return a.id !== actionName;
             }),
           },
         };
@@ -90,7 +91,10 @@ export default function useShareResourceModal({
       } else {
         newItems[index] = {
           ...newItems[index],
-          actions: [...newItems[index].actions, actionName],
+          actions: [
+            ...newItems[index].actions,
+            ...shareRightActions.filter((a) => a.id === actionName),
+          ],
         };
         return {
           rights: newItems,

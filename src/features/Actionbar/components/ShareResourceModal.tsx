@@ -95,11 +95,8 @@ export default function ShareResourceModal({
                     >
                       <Checkbox
                         checked={hasRight(shareRight, shareAction)}
-                        onChange={(e) =>
-                          handleActionCheckbox(
-                            shareRight,
-                            shareAction.displayName,
-                          )
+                        onChange={() =>
+                          handleActionCheckbox(shareRight, shareAction.id)
                         }
                       />
                     </td>
