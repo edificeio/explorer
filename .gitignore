@@ -38,3 +38,5 @@ dist-ssr
 
 # Rollup Visualizer
 stats.html
+#lock
+pnpm-lock.yaml

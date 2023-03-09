@@ -23,6 +23,7 @@ export default function useDeleteModal({ onSuccess }: ModalProps) {
     try {
       if (isTrashFolder) {
         await deleteSelection();
+        // TODO i18n
         hotToast.success("Supprimé de la corbeille");
         /* toast.promise(deleteSelection, {
           loading: "Loading",
@@ -31,6 +32,7 @@ export default function useDeleteModal({ onSuccess }: ModalProps) {
         }); */
       } else {
         await trashSelection();
+        // TODO i18n
         hotToast.success("Mis en corbeille");
       }
       onSuccess?.();

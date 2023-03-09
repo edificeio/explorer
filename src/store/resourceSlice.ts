@@ -10,7 +10,9 @@ import {
   type IFolder,
   type UpdateParameters,
   odeServices,
+  type ShareRight,
 } from "ode-ts-client";
+import { type PutShareResponse } from "ode-ts-client/dist/services/ShareService";
 import { type StateCreator } from "zustand";
 
 import { type State } from ".";
@@ -29,6 +31,10 @@ export interface ResourceSlice {
   // getHasResources: () => boolean;
   getSelectedIResources: () => IResource[];
   getSelectedIFolders: () => IFolder[];
+  shareResource: (
+    entId: string,
+    shares: ShareRight[],
+  ) => Promise<PutShareResponse>;
 }
 
 // https://docs.pmnd.rs/zustand/guides/typescript#slices-pattern
@@ -201,5 +207,28 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
     return folders.filter((folder: IFolder) =>
       selectedFolders.includes(folder.id),
     );
+  },
+  shareResource: async (
+    entId: string,
+    shares: ShareRight[],
+  ): Promise<PutShareResponse> => {
+    const { searchParams } = get();
+    const result = await odeServices
+      .share()
+      .saveRights(searchParams.app, entId, shares);
+    set((state) => {
+      const resources = state.resources.map((res) => {
+        if (res.assetId === entId) {
+          return {
+            ...res,
+            shared: shares.length > 0,
+          };
+        } else {
+          return res;
+        }
+      });
+      return { ...state, resources };
+    });
+    return result;
   },
 });
