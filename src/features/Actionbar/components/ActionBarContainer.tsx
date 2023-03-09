@@ -11,9 +11,9 @@ import { useTransition, animated } from "@react-spring/web";
 import { AccessControl } from "@shared/components/AccessControl";
 import { type IAction } from "ode-ts-client";
 
-// TODO: lazy load modal
-import ShareResourceModal from "./ShareResourceModal";
-
+const ShareResourceModal = lazy(
+  async () => await import("@features/Actionbar/components/ShareResourceModal"),
+);
 const DeleteModal = lazy(
   async () => await import("@features/Actionbar/components/DeleteModal"),
 );
