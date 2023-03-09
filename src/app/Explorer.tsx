@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { AppHeader } from "@features/Explorer/components";
 import FoldersList from "@features/Explorer/components/FoldersList/FoldersList";
-// import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
+import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import {
   AppCard,
@@ -159,6 +159,7 @@ export default function Explorer(): JSX.Element | null {
           {getHasResourcesOrFolders() !== 0 ? (
             <>
               <FoldersList />
+              <ResourcesList />
             </>
           ) : (
             <>
