@@ -7,6 +7,7 @@ import {
   type ShareRight,
   type ShareRightAction,
 } from "ode-ts-client";
+import { type ShareRightWithVisibles } from "ode-ts-client/dist/services/ShareService";
 import { toast } from "react-hot-toast";
 
 interface useShareResourceModalProps {
@@ -18,7 +19,12 @@ export default function useShareResourceModal({
   onSuccess,
   onCancel,
 }: useShareResourceModalProps) {
-  const [shareRights, setShareRights] = useState<ShareRight[]>([]);
+  const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
+    rights: [],
+    visibleBookmarks: [],
+    visibleGroups: [],
+    visibleUsers: [],
+  });
   const [shareRightActions, setShareRightActions] = useState<
     ShareRightAction[]
   >([]);
@@ -48,11 +54,11 @@ export default function useShareResourceModal({
     console.log(shareRightActions);
     setShareRightActions(shareRightActions);
 
-    const shareRights: ShareRight[] = await odeServices
+    const rights: ShareRightWithVisibles = await odeServices
       .share()
       .getRightsForResource(appCode, getSelectedIResources()[0]?.assetId);
-    console.log(shareRights);
-    setShareRights(shareRights);
+    console.log(rights);
+    setShareRights(rights);
   }, []);
 
   const handleRadioPublicationChange = (event: any) => {
@@ -60,17 +66,37 @@ export default function useShareResourceModal({
   };
 
   // TODO @dcau: type item
-  const handleActionCheckbox = (item: any, actionName: string) => {
+  const handleActionCheckbox = (
+    item: { id: string },
+    actionName: ShareRightAction,
+  ) => {
     // TODO @dcau: type prevItems
-    setShareRights((prevItems: any[]) => {
-      const newItems = [...prevItems];
+    setShareRights(({ rights, ...props }: ShareRightWithVisibles) => {
+      const newItems = [...rights];
       const index = newItems.findIndex((x) => x.id === item.id);
-      const previousValue = newItems[index].actions[actionName];
-      newItems[index] = {
-        ...newItems[index],
-        actions: { ...newItems[index].actions, [actionName]: !previousValue },
-      };
-      return newItems;
+      if (newItems[index].actions.includes(actionName)) {
+        newItems[index] = {
+          ...newItems[index],
+          actions: {
+            ...newItems[index].actions.filter((a) => {
+              return a !== actionName;
+            }),
+          },
+        };
+        return {
+          rights: newItems,
+          ...props,
+        };
+      } else {
+        newItems[index] = {
+          ...newItems[index],
+          actions: [...newItems[index].actions, actionName],
+        };
+        return {
+          rights: newItems,
+          ...props,
+        };
+      }
     });
   };
 
@@ -82,9 +108,14 @@ export default function useShareResourceModal({
   };
 
   const handleDeleteRow = (shareRightId: string) => {
-    setShareRights(
-      shareRights.filter((shareRight) => shareRight.id !== shareRightId),
-    );
+    setShareRights((state) => {
+      return {
+        ...state,
+        rights: shareRights.rights.filter(
+          (shareRight) => shareRight.id !== shareRightId,
+        ),
+      };
+    });
   };
 
   const hasRight = (
@@ -95,7 +126,7 @@ export default function useShareResourceModal({
   };
 
   return {
-    shareRightsModel: shareRights,
+    shareRightsModel: shareRights.rights,
     shareActions: shareRightActions,
     showBookmarkInput,
     radioPublicationValue,
