@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
+import { EmptyScreenApp } from "@features/EmptyScreens/EmptyScreenApp";
+import { EmptyScreenNoContentInFolder } from "@features/EmptyScreens/EmptyScreenNoContentInFolder";
+import { EmptyScreenTrash } from "@features/EmptyScreens/EmptyScreenTrash";
 import { AppHeader } from "@features/Explorer/components";
 import FoldersList from "@features/Explorer/components/FoldersList/FoldersList";
 import ResourcesList from "@features/Explorer/components/ResourcesList/ResourcesList";
@@ -16,11 +19,9 @@ import {
   useOdeClient,
   AppIcon,
   Library,
-  EmptyScreen,
 } from "@ode-react-ui/core";
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { OnBoardingTrash } from "@shared/components/OnBoardingModal";
-import { imageBootstrap } from "@shared/constants";
 import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
 import useExplorerStore from "@store/index";
 
@@ -46,8 +47,7 @@ import useExplorerStore from "@store/index";
 }; */
 
 export default function Explorer(): JSX.Element | null {
-  const { i18n, params, app, appCode, getBootstrapTheme, is1d } =
-    useOdeClient();
+  const { i18n, params, app, appCode, getBootstrapTheme } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -74,25 +74,12 @@ export default function Explorer(): JSX.Element | null {
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
   const previousName: string = getPreviousFolder()?.name || rootName;
-  const canPuslish = actions.find((action) => action.id === "publish");
-  const canCreate = actions.find((action) => action.id === "create");
+  const canPublish = actions.find((action) => action.id === "publish");
 
   // TODO : mettre ça dans une conf
   const LIB_URL = `https://library.opendigitaleducation.com/search/?application%5B0%5D=${capitalizeFirstLetter(
     appCode,
   )}&page=1&sort_field=views&sort_order=desc`;
-
-  const labelEmptyScreenApp = () => {
-    if (canCreate?.available && is1d) {
-      return i18n("explorer.emptyScreen.blog.txt1d.create");
-    } else if (canCreate?.available && !is1d) {
-      return i18n("explorer.emptyScreen.blog.txt2d.create");
-    } else if (!canCreate?.available && is1d) {
-      return i18n("explorer.emptyScreen.blog.txt1d.consultation");
-    } else {
-      return i18n("explorer.emptyScreen.blog.txt2d.consultation");
-    }
-  };
 
   return isAppReady ? (
     <>
@@ -121,7 +108,7 @@ export default function Explorer(): JSX.Element | null {
           as="aside"
         >
           <TreeViewContainer />
-          {canPuslish?.available && (
+          {canPublish?.available && (
             <Library
               src={`${getBootstrapTheme()}/images/image-library.svg`}
               alt={i18n("explorer.libray.img.alt")}
@@ -161,52 +148,10 @@ export default function Explorer(): JSX.Element | null {
               <FoldersList />
               <ResourcesList />
             </>
-          ) : (
-            <>
-              {getHasResourcesOrFolders() === 0 &&
-              !getHasSelectedRoot() &&
-              !getIsTrashSelected() ? (
-                <>
-                  <EmptyScreen
-                    imageSrc={`${imageBootstrap}/emptyscreen/illu-noContentInFolder.svg`}
-                    imageAlt={i18n("explorer.emptyScreen.folder.empty.alt")}
-                    text={i18n("explorer.emptyScreen.label")}
-                  />
-                </>
-              ) : (
-                <>
-                  {getHasResourcesOrFolders() === 0 &&
-                  getHasSelectedRoot() &&
-                  !getIsTrashSelected() ? (
-                    <>
-                      <EmptyScreen
-                        imageSrc={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
-                        imageAlt={i18n("explorer.emptyScreen.app.alt")}
-                        title={`${
-                          canCreate?.available
-                            ? i18n("explorer.emptyScreen.blog.title.create")
-                            : i18n(
-                                "explorer.emptyScreen.blog.title.consultation",
-                              )
-                        }`}
-                        text={labelEmptyScreenApp()}
-                      />
-                    </>
-                  ) : null}
-                </>
-              )}
-            </>
-          )}
-          {getHasResourcesOrFolders() === 0 && getIsTrashSelected() ? (
-            <>
-              <EmptyScreen
-                imageSrc={`${imageBootstrap}/emptyscreen/illu-trash.svg`}
-                imageAlt={i18n("explorer.emptyScreen.trash.alt")}
-                title={i18n("explorer.emptyScreen.trash.title")}
-                text={i18n("explorer.emptyScreen.trash.empty")}
-              />
-            </>
           ) : null}
+          <EmptyScreenNoContentInFolder />
+          <EmptyScreenApp />
+          <EmptyScreenTrash />
 
           {!hasMoreResources && getHasResourcesOrFolders() !== 0 ? (
             <div className="d-grid gap-2 col-4 mx-auto">
