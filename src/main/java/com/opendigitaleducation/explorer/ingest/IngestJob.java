@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.util.Collections.emptyList;
+import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
@@ -320,7 +321,7 @@ public class IngestJob {
                 return false;
             }
             final ApplicationAndEntity that = (ApplicationAndEntity) o;
-            return application.equals(that.application) && entity.equals(that.entity);
+            return Objects.equals(application, that.application) && Objects.equals(entity, that.entity);
         }
 
         @Override
