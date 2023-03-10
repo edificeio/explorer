@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useId, useState } from "react";
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 
 import { Alert, useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
@@ -7,6 +13,7 @@ import {
   odeServices,
   type ShareRight,
   type ShareRightAction,
+  type ShareSubject,
 } from "ode-ts-client";
 import {
   type ShareRightActionDisplayName,
@@ -33,8 +40,11 @@ export default function useShareResourceModal({
   const [shareRightActions, setShareRightActions] = useState<
     ShareRightAction[]
   >([]);
+
   const [bookmarkName, setBookmarkName] = useState("");
-  const [showBookmarkInput, toggleBookmarkInput] = useState(false);
+  const [showBookmarkInput, toggleBookmarkInput] = useState<boolean>(false);
+  const [searchInputValue, setSearchInputValue] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<ShareSubject[]>([]);
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<string>("now");
 
@@ -58,13 +68,12 @@ export default function useShareResourceModal({
     const shareRightActions: ShareRightAction[] = await odeServices
       .share()
       .getActionsForApp(appCode);
-    console.log(shareRightActions);
     setShareRightActions(shareRightActions);
 
     const rights: ShareRightWithVisibles = await odeServices
       .share()
       .getRightsForResource(appCode, getSelectedIResources()[0]?.assetId);
-    console.log(rights);
+
     setShareRights(rights);
   }, []);
 
@@ -145,6 +154,48 @@ export default function useShareResourceModal({
     });
   };
 
+  const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(event.target.value);
+  };
+
+  const handleSearchButtonClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (searchInputValue.length >= 3) {
+      const response = await odeServices.share().findUsers(searchInputValue, {
+        visibleBookmarks: shareRights.visibleBookmarks,
+        visibleUsers: shareRights.visibleUsers,
+        visibleGroups: shareRights.visibleGroups,
+      });
+      setSearchResults(
+        response.filter(
+          (r) =>
+            !shareRights.rights.find((shareRight) => shareRight.id === r.id),
+        ),
+      );
+    } else {
+      setSearchResults([]);
+      Promise.resolve();
+    }
+  };
+
+  const handleSearchResultClick = (
+    event: React.MouseEvent<HTMLLIElement>,
+    searchResult: ShareSubject,
+  ) => {
+    setShareRights({
+      ...shareRights,
+      rights: [
+        ...shareRights.rights,
+        {
+          ...searchResult,
+          actions: [{ id: "read", displayName: "read" }],
+        },
+      ],
+    });
+    setSearchResults(searchResults.filter((s) => s.id !== searchResult.id));
+  };
+
   const hasRight = (
     shareRight: ShareRight,
     shareAction: ShareRightAction,
@@ -198,9 +249,11 @@ export default function useShareResourceModal({
   return {
     idBookmark,
     myAvatar: session.avatarUrl,
-    shareRightsModel: shareRights.rights,
-    shareActions: shareRightActions,
+    shareRights,
+    shareRightActions,
     showBookmarkInput,
+    searchInputValue,
+    searchResults,
     radioPublicationValue,
     bookmarkName,
     setBookmarkName,
@@ -211,6 +264,9 @@ export default function useShareResourceModal({
     handleActionCheckbox,
     handleShare,
     handleDeleteRow,
+    handleSearchInputChange,
+    handleSearchButtonClick,
+    handleSearchResultClick,
     hasRight,
   };
 }

@@ -40,9 +40,11 @@ export default function ShareResourceModal({
   const {
     myAvatar,
     idBookmark,
-    shareRightsModel,
-    shareActions,
+    shareRights,
+    shareRightActions,
     showBookmarkInput,
+    searchInputValue,
+    searchResults,
     radioPublicationValue,
     bookmarkName,
     setBookmarkName,
@@ -53,6 +55,9 @@ export default function ShareResourceModal({
     handleActionCheckbox,
     handleShare,
     handleDeleteRow,
+    handleSearchInputChange,
+    handleSearchButtonClick,
+    handleSearchResultClick,
     hasRight,
   } = useShareResourceModal({ onSuccess, onCancel });
   const { i18n } = useOdeClient();
@@ -71,13 +76,13 @@ export default function ShareResourceModal({
               <tr>
                 <th scope="col"></th>
                 <th scope="col"></th>
-                {shareActions.map((action) => (
+                {shareRightActions.map((shareRightAction) => (
                   <th
-                    key={action.displayName}
+                    key={shareRightAction.displayName}
                     scope="col"
                     className="text-center"
                   >
-                    {action.displayName}
+                    {shareRightAction.displayName}
                   </th>
                 ))}
                 <th scope="col"></th>
@@ -94,9 +99,9 @@ export default function ShareResourceModal({
                   />
                 </th>
                 <td>{i18n("share.me")}</td>
-                {shareActions.map((shareAction) => (
+                {shareRightActions.map((shareRightAction) => (
                   <td
-                    key={shareAction.displayName}
+                    key={shareRightAction.displayName}
                     style={{ width: "80px" }}
                     className="text-center"
                   >
@@ -105,7 +110,7 @@ export default function ShareResourceModal({
                 ))}
                 <td></td>
               </tr>
-              {shareRightsModel.map((shareRight: ShareRight) => (
+              {shareRights?.rights.map((shareRight: ShareRight) => (
                 <tr key={shareRight.id}>
                   <th scope="row">
                     <Avatar
@@ -116,16 +121,16 @@ export default function ShareResourceModal({
                     />
                   </th>
                   <td>{shareRight.displayName}</td>
-                  {shareActions.map((shareAction) => (
+                  {shareRightActions.map((shareRightAction) => (
                     <td
-                      key={shareAction.displayName}
+                      key={shareRightAction.displayName}
                       style={{ width: "80px" }}
                       className="text-center"
                     >
                       <Checkbox
-                        checked={hasRight(shareRight, shareAction)}
+                        checked={hasRight(shareRight, shareRightAction)}
                         onChange={() =>
-                          handleActionCheckbox(shareRight, shareAction.id)
+                          handleActionCheckbox(shareRight, shareRightAction.id)
                         }
                       />
                     </td>
@@ -216,9 +221,39 @@ export default function ShareResourceModal({
             placeholder="nom d’utilisateurs, groupes, favoris"
             size="md"
             type="search"
+            onChange={handleSearchInputChange}
           />
-          <SearchButton aria-label="search" icon={<Search />} type="submit" />
+          <SearchButton
+            aria-label="search"
+            icon={<Search />}
+            onClick={handleSearchButtonClick}
+            disabled={searchInputValue.length < 3}
+          />
         </FormControl>
+        {searchInputValue && (
+          <div>
+            <ul className="ps-0" style={{ listStyle: "none" }}>
+              {searchResults.map((searchResult) => (
+                <li
+                  key={searchResult.id}
+                  className="d-flex p-8"
+                  onClick={(event) =>
+                    handleSearchResultClick(event, searchResult)
+                  }
+                  style={{ cursor: "pointer", maxWidth: "fit-content" }}
+                >
+                  <Avatar
+                    alt="alternative text"
+                    size="xs"
+                    src={searchResult.avatarUrl}
+                    variant="circle"
+                  />
+                  <span className="ps-8">{searchResult.displayName}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <hr />
 
