@@ -172,6 +172,7 @@ public class IngestJob {
         if (!isRunning() && !force) {
             return Future.failedFuture("resource loader is stopped");
         }
+        final long start = System.currentTimeMillis();
         this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
         final List<Future> copyPending = new ArrayList<>(pending);
         final Promise<Void> current = Promise.promise();
@@ -210,7 +211,7 @@ public class IngestJob {
                 .compose(ingestResultAndJobResult -> {
                     final IngestJobResult ingestResult = ingestResultAndJobResult.getLeft();
                     final Future<IngestJobResult> future;
-                    this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight());
+                    this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight(), start);
                     if (ingestResult.size() > 0) {
                         final IngestJobResult transformedJob = transformIngestResult(ingestResult, ingestResultAndJobResult.getRight());
                         updateMessagesAttemptedTooManyTimes(transformedJob);

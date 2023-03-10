@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -168,7 +169,10 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     }
 
     @Override
-    public void onIngestCycleResult(IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult) {
+    public void onIngestCycleResult(IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult, final long startTs) {
+        if(ingestJobResult.size() > 0) {
+            ingestionCycleTimes.record((System.currentTimeMillis() - startTs) / ingestJobResult.size(), TimeUnit.MILLISECONDS);
+        }
         final long now = System.currentTimeMillis();
         if(ingestJobResult.getFailed() != null && ingestJobResult.getFailed().isEmpty()) {
             ingestCycleWithFailuresCounter.increment();
