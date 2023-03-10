@@ -17,7 +17,6 @@ import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +41,7 @@ public class MessageIngesterPostgres implements MessageIngester {
 
     @Override
     public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
+        log.trace("[IngesterPostgres] start ingest");
         final long start = System.currentTimeMillis();
         if (messages.isEmpty()) {
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
