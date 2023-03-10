@@ -35,7 +35,9 @@ public interface IngestJobMetricsRecorder {
      * @param mergeResult The way messages were merged (to know which "true" messages are concerned by the success or
      *                    failure of a treated message)
      */
-    void onIngestCycleResult(final IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult);
+    void onIngestCycleResult(final IngestJob.IngestJobResult ingestJobResult,
+                             final MergeMessagesResult mergeResult,
+                             final long startTs);
 
     /**
      * Register the fact that pending executions of ingestion cycles are changing.
@@ -96,7 +98,7 @@ public interface IngestJobMetricsRecorder {
         }
 
         @Override
-        public void onIngestCycleResult(IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult) {
+        public void onIngestCycleResult(IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult, final long startTs) {
 
         }
 
