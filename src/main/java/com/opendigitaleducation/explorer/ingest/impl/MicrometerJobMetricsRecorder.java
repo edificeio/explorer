@@ -5,6 +5,7 @@ import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorder;
 import com.opendigitaleducation.explorer.ingest.MergeMessagesResult;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
@@ -12,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,10 +30,11 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter ingestCycleFailedCounter;
     private final Counter ingestCycleCompletedCounter;
     private final Counter ingestCyclePendingCounter;
-    private final Counter failedMessagesCounter;
+    private final Counter ingestCycleWithFailuresCounter;
     private final Counter succeededMessagesCounter;
     private final Counter messagesAttemptedTooManyTimesCounter;
     private final Counter jobCounter;
+    private final Timer ingestionCycleTimes;
     private final Timer ingestionTimes;
     private final Timer ingestionOpenSearchTimes;
     private final Counter failedInOpenSearchCounter;
@@ -39,12 +42,15 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Timer ingestionPostgresTimes;
     private final Counter failedInPostgresCounter;
     private final Counter succeededInPostgresCounter;
+    private final Gauge batchSizeGauge;
+    private int batchSize = 0;
 
     public MicrometerJobMetricsRecorder(final Configuration configuration) {
         final MeterRegistry registry = BackendRegistries.getDefaultNow();
         if(registry == null) {
             throw new IllegalStateException("micrometer.registries.empty");
         }
+        batchSizeGauge = Gauge.builder("ingest.batch.size", () -> batchSize).register(registry);
         ingestCycleStartedCounter = Counter.builder("ingest.cycle.started")
                 .description("number of ingest cycles that were started")
                 .register(registry);
@@ -57,8 +63,8 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         ingestCycleCompletedCounter = Counter.builder("ingest.cycle.completed")
                 .description("number of ingest cycles that were started")
                 .register(registry);
-        failedMessagesCounter = Counter.builder("ingest.message.failed")
-                .description("number of failed ingest messages")
+        ingestCycleWithFailuresCounter = Counter.builder("ingest.cycle.with.failure")
+                .description("number of ingest cycles with failures")
                 .register(registry);
         succeededMessagesCounter = Counter.builder("ingest.message.succeeded")
                 .description("number of succeeded messages")
@@ -66,6 +72,17 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         jobCounter = Counter.builder("ingest.job")
                 .description("number of launched jobs")
                 .register(registry);
+        //----
+        final Timer.Builder ingestionCycleTimesBuilder = Timer.builder("ingest.ingestion.cycle.time")
+                .description("time by ingestion cycle ");
+        if(configuration.slaCycle.isEmpty()) {
+            ingestionCycleTimesBuilder
+                    .publishPercentileHistogram()
+                    .maximumExpectedValue(Duration.ofSeconds(40L));
+        } else {
+            ingestionCycleTimesBuilder.sla(configuration.slaCycle.toArray(new Duration[0]));
+        }
+        ingestionCycleTimes = ingestionCycleTimesBuilder.register(registry);
         //----
         final Timer.Builder ingestionTimesBuilder = Timer.builder("ingest.ingestion.time")
                 .description("ingestion time of messages");
@@ -83,7 +100,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         if(configuration.slaOpensearch.isEmpty()) {
             ingestionOSBuilder
                 .publishPercentileHistogram()
-                .maximumExpectedValue(Duration.ofMinutes(2L));
+                .maximumExpectedValue(Duration.ofMinutes(1L));
         } else {
             ingestionOSBuilder.sla(configuration.slaOpensearch.toArray(new Duration[0]));
         }
@@ -94,7 +111,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         if(configuration.slaPostgres.isEmpty()) {
             ingestionPGBuilder
                 .publishPercentileHistogram()
-                .maximumExpectedValue(Duration.ofMinutes(2L));
+                .maximumExpectedValue(Duration.ofMinutes(1L));
         } else {
             ingestionPGBuilder.sla(configuration.slaOpensearch.toArray(new Duration[0]));
         }
@@ -153,7 +170,9 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     @Override
     public void onIngestCycleResult(IngestJob.IngestJobResult ingestJobResult, MergeMessagesResult mergeResult) {
         final long now = System.currentTimeMillis();
-        failedMessagesCounter.increment(ingestJobResult.getFailed().size());
+        if(ingestJobResult.getFailed() != null && ingestJobResult.getFailed().isEmpty()) {
+            ingestCycleWithFailuresCounter.increment();
+        }
         succeededMessagesCounter.increment(ingestJobResult.getSucceed().size());
         for (ExplorerMessageForIngest explorerMessageForIngest : ingestJobResult.getSucceed()) {
             getMessageCreationTime(explorerMessageForIngest).ifPresent(creationTime -> ingestionTimes.record(now - creationTime, TimeUnit.MILLISECONDS));
@@ -194,11 +213,14 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
         private final List<Duration> sla;
         private final List<Duration> slaOpensearch;
         private final List<Duration> slaPostgres;
+        private final List<Duration> slaCycle;
 
-        public Configuration(List<Duration> sla, final List<Duration> slaOpensearch, final List<Duration> slaPostgres) {
+        public Configuration(final List<Duration> sla, final List<Duration> slaOpensearch, final List<Duration> slaPostgres,
+                             final List<Duration> slaCycle) {
             this.sla = sla;
             this.slaOpensearch = slaOpensearch;
             this.slaPostgres = slaPostgres;
+            this.slaCycle = slaCycle;
         }
 
         /**
@@ -214,33 +236,30 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
          * @return
          */
         public static Configuration fromJson(final JsonObject conf) {
-            final List<Duration> sla;
-            final List<Duration> slaOpenSearch;
-            final List<Duration> slaPostgres;
+            final List<String> slaNameInConfiguration = new ArrayList<>();
+            slaNameInConfiguration.add("sla");
+            slaNameInConfiguration.add("slaOpensearch");
+            slaNameInConfiguration.add("slaPostgres");
+            slaNameInConfiguration.add("slaCycle");
+            final List<List<Duration>> slas;
             if(conf == null || !conf.containsKey("metrics")) {
-                sla = Collections.emptyList();
-                slaOpenSearch = Collections.emptyList();
-                slaPostgres = Collections.emptyList();
+                slas = slaNameInConfiguration.stream().map(e -> new ArrayList<Duration>()).collect(Collectors.toList());
             } else {
                 final JsonObject metrics = conf.getJsonObject("metrics");
-                sla = metrics.getJsonArray("sla", new JsonArray()).stream()
-                        .mapToInt(slaBucket -> (int)slaBucket)
-                        .sorted()
-                        .mapToObj(Duration::ofMillis)
-                        .collect(Collectors.toList());
-                slaOpenSearch = metrics.getJsonArray("slaOpenSearch", new JsonArray()).stream()
-                        .mapToInt(slaBucket -> (int)slaBucket)
-                        .sorted()
-                        .mapToObj(Duration::ofMillis)
-                        .collect(Collectors.toList());
-                slaPostgres = metrics.getJsonArray("slaPostgres", new JsonArray()).stream()
-                        .mapToInt(slaBucket -> (int)slaBucket)
-                        .sorted()
-                        .mapToObj(Duration::ofMillis)
-                        .collect(Collectors.toList());
+                slas = slaNameInConfiguration.stream()
+                .map(name -> metrics.getJsonArray(name, new JsonArray()).stream()
+                    .mapToInt(slaBucket -> (int) slaBucket)
+                    .sorted()
+                    .mapToObj(Duration::ofMillis)
+                    .collect(Collectors.toList()))
+                .collect(Collectors.toList());
             }
-            return new Configuration(sla, slaOpenSearch, slaPostgres);
+            return new Configuration(slas.get(0), slas.get(1), slas.get(2), slas.get(3));
         }
     }
 
+    @Override
+    public void onBatchSizeUpdate(final int newBatchSize) {
+        this.batchSize = newBatchSize;
+    }
 }

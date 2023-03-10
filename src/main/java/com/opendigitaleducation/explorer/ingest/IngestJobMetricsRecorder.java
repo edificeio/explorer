@@ -8,6 +8,8 @@ public interface IngestJobMetricsRecorder {
     void onJobStarted();
     /** Register the fact that a job has been stopped. */
     void onJobStopped();
+    /** Register the new batch size. */
+    void onBatchSizeUpdate(final int newBatchSize);
     /** Register the fact that a new cycle of ingestion has been started. */
     void onIngestCycleStarted();
     /** Register the fact that a new cycle of ingestion has succeeded. */
@@ -118,5 +120,9 @@ public interface IngestJobMetricsRecorder {
 
         }
 
+        @Override
+        public void onBatchSizeUpdate(final int newBatchSize) {
+
+        }
     }
 }

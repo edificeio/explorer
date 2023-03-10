@@ -145,7 +145,7 @@ public class IngestJob {
 
     public static IngestJob create(final Vertx vertx, final ElasticClientManager manager, final IPostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
         final IngestJobMetricsRecorder recorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
-        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient, recorder);
+        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(manager, postgresClient, recorder, config);
         return new IngestJob(vertx, reader, ingester, recorder, config);
     }
 
@@ -172,6 +172,7 @@ public class IngestJob {
         if (!isRunning() && !force) {
             return Future.failedFuture("resource loader is stopped");
         }
+        this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
         final List<Future> copyPending = new ArrayList<>(pending);
         final Promise<Void> current = Promise.promise();
         pending.add(current.future());
@@ -291,6 +292,7 @@ public class IngestJob {
             log.warn("Ingest cycle failed so we are going to shrink the batch size from " + this.batchSize + " to " + newBatchSize);
             this.batchSize = newBatchSize;
         }
+        this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
     }
 
     private void updateMessagesAttemptedTooManyTimes(IngestJobResult ingestResult) {
