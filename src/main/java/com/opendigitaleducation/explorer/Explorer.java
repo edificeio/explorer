@@ -67,13 +67,14 @@ public class Explorer extends BaseServer {
         log.info("Starting explorer...");
         super.start();
         final boolean runjobInWroker = config.getBoolean("worker-job", true);
+        final boolean poolMode = config.getBoolean("postgres-pool-mode", true);
         final List<Future> futures = new ArrayList<>();
         //create postgres client
         log.info("Init postgres bus consumer...");
         if(runjobInWroker){
-            IPostgresClient.initPostgresConsumer(vertx, config, false);
+            IPostgresClient.initPostgresConsumer(vertx, config, poolMode);
         }
-        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, true);
+        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
         //set skip folder
