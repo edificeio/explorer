@@ -2,6 +2,7 @@ package com.opendigitaleducation.explorer.ingest;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticBulkBuilder;
@@ -17,10 +18,23 @@ public class MessageIngesterElastic implements MessageIngester {
 
     private final ElasticClientManager elasticClient;
     private final IngestJobMetricsRecorder ingestJobMetricsRecorder;
+    private final ElasticClient.ElasticOptions elasticOptions;
     public MessageIngesterElastic(final ElasticClientManager elasticClient,
-                                  final IngestJobMetricsRecorder ingestJobMetricsRecorder) {
+                                  final IngestJobMetricsRecorder ingestJobMetricsRecorder,
+                                  final JsonObject config) {
         this.elasticClient = elasticClient;
         this.ingestJobMetricsRecorder = ingestJobMetricsRecorder;
+        this.elasticOptions = new ElasticClient.ElasticOptions();
+        if(config.containsKey("opensearch-options")) {
+            final JsonObject optionsParams = config.getJsonObject("opensearch-options");
+            if(optionsParams.containsKey("wait-for")) {
+                this.elasticOptions.withWaitFor(optionsParams.getBoolean("wait-for"));
+            }
+            if(optionsParams.containsKey("refresh")) {
+                this.elasticOptions.withRefresh(optionsParams.getBoolean("refresh"));
+            }
+        }
+        log.info("Elasticoptions is " + Json.encode(elasticOptions));
     }
 
     //TODO if 429 retry and set maxBatchSize less than
@@ -63,7 +77,7 @@ public class MessageIngesterElastic implements MessageIngester {
 
     private Future<IngestJob.IngestJobResult> executeOperations(final List<MessageIngesterElasticOperation> operations) {
         final IngestJob.IngestJobResult ingestJobResult = new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>());
-        final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(new ElasticClient.ElasticOptions().withWaitFor(true));
+        final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(elasticOptions);
         for (MessageIngesterElasticOperation operation : operations) {
             operation.execute(bulk);
         }
