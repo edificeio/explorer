@@ -46,7 +46,7 @@ public class HtmlAnalyserMessageTransformer implements MessageTransformer {
                     final JsonObject subresource = (JsonObject) element;
                     final String subContentHtml = subresource.getString(CONTENT_HTML_KEY);
                     if(isNotBlank(subContentHtml) && subContentHtml.length() > minLength) {
-                        subresource.put(CONTENT_HTML_KEY, parseHtml(subContentHtml));
+                        subresource.put(CONTENT_KEY, parseHtml(subContentHtml));
                         subresource.remove(CONTENT_HTML_KEY);
                     }
                 }
