@@ -4,6 +4,7 @@ import {
   useEffect,
   useId,
   useState,
+  type KeyboardEvent,
 } from "react";
 
 import { Alert, useOdeClient } from "@ode-react-ui/core";
@@ -158,9 +159,19 @@ export default function useShareResourceModal({
     setSearchInputValue(event.target.value);
   };
 
+  const handleSearchInputKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      search();
+    }
+  };
+
   const handleSearchButtonClick = async (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
+    search();
+  };
+
+  const search = async () => {
     if (searchInputValue.length >= 3) {
       const response = await odeServices.share().findUsers(searchInputValue, {
         visibleBookmarks: shareRights.visibleBookmarks,
@@ -265,6 +276,7 @@ export default function useShareResourceModal({
     handleShare,
     handleDeleteRow,
     handleSearchInputChange,
+    handleSearchInputKeyUp,
     handleSearchButtonClick,
     handleSearchResultClick,
     hasRight,

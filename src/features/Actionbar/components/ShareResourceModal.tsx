@@ -56,6 +56,7 @@ export default function ShareResourceModal({
     handleShare,
     handleDeleteRow,
     handleSearchInputChange,
+    handleSearchInputKeyUp,
     handleSearchButtonClick,
     handleSearchResultClick,
     hasRight,
@@ -222,6 +223,7 @@ export default function ShareResourceModal({
             size="md"
             type="search"
             onChange={handleSearchInputChange}
+            onKeyUp={handleSearchInputKeyUp}
           />
           <SearchButton
             aria-label="search"
