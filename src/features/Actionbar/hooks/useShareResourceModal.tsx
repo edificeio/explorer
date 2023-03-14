@@ -151,23 +151,26 @@ export default function useShareResourceModal({
 
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchInputValue(event.target.value);
+    search(event.target.value);
   };
 
   const handleSearchInputKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      search();
+      search(searchInputValue);
     }
   };
 
   const handleSearchButtonClick = async (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
-    search();
+    search(searchInputValue);
   };
 
-  const search = async () => {
-    if (searchInputValue.length >= 3) {
-      const response = odeServices.share().findUsers(searchInputValue, {
+  const search = async (searchInputValue: string) => {
+    // start from 1 because it is front search
+    if (searchInputValue.length >= 1) {
+      const service = odeServices.share();
+      const response = await service.findUsers(searchInputValue, {
         visibleBookmarks: shareRights.visibleBookmarks,
         visibleUsers: shareRights.visibleUsers,
         visibleGroups: shareRights.visibleGroups,
@@ -210,11 +213,14 @@ export default function useShareResourceModal({
 
   const canSave = () => {
     // cansave only if non empty rights
+    /* FIX : can save event if empty
     return (
       shareRights.rights.filter((right) => {
         return right.actions.length > 0;
       }).length > 0
     );
+    */
+    return true;
   };
 
   const saveBookmark = async (name: string) => {
