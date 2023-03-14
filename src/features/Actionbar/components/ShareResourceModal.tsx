@@ -227,12 +227,20 @@ export default function ShareResourceModal({
             aria-label="search"
             icon={<Search />}
             onClick={handleSearchButtonClick}
-            disabled={searchInputValue.length < 3}
           />
         </FormControl>
         {searchInputValue && (
           <div>
             <ul className="ps-0" style={{ listStyle: "none" }}>
+              {searchResults.length === 0 && (
+                <li
+                  key="noresult"
+                  className="d-flex p-8"
+                  style={{ cursor: "pointer", maxWidth: "fit-content" }}
+                >
+                  <span className="ps-8">Aucun résultat</span>
+                </li>
+              )}
               {searchResults.map((searchResult) => (
                 <li
                   key={searchResult.id}
