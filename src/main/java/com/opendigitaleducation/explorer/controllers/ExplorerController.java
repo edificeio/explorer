@@ -610,6 +610,7 @@ public class ExplorerController extends BaseController {
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
+        op.setTrashed(queryParams.getBoolean("trashed"));
         return op;
     }
 
