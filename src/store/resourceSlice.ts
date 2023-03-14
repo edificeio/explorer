@@ -61,19 +61,30 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
   },
   updateResource: async (params: UpdateParameters) => {
     const { searchParams } = get();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await odeServices
       .resource(searchParams.app, searchParams.types[0])
       .update(params);
     set((state) => {
       const resources = state.resources.map((res) => {
         if (res.assetId === params.entId) {
+          const {
+            name,
+            thumbnail,
+            public: pub,
+            description,
+            slug,
+            entId,
+            ...others
+          } = params;
           return {
             ...res,
-            name: params.name,
-            thumbnail: result.thumbnail!,
-            public: params.public,
-            description: params.description,
-            slug: params.slug,
+            ...others, // add any custom field
+            name,
+            thumbnail: thumbnail! as string,
+            public: pub,
+            description,
+            slug,
           };
         } else {
           return res;

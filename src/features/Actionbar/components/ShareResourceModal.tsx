@@ -9,7 +9,6 @@ import {
   IconButton,
   Input,
   Modal,
-  Radio,
   SearchButton,
   useOdeClient,
 } from "@ode-react-ui/core";
@@ -24,6 +23,7 @@ import {
 import { type ShareRight } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
+import ShareResourceModalFooter from "./ShareResourceModalFooter";
 import useShareResourceModal from "../hooks/useShareResourceModal";
 
 interface ShareResourceModalProps {
@@ -45,13 +45,11 @@ export default function ShareResourceModal({
     showBookmarkInput,
     searchInputValue,
     searchResults,
-    radioPublicationValue,
     bookmarkName,
     setBookmarkName,
     saveBookmark,
     canSave,
     toggleBookmarkInput,
-    handleRadioPublicationChange,
     handleActionCheckbox,
     handleShare,
     handleDeleteRow,
@@ -256,29 +254,7 @@ export default function ShareResourceModal({
             </ul>
           </div>
         )}
-
-        <hr />
-
-        <Heading headingStyle="h4" level="h3" className="mb-16">
-          Circuit de publication des billets
-        </Heading>
-
-        <Radio
-          label="Publication immédiate"
-          id="publication-now"
-          name="publication"
-          value="now"
-          model={radioPublicationValue}
-          onChange={handleRadioPublicationChange}
-        />
-        <Radio
-          label="Billets soumis à validation"
-          id="publication-validate"
-          name="publication"
-          value="validate"
-          model={radioPublicationValue}
-          onChange={handleRadioPublicationChange}
-        />
+        <ShareResourceModalFooter />
       </Modal.Body>
       <Modal.Footer>
         <Button
