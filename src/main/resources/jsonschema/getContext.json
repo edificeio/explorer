@@ -13,6 +13,7 @@
     "shared": { "type": "boolean"},
     "public": { "type": "boolean"},
     "favorite": { "type": "boolean"},
+    "trashed": { "type": "boolean"},
     "folder": {
       "anyOf": [{
         "type": "string",
