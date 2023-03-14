@@ -46,8 +46,6 @@ export default function useShareResourceModal({
   const [showBookmarkInput, toggleBookmarkInput] = useState<boolean>(false);
   const [searchInputValue, setSearchInputValue] = useState<string>("");
   const [searchResults, setSearchResults] = useState<ShareSubject[]>([]);
-  const [radioPublicationValue, setRadioPublicationValue] =
-    useState<string>("now");
 
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
@@ -77,10 +75,6 @@ export default function useShareResourceModal({
 
     setShareRights(rights);
   }, []);
-
-  const handleRadioPublicationChange = (event: any) => {
-    setRadioPublicationValue(event.target.value);
-  };
 
   const handleActionCheckbox = (
     item: { id: string },
@@ -173,7 +167,7 @@ export default function useShareResourceModal({
 
   const search = async () => {
     if (searchInputValue.length >= 3) {
-      const response = await odeServices.share().findUsers(searchInputValue, {
+      const response = odeServices.share().findUsers(searchInputValue, {
         visibleBookmarks: shareRights.visibleBookmarks,
         visibleUsers: shareRights.visibleUsers,
         visibleGroups: shareRights.visibleGroups,
@@ -265,13 +259,11 @@ export default function useShareResourceModal({
     showBookmarkInput,
     searchInputValue,
     searchResults,
-    radioPublicationValue,
     bookmarkName,
     setBookmarkName,
     saveBookmark,
     canSave,
     toggleBookmarkInput,
-    handleRadioPublicationChange,
     handleActionCheckbox,
     handleShare,
     handleDeleteRow,
