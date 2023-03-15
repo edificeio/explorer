@@ -64,10 +64,10 @@ export default function ShareResourceModal({
   const refBookmark = useRef<HTMLInputElement>(null);
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
-      <Modal.Header onModalClose={onCancel}>Partager avec ...</Modal.Header>
+      <Modal.Header onModalClose={onCancel}>{i18n("share.title")}</Modal.Header>
       <Modal.Body>
         <Heading headingStyle="h4" level="h3" className="mb-16">
-          Utilisateurs ayant accès
+          {i18n("explorer.modal.share.usersWithAccess")}
         </Heading>
 
         <div className="table-responsive">
@@ -92,7 +92,7 @@ export default function ShareResourceModal({
               <tr>
                 <th scope="row">
                   <Avatar
-                    alt="alternative text"
+                    alt={i18n("explorer.modal.share.avatar.me.alt")}
                     size="xs"
                     src={myAvatar}
                     variant="circle"
@@ -114,7 +114,7 @@ export default function ShareResourceModal({
                 <tr key={shareRight.id}>
                   <th scope="row">
                     <Avatar
-                      alt="alternative text"
+                      alt={i18n("explorer.modal.share.avatar.shared.alt")}
                       size="xs"
                       src={shareRight.avatarUrl}
                       variant="circle"
@@ -171,7 +171,7 @@ export default function ShareResourceModal({
             className="fw-normal"
             onClick={() => toggleBookmarkInput(!showBookmarkInput)}
           >
-            Enregistrer comme favori de partage
+            {i18n("share.save.sharebookmark")}
           </Button>
           {showBookmarkInput && (
             <div className="mt-16">
@@ -186,7 +186,9 @@ export default function ShareResourceModal({
                     onChange={() => {
                       setBookmarkName(() => refBookmark.current?.value || "");
                     }}
-                    placeholder="Saisir le nom du favori"
+                    placeholder={i18n(
+                      "explorer.modal.share.sharebookmark.placeholder",
+                    )}
                     size="sm"
                     type="text"
                   />
@@ -202,7 +204,7 @@ export default function ShareResourceModal({
                   }}
                   className="text-nowrap"
                 >
-                  Enregistrer favori
+                  {i18n("explorer.modal.share.sharebookmark.save")}
                 </Button>
               </FormControl>
             </div>
@@ -212,13 +214,13 @@ export default function ShareResourceModal({
         <hr />
 
         <Heading headingStyle="h4" level="h3" className="mb-16 d-flex">
-          Rechercher des utilisateurs <InfoCircle className="ms-8" />
+          {i18n("explorer.modal.share.search")} <InfoCircle className="ms-8" />
         </Heading>
 
         <FormControl className="input-group max-w-512" id="search">
           <Input
             noValidationIcon
-            placeholder="nom d’utilisateurs, groupes, favoris"
+            placeholder={i18n("explorer.modal.share.search.placeholder")}
             size="md"
             type="search"
             onChange={handleSearchInputChange}
@@ -241,7 +243,7 @@ export default function ShareResourceModal({
           </div>
         )}
         {searchInputValue.length > 0 && searchResults.length === 0 && (
-          <div className="p-8">Aucun résultat</div>
+          <div className="p-8">{i18n("portal.no.result")}</div>
         )}
         <ShareResourceModalFooter />
       </Modal.Body>
@@ -262,7 +264,7 @@ export default function ShareResourceModal({
           onClick={handleShare}
           disabled={!canSave()}
         >
-          Partager
+          {i18n("share")}
         </Button>
       </Modal.Footer>
     </Modal>,
