@@ -1,12 +1,7 @@
-import { BUS } from "@shared/constants";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
-  ACTION,
-  RESOURCE,
   FOLDER,
-  type GetResourcesResult,
   type IResource,
-  type IActionResult,
   type IFolder,
   type UpdateParameters,
   odeServices,
@@ -21,9 +16,9 @@ export interface ResourceSlice {
   resources: IResource[];
   selectedResources: string[];
   hasMoreResources: boolean;
-  openResource: (assetId: string) => Promise<IActionResult | undefined>;
+  openResource: (assetId: string) => void;
   openSelectedResource: () => Promise<void>;
-  printSelectedResource: () => Promise<void>;
+  printSelectedResource: () => void;
   createResource: () => Promise<void>;
   updateResource: (params: UpdateParameters) => Promise<void>;
   isResourceSelected: (res: IResource) => boolean;
@@ -48,7 +43,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
   createResource: async () => {
     try {
       const { searchParams } = get();
-      await BUS.publish(searchParams.types[0], ACTION.CREATE, "");
+      odeServices.resource(searchParams.app).gotoForm();
     } catch (error) {
       // if failed push error
       console.error("explorer create failed: ", error);
@@ -93,13 +88,10 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       return { ...state, resources };
     });
   },
-  openResource: async (assetId: string) => {
+  openResource: (assetId: string) => {
     try {
       const { searchParams } = get();
-      const res = await BUS.publish(searchParams.types[0], ACTION.OPEN, {
-        resourceId: assetId,
-      });
-      return res;
+      odeServices.resource(searchParams.app).gotoView(assetId);
     } catch (error) {
       // if failed push error
       console.error("explorer open failed: ", error);
@@ -119,9 +111,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       const item = resources.find(
         (resource: IResource) => resource.id === selectedResources[0],
       )!;
-      await BUS.publish(searchParams.types[0], ACTION.OPEN, {
-        resourceId: item.assetId,
-      });
+      odeServices.resource(searchParams.app).gotoView(item.assetId);
     } catch (error) {
       // if failed push error
       console.error("explorer open failed: ", error);
@@ -132,7 +122,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       ); */
     }
   },
-  printSelectedResource: async () => {
+  printSelectedResource: () => {
     try {
       const { searchParams, selectedResources, resources } = get();
       if (selectedResources.length !== 1) {
@@ -141,9 +131,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       const item = resources.find(
         (resource: IResource) => resource.id === selectedResources[0],
       )!;
-      await BUS.publish(searchParams.types[0], ACTION.PRINT, {
-        resourceId: item.assetId,
-      });
+      odeServices.resource(searchParams.app).gotoPrint(item.assetId);
     } catch (error) {
       // if failed push error
       console.error("explorer print failed: ", error);
@@ -160,7 +148,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
   },
   getMoreResources: async () => {
     try {
-      const { searchParams: searchParamsOrig } = get();
+      const { searchParams: searchParamsOrig, getCurrentFolderId } = get();
       const searchParams = { ...searchParamsOrig };
       const { pagination: oldPagination } = searchParams;
       // set new start idx and check maxidx
@@ -172,13 +160,12 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
         oldPagination.startIdx = oldPagination.maxIdx;
       }
       // call backend
-      const { folders, resources, pagination } = (await BUS.publish(
-        RESOURCE.FOLDER,
-        ACTION.SEARCH,
-        searchParams,
-      )) as GetResourcesResult;
-
-      const hasReachLimit = pagination.startIdx === pagination.maxIdx;
+      const trashed = getCurrentFolderId() === FOLDER.BIN;
+      const { folders, resources, pagination } = await odeServices
+        .resource(searchParams.app)
+        .searchContext({ ...searchParams, trashed });
+      const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
+      const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
 
       set((state) => {
         return {
@@ -194,7 +181,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
             ...state.searchParams,
             pagination,
           },
-          hasMoreResources: hasReachLimit,
+          hasMoreResources,
         };
       });
     } catch (error) {

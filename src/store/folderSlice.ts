@@ -1,22 +1,17 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { type TreeNode } from "@ode-react-ui/advanced";
-import { BUS } from "@shared/constants";
 import { addNode } from "@shared/utils/addNode";
 import { arrayUnique } from "@shared/utils/arrayUnique";
 import { getAncestors } from "@shared/utils/getAncestors";
 import { updateNode } from "@shared/utils/updateNode";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
-  ACTION,
   type CreateFolderParameters,
-  type CreateFolderResult,
-  RESOURCE,
   type UpdateFolderParameters,
-  type UpdateFolderResult,
   type IFolder,
   FOLDER,
-  type GetResourcesResult,
   type ISearchParameters,
+  odeServices,
 } from "ode-ts-client";
 import { toast } from "react-hot-toast";
 import { type StateCreator } from "zustand";
@@ -70,11 +65,9 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         app: searchParams.app,
         type: searchParams.types[0],
       };
-      const folder = (await BUS.publish(
-        RESOURCE.FOLDER,
-        ACTION.CREATE,
-        parameters,
-      )) as CreateFolderResult;
+      const folder = await odeServices
+        .resource(searchParams.app)
+        .createFolder(parameters);
 
       set((state: { treeData: TreeNode; folders: IFolder[] }) => {
         // add folder in tree
@@ -111,11 +104,9 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         app: searchParams.app,
         type: searchParams.types[0],
       };
-      const newFolder = (await BUS.publish(
-        RESOURCE.FOLDER,
-        ACTION.UPD_PROPS,
-        parameters,
-      )) as UpdateFolderResult;
+      const newFolder = await odeServices
+        .resource(searchParams.app)
+        .updateFolder(parameters);
       set((state: { treeData: TreeNode; folders: IFolder[] }) => {
         // replace folder in tree
         const updatedTreeData = updateNode(state.treeData, {
@@ -185,11 +176,9 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         },
       };
       // fetch subfolders
-      const { folders } = (await BUS.publish(
-        RESOURCE.FOLDER,
-        ACTION.SEARCH,
-        newSerchParams,
-      )) as GetResourcesResult;
+      const { folders } = await odeServices
+        .resource(searchParams.app)
+        .searchContext(newSerchParams);
       set((state: { treeData: TreeNode }) => {
         return {
           ...state,

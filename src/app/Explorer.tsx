@@ -153,7 +153,7 @@ export default function Explorer(): JSX.Element | null {
           <EmptyScreenApp />
           <EmptyScreenTrash />
 
-          {!hasMoreResources && getHasResourcesOrFolders() !== 0 ? (
+          {hasMoreResources ? (
             <div className="d-grid gap-2 col-4 mx-auto">
               <Button
                 type="button"

@@ -14,9 +14,6 @@ export const notifyFramework = NotifyFrameworkFactory.instance();
 export const explorerFramework = ExplorerFrameworkFactory.instance();
 export const { http } = TransportFrameworkFactory.instance();
 
-// Explorer BUS
-export const BUS = explorerFramework.getBus();
-
 // translate method
 export const translate = configurationFramework.Platform.idiom.translate;
 
