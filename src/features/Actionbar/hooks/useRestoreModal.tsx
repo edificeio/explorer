@@ -10,12 +10,12 @@ export default function useRestoreModal({ onSuccess }: ModalProps) {
   const getIsTrashSelected = useExplorerStore(
     (state) => state.getIsTrashSelected,
   );
-  const trashSelection = useExplorerStore((state) => state.trashSelection);
+  const restoreSelection = useExplorerStore((state) => state.restoreSelection);
 
   async function onRestore() {
     try {
       if (getIsTrashSelected()) {
-        await trashSelection();
+        await restoreSelection();
       } else {
         throw new Error("Cannot restore untrashed resources");
       }

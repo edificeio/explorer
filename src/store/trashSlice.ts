@@ -1,13 +1,11 @@
 import { type TreeNode } from "@ode-react-ui/advanced";
-import { BUS } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
 import {
-  ACTION,
   type IResource,
-  RESOURCE,
   type TrashParameters,
   FOLDER,
   type IFolder,
+  odeServices,
 } from "ode-ts-client";
 import toast from "react-hot-toast";
 import { type StateCreator } from "zustand";
@@ -15,10 +13,10 @@ import { type StateCreator } from "zustand";
 import { type State } from ".";
 
 export interface TrashSlice {
-  trash: (props: {
+  trashOrRestore: (props: {
     selectedResources: string[];
     selectedFolders: string[];
-    trash: boolean;
+    operation: "trash" | "restore";
   }) => Promise<void>;
   trashSelection: () => Promise<void>;
   restoreSelection: () => Promise<void>;
@@ -31,25 +29,28 @@ export const createTrashSlice: StateCreator<State, [], [], TrashSlice> = (
   set,
   get,
 ) => ({
-  trash: async ({
+  trashOrRestore: async ({
     selectedFolders,
     selectedResources,
-    trash,
+    operation,
   }: {
     selectedFolders: string[];
     selectedResources: string[];
-    trash: boolean;
+    operation: "trash" | "restore";
   }) => {
     try {
       const { searchParams } = get();
-      const parameters: TrashParameters = {
-        trash,
+      const parameters: Omit<TrashParameters, "trash"> = {
         application: searchParams.app,
         resourceType: searchParams.types[0],
         resourceIds: selectedResources,
         folderIds: selectedFolders,
       };
-      await BUS.publish(RESOURCE.FOLDER, ACTION.TRASH, parameters);
+      if (operation === "trash") {
+        await odeServices.resource(searchParams.app).trashAll(parameters);
+      } else {
+        await odeServices.resource(searchParams.app).restoreAll(parameters);
+      }
       set((state) => {
         const treeData: TreeNode = deleteNode(state.treeData, {
           folders: selectedFolders,
@@ -77,12 +78,16 @@ export const createTrashSlice: StateCreator<State, [], [], TrashSlice> = (
     }
   },
   trashSelection: async () => {
-    const { selectedFolders, selectedResources, trash } = get();
-    trash({ selectedFolders, selectedResources, trash: true });
+    const { selectedFolders, selectedResources, trashOrRestore } = get();
+    trashOrRestore({ selectedFolders, selectedResources, operation: "trash" });
   },
   restoreSelection: async () => {
-    const { selectedFolders, selectedResources, trash } = get();
-    trash({ selectedFolders, selectedResources, trash: false });
+    const { selectedFolders, selectedResources, trashOrRestore } = get();
+    trashOrRestore({
+      selectedFolders,
+      selectedResources,
+      operation: "restore",
+    });
   },
   getIsTrashSelected() {
     const { getCurrentFolderId } = get();

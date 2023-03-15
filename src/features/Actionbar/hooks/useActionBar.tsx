@@ -25,7 +25,7 @@ export default function useActionBar() {
     printSelectedResource,
     createResource,
     deselectAll,
-    trashSelection,
+    restoreSelection,
     getSelectedIResources,
     getSelectedFolders,
     selectedResources,
@@ -110,7 +110,7 @@ export default function useActionBar() {
   async function onRestore() {
     try {
       if (getIsTrashSelected()) {
-        await trashSelection();
+        await restoreSelection();
       } else {
         throw new Error("Cannot restore untrashed resources");
       }

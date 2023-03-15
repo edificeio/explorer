@@ -1,13 +1,11 @@
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { type TreeNode } from "@ode-react-ui/advanced";
 import { type OdeProviderParams } from "@ode-react-ui/core";
-import { BUS, translate } from "@shared/constants";
+import { translate } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
 import { moveNode } from "@shared/utils/moveNode";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
-  ACTION,
-  type GetContextResult,
   RESOURCE,
   type IAction,
   type IFilter,
@@ -18,11 +16,11 @@ import {
   type MoveParameters,
   type DeleteParameters,
   type IResource,
-  type GetResourcesResult,
   type ResourceType,
   type PublishParameters,
   type IFolder,
   type IActionResult,
+  odeServices,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
@@ -82,6 +80,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       // get context from backend
       const {
         searchParams: previousParam,
+        getCurrentFolderId,
         // isAppReady: isPreviousReady
       } = get();
       /* if (isPreviousReady) {
@@ -102,13 +101,21 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       /* if (!isReady) {
         return;
       } */
-      const { actions, folders, resources, preferences, orders, filters } =
-        (await BUS.publish(
-          RESOURCE.FOLDER,
-          ACTION.INITIALIZE,
-          searchParams,
-        )) as GetContextResult;
+      const trashed = getCurrentFolderId() === FOLDER.BIN;
+      const {
+        actions,
+        folders,
+        resources,
+        preferences,
+        orders,
+        filters,
+        pagination,
+      } = await odeServices
+        .resource(searchParams.app)
+        .createContext({ ...searchParams, trashed });
 
+      const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
+      const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
       set((state) => ({
         ...state,
         isAppReady: true,
@@ -119,6 +126,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         folders,
         resources,
         searchParams,
+        hasMoreResources,
         treeData: {
           ...state.treeData,
           children: folders.map((folder) => new TreeNodeFolderWrapper(folder)),
@@ -148,7 +156,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         resourceIds: selectedResources,
         folderIds: selectedFolders,
       };
-      await BUS.publish(RESOURCE.FOLDER, ACTION.MOVE, parameters);
+      await odeServices.resource(searchParams.app).moveToFolder(parameters);
       set((state) => {
         const treeData: TreeNode = moveNode(state.treeData, {
           destinationId,
@@ -181,7 +189,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         resourceIds: selectedResources,
         folderIds: selectedFolders,
       };
-      await BUS.publish(RESOURCE.FOLDER, ACTION.DELETE, parameters);
+      await odeServices.resource(searchParams.app).deleteAll(parameters);
       set((state) => {
         const treeData: TreeNode = deleteNode(state.treeData, {
           folders: selectedFolders,
@@ -269,17 +277,19 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   },
   reloadListView: async () => {
     try {
-      const { clearListView } = get();
+      const { clearListView, getCurrentFolderId } = get();
       // clear list view
       clearListView();
       // get params after clear
       const { searchParams } = get();
       // fetch subfolders
-      const { folders, resources, pagination } = (await BUS.publish(
-        RESOURCE.FOLDER,
-        ACTION.SEARCH,
-        searchParams,
-      )) as GetResourcesResult;
+      const trashed = getCurrentFolderId() === FOLDER.BIN;
+      const { folders, resources, pagination } = await odeServices
+        .resource(searchParams.app)
+        .searchContext({ ...searchParams, trashed });
+
+      const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
+      const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
       set((state) => {
         return {
           ...state,
@@ -294,6 +304,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
             ...state.searchParams,
             pagination,
           },
+          hasMoreResources,
         };
       });
     } catch (error) {
@@ -310,7 +321,9 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     resourceType: ResourceType,
     params: PublishParameters,
   ): Promise<IActionResult | undefined> => {
-    return await BUS.publish(resourceType, ACTION.PUBLISH, params);
+    const { searchParams } = get();
+    const tmp = await odeServices.resource(searchParams.app).publish(params);
+    return tmp;
   },
   clearListView: () => {
     set((state) => {

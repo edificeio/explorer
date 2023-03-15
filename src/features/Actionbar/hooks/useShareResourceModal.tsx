@@ -170,6 +170,7 @@ export default function useShareResourceModal({
     // start from 1 because it is front search
     if (searchInputValue.length >= 1) {
       const service = odeServices.share();
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const response = await service.findUsers(searchInputValue, {
         visibleBookmarks: shareRights.visibleBookmarks,
         visibleUsers: shareRights.visibleUsers,
