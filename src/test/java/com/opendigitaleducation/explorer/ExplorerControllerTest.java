@@ -97,7 +97,8 @@ public class ExplorerControllerTest {
         final Async async = context.async();
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-            job = IngestJob.create(test.vertx(), esClientManager, postgresClient, new JsonObject(), reader);
+            job = IngestJob.create(test.vertx(), esClientManager, postgresClient, new JsonObject()
+                    .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
             //start job too create streams
             job.start().compose(ee -> {
                 return job.stop();
