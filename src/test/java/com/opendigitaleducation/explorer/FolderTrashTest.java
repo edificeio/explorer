@@ -85,7 +85,8 @@ public class FolderTrashTest {
         createMapping(elasticClientManager, context, index).onComplete(r -> promiseMapping.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject()
+                .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
         ExplorerConfig.getInstance().setSkipIndexOfTrashedFolders(true);
     }
 

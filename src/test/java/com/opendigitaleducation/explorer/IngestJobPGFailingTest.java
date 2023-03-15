@@ -108,7 +108,8 @@ public class IngestJobPGFailingTest {
                 .put("error-rules-allowed", true)
                 .put("batch-size", BATCH_SIZE)
                 .put("max-delay-ms", 2000)
-                .put("message-merger", "default");
+                .put("message-merger", "default")
+                .put("opensearch-options", new JsonObject().put("wait-for", true));
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
         rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);

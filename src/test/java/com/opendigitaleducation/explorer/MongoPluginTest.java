@@ -93,7 +93,8 @@ public class MongoPluginTest {
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
 
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject()
+                .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
         rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
