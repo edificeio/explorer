@@ -56,7 +56,6 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<ExplorerMessageForIngest> upsertFolders = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteResources = new ArrayList<>();
-        final List<ExplorerMessageForIngest> muteResources = new ArrayList<>();
         for (final ExplorerMessageForIngest message : messages) {
             final ExplorerMessage.ExplorerAction a = ExplorerMessage.ExplorerAction.valueOf(message.getAction());
             final String resourceType = message.getResourceType();
@@ -102,7 +101,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                         //add to failed all resources that cannot be deleted or created into postgres
                         final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
                         prepareFailed.removeAll(toIngest);
-                        prepareFailed.removeAll(muteResources);
                         for (final ExplorerMessageForIngest failedMessage : prepareFailed) {
                             if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
                                 failedMessage.setError("psql.error");
@@ -165,18 +163,6 @@ public class MessageIngesterPostgres implements MessageIngester {
     private void recordDelay(final List<ExplorerMessageForIngest> messages, final long start) {
         final long delay = System.currentTimeMillis() - start;
         ingestJobMetricsRecorder.onIngestPostgresResult(delay / (messages.size() + 1));
-    }
-
-    private Future<List<ExplorerMessageForIngest>> onMuteResources(List<ExplorerMessageForIngest> messages) {
-        if (messages.isEmpty()) {
-            return Future.succeededFuture(new ArrayList<>());
-        }
-        return sql.muteResources(messages).map(resources -> {
-            final Set<String> entIds = resources.stream().map(resource -> resource.entId).collect(Collectors.toSet());
-            return messages.stream()
-                    .filter(message -> entIds.contains(message.getId()))
-                    .collect(Collectors.toList());
-        });
     }
 
     protected Future<List<ExplorerMessageForIngest>> onUpsertResources(final List<ExplorerMessageForIngest> messages) {
