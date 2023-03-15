@@ -10,6 +10,7 @@ import {
   Input,
   Modal,
   SearchButton,
+  SelectList,
   useOdeClient,
 } from "@ode-react-ui/core";
 import {
@@ -56,7 +57,7 @@ export default function ShareResourceModal({
     handleSearchInputChange,
     handleSearchInputKeyUp,
     handleSearchButtonClick,
-    handleSearchResultClick,
+    handleSearchResultsChange,
     hasRight,
   } = useShareResourceModal({ onSuccess, onCancel });
   const { i18n } = useOdeClient();
@@ -229,38 +230,18 @@ export default function ShareResourceModal({
             onClick={handleSearchButtonClick}
           />
         </FormControl>
-        {searchInputValue && (
-          <div>
-            <ul className="ps-0" style={{ listStyle: "none" }}>
-              {searchResults.length === 0 && (
-                <li
-                  key="noresult"
-                  className="d-flex p-8"
-                  style={{ cursor: "pointer", maxWidth: "fit-content" }}
-                >
-                  <span className="ps-8">Aucun résultat</span>
-                </li>
-              )}
-              {searchResults.map((searchResult) => (
-                <li
-                  key={searchResult.id}
-                  className="d-flex p-8"
-                  onClick={(event) =>
-                    handleSearchResultClick(event, searchResult)
-                  }
-                  style={{ cursor: "pointer", maxWidth: "fit-content" }}
-                >
-                  <Avatar
-                    alt="alternative text"
-                    size="xs"
-                    src={searchResult.avatarUrl}
-                    variant="circle"
-                  />
-                  <span className="ps-8">{searchResult.displayName}</span>
-                </li>
-              ))}
-            </ul>
+        {searchResults?.length > 0 && (
+          <div className="bg-white shadow rounded-4 d-block show py-12 px-8">
+            <SelectList
+              options={searchResults}
+              hideCheckbox={true}
+              isMonoSelection={true}
+              onChange={handleSearchResultsChange}
+            ></SelectList>
           </div>
+        )}
+        {searchInputValue.length > 0 && searchResults.length === 0 && (
+          <div className="p-8">Aucun résultat</div>
         )}
         <ShareResourceModalFooter />
       </Modal.Body>

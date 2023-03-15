@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { Alert, useOdeClient } from "@ode-react-ui/core";
+import { type OptionListItemType } from "@ode-react-ui/core/dist/Dropdown/SelectListProps";
 import { useHotToast } from "@ode-react-ui/hooks";
 import useExplorerStore from "@store/index";
 import {
@@ -45,7 +46,8 @@ export default function useShareResourceModal({
   const [bookmarkName, setBookmarkName] = useState("");
   const [showBookmarkInput, toggleBookmarkInput] = useState<boolean>(false);
   const [searchInputValue, setSearchInputValue] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<ShareSubject[]>([]);
+  const [searchAPIResults, setSearchAPIResults] = useState<ShareSubject[]>([]);
+  const [searchResults, setSearchResults] = useState<OptionListItemType[]>([]);
 
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
@@ -176,33 +178,46 @@ export default function useShareResourceModal({
         visibleUsers: shareRights.visibleUsers,
         visibleGroups: shareRights.visibleGroups,
       });
-      setSearchResults(
-        response.filter(
+
+      setSearchAPIResults(response);
+
+      const adaptedResults = response
+        .filter(
           (r) =>
             !shareRights.rights.find((shareRight) => shareRight.id === r.id),
-        ),
-      );
+        )
+        .map((searchResult) => {
+          return {
+            value: searchResult.id,
+            label: searchResult.displayName,
+          };
+        });
+
+      setSearchResults(adaptedResults);
     } else {
       setSearchResults([]);
       Promise.resolve();
     }
   };
 
-  const handleSearchResultClick = (
-    event: React.MouseEvent<HTMLLIElement>,
-    searchResult: ShareSubject,
-  ) => {
-    setShareRights({
-      ...shareRights,
-      rights: [
-        ...shareRights.rights,
-        {
-          ...searchResult,
-          actions: [{ id: "read", displayName: "read" }],
-        },
-      ],
-    });
-    setSearchResults(searchResults.filter((s) => s.id !== searchResult.id));
+  const handleSearchResultsChange = (model: Array<string | number>) => {
+    const shareSubject = searchAPIResults.find(
+      (searchAPIResult) => searchAPIResult.id === model[0],
+    );
+
+    if (shareSubject) {
+      setShareRights({
+        ...shareRights,
+        rights: [
+          ...shareRights.rights,
+          {
+            ...shareSubject,
+            actions: [{ id: "read", displayName: "read" }],
+          },
+        ],
+      });
+      setSearchResults(searchResults.filter((s) => s.value !== model[0]));
+    }
   };
 
   const hasRight = (
@@ -277,7 +292,7 @@ export default function useShareResourceModal({
     handleSearchInputChange,
     handleSearchInputKeyUp,
     handleSearchButtonClick,
-    handleSearchResultClick,
+    handleSearchResultsChange,
     hasRight,
   };
 }
