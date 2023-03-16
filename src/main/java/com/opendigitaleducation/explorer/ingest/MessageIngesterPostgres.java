@@ -86,8 +86,7 @@ public class MessageIngesterPostgres implements MessageIngester {
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
             final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
             final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-            final Future<List<ExplorerMessageForIngest>> beforeMuteFuture = onMuteResources(muteResources);
-            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture, beforeMuteFuture).compose(all -> {
+            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
                 recordDelay(messages, start);
                 if(all.succeeded()) {
                     //ingest only resources created or deleted successfully in postgres
@@ -108,7 +107,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                             }
                         }
                         ingestResult.getFailed().addAll(prepareFailed);
-                    ingestResult.getSucceed().addAll(beforeMuteFuture.result());
                         return ingestResult;
                     }).compose(ingestResult -> {
                     //delete definitely all resources deleted from ES
