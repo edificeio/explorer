@@ -4,6 +4,7 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -47,9 +48,13 @@ public class ResourceQueryElastic {
         }
     }
 
-    public ResourceQueryElastic withUserRightType(final String rightType) {
+    public ResourceQueryElastic withRightType(final String rightType) {
         this.userRightType = Optional.ofNullable(rightType);
         return this;
+    }
+
+    public ResourceQueryElastic withRightType(final ShareRoles rightType) {
+        return this.withRightType(rightType.key);
     }
 
     public ResourceQueryElastic withOrder(String name, Boolean asc) {
@@ -143,11 +148,11 @@ public class ResourceQueryElastic {
     }
 
     public ResourceQueryElastic withUserRight(final String right, final String userId) {
-        return withRight(ExplorerConfig.getRightByUser(right, userId));
+        return withRight(ShareRoles.getSerializedForUserAndRole(userId, right));
     }
 
     public ResourceQueryElastic withGroupRight(final String right, final String groupId) {
-        return withRight(ExplorerConfig.getRightByGroup(right, groupId));
+        return withRight(ShareRoles.getSerializedForGroupAndRole(groupId, right));
     }
 
     public ResourceQueryElastic withUserInfoRights(final String right, final UserInfos user) {
@@ -245,19 +250,19 @@ public class ResourceQueryElastic {
             final UserInfos user = this.user.get();
             final List<String> rights = new ArrayList<>();
             //by creator
-            rights.add(ExplorerConfig.getCreatorRight(user.getUserId()));
+            rights.add(ShareRoles.getSerializedForCreator(user.getUserId()));
             //by user id
             if(this.userRightType.isPresent()){
-                rights.add(ExplorerConfig.getRightByUser(this.userRightType.get(), user.getUserId()));
+                rights.add(ShareRoles.getSerializedForUserAndRole(user.getUserId(), this.userRightType.get()));
             }else{
-                rights.add(ExplorerConfig.getReadByUser(user.getUserId()));
+                rights.add(ShareRoles.Read.getSerializedForUser(user.getUserId()));
             }
             //by group ids
             for(final String groupId : user.getGroupsIds()){
                 if(this.userRightType.isPresent()){
-                    rights.add(ExplorerConfig.getRightByGroup(this.userRightType.get(), groupId));
+                    rights.add(ShareRoles.getSerializedForGroupAndRole(groupId, this.userRightType.get()));
                 }else{
-                    rights.add(ExplorerConfig.getReadByGroup(groupId));
+                    rights.add(ShareRoles.Read.getSerializedForGroup(groupId));
                 }
             }
             //create term

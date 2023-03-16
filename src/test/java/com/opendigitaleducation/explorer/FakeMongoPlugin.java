@@ -19,6 +19,8 @@ import org.entcore.common.explorer.impl.ExplorerPluginResourceMongo;
 import org.entcore.common.explorer.impl.ExplorerSubResource;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.share.ShareModel;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 
@@ -35,18 +37,19 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
     public static final String COLLECTION = "explorer.test_fake";
     static Logger log = LoggerFactory.getLogger(FakeMongoPlugin.class);
     private final Vertx vertx;
+    private Map<String, SecuredAction> securedActions = new HashMap<>();
     protected FakeMongoPlugin(final IExplorerPluginCommunication communication, final MongoClient mongoClient) {
         super(communication, mongoClient);
         this.vertx = communication.vertx();
+        securedActions.put(ShareRoles.Read.key, new SecuredAction(ShareRoles.Read.key,ShareRoles.Read.key,"resource"));
+        securedActions.put(ShareRoles.Manager.key, new SecuredAction(ShareRoles.Manager.key,ShareRoles.Manager.key,"resource"));
+        securedActions.put(ShareRoles.Contrib.key, new SecuredAction(ShareRoles.Contrib.key,ShareRoles.Contrib.key,"resource"));
+
     }
 
     @Override
     protected Optional<ShareService> getShareService() {
-        Map<String, SecuredAction> securedActions = new HashMap<>();
         Map<String, List<String>> groupedActions = new HashMap<>();
-        securedActions.put(ExplorerConfig.RIGHT_READ, new SecuredAction(ExplorerConfig.RIGHT_READ,ExplorerConfig.RIGHT_READ,"resource"));
-        securedActions.put(ExplorerConfig.RIGHT_MANAGE, new SecuredAction(ExplorerConfig.RIGHT_MANAGE,ExplorerConfig.RIGHT_MANAGE,"resource"));
-        securedActions.put(ExplorerConfig.RIGHT_CONTRIB, new SecuredAction(ExplorerConfig.RIGHT_CONTRIB,ExplorerConfig.RIGHT_CONTRIB,"resource"));
         final ShareService share = new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(),COLLECTION,securedActions, groupedActions);
         return Optional.of(share);
     }
@@ -69,14 +72,20 @@ public class FakeMongoPlugin extends ExplorerPluginResourceMongo {
 
     @Override
     protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
+        final ShareModel shareModel =  new ShareModel(source.getJsonArray("shared", new JsonArray()), securedActions, Optional.empty());
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
-        message.withShared(source.getJsonArray("shared", new JsonArray()));
+        message.withShared(shareModel);
         if(source.containsKey("my_flag")) {
             message.getMessage().put("my_flag", source.getString("my_flag"));
         }
         message.getMessage().put("subresources", source.getJsonArray("subresources", new JsonArray()));
         return Future.succeededFuture(message);
+    }
+
+    @Override
+    public Map<String, SecuredAction> getSecuredActions() {
+        return securedActions;
     }
 
     @Override

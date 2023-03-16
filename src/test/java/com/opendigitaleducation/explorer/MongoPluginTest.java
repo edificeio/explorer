@@ -26,6 +26,7 @@ import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.BeforeClass;
@@ -93,13 +94,12 @@ public class MongoPluginTest {
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
 
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject()
-                .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
+        job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
-        rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
-        rights.put(ExplorerConfig.RIGHT_CONTRIB, ExplorerConfig.RIGHT_CONTRIB);
-        rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
+        rights.put(ShareRoles.Read.key, ShareRoles.Read.key);
+        rights.put(ShareRoles.Contrib.key, ShareRoles.Contrib.key);
+        rights.put(ShareRoles.Manager.key, ShareRoles.Manager.key);
         ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
     }
 
@@ -109,16 +109,20 @@ public class MongoPluginTest {
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
-    static JsonObject resource(final String name) {
-        return new JsonObject().put("name", name).put("version", 1);
+    static JsonObject resource(final String name, final String creatorId) {
+        return new JsonObject().put("name", name).put("version", 1).put("creatorId", creatorId);
+    }
+
+    static JsonObject resource(final String name, final UserInfos creator) {
+        return resource(name, creator.getUserId());
     }
 
     @Test
     public void shouldCreateResource(TestContext context) {
-        final JsonObject f1 = resource("folder1");
-        final JsonObject f2 = resource("folder2");
-        final JsonObject f3 = resource("folder3");
         final UserInfos user = test.directory().generateUser("usermove");
+        final JsonObject f1 = resource("folder1", user);
+        final JsonObject f2 = resource("folder2", user);
+        final JsonObject f3 = resource("folder3", user);
         final Async async = context.async();
         resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
             context.assertEquals(0, fetch0.size());
@@ -137,9 +141,9 @@ public class MongoPluginTest {
     @Test
     public void shouldReindexResource(TestContext context) {
         final UserInfos user = test.directory().generateUser("reindex");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
-        final JsonObject f2 = resource("reindex2").put("creatorId", user.getUserId()).put("id", "reindex2");
-        final JsonObject f3 = resource("reindex3").put("creatorId", user.getUserId()).put("id", "reindex3");
+        final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
+        final JsonObject f2 = resource("reindex2", user.getUserId()).put("id", "reindex2");
+        final JsonObject f3 = resource("reindex3", user.getUserId()).put("id", "reindex3");
         final Promise p1 = Promise.promise();
         final Promise p2 = Promise.promise();
         final Promise p3 = Promise.promise();
@@ -172,8 +176,8 @@ public class MongoPluginTest {
     public void shouldShareResource(TestContext context) {
         final UserInfos user = test.directory().generateUser("user_share_test1");
         final UserInfos user2 = test.directory().generateUser("user_share_test2");
-        final JsonObject f1s = resource("share_test1").put("creatorId", user.getUserId()).put("_id", "share_test1");
-        final JsonObject shareUser = test.share().createShareForUser(user2.getUserId(), Arrays.asList(ExplorerConfig.RIGHT_MANAGE));
+        final JsonObject f1s = resource("share_test1", user.getUserId()).put("_id", "share_test1");
+        final JsonObject shareUser = test.share().createShareForUser(user2.getUserId(), Arrays.asList(ShareRoles.Manager.key));
         final Async async = context.async();
         plugin.start();
         final Promise p1 = Promise.promise();
@@ -219,7 +223,7 @@ public class MongoPluginTest {
     public void shouldMoveIfOwner(TestContext context) {
         final UserInfos user = test.directory().generateUser("user_move1");
         final UserInfos user2 = test.directory().generateUser("user_move2");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
@@ -243,7 +247,7 @@ public class MongoPluginTest {
     public void shouldTrashIfOwner(TestContext context) {
         final UserInfos user = test.directory().generateUser("user_trash1");
         final UserInfos user2 = test.directory().generateUser("user_trash2");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
@@ -269,7 +273,7 @@ public class MongoPluginTest {
     public void shouldDeleteIfOwner(TestContext context) {
         final UserInfos user = test.directory().generateUser("user_del1");
         final UserInfos user2 = test.directory().generateUser("user_del2");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
+        final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
         final Async async = context.async(2);
         plugin.start();
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
@@ -298,8 +302,8 @@ public class MongoPluginTest {
         final UserInfos user2 = test.directory().generateUser("user_move2_read" + currentTimeMillis());
         final UserInfos user3 = test.directory().generateUser("user_move3_read" + currentTimeMillis());
         final String idResource = "reindex1" + currentTimeMillis();
-        final JsonObject f1 = resource(idResource).put("creatorId", user.getUserId()).put("id", idResource);
-        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ExplorerConfig.RIGHT_READ, true);
+        final JsonObject f1 = resource(idResource, user.getUserId()).put("id", idResource);
+        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Read.key, true);
         f1.put("shared", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
@@ -325,8 +329,8 @@ public class MongoPluginTest {
         final UserInfos user = test.directory().generateUser("user_trash1_manage");
         final UserInfos user2 = test.directory().generateUser("user_trash2_manage");
         final UserInfos user3 = test.directory().generateUser("user_trash3_manage");
-        final JsonObject f1 = resource("reindex1").put("creatorId", user.getUserId()).put("id", "reindex1");
-        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ExplorerConfig.RIGHT_MANAGE, true);
+        final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
+        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Manager.key, true).put(ShareRoles.Read.key, true);
         f1.put("shared", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
@@ -355,8 +359,8 @@ public class MongoPluginTest {
         final UserInfos user2 = test.directory().generateUser("user_del2_manage");
         final UserInfos user3 = test.directory().generateUser("user_del3_manage");
         final String idResource = "reindex2" + currentTimeMillis();
-        final JsonObject f1 = resource(idResource).put("creatorId", user.getUserId()).put("id", idResource);
-        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ExplorerConfig.RIGHT_MANAGE, true);
+        final JsonObject f1 = resource(idResource, user.getUserId()).put("id", idResource);
+        final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Manager.key, true).put(ShareRoles.Read.key, true);
         f1.put("shared", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.start();

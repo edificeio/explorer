@@ -149,6 +149,11 @@ public class IngestJob {
         return new IngestJob(vertx, reader, ingester, recorder, config);
     }
 
+    public static IngestJob createForTest(final Vertx vertx, final ElasticClientManager manager, final IPostgresClient postgresClient, final JsonObject config, final MessageReader reader) {
+        config.put("opensearch-options", new JsonObject().put("wait-for", true));
+        return create(vertx, manager, postgresClient, config, reader);
+    }
+
     public Future<JsonObject> getMetrics() {
         final JsonObject metrics = new JsonObject();
         metrics.put("status", status.name());

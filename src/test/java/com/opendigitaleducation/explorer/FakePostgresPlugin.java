@@ -1,10 +1,12 @@
 package com.opendigitaleducation.explorer;
 
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.mongo.MongoClient;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
@@ -15,11 +17,10 @@ import org.entcore.common.explorer.impl.ExplorerPluginResourceSql;
 import org.entcore.common.explorer.impl.ExplorerSubResource;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.share.ShareService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
@@ -27,9 +28,13 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
     public static final String FAKE_APPLICATION = "test";
     public static final String FAKE_TYPE = "fake";
     static Logger log = LoggerFactory.getLogger(FakePostgresPlugin.class);
+    private Map<String, SecuredAction> securedActions = new HashMap<>();
 
     protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final IPostgresClient pgClient) {
         super(communication, pgClient);
+        securedActions.put(ShareRoles.Read.key, new SecuredAction(ShareRoles.Read.key,ShareRoles.Read.key,"resource"));
+        securedActions.put(ShareRoles.Manager.key, new SecuredAction(ShareRoles.Manager.key,ShareRoles.Manager.key,"resource"));
+        securedActions.put(ShareRoles.Contrib.key, new SecuredAction(ShareRoles.Contrib.key,ShareRoles.Contrib.key,"resource"));
     }
 
     @Override
@@ -59,6 +64,11 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
         message.withContent(source.getString("html"), ExplorerMessage.ExplorerContentType.Html);
         return Future.succeededFuture(message);
+    }
+
+    @Override
+    protected Map<String, SecuredAction> getSecuredActions() {
+        return securedActions;
     }
 
     @Override

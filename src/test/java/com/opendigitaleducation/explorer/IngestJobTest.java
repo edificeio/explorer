@@ -21,6 +21,7 @@ import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.postgres.IPostgresClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.*;
@@ -95,22 +96,23 @@ public abstract class IngestJobTest {
         json.put("content", content);
         json.put("public", pub);
         json.put("version", 1);
+        json.put("creator_id", user.getUserId());
         return json;
     }
 
-    static List<ResourceService.ShareOperation> shareTo(JsonObject rights, UserInfos... users) {
+    static List<ResourceService.ShareOperation> shareTo(JsonObject rights, List<ShareRoles> normalized, UserInfos... users) {
         final List<ResourceService.ShareOperation> share = new ArrayList<>();
         for (UserInfos user : users) {
-            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(user.getUserId(), false, rights);
+            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(user.getUserId(), false, rights, normalized);
             share.add(op);
         }
         return share;
     }
 
-    static List<ResourceService.ShareOperation> shareToGroup(JsonObject rights, String... groups) {
+    static List<ResourceService.ShareOperation> shareToGroup(JsonObject rights, List<ShareRoles> normalized, String... groups) {
         final List<ResourceService.ShareOperation> share = new ArrayList<>();
         for (String group : groups) {
-            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(group, true, rights);
+            final ResourceService.ShareOperation op = new ResourceService.ShareOperation(group, true, rights, normalized);
             share.add(op);
         }
         return share;
@@ -256,6 +258,7 @@ public abstract class IngestJobTest {
     @Test
     public void shouldExploreResourceByShare(TestContext context) {
         final JsonObject rights = new JsonObject().put("read", true).put("contrib", true).put("manage", true);
+        final List<ShareRoles> normalized = Arrays.asList(ShareRoles.Read, ShareRoles.Contrib, ShareRoles.Manager);
         final Async async = context.async(3);
         final UserInfos user1 = test.directory().generateUser("user_share1", "group_share1");
         final UserInfos user2 = test.directory().generateUser("user_share2", "group_share2");
@@ -281,7 +284,7 @@ public abstract class IngestJobTest {
             //share doc1 to user2
             try {
                 final JsonObject doc1 = fetch1.stream().map(e-> (JsonObject)e).filter(e->"idshare1".equals(e.getString("assetId"))).findFirst().get();
-                final List<ResourceService.ShareOperation> shares1 = shareTo(rights, user2);
+                final List<ResourceService.ShareOperation> shares1 = shareTo(rights, normalized, user2);
                 return getResourceService().share(user1, application, doc1, shares1).compose(share1 -> {
                     return getIngestJob().execute(true);
                 }).compose((share1 -> {
@@ -304,7 +307,7 @@ public abstract class IngestJobTest {
         }).compose(fetch1 -> {
             //share doc2 to group2
             try {
-                final List<ResourceService.ShareOperation> shares2 = shareToGroup(rights, "group_share1", "group_share2", "group_share3", "group_share4", "group_share5", "group_share6");
+                final List<ResourceService.ShareOperation> shares2 = shareToGroup(rights, normalized, "group_share1", "group_share2", "group_share3", "group_share4", "group_share5", "group_share6");
                 final JsonObject doc2 = fetch1.stream().map(e-> (JsonObject)e).filter(e->"idshare2".equals(e.getString("assetId"))).findFirst().get();
                 return getResourceService().share(user1, application, doc2, shares2).compose(share1 -> {
                     return getIngestJob().execute(true);

@@ -71,6 +71,7 @@ CREATE TABLE explorer.resources (
     trashedAt TIMESTAMP,
     deleted BOOLEAN DEFAULT FALSE,
     shared JSONB,
+    rights JSONB,
     version int,
     ingest_job_state VARCHAR(20),
     PRIMARY KEY(id)

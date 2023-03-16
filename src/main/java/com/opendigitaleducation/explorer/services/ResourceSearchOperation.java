@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.services;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import org.entcore.common.share.ShareRoles;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,6 +35,11 @@ public class ResourceSearchOperation {
 
     public Optional<String> getRightType() {
         return rightType;
+    }
+
+    public ResourceSearchOperation setRightType(final ShareRoles rightType) {
+        this.rightType = Optional.ofNullable(rightType.key);
+        return this;
     }
 
     public ResourceSearchOperation setRightType(final String rightType) {

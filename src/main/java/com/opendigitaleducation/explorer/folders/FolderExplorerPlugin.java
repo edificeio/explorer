@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.folders;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -28,6 +29,11 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
     public FolderExplorerDbSql getDbHelper() {return dbHelper;}
+
+    @Override
+    protected Map<String, SecuredAction> getSecuredActions() {
+        return new HashMap<>();
+    }
 
     @Override
     protected Optional<ShareService> getShareService() {
