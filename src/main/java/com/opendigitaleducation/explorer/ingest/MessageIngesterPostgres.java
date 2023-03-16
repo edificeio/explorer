@@ -14,6 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.postgres.IPostgresClient;
+import org.entcore.common.share.ShareModel;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
@@ -173,35 +174,12 @@ public class MessageIngesterPostgres implements MessageIngester {
                     }
                     mess.getMessage().put("folderIds", new JsonArray(new ArrayList(folderIds)));
                     mess.getMessage().put("usersForFolderIds", new JsonArray(new ArrayList(usersForFolderIds)));
-                    //set visible
-                    final Set<String> visibleBy = new HashSet<>();
-                    visibleBy.add(ExplorerConfig.getCreatorRight(resSql.creatorId));
-                    //get rights
-                    final Optional<String> contribRights = ExplorerConfig.getInstance().getContribRightForApp(mess.getApplication());
-                    final Optional<String> manageRights = ExplorerConfig.getInstance().getManageRightForApp(mess.getApplication());
-                    for (final Map.Entry<String, Set<String>> entry : resSql.getRightsByUser().entrySet()) {
-                        final String userId = entry.getKey();
-                        final Set<String> rights = entry.getValue();
-                        visibleBy.add(ExplorerConfig.getReadByUser(userId));
-                        if(contribRights.isPresent() && rights.contains(contribRights.get())){
-                            visibleBy.add(ExplorerConfig.getContribByUser(userId));
-                        }
-                        if(manageRights.isPresent() && rights.contains(manageRights.get())){
-                            visibleBy.add(ExplorerConfig.getManageByUser(userId));
-                        }
+                    if(resSql.shared != null && resSql.rights != null){
+                        mess.withShared(resSql.shared, new ArrayList<>(resSql.rights.getList()));
                     }
-                    for (final Map.Entry<String, Set<String>> entry : resSql.getRightsForGroup().entrySet()) {
-                        final String groupId = entry.getKey();
-                        final Set<String> rights = entry.getValue();
-                        visibleBy.add(ExplorerConfig.getReadByGroup(groupId));
-                        if(contribRights.isPresent() && rights.contains(contribRights.get())){
-                            visibleBy.add(ExplorerConfig.getContribByGroup(groupId));
-                        }
-                        if(manageRights.isPresent() && rights.contains(manageRights.get())){
-                            visibleBy.add(ExplorerConfig.getManageByGroup(groupId));
-                        }
+                    if(resSql.creatorId != null && ! resSql.creatorId.isEmpty()){
+                        mess.withCreatorId(resSql.creatorId);
                     }
-                    mess.getMessage().put("rights", new JsonArray(new ArrayList(visibleBy)));
                     //keep original id
                     final JsonObject override = new JsonObject();
                     override.put("assetId", mess.getId());

@@ -1,7 +1,7 @@
 package com.opendigitaleducation.explorer.share;
 
-import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.Future;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -34,11 +34,11 @@ public class DefaultShareTableManager implements ShareTableManager {
         //create list
         final Set<String> ids = new HashSet<>();
         for (String u : userIds) {
-            ids.add(ExplorerConfig.getCreatorRight(u));
-            ids.add(ExplorerConfig.getReadByUser(u));
+            ids.add(ShareRoles.getSerializedForCreator(u));
+            ids.add(ShareRoles.Read.getSerializedForUser(u));
         }
         for (String u : groupIds) {
-            ids.add(ExplorerConfig.getReadByGroup(u));
+            ids.add(ShareRoles.Read.getSerializedForGroup(u));
         }
         return Future.succeededFuture(new ArrayList<>(ids));
     }

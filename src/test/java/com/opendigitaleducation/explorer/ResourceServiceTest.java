@@ -77,8 +77,7 @@ public class ResourceServiceTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager,postgresClient, new JsonObject()
-                .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
+        job = IngestJob.createForTest(test.vertx(), elasticClientManager,postgresClient, new JsonObject(), reader);
         plugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, plugin.getCommunication(), postgresClient);
@@ -90,38 +89,27 @@ public class ResourceServiceTest {
     }
 
 
-    static JsonObject createHtml(String id, String name, String html, String content) {
+    static JsonObject createHtml(String id, String name, String html, String content, final UserInfos user) {
         final JsonObject json = new JsonObject()
                 .put("id", id)
                 .put("html", html)
                 .put("content", content)
                 .put("name", name)
-                .put("version", 1);
+                .put("version", 1).put("creator_id", user.getUserId());
         return json;
     }
 
-    //TODO api doc
-    //TODO on delete folder => delete resources and sub folders
-    //TODO persist predictible ID in bus to skip one step (optim)
     //TODO test failed case (ingest failed, ingest too many error, ingest too big payload, message read failed, message update status failed...)
-    //TODO test metrics
-    //TODO add more logs
-    //TODO before delete resource => delete in postgres (cascade resource_folders)
     //TODO tester audience
-    //TODO tester reindexation gros volume (workspace ou conversation) + test charge
-    //TODO tester api en lot / recursive
-    //TODO test recherche multi critere complexe
     //TODO test pdf
-    //TODO chargement automatique du mapping au démarrage
-    //TODO config pf recette (redis stream, config du module...)
     //TODO adaptative maxbatch size (according to max payload size, previous error?...)
     //TODO better redis stream ID? "application-date"
     //https://docs.google.com/presentation/d/1xtPS--PhtBSGmTAYl74BIqDIbZE0v99p253W9GKFQJA/edit#slide=id.gc52769f62b_0_63
     @Test
     public void shouldSearchResourceWithHtml(TestContext context) {
         final UserInfos user = test.directory().generateUser("userhtml");
-        final JsonObject f1 = createHtml("html1", "name1", "<div><h1>MONHTML1</h1></div>", "content1");
-        final JsonObject f2 = createHtml("html2", "name2", "<div><h1>MONHTML2</h1></div>", "content2");
+        final JsonObject f1 = createHtml("html1", "name1", "<div><h1>MONHTML1</h1></div>", "content1", user);
+        final JsonObject f2 = createHtml("html2", "name2", "<div><h1>MONHTML2</h1></div>", "content2", user);
         final Async async = context.async(3);
         plugin.notifyUpsert(user, Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
@@ -150,10 +138,10 @@ public class ResourceServiceTest {
     @Test
     public void shouldSearchResourceWithSubresources(TestContext context) {
         final UserInfos user = test.directory().generateUser("usernested");
-        final ExplorerMessage f1 = ExplorerMessage.upsert("id1", user, false).withVersion(1L);
+        final ExplorerMessage f1 = ExplorerMessage.upsert("id1", user, false).withCreator(user).withVersion(1L);
         f1.withSubResourceContent("id1_1", "content1_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_1", "<h1>html1_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f1.withSubResourceContent("id1_2", "content1_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_2", "<h1>html1_2</h1>", ExplorerMessage.ExplorerContentType.Html);
-        final ExplorerMessage f2 = ExplorerMessage.upsert("id2", user, false).withVersion(1L);
+        final ExplorerMessage f2 = ExplorerMessage.upsert("id2", user, false).withCreator(user).withVersion(1L);
         f2.withSubResourceContent("id2_1", "content2_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_1", "<h1>html2_1</h1>", ExplorerMessage.ExplorerContentType.Html);
         f2.withSubResourceContent("id2_2", "content2_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_2", "<h1>html2_2</h1>", ExplorerMessage.ExplorerContentType.Html);
         final Async async = context.async(3);

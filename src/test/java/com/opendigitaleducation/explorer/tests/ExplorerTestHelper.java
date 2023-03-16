@@ -3,6 +3,7 @@ package com.opendigitaleducation.explorer.tests;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
+import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
@@ -67,6 +68,7 @@ public class ExplorerTestHelper implements TestRule {
             resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
             logger.info("Using index: " + resourceIndex);
             ExplorerPluginMetricsFactory.init(testHelper.vertx(), new JsonObject());
+            IngestJobMetricsRecorderFactory.init(testHelper.vertx(), new JsonObject());
             ExplorerConfig.getInstance().setEsIndex(application, resourceIndex);
             final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
             final PostgresClient postgresClient = new PostgresClient(testHelper.vertx(), postgresqlConfig);
@@ -74,7 +76,7 @@ public class ExplorerTestHelper implements TestRule {
             communication = new ExplorerPluginCommunicationPostgres(testHelper.vertx(), postgresClient, IExplorerPluginMetricsRecorder.NoopExplorerPluginMetricsRecorder.instance);
             resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient);
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
-            job = IngestJob.create(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
+            job = IngestJob.createForTest(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
             final JsonObject config = new JsonObject().put("stream", "postgres");
             final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(testHelper.vertx(), config, postgresClient);
             folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);

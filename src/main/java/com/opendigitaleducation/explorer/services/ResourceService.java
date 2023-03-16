@@ -3,11 +3,11 @@ package com.opendigitaleducation.explorer.services;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 //TODO add log profile
 //TODO add metrics
@@ -53,11 +53,15 @@ public interface ResourceService {
         final String id;
         final boolean group;
         final JsonObject rights;
+        final Set<String> normalizedRights;
 
-        public ShareOperation(String id, boolean group, JsonObject rights) {
+        public ShareOperation(String id, boolean group, JsonObject rights, final Collection<ShareRoles> normalizedRights) {
             this.id = id;
             this.group = group;
             this.rights = rights;
+            this.normalizedRights = normalizedRights.stream().map(e -> {
+                return group? e.getSerializedForGroup(id):e.getSerializedForUser(id);
+            }).collect(Collectors.toSet());
         }
 
         public String getId() {
@@ -75,6 +79,8 @@ public interface ResourceService {
         public JsonObject toJsonRight() {
             return this.rights.copy().put(group ? "groupId" : "userId", id);
         }
+
+        public Set<String> getNormalizedRightsAsString() { return this.normalizedRights; }
     }
 
 }

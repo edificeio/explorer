@@ -21,6 +21,7 @@ import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
 import org.entcore.common.postgres.IPostgresClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -139,7 +140,7 @@ public class ResourceServiceElastic implements ResourceService {
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
-        final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true).setRightType(ExplorerConfig.RIGHT_MANAGE);
+        final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true).setRightType(ShareRoles.Manager);
         final Future<Integer> futureCheck = count(user, application, search);
         return futureCheck.compose(count->{
             if(count < ids.size()){
@@ -242,7 +243,7 @@ public class ResourceServiceElastic implements ResourceService {
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
-        final ResourceSearchOperation search = new ResourceSearchOperation().setIds(id).setSearchEverywhere(true).setRightType(ExplorerConfig.RIGHT_MANAGE);
+        final ResourceSearchOperation search = new ResourceSearchOperation().setIds(id).setSearchEverywhere(true).setRightType(ShareRoles.Manager);
         final Future<Integer> futureCheck = count(user, application, search);
         return futureCheck.compose(count-> {
             if (count < id.size()) {
@@ -271,6 +272,7 @@ public class ResourceServiceElastic implements ResourceService {
     public Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> resources, final List<ShareOperation> operation) throws Exception {
         final long now = currentTimeMillis();
         final List<JsonObject> rights = operation.stream().map(o -> o.toJsonRight()).collect(Collectors.toList());
+        final Set<String> normalizedRights = operation.stream().map(e -> e.getNormalizedRightsAsString()).collect(HashSet::new, Set::addAll, Set::addAll);
         final Set<Integer> ids = resources.stream().map(e -> Integer.valueOf(e.getString("_id"))).collect(Collectors.toSet());
         final JsonArray shared = new JsonArray(rights);
         return sql.getModelByIds(ids).compose(entIds -> {
@@ -279,7 +281,7 @@ public class ResourceServiceElastic implements ResourceService {
                 // TODO JBER check entityType
                 return ExplorerMessage.upsert(e.entId, user, false)
                         .withType(e.application, e.resourceType, e.resourceType)
-                        .withShared(shared)
+                        .withShared(shared, new ArrayList<>(normalizedRights))
                         .withVersion(now).withSkipCheckVersion(true);
             }).collect(Collectors.toList());
             return communication.pushMessage(messages);

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.of;
 import org.entcore.common.explorer.IExplorerFolderTree;
+import org.entcore.common.share.ShareRoles;
 
 abstract class MessageIngesterElasticOperation {
     protected Logger log = LoggerFactory.getLogger(getClass());
@@ -139,7 +140,8 @@ abstract class MessageIngesterElasticOperation {
                 document.put("rights", new JsonArray());
             }
             if (document.containsKey("creatorId")) {
-                final String tagCreator = ExplorerConfig.getCreatorRight(document.getString("creatorId"));
+                final String creatorId = document.getString("creatorId");
+                final String tagCreator = ShareRoles.getSerializedForCreator(creatorId);
                 final JsonArray rights = document.getJsonArray("rights", new JsonArray());
                 if(!rights.contains(tagCreator)){
                     document.put("rights", rights.add(tagCreator));
@@ -169,6 +171,15 @@ abstract class MessageIngesterElasticOperation {
         }
 
         private static JsonObject beforeUpdate(final JsonObject document) {
+            // add creator if needed (must be before remove)
+            if (document.containsKey("creatorId") && document.containsKey("rights")) {
+                final String creatorId = document.getString("creatorId");
+                final String tagCreator = ShareRoles.getSerializedForCreator(creatorId);
+                final JsonArray rights = document.getJsonArray("rights", new JsonArray());
+                if(!rights.contains(tagCreator)){
+                    document.put("rights", rights.add(tagCreator));
+                }
+            }
             document.remove("skipCheckVersion");
             //upsert should remove createdAt
             document.remove("createdAt");

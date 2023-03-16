@@ -75,8 +75,7 @@ public class FolderServiceTest {
         createMapping(elasticClientManager, context, index).onComplete(r -> promiseMapping.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
-        job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, new JsonObject()
-                .put("opensearch-options", new JsonObject().put("wait-for", true)), reader);
+        job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
     }
 
     static JsonObject folder(final String name) {

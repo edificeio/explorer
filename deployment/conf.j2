@@ -62,12 +62,7 @@
                     {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish", "target": "actionbar", "right": "creator"},
                     {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print", "target": "actionbar", "right": "read"},
                     {"id": "share","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"}
-                ],
-                "rights":{
-                    "read": "org-entcore-blog-controllers-BlogController|get",
-                    "contrib": "org-entcore-blog-controllers-BlogController|update",
-                    "manage": "org-entcore-blog-controllers-BlogController|delete"
-                }
+                ]
             },
             "exercizer": {
                 "filters": [
@@ -85,12 +80,7 @@
                     {"id": "publish","workflow":"fr.openent.exercizer.controllers.SubjectController|publish"},
                     {"id": "list","workflow":"fr.openent.exercizer.controllers.SubjectController|listSubject"},
                     {"id": "view","workflow":"fr.openent.exercizer.controllers.SubjectController|view"}
-                ],
-                "rights":{
-                    "read": "com-thecodingmachine-inca-controllers-ThematicController|list",
-                    "contrib": "fr-openent-exercizer-controllers-SubjectController|canSchedule",
-                    "manage": "fr-openent-exercizer-controllers-SubjectController|remove"
-                }
+                ]
             }
         }
     }

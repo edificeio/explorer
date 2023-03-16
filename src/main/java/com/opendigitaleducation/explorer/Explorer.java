@@ -61,9 +61,6 @@ public class Explorer extends BaseServer {
     private Optional<ExplorerTaskManager> taskManager = Optional.empty();
     @Override
     public void start() throws Exception {
-        //TODO ajouter check de droit sur les API explorer (manage, write)
-        //  => normaliser les droits virtuellement
-        //  => creer un term de recherche "rights":"USERID:write"
         log.info("Starting explorer...");
         super.start();
         final boolean runjobInWroker = config.getBoolean("worker-job", true);

@@ -32,6 +32,7 @@ import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
 import org.entcore.common.postgres.PostgresClient;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.junit.Before;
@@ -115,14 +116,14 @@ public class DiscreteFailureTest {
                 .put("opensearch-options", new JsonObject().put("wait-for", true));
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         final JsonObject rights = new JsonObject();
-        rights.put(ExplorerConfig.RIGHT_READ, ExplorerConfig.RIGHT_READ);
-        rights.put(ExplorerConfig.RIGHT_CONTRIB, ExplorerConfig.RIGHT_CONTRIB);
-        rights.put(ExplorerConfig.RIGHT_MANAGE, ExplorerConfig.RIGHT_MANAGE);
+        rights.put(ShareRoles.Read.key, ShareRoles.Read.key);
+        rights.put(ShareRoles.Contrib.key, ShareRoles.Contrib.key);
+        rights.put(ShareRoles.Manager.key, ShareRoles.Manager.key);
         ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, redisConfig);
-            job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
+            job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> job.stop())
                 .onComplete(context.asyncAssertSuccess(eee -> promiseRedis.complete()));
@@ -135,8 +136,12 @@ public class DiscreteFailureTest {
         clearErrorRules();
     }
 
-    static JsonObject resource(final String name) {
-        return new JsonObject().put("name", name).put("version", 1);
+    static JsonObject resource(final String name, final String creatorId) {
+        return new JsonObject().put("name", name).put("version", 1).put("creatorId", creatorId);
+    }
+
+    static JsonObject resource(final String name, final UserInfos creator) {
+        return resource(name, creator.getUserId());
     }
 
     /**
@@ -293,9 +298,9 @@ public class DiscreteFailureTest {
                              final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
                              final TestContext context) {
         final String resourceName = "resource" + idtResource.incrementAndGet();
-        final JsonObject f1 = resource(resourceName);
-        f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
+        final JsonObject f1 = resource(resourceName, user);
+        f1.put("content", "initial");
         final Async async = context.async();
         final int nbMessages = nbLastMessagesOk + nbMessagesKO + nbLastMessagesOk;
         final int nbTimesToExecuteJob = 2 * nbMessages;
@@ -352,9 +357,9 @@ public class DiscreteFailureTest {
             final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
             final TestContext context) {
         final String resourceName = "resource" + idtResource.incrementAndGet();
-        final JsonObject f1 = resource(resourceName);
-        f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
+        final JsonObject f1 = resource(resourceName, user);
+        f1.put("content", "initial");
         final Async async = context.async();
         final int nbTimesToExecuteJob = 2 * nbMessages;
         resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
@@ -398,9 +403,9 @@ public class DiscreteFailureTest {
                                               final List<ErrorMessageTransformer.IngestJobErrorRule> errors,
                                               final TestContext context) {
         final String resourceName = "resource" + idtResource.incrementAndGet();
-        final JsonObject f1 = resource(resourceName);
-        f1.put("content", "initial");
         final UserInfos user = test.directory().generateUser("usermove");
+        final JsonObject f1 = resource(resourceName, user);
+        f1.put("content", "initial");
         final Async async = context.async();
         final int nbMessages = nbFirstMessagesOk + nbMessagesKO + nbLastMessagesOk;
         final int nbTimesToExecuteJob = 5;
