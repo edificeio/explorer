@@ -233,7 +233,7 @@ export default function ShareResourceModal({
           />
         </FormControl>
         {searchResults?.length > 0 && (
-          <div className="bg-white shadow rounded-4 d-block show py-12 px-8">
+          <div className="bg-white shadow rounded-4 d-block show py-12 px-8 max-w-512">
             <SelectList
               options={searchResults}
               hideCheckbox={true}
