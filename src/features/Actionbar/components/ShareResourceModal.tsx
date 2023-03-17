@@ -82,7 +82,7 @@ export default function ShareResourceModal({
                     scope="col"
                     className="text-center"
                   >
-                    {shareRightAction.displayName}
+                    {i18n(shareRightAction.displayName)}
                   </th>
                 ))}
                 <th scope="col"></th>
