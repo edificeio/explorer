@@ -23,7 +23,7 @@ export const createTreeviewSlice: StateCreator<State, [], [], TreeviewSlice> = (
   set,
   get,
 ) => ({
-  selectedNodeIds: [],
+  selectedNodeIds: ["default"],
   status: undefined,
   treeData: {
     id: FOLDER.DEFAULT,
