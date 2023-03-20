@@ -1,12 +1,18 @@
-import CreateModal from "@features/Actionbar/components/EditFolderModal";
+import { lazy, Suspense } from "react";
+
 import { TreeView } from "@ode-react-ui/advanced";
-import { Button, useOdeClient } from "@ode-react-ui/core";
+import { Button, LoadingScreen, useOdeClient } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import useExplorerStore from "@store/index";
 import { FOLDER } from "ode-ts-client";
 
 import TrashButton from "./TrashButton";
+
+const CreateModal = lazy(
+  async () => await import("@features/Actionbar/components/EditFolderModal"),
+);
+
 export const TreeViewContainer = () => {
   const { i18n } = useOdeClient();
 
@@ -22,7 +28,7 @@ export const TreeViewContainer = () => {
     unfoldTreeItem,
   } = useExplorerStore((state) => state);
 
-  const [isOpen, toggle] = useModal();
+  const [isCreateFolderModalOpen, toggle] = useModal();
 
   return (
     <>
@@ -44,17 +50,21 @@ export const TreeViewContainer = () => {
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={() => toggle(true)}
+          onClick={() => toggle()}
         >
           {i18n("explorer.folder.new")}
         </Button>
       </div>
-      <CreateModal
-        edit={false}
-        isOpen={isOpen}
-        onSuccess={() => toggle(false)}
-        onCancel={() => toggle(false)}
-      />
+      <Suspense fallback={<LoadingScreen />}>
+        {isCreateFolderModalOpen && (
+          <CreateModal
+            edit={false}
+            isOpen={isCreateFolderModalOpen}
+            onSuccess={() => toggle()}
+            onCancel={() => toggle()}
+          />
+        )}
+      </Suspense>
     </>
   );
 };
