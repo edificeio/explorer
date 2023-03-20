@@ -84,6 +84,11 @@ public class ExplorerTestHelper implements TestRule {
             throw new RuntimeException(e);
         }
     }
+    static  Future createUpsertScript(final TestContext context, final String scriptId, final ElasticClientManager elasticClientManager) {
+        final Buffer upsertScript = testHelper.vertx().fileSystem().readFileBlocking("es/upsertScript.json");
+        final Future future = elasticClientManager.getClient().storeScript(scriptId, upsertScript);
+        return future;
+    }
 
     static Future<Void> createMapping(ElasticClientManager elasticClientManager, TestContext context, String index) {
         final Buffer mapping = testHelper.vertx().fileSystem().readFileBlocking("es/mappingResource.json");
@@ -100,7 +105,9 @@ public class ExplorerTestHelper implements TestRule {
 
     public void start(final TestContext context){
         final Async async = context.async();
-        createMapping(elasticClientManager, context, resourceIndex).onComplete(r -> async.complete());
+        createMapping(elasticClientManager, context, resourceIndex).compose(e -> {
+            return createUpsertScript(context, "explorer-upsert-ressource", elasticClientManager);
+        }).onComplete(r -> async.complete());
     }
 
     public void close() {
