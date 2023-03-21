@@ -45,6 +45,10 @@ export default function useActionBar() {
   }, [selectedResources, selectedFolders]);
 
   function handleClick(action: IAction) {
+    // A11Y: fix Screen readers can read parent page content outside the modal
+    // https://docs.deque.com/issue-help/1.0.0/en/reading-order-browse-outside-modal
+    document.getElementById("root")?.setAttribute("aria-hidden", "true");
+
     switch (action.id) {
       case ACTION.OPEN:
         if (selectedResources.length > 0) {
