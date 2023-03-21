@@ -200,7 +200,7 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
     }
   },
   gotoPreviousFolder: async () => {
-    const { getPreviousFolder, openFolder } = get();
-    await openFolder(getPreviousFolder()?.id || FOLDER.DEFAULT);
+    const { getParentFolder, openFolder } = get();
+    await openFolder(getParentFolder()?.id || FOLDER.DEFAULT);
   },
 });

@@ -13,6 +13,7 @@ export interface TreeviewSlice {
   foldTreeItem: (folderId: string) => void;
   getHasNoSelectedNodes: () => boolean;
   getHasSelectedRoot: () => boolean;
+  getParentFolder: () => TreeNode | undefined;
   getPreviousFolder: () => TreeNode | undefined;
   selectTreeItem: (folderId: string) => void;
   unfoldTreeItem: (folderId: string) => void;
@@ -32,6 +33,17 @@ export const createTreeviewSlice: StateCreator<State, [], [], TreeviewSlice> = (
     children: [],
   },
   getPreviousFolder() {
+    const { selectedNodeIds, treeData } = get();
+    if (selectedNodeIds.length < 2) {
+      return undefined;
+    }
+    const previousFolder = findNodeById(
+      selectedNodeIds[selectedNodeIds.length - 1],
+      treeData,
+    );
+    return previousFolder && { ...previousFolder };
+  },
+  getParentFolder() {
     const { selectedNodeIds, treeData } = get();
     if (selectedNodeIds.length < 2) {
       return undefined;
