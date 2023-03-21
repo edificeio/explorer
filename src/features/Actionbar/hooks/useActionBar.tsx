@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import { useOdeClient, Alert } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks";
 import useExplorerStore from "@store/index";
 import { type IAction, ACTION } from "ode-ts-client";
 
@@ -16,6 +18,8 @@ export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
 
+  const { i18n } = useOdeClient();
+  const { hotToast } = useHotToast(Alert);
   const {
     actions,
     openFolder,
@@ -111,6 +115,7 @@ export default function useActionBar() {
     try {
       if (getIsTrashSelected()) {
         await restoreSelection();
+        hotToast.success(i18n("explorer.trash.toast"));
       } else {
         throw new Error("Cannot restore untrashed resources");
       }
