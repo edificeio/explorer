@@ -28,7 +28,7 @@ export default function EditResourceModal({
   onSuccess,
   onCancel,
 }: EditResourceModalProps) {
-  const { i18n } = useOdeClient();
+  const { i18n, appCode } = useOdeClient();
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
   );
@@ -117,6 +117,7 @@ export default function EditResourceModal({
 
           <Heading headingStyle="h4" level="h3" className="mb-16">
             {i18n("explorer.resource.editModal.heading.access")}
+            {appCode}
           </Heading>
 
           <Alert type="info">
@@ -125,7 +126,7 @@ export default function EditResourceModal({
 
           <FormControl
             id="flexSwitchCheckDefault"
-            className="form-check form-switch mt-16 mb-8"
+            className="form-switch d-flex gap-8 mt-16 mb-8"
           >
             <FormControl.Input
               type="checkbox"
@@ -135,10 +136,10 @@ export default function EditResourceModal({
                 value: resource.public!,
                 onChange: (e) => onPublicChange(e.target.checked),
               })}
-              className="form-check-input"
+              className="form-check-input mt-0"
               size="md"
             />
-            <FormControl.Label className="form-check-label">
+            <FormControl.Label className="form-check-label mb-0">
               {i18n(
                 "explorer.resource.editModal.access.flexSwitchCheckDefault.label",
               )}
