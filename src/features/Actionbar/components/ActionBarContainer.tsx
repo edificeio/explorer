@@ -83,6 +83,7 @@ export default function ActionBarContainer() {
                           roleExpected={action.right!}
                         >
                           <Button
+                            id={action.id}
                             key={action.id}
                             type="button"
                             color="primary"

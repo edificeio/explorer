@@ -17,6 +17,7 @@ type ModalName =
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
+  const [clickedAction, setClickedAction] = useState<IAction>();
 
   const { i18n } = useOdeClient();
   const { hotToast } = useHotToast(Alert);
@@ -28,7 +29,6 @@ export default function useActionBar() {
     openSelectedResource,
     printSelectedResource,
     createResource,
-    deselectAll,
     restoreSelection,
     getSelectedIResources,
     getSelectedFolders,
@@ -48,6 +48,9 @@ export default function useActionBar() {
     // A11Y: fix Screen readers can read parent page content outside the modal
     // https://docs.deque.com/issue-help/1.0.0/en/reading-order-browse-outside-modal
     document.getElementById("root")?.setAttribute("aria-hidden", "true");
+
+    // A11Y: save clicked action to set focus to clicked button after modal is dismissed
+    setClickedAction(action);
 
     switch (action.id) {
       case ACTION.OPEN:
@@ -132,8 +135,10 @@ export default function useActionBar() {
 
   function onClearActionBar() {
     setOpenedModalName("void");
-    setIsActionBarOpen(false);
-    deselectAll("all");
+    // a11y: set focus to action button after modal is dismissed
+    if (clickedAction?.id) {
+      document.getElementById(clickedAction?.id)?.focus();
+    }
   }
 
   const onFinish = (modalName: ModalName) => () => {
