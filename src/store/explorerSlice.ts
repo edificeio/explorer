@@ -88,6 +88,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       } */
       const searchParams: ISearchParameters = {
         ...previousParam,
+        orders: { updatedAt: "desc" },
         app,
         types: [RESOURCE.BLOG],
       };
