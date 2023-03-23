@@ -3,13 +3,15 @@ import { type TreeNode } from "@ode-react-ui/advanced";
 import { type OdeProviderParams } from "@ode-react-ui/core";
 import { translate } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
+import {
+  getAppParams,
+  type IAction,
+  type IOrder,
+  type IFilter,
+} from "@shared/utils/getAppParams";
 import { moveNode } from "@shared/utils/moveNode";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
-  RESOURCE,
-  type IAction,
-  type IFilter,
-  type IOrder,
   type IPreferences,
   type ISearchParameters,
   FOLDER,
@@ -31,7 +33,7 @@ type PromiseVoid = Promise<void>;
 
 export interface ExplorerSlice {
   isAppReady: boolean;
-  actions: IAction[];
+  actions: Array<IAction & { available: boolean }>;
   filters: IFilter[];
   orders: IOrder[];
   preferences?: IPreferences;
@@ -73,8 +75,8 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       pageSize: 4,
     },
   },
-  init: async (params: OdeProviderParams) => {
-    const { app } = params;
+  init: async (_: OdeProviderParams) => {
+    const { app, types } = getAppParams();
 
     try {
       // get context from backend
@@ -90,10 +92,8 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         ...previousParam,
         orders: { updatedAt: "desc" },
         app,
-        types: [RESOURCE.BLOG],
+        types,
       };
-
-      console.log("searchParams", searchParams);
 
       // copy props before
       /* const isReady = !!app;
@@ -103,24 +103,23 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         return;
       } */
       const trashed = getCurrentFolderId() === FOLDER.BIN;
-      const {
-        actions,
-        folders,
-        resources,
-        preferences,
-        orders,
-        filters,
-        pagination,
-      } = await odeServices
+      const { folders, resources, preferences, pagination } = await odeServices
         .resource(searchParams.app)
         .createContext({ ...searchParams, trashed });
-
+      const { actions, filters, orders } = getAppParams();
+      const actionRights = actions.map((a) => a.workflow);
+      const availableRights = await odeServices
+        .rights()
+        .sessionHasWorkflowRights(actionRights);
       const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
       const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
       set((state) => ({
         ...state,
         isAppReady: true,
-        actions,
+        actions: actions.map((a) => ({
+          ...a,
+          available: availableRights[a.workflow],
+        })),
         preferences,
         orders,
         filters,
