@@ -9,6 +9,7 @@ import com.opendigitaleducation.explorer.services.ResourceService;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -156,45 +157,47 @@ public class ResourceServiceElastic implements ResourceService {
         //CHECK IF HAVE MANAGE RIGHTS
         final ResourceSearchOperation search = new ResourceSearchOperation().setIdsInt(ids).setSearchEverywhere(true);
         final Future<FetchResult> futureFetch = fetchWithMeta(user, application, search);
-        return futureFetch.compose(fetch->{
-            if(fetch.count < ids.size()){
+        return futureFetch.compose(fetch-> {
+            if (fetch.count < ids.size()) {
                 log.warn("User tried to trash resources that do not exist in OpenSearch. Expected to find " +
                         ids.size() + " elements but only " + fetch.count + " found");
                 return Future.failedFuture("resource.trash.id.invalid");
             }
-            final Set<Integer> idsToTrashForEverybody = new HashSet<>();
+            final Set<Integer> idsToTrashForAll = new HashSet<>();
             final Set<IdAndVersion> idsToTrashForUserOnly = new HashSet<>();
             for (JsonObject row : fetch.rows) {
-                if(isManager(row, user)) {
-                    final int id = Integer.parseInt(row.getString("_id"));
-                    idsToTrashForEverybody.add(id);
+                if (isManager(row, user)) {
+                    idsToTrashForAll.add(Integer.parseInt(row.getString("_id")));
                 } else {
                     idsToTrashForUserOnly.add(new IdAndVersion(row.getString("assetId"), row.getLong("version")));
                 }
             }
-            final List<Future> trashFutures = new ArrayList<>();
-            if(!idsToTrashForEverybody.isEmpty()) {
-                log.debug("Trashing (" + isTrash + ") " + idsToTrashForEverybody.size() + " resources for everybody");
-                //TODO remove previous parent if it is not trashed
-                Future trashForEverybodyFuture = sql.trash(idsToTrashForEverybody, isTrash).compose(entIds -> {
-                    final List<ExplorerMessage> messages = entIds.entrySet().stream().filter(e -> {
-                        return e.getValue().application.isPresent() && e.getValue().resourceType.isPresent();
-                    }).map(e -> {
-                        //final Integer id = e.getKey();
-                        final FolderExplorerDbSql.FolderTrashResult value = e.getValue();
-                        //use entid to push message
-                        final FolderExplorerDbSql.FolderTrashResult model = e.getValue();
-                        return ExplorerMessage.upsert(new IdAndVersion(model.entId.get(), now), user, false, value.application.get(), value.resourceType.get(), value.resourceType.get()).withTrashed(isTrash).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
-                    }).collect(Collectors.toList());
-                    return communication.pushMessage(messages);
-                });
-                trashFutures.add(trashForEverybodyFuture);
-            }
-            if(!idsToTrashForUserOnly.isEmpty()) {
-                log.debug("Trashing (" + isTrash + ") " + idsToTrashForUserOnly.size() + " resources for everybody");
-                trashFutures.add(muteService.mute(user, new MuteRequest(isTrash, idsToTrashForUserOnly)));
-            }
-            return CompositeFuture.all(trashFutures).compose(e -> {
+            //TODO remove previous parent if it is not trashed
+            log.debug("Trashing (" + isTrash + ") " + idsToTrashForAll.size() + " resources for all");
+            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashedForAllFuture = sql.trashForAll(idsToTrashForAll, isTrash);
+            log.debug("Trashing and muting (" + isTrash + ") " + idsToTrashForUserOnly.size() + " resources for user " + user.getUsername() + " only");
+            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashedForUserOnlyFuture = sql.trashForUser(idsToTrashForUserOnly, user.getUserId(), isTrash);
+            final Future<List<ResourceExplorerDbSql.ResouceSql>> mutedForUserOnlyFuture = sql.muteResources(user.getUserId(), idsToTrashForUserOnly.stream().map(IdAndVersion::getId).collect(Collectors.toSet()), isTrash);
+
+            return CompositeFuture.all(trashedForAllFuture, trashedForUserOnlyFuture, mutedForUserOnlyFuture).compose(result -> {
+                List<ExplorerMessage> messagesToIngest = new ArrayList<>();
+                // Ingestion messages for resources trashed or restored for all users
+                messagesToIngest.addAll(trashedForAllFuture.result().values().stream()
+                        .filter(folderTrashResult -> folderTrashResult.application.isPresent() && folderTrashResult.resourceType.isPresent())
+                        .map(folderTrashResult -> ExplorerMessage.upsert(new IdAndVersion(folderTrashResult.entId.get(), now), user, false, folderTrashResult.application.get(), folderTrashResult.resourceType.get(), folderTrashResult.resourceType.get())
+                                .withTrashed(isTrash)
+                                .withVersion(now)
+                                .withSkipCheckVersion(true))
+                        .collect(Collectors.toList()));
+                // Ingestion messages for resources trashed or restored for current user only
+                messagesToIngest.addAll(trashedForUserOnlyFuture.result().values().stream()
+                        .filter(folderTrashResult -> folderTrashResult.application.isPresent() && folderTrashResult.resourceType.isPresent())
+                        .map(folderTrashResult -> ExplorerMessage.upsert(new IdAndVersion(folderTrashResult.entId.get(), now), user, false, folderTrashResult.application.get(), folderTrashResult.resourceType.get(), folderTrashResult.resourceType.get())
+                                .withMute(user.getUserId(), isTrash)
+                                .withTrashedBy(user.getUserId(), isTrash))
+                        .collect(Collectors.toList()));
+                return communication.pushMessage(messagesToIngest);
+            }).compose(a -> {
                 final ResourceSearchOperation search2 = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(Object::toString).collect(Collectors.toSet()));
                 return fetch(user, application, search2);
             });

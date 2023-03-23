@@ -13,6 +13,7 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.postgres.IPostgresTransaction;
 import org.entcore.common.postgres.PostgresClient;
@@ -148,8 +149,9 @@ public class ResourceExplorerDbSql {
             }
             if(e.getMute() != null && !e.getMute().isEmpty()) {
                 params.put("muted_by", e.getMute());
-            } else {
-                params.put("muted_by", new HashMap<>());
+            }
+            if(e.getTrashedBy() != null && !e.getTrashedBy().isEmpty()) {
+                params.put("trashed_by", e.getTrashedBy());
             }
             if(e.getRights() != null &&  !e.getRights().isEmpty()){
                 params.put("rights", e.getRights());
@@ -171,15 +173,15 @@ public class ResourceExplorerDbSql {
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
         final Collection<JsonObject> resourcesColl = resourcesMap.values();
-        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "shared", "muted_by", "rights");
-        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "muted_by", "rights");
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "shared", "muted_by", "trashed_by", "rights");
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "muted_by", "trashed_by", "rights");
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
-        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by, rights) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), muted_by=EXCLUDED.muted_by, rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
+        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by, trashed_by, rights) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), muted_by=COALESCE(EXCLUDED.muted_by, r.muted_by, '{}'), trashed_by=COALESCE(EXCLUDED.trashed_by, r.trashed_by, '{}'), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.trashed_by, upserted.rights, ");
         queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
@@ -506,14 +508,14 @@ public class ResourceExplorerDbSql {
             return  resources;
         });
     }
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final Collection<Integer> resourceIds, final boolean trashed) {
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final Collection<Integer> idsToTrashForEverybody, final boolean trashed) {
         return client.transaction().compose(transaction->{
-           final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trash(transaction, resourceIds, trashed);
+           final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForAll(transaction, idsToTrashForEverybody, trashed);
            return transaction.commit().compose(commit -> future);
         });
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trash(final IPostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final IPostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
         if(resourceIds.isEmpty()){
             return Future.succeededFuture(new HashMap<>());
         }
@@ -521,6 +523,34 @@ public class ResourceExplorerDbSql {
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), resourceIds);
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
+        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+            for(final Row row : rows){
+                final Integer id = row.getInteger("id");
+                final String application = row.getString("application");
+                final String resource_type = row.getString("resource_type");
+                final String ent_id = row.getString("ent_id");
+                final Optional<Integer> parentOpt = Optional.empty();
+                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id));
+            }
+        });
+        return future.map(mapTrashed);
+    }
+
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<IdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
+        return client.transaction().compose(transaction->{
+            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForUser(transaction, idsToTrashForUser, userId, trashed);
+            return transaction.commit().compose(commit -> future);
+        });
+    }
+
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final IPostgresTransaction transaction, final Collection<IdAndVersion> resourceIds, final String userId, final boolean trashed){
+        if (resourceIds.isEmpty()) {
+            return Future.succeededFuture(new HashMap<>());
+        }
+        final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
+        final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(IdAndVersion::getId).collect(Collectors.toSet()));
+        final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
+        final String query = String.format("UPDATE explorer.resources SET trashed_by=$1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
         final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");
@@ -573,6 +603,7 @@ public class ResourceExplorerDbSql {
         public final List<FolderSql> folders = new ArrayList<>();
         public final JsonArray shared = new JsonArray();
         public final JsonObject mutedBy = new JsonObject();
+        public final JsonObject trashedBy = new JsonObject();
         public final JsonArray rights = new JsonArray();
         public final String entId;
         public final Integer id;
