@@ -23,6 +23,7 @@ import {
 import { ArrowLeft, Plus } from "@ode-react-ui/icons";
 import { OnBoardingTrash } from "@shared/components/OnBoardingModal";
 import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
+import { getAppParams } from "@shared/utils/getAppParams";
 import useExplorerStore from "@store/index";
 
 /* const SearchForm = () => {
@@ -47,7 +48,7 @@ import useExplorerStore from "@store/index";
 }; */
 
 export default function Explorer(): JSX.Element | null {
-  const { i18n, params, app, appCode, getBootstrapTheme } = useOdeClient();
+  const { i18n, app, appCode, getBootstrapTheme } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -66,10 +67,10 @@ export default function Explorer(): JSX.Element | null {
     createResource, // Create ressource (onClick)
     isActionAvailable,
   } = useExplorerStore((state) => state);
-
+  const params = getAppParams();
   useEffect(() => {
     init(params);
-  }, []);
+  }, [params]);
 
   const trashName: string = i18n("explorer.tree.trash");
   const rootName: string = i18n("explorer.filters.mine");
