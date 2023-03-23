@@ -47,6 +47,7 @@ export default function ShareResourceModal({
     searchInputValue,
     searchResults,
     bookmarkName,
+    currentIsAuthor,
     setBookmarkName,
     saveBookmark,
     canSave,
@@ -89,27 +90,29 @@ export default function ShareResourceModal({
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th scope="row">
-                  <Avatar
-                    alt={i18n("explorer.modal.share.avatar.me.alt")}
-                    size="xs"
-                    src={myAvatar}
-                    variant="circle"
-                  />
-                </th>
-                <td>{i18n("share.me")}</td>
-                {shareRightActions.map((shareRightAction) => (
-                  <td
-                    key={shareRightAction.displayName}
-                    style={{ width: "80px" }}
-                    className="text-center"
-                  >
-                    <Checkbox checked={true} disabled />
-                  </td>
-                ))}
-                <td></td>
-              </tr>
+              {currentIsAuthor() && (
+                <tr>
+                  <th scope="row">
+                    <Avatar
+                      alt={i18n("explorer.modal.share.avatar.me.alt")}
+                      size="xs"
+                      src={myAvatar}
+                      variant="circle"
+                    />
+                  </th>
+                  <td>{i18n("share.me")}</td>
+                  {shareRightActions.map((shareRightAction) => (
+                    <td
+                      key={shareRightAction.displayName}
+                      style={{ width: "80px" }}
+                      className="text-center"
+                    >
+                      <Checkbox checked={true} disabled />
+                    </td>
+                  ))}
+                  <td></td>
+                </tr>
+              )}
               {shareRights?.rights.map((shareRight: ShareRight) => (
                 <tr key={shareRight.id}>
                   <th scope="row">

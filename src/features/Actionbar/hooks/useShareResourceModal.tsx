@@ -186,6 +186,13 @@ export default function useShareResourceModal({
           (r) =>
             !shareRights.rights.find((shareRight) => shareRight.id === r.id),
         )
+        // exclude owner from results
+        .filter(
+          (r) =>
+            !(
+              r.type === "user" && r.id === getSelectedIResources()[0].creatorId
+            ),
+        )
         .map((searchResult) => {
           return {
             value: searchResult.id,
@@ -225,6 +232,14 @@ export default function useShareResourceModal({
     shareAction: ShareRightAction,
   ): boolean => {
     return shareRight.actions.filter((a) => shareAction.id === a.id).length > 0;
+  };
+  const currentIsAuthor = (): boolean => {
+    for (const res of getSelectedIResources()) {
+      if (res.creatorId !== session.user.userId) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const canSave = () => {
@@ -274,6 +289,7 @@ export default function useShareResourceModal({
   };
 
   return {
+    currentIsAuthor,
     idBookmark,
     myAvatar: session.avatarUrl,
     shareRights,
