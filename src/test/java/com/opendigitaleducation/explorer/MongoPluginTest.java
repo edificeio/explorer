@@ -96,11 +96,6 @@ public class MongoPluginTest {
         final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
         job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
-        final JsonObject rights = new JsonObject();
-        rights.put(ShareRoles.Read.key, ShareRoles.Read.key);
-        rights.put(ShareRoles.Contrib.key, ShareRoles.Contrib.key);
-        rights.put(ShareRoles.Manager.key, ShareRoles.Manager.key);
-        ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
     }
 
 
