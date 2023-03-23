@@ -40,48 +40,7 @@
                     "default": "PRODUCTION_COLLABORATIVE"
                 }
             }
-        },
-        "applications": {
-            "blog": {
-                "filters": [
-                    {"id":"owner",  "defaultValue": true},
-                    {"id":"public", "defaultValue": false},
-                    {"id":"shared", "defaultValue": true}
-                ],
-                "orders": [
-                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
-                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
-                ],
-                "actions": [
-                    {"id": "open","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "read"},
-                    {"id": "edit","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"},
-                    {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
-                    {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
-                    {"id": "move","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "read"},
-                    {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"},
-                    {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish", "target": "actionbar", "right": "creator"},
-                    {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print", "target": "actionbar", "right": "read"},
-                    {"id": "share","workflow":"org.entcore.blog.controllers.BlogController|blog", "target": "actionbar", "right": "manage"}
-                ]
-            },
-            "exercizer": {
-                "filters": [
-                    {"id":"owner",  "defaultValue": true},
-                    {"id":"public", "defaultValue": false},
-                    {"id":"shared", "defaultValue": true}
-                ],
-                "orders": [
-                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
-                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
-                ],
-                "actions": [
-                    {"id": "create","workflow":"fr.openent.exercizer.controllers.SubjectController|persist"},
-                    {"id": "import","workflow":"fr.openent.exercizer.controllers.SubjectController|importSubjectGrains"},
-                    {"id": "publish","workflow":"fr.openent.exercizer.controllers.SubjectController|publish"},
-                    {"id": "list","workflow":"fr.openent.exercizer.controllers.SubjectController|listSubject"},
-                    {"id": "view","workflow":"fr.openent.exercizer.controllers.SubjectController|view"}
-                ]
-            }
         }
-    }
+    },
+    "applications": ["blog", "exercizer"]
 }

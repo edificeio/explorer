@@ -94,40 +94,8 @@ public class ExplorerController extends BaseController {
                     json.put("folders", adaptFolder(e));
                 });
                 //load user preferences from neo4j
-                final JsonObject applications = this.config.getJsonObject("applications", new JsonObject());
-                final JsonObject config = applications.getJsonObject(application, new JsonObject());
                 final Future<ResourceService.FetchResult> preferences = UserUtils.getUserPreferences(eb, request, application).compose(pref -> {
-                    //load filters from conf and pref
-                    final JsonArray filters = config.getJsonArray("filters", new JsonArray());
-                    final JsonArray newFilter = new JsonArray();
-                    for (final Object filterO : filters) {
-                        final JsonObject filter = ((JsonObject) filterO).copy();
-                        final String id = filter.getString("id");
-                        filter.put("defaultValue", pref.getValue("filters." + id, filter.getValue("defaultValue")));
-                        newFilter.add(filter);
-                    }
-                    json.put("filters", newFilter);
                     //load orders from conf and pref
-                    final JsonArray orders = config.getJsonArray("orders", new JsonArray());
-                    final JsonArray newOrders = new JsonArray();
-                    for (final Object ordersO : orders) {
-                        final JsonObject order = ((JsonObject) ordersO).copy();
-                        final String id = order.getString("id");
-                        order.put("defaultValue", pref.getValue("orders." + id, order.getValue("defaultValue")));
-                        newOrders.add(order);
-                    }
-                    json.put("orders", newOrders);
-                    //load actions from conf
-                    final JsonArray actions = config.getJsonArray("actions", new JsonArray());
-                    final JsonArray newActions = new JsonArray();
-                    for (final Object actionsO : actions) {
-                        final JsonObject action = ((JsonObject) actionsO).copy();
-                        final String workflow = action.getString("workflow");
-                        final boolean available = user.getAuthorizedActions().stream().filter(a -> a.getName().equalsIgnoreCase(workflow)).count()>0;
-                        action.put("available", available);
-                        newActions.add(action);
-                    }
-                    json.put("actions", newActions);
                     json.put("preferences", pref);
                     //load root resource using filters
                     final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);

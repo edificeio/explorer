@@ -112,11 +112,6 @@ public class IngestJobPGFailingTest {
                 .put("message-merger", "default")
                 .put("opensearch-options", new JsonObject().put("wait-for", true));
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
-        final JsonObject rights = new JsonObject();
-        rights.put(ShareRoles.Read.key, ShareRoles.Read.key);
-        rights.put(ShareRoles.Contrib.key, ShareRoles.Contrib.key);
-        rights.put(ShareRoles.Manager.key, ShareRoles.Manager.key);
-        ExplorerConfig.getInstance().addRightsForApplication(FakeMongoPlugin.FAKE_APPLICATION, rights);
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
             final MessageReader reader = MessageReader.redis(redisClient, redisConfig);

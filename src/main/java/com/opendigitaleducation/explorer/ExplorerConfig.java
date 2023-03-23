@@ -23,7 +23,6 @@ public class ExplorerConfig {
     public static final Integer DEFAULT_SIZE = 10000;
     protected JsonObject esIndexes = new JsonObject();
     protected boolean skipIndexOfTrashedFolders;
-    protected Map<String, JsonObject> rightsByApplication = new HashMap<>();
 
     public boolean isSkipIndexOfTrashedFolders() {
         return skipIndexOfTrashedFolders;
@@ -36,20 +35,6 @@ public class ExplorerConfig {
 
     public ExplorerConfig setEsIndexes(final JsonObject esIndexes) {
         this.esIndexes = esIndexes;
-        return this;
-    }
-
-    public ExplorerConfig setRightsByApplication(final JsonObject rightsByApplication) {
-        for(final String key : rightsByApplication.fieldNames()){
-            final JsonObject appConfig = rightsByApplication.getJsonObject(key);
-            final JsonObject rights = appConfig.getJsonObject("rights");
-            addRightsForApplication(key, rights);
-        }
-        return this;
-    }
-
-    public ExplorerConfig addRightsForApplication(final String application, final JsonObject rights) {
-        rightsByApplication.put(application, rights);
         return this;
     }
 

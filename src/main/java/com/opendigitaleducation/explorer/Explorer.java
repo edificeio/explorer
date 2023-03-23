@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Explorer extends BaseServer {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
@@ -76,8 +77,6 @@ public class Explorer extends BaseServer {
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
         //set skip folder
         ExplorerConfig.getInstance().setSkipIndexOfTrashedFolders(config.getBoolean(DELETE_FOLDER_CONFIG, DELETE_FOLDER_CONFIG_DEFAULT));
-        //init rights map
-        ExplorerConfig.getInstance().setRightsByApplication(config.getJsonObject("applications", new JsonObject()));
         //init indexes
         ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
         if(config.getBoolean("create-index", true)) {
@@ -94,7 +93,7 @@ public class Explorer extends BaseServer {
                 }
             }
             //create default index apps
-            final Set<String> apps = config.getJsonObject("applications").fieldNames();
+            final Set<String> apps = config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet());
             for (final String app : apps) {
                 if (!customApps.contains(app) && !ExplorerConfig.FOLDER_APPLICATION.equals(app)) {
                     final String index = ExplorerConfig.getInstance().getIndex(app);
