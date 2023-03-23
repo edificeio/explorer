@@ -315,7 +315,7 @@ public class FolderExplorerDbSql {
             final FolderTrashResults mapTrashed = new FolderTrashResults();
             if(!resourceIds.isEmpty()){
                 final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(client);
-                futures.add(resSql.trash(transaction, resourceIds, trashed).onSuccess(resources->{
+                futures.add(resSql.trashForAll(transaction, resourceIds, trashed).onSuccess(resources->{
                     mapTrashed.resources.putAll(resources);
                 }));
             }
