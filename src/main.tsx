@@ -9,7 +9,6 @@ import {
 } from "@shared/constants";
 import { getAppParams } from "@shared/utils/getAppParams";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 
 import App from "./app/App";
 
@@ -23,18 +22,16 @@ if (process.env.NODE_ENV !== "production") {
 
 createRoot(root!).render(
   <StrictMode>
-    <BrowserRouter>
-      <OdeClientProvider
-        framework={{
-          sessionFramework,
-          configurationFramework,
-          notifyFramework,
-          http,
-        }}
-        params={getAppParams()}
-      >
-        <App />
-      </OdeClientProvider>
-    </BrowserRouter>
+    <OdeClientProvider
+      framework={{
+        sessionFramework,
+        configurationFramework,
+        notifyFramework,
+        http,
+      }}
+      params={getAppParams()}
+    >
+      <App />
+    </OdeClientProvider>
   </StrictMode>,
 );
