@@ -136,7 +136,7 @@ export default function Explorer(): JSX.Element | null {
                   className="ms-n16"
                   onClick={gotoPreviousFolder}
                 />
-                <p className="body py-8">
+                <p className="body py-8 text-truncate">
                   <strong>
                     {getHasSelectedRoot() ? rootName : previousName}
                   </strong>
