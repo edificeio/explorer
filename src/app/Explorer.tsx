@@ -123,7 +123,7 @@ export default function Explorer(): JSX.Element | null {
           {/* <SearchForm /> */}
           <div className="py-16">
             {getHasNoSelectedNodes() ? (
-              <h2 className="body py-8">
+              <h2 className="body py-8 fw-bold">
                 {getIsTrashSelected() ? trashName : rootName}
               </h2>
             ) : (
