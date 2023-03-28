@@ -80,14 +80,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
 
     try {
       // get context from backend
-      const {
-        searchParams: previousParam,
-        getCurrentFolderId,
-        // isAppReady: isPreviousReady
-      } = get();
-      /* if (isPreviousReady) {
-        return;
-      } */
+      const { searchParams: previousParam, getCurrentFolderId } = get();
       const searchParams: ISearchParameters = {
         ...previousParam,
         orders: { updatedAt: "desc" },
@@ -95,17 +88,17 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         types,
       };
 
-      // copy props before
-      /* const isReady = !!app;
-      set((state) => ({ ...state, ...params, searchParams, isReady })); */
-      // wait until ready to load
-      /* if (!isReady) {
-        return;
-      } */
       const trashed = getCurrentFolderId() === FOLDER.BIN;
       const { folders, resources, preferences, pagination } = await odeServices
         .resource(searchParams.app)
         .createContext({ ...searchParams, trashed });
+
+      console.log(
+        await odeServices
+          .resource(searchParams.app)
+          .createContext({ ...searchParams, trashed }),
+      );
+
       const { actions, filters, orders } = getAppParams();
       const actionRights = actions.map((a) => a.workflow);
       const availableRights = await odeServices
@@ -136,11 +129,6 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer init failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.init.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   getHasResourcesOrFolders() {
@@ -173,11 +161,6 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer move failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.move.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   deleteSelection: async () => {
@@ -205,11 +188,6 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer delete failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.delete.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   select: (id: string[], type: Thing) => {
@@ -310,11 +288,6 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer refresh failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.refresh.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   publish: async (
