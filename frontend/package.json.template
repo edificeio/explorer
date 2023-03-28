@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202303261701",
+  "version": "1.0.0-%branch%.%generateVersion%",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -31,7 +31,7 @@
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
-    "prepare": "husky install .husky",
+    "prepare": "cd .. && husky install frontend/.husky",
     "preview": "vite preview",
     "tsc": "tsc"
   },
@@ -54,7 +54,7 @@
     "@react-spring/web": "9.7.0",
     "csstype": "3.1.1",
     "dayjs": "1.11.7",
-    "ode-ts-client": "feat-explorer",
+    "ode-ts-client": "%odeTsClientVersion%",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "3.1.4",
