@@ -1,0 +1,42 @@
+{
+  "name": "explorer",
+  "version": "1.0.0",
+  "description": "## Installation",
+  "main": "index.js",
+  "scripts": {
+    "dev:prepare:html": "cpr node_modules/ode-bootstrap-neo/docs/explorer.html src/main/resources/view/ && cpr node_modules/ode-bootstrap-neo/docs/explorer-list.html src/main/resources/view/",
+    "dev:prepare:assets": "cpr node_modules/ode-bootstrap-neo/docs/ src/main/resources/public/",
+    "dev:replace:apple": "gsed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer.html && gsed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer-list.html && gsed -i 's/explorer.html/\\/explorer/g' src/main/resources/view/explorer-list.html && gsed -i 's/explorer-list.html/\\/explorer\\/list/g' src/main/resources/view/explorer-list.html  && gsed -i 's/explorer.html/\\/explorer/g' src/main/resources/view/explorer.html && gsed -i 's/explorer-list.html/\\/explorer\\/list/g' src/main/resources/view/explorer.html",
+    "dev:replace:gnu": "sed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer.html && sed -i 's/.\\/index.css/\\/explorer\\/public\\/index.css/g' src/main/resources/view/explorer-list.html && sed -i 's/explorer.html/\\/explorer/g' src/main/resources/view/explorer-list.html && sed -i 's/explorer-list.html/\\/explorer\\/list/g' src/main/resources/view/explorer-list.html  && sed -i 's/explorer.html/\\/explorer/g' src/main/resources/view/explorer.html && sed -i 's/explorer-list.html/\\/explorer\\/list/g' src/main/resources/view/explorer.html",
+    "dev:replace:logo:apple": "gsed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer.html && gsed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer-list.html",
+    "dev:replace:logo:gnu": "sed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer.html && sed -i 's/\\/assets\\/images\\/logo.png/\\/explorer\\/public\\/images\\/logo.png/g' src/main/resources/view/explorer-list.html",
+    "dev:prepare": "npm run dev:clean && npm run dev:prepare:html && npm run dev:prepare:assets",
+    "dev:clean": "rimraf src/main/resources/view/ && rimraf src/main/resources/public/",
+    "dev:build:apple": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:apple && npm run dev:replace:logo:apple",
+    "dev:build": "npm i && npm run dev:clean && npm run dev:prepare && npm run dev:replace:gnu && npm run dev:replace:logo:gnu",
+    "watch": "npx webpack --config webpack.config.watch.js --env build_target=${npm_config_springboard} --env build_app=${npm_config_app} --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.7.9",
+    "ode-bootstrap-neo": "feat-explorer"
+  },
+  "devDependencies": {
+    "@types/angular": "^1.8.4",
+    "@types/jquery": "^3.5.13",
+    "cpr": "^3.0.1",
+    "gulp": "3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-rev": "^7.1.2",
+    "gulp-rev-replace": "^0.4.3",
+    "gulp-sourcemaps": "^2.6.0",
+    "ode-ngjs-front": "feat-explorer",
+    "ode-ts-client": "feat-explorer",
+    "typescript": "^4.2.3",
+    "ts-loader": "^3.2.0",
+    "merge2": "^1.1.0",
+    "webpack": "3.1.0",
+    "webpack-stream": "3.2.0"
+  }
+}
