@@ -9,6 +9,9 @@ import {
   ImagePicker,
   Select,
   useOdeClient,
+  Dropdown,
+  DropdownTrigger,
+  SelectList,
 } from "@ode-react-ui/core";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
@@ -34,6 +37,10 @@ export default function PublishModal({
     publish,
     formState: { isDirty, isValid },
     handleUploadImage,
+    selectedActivities,
+    setSelectedActivities,
+    selectedSubjectAreas,
+    setSelectedSubjectAreas,
   } = usePublishModal({ onSuccess });
 
   const {
@@ -45,7 +52,7 @@ export default function PublishModal({
 
   const { i18n, app } = useOdeClient();
 
-  const defaultSelectOption = i18n("portal.select");
+  const defaultSelectLanguageOption = i18n("bpr.form.publication.language");
   const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");
   const defaultSelectAgeMaxOption = i18n("bpr.form.publication.age.max");
 
@@ -109,53 +116,56 @@ export default function PublishModal({
           </Heading>
 
           <div className="row mb-24">
-            <div className="col">
-              <FormControl id="activityType" isRequired>
-                <Label requiredText="">
-                  {i18n("bpr.form.publication.type")}
-                </Label>
-                <Select
-                  {...register("activityType", {
-                    required: true,
-                    validate: (value) => value !== defaultSelectOption,
-                  })}
-                  options={activityTypeOptions}
-                  placeholderOption={defaultSelectOption}
-                  defaultValue={defaultSelectOption}
-                  aria-required={true}
-                />
-              </FormControl>
+            <div className="col d-flex">
+              <Dropdown
+                trigger={
+                  <DropdownTrigger
+                    title={i18n("bpr.form.publication.type")}
+                    size="md"
+                    grow={true}
+                  />
+                }
+                content={
+                  <SelectList
+                    options={activityTypeOptions}
+                    model={selectedActivities}
+                    onChange={(activities: Array<string | number>) =>
+                      setSelectedActivities(activities)
+                    }
+                  />
+                }
+              />
             </div>
-            <div className="col">
-              <FormControl id="subjectArea" isRequired>
-                <Label requiredText="">
-                  {i18n("bpr.form.publication.discipline")}
-                </Label>
-                <Select
-                  {...register("subjectArea", {
-                    required: true,
-                    validate: (value) => value !== defaultSelectOption,
-                  })}
-                  options={subjectAreaOptions}
-                  placeholderOption={defaultSelectOption}
-                  defaultValue={defaultSelectOption}
-                  aria-required={true}
-                />
-              </FormControl>
+            <div className="col d-flex">
+              <Dropdown
+                trigger={
+                  <DropdownTrigger
+                    title={i18n("bpr.form.publication.discipline")}
+                    size="md"
+                    grow={true}
+                  />
+                }
+                content={
+                  <SelectList
+                    options={subjectAreaOptions}
+                    model={selectedSubjectAreas}
+                    onChange={(subjectAreas: Array<string | number>) =>
+                      setSelectedSubjectAreas(subjectAreas)
+                    }
+                  />
+                }
+              />
             </div>
             <div className="col">
               <FormControl id="language" isRequired>
-                <Label requiredText="">
-                  {i18n("bpr.form.publication.language")}
-                </Label>
                 <Select
                   {...register("language", {
                     required: true,
-                    validate: (value) => value !== defaultSelectOption,
+                    validate: (value) => value !== defaultSelectLanguageOption,
                   })}
                   options={languageOptions}
-                  placeholderOption={defaultSelectOption}
-                  defaultValue={defaultSelectOption}
+                  placeholderOption={defaultSelectLanguageOption}
+                  defaultValue={defaultSelectLanguageOption}
                   aria-required={true}
                 />
               </FormControl>
@@ -254,7 +264,12 @@ export default function PublishModal({
           type="submit"
           color="primary"
           variant="filled"
-          disabled={!isDirty || !isValid}
+          disabled={
+            !isDirty ||
+            !isValid ||
+            selectedActivities?.length === 0 ||
+            selectedSubjectAreas?.length === 0
+          }
         >
           {i18n("bpr.form.submit")}
         </Button>

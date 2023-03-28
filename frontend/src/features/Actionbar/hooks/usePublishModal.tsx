@@ -56,6 +56,14 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<InputProps>({ mode: "onChange" });
 
+  // models for Dropdown select lists
+  const [selectedActivities, setSelectedActivities] = useState<
+    Array<string | number>
+  >([]);
+  const [selectedSubjectAreas, setSelectedSubjectAreas] = useState<
+    Array<string | number>
+  >([]);
+
   function handleUploadImage(preview: Record<string, string>) {
     setCover(preview);
   }
@@ -84,7 +92,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       );
 
       const parameters: PublishParameters = {
-        activityType: [formData.activityType],
+        activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
         application: app?.displayName || "",
         cover: coverBlob,
@@ -93,7 +101,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         language: formData.language,
         licence: "CC-BY",
         resourceId: selectedResources[0],
-        subjectArea: [formData.subjectArea],
+        subjectArea: selectedSubjectAreas as string[],
         teacherAvatar,
         title: formData.title,
         userId: session?.user.userId,
@@ -102,7 +110,10 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       };
 
       const resourceType = [RESOURCE.BLOG][0];
-      const result: PublishResult = await publishApi(resourceType, parameters);
+      const result: PublishResult = (await publishApi(
+        resourceType,
+        parameters,
+      )) as PublishResult;
 
       if (result.success) {
         hotToast.success(<PublishModalSuccess result={result} />, {
@@ -128,5 +139,9 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     formState: { errors, isSubmitting, isDirty, isValid },
     publish,
     handleUploadImage,
+    selectedActivities,
+    setSelectedActivities,
+    selectedSubjectAreas,
+    setSelectedSubjectAreas,
   };
 }
