@@ -4,6 +4,7 @@ import { type OptionsType } from "@ode-react-ui/core/dist/Form/Select";
 export default function usePublishLibraryModalOptions() {
   const { i18n } = useOdeClient();
 
+  // static values and labels to display in Dropdown select lists
   const activityTypeOptions: OptionsType[] = [
     {
       value: "bpr.activityType.classroomActivity",
