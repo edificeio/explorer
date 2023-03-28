@@ -29,9 +29,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - run: node scripts/package.js
-      - run: pnpm install && pnpm -g add @lhci/cli@0.8.x
-      - run: pnpm run build
-      - run: lhci autorun
+      - run: cd frontend && pnpm install && pnpm -g add @lhci/cli@0.8.x
+      - run: cd frontend && pnpm run build
+      - run: cd frontend && lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
