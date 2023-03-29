@@ -184,10 +184,18 @@ public class FolderExplorerDbSql {
                         final String inQuery = PostgresClient.inPlaceholder(resEntId, 3);
                         final Tuple ituple = PostgresClient.inTuple(Tuple.of(userId, folderId), resEntId);
                         final StringBuilder iquery = new StringBuilder();
-                        iquery.append("INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
-                        iquery.append("SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
+                        iquery.append("WITH updated AS ( ");
+                        iquery.append("     INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
+                        iquery.append("     SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
                         iquery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
-                        iquery.append(" ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
+                        iquery.append("     ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
+                        iquery.append(") ");
+                        iquery.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
+                        iquery.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+                        iquery.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
+                        iquery.append("FROM explorer.resources AS upserted ");
+                        iquery.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
+                        iquery.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
                         futures.add(transaction.addPreparedQuery(iquery.toString(), ituple).onFailure(e->{
                            log.error("Failed to insert relationship for folderId="+folderId, e);
                         }));
