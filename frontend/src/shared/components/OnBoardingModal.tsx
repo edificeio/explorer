@@ -80,11 +80,11 @@ export function OnBoardingTrash(): JSX.Element | null {
               {i18n("explorer.modal.onboarding.trash.screen1.title")}
             </Modal.Subtitle>
             <Image
-              width="270"
-              height="140"
-              className="mx-auto"
+              width="auto"
+              height="auto"
+              className="mx-auto my-12"
               loading="lazy"
-              src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
+              src={`${imageBootstrap}/onboarding/corbeille-gif.gif`}
               alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
             />
             <p>{i18n("explorer.modal.onboarding.trash.screen1.subtitle")}</p>
@@ -98,10 +98,21 @@ export function OnBoardingTrash(): JSX.Element | null {
               height="140"
               className="mx-auto"
               loading="lazy"
-              src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
+              src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
               alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
             />
             <p>{i18n("explorer.modal.onboarding.trash.screen2.subtitle")}</p>
+          </SwiperSlide>
+          <SwiperSlide>
+            <Image
+              width="270"
+              height="140"
+              className="mx-auto"
+              loading="lazy"
+              src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
+              alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
+            />
+            <p>{i18n("explorer.modal.onboarding.trash.screen3.subtitle")}</p>
           </SwiperSlide>
         </Swiper>
       </Modal.Body>
