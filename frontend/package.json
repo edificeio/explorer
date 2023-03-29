@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202303281109",
+  "version": "1.0.0-feat-explorer.202303291710",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -28,7 +28,6 @@
     "format:check": "npx prettier --check .",
     "format:write": "npx prettier --write .",
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "pnpm run build",
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",

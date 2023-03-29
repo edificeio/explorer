@@ -28,7 +28,6 @@
     "format:check": "npx prettier --check .",
     "format:write": "npx prettier --write .",
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "pnpm run build",
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
