@@ -6,9 +6,7 @@
       "analyzer": {
         "html_analyzer": {
           "tokenizer": "keyword",
-          "char_filter": [
-            "html_strip"
-          ]
+          "char_filter": ["html_strip"]
         }
       }
     }
@@ -32,7 +30,7 @@
       },
       "contentHtml": {
         "type": "text",
-        
+
         "copy_to": "contentAll"
       },
       "contentAll": {
@@ -85,24 +83,24 @@
       },
       "subresources": {
         "properties": {
-            "id": {
-              "type": "keyword"
-            },
-            "content": {
-              "type": "text",
-              "copy_to": "contentAll"
-            },
-            "contentHtml": {
-              "type": "text",
-              
-              "copy_to": "contentAll"
-            },
-            "deleted": {
-              "type": "boolean"
-            },
-            "version": {
-              "type": "long"
-            }
+          "id": {
+            "type": "keyword"
+          },
+          "content": {
+            "type": "text",
+            "copy_to": "contentAll"
+          },
+          "contentHtml": {
+            "type": "text",
+
+            "copy_to": "contentAll"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "long"
+          }
         }
       }
     }

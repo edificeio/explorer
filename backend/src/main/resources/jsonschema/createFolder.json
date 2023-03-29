@@ -3,15 +3,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "application": { "type": "string"},
-    "resourceType": { "type": "string"},
+    "application": { "type": "string" },
+    "resourceType": { "type": "string" },
     "parentId": {
       "type": "string",
       "pattern": "^(default|[0-9]+)$"
     },
-    "name": { "type": "string"}
+    "name": { "type": "string" }
   },
-  "required": [
-    "application", "resourceType", "name", "parentId"
-  ]
+  "required": ["application", "resourceType", "name", "parentId"]
 }
