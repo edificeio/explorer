@@ -19,6 +19,7 @@ import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -134,8 +135,11 @@ public class ResourceExplorerDbSql {
                     .put("application",e.getApplication())
                     .put("resource_type", e.getResourceType())
                     .put("resource_unique_id", resourceUniqueId)
-                    .put("creator_id", e.getCreatorId())
                     .put("version", e.getVersion());
+            // subresource upsert dont have creatorid
+            if(StringUtils.isNotBlank(e.getCreatorId())){
+                params.put("creator_id", e.getCreatorId());
+            }
             // TODO JBER check if this is not a problem when 2 share messages are executed in the same batch
             // because there is a single upsert per resource so if the messages are presented in a reverse chronological
             // order there could be some loss
@@ -155,7 +159,14 @@ public class ResourceExplorerDbSql {
         //(only one upsert per resource_uniq_id)
          final Map<String, JsonObject> resourcesMap = new HashMap<>();
         for(final JsonObject json : resourcesList){
-            resourcesMap.put(json.getString("resource_unique_id"), json);
+            final String id = json.getString("resource_unique_id");
+            final JsonObject params = resourcesMap.getOrDefault(id, new JsonObject());
+            params.mergeIn(json);
+            // if does not exists yet => creatorid should not be null
+            if(params.getValue("creator_id") == null){
+                params.put("creator_id", "");
+            }
+            resourcesMap.put(id, params);
         }
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
@@ -176,47 +187,16 @@ public class ResourceExplorerDbSql {
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
         return client.preparedQuery(query, tuple).map(rows->{
             final Map<Integer, ResouceSql> results = new HashMap<>();
+            final List<ResouceSql> models = new ArrayList<>();
             for(final Row row : rows){
-                final Integer id = row.getInteger("resource_id");
-                final String entId = row.getString("ent_id");
-                final String userId = row.getString("user_id");
-                final Integer folderId = row.getInteger("folder_id");
-                final String creatorId = row.getString("creator_id");
-                final String resourceUniqueId = row.getString("resource_unique_id");
-                final String application = row.getString("application");
-                final String resource_type = row.getString("resource_type");
-                final Boolean folder_trash = row.getBoolean("folder_trash");
-                final Object shared = row.getJson("shared");
-                final Object mutedBy = row.getJson("muted_by");
-                final long version = row.getLong("version");
-                final Object rights = row.getJson("rights");
-                results.putIfAbsent(id, new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
-                final ResouceSql resource = results.get(id);
-                if(folderId != null){
-                    if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders()){
-                        //do not link resource to folder if trashed
-                        if(!Boolean.TRUE.equals(folder_trash)){
-                            resource.folders.add(new FolderSql(folderId, userId));
-                        }
-                    }else{
-                        resource.folders.add(new FolderSql(folderId, userId));
-                    }
-                }
-                if(shared != null){
-                    if(shared instanceof JsonArray){
-                        resource.shared.addAll((JsonArray) shared);
-                    }
-                }
-                if(mutedBy instanceof JsonObject) {
-                    resource.mutedBy.mergeIn((JsonObject) mutedBy);
-                }
-                if(rights != null){
-                    if(rights instanceof JsonArray){
-                        results.get(id).rights.addAll((JsonArray) rights);
-                    }
-                }
+                models.add(mapRowToModel(row, model -> {
+                    // set if not exists -> ensure uniqueness
+                    results.putIfAbsent(model.id, model);
+                    // get model to update
+                    return results.get(model.id);
+                }));
             }
-            return new ArrayList<>(results.values());
+            return models;
         });
     }
 
@@ -331,19 +311,19 @@ public class ResourceExplorerDbSql {
         final Tuple tuple = Tuple.tuple();
         PostgresClient.inTuple(tuple, ids);
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
-        final String queryTpl = "SELECT * FROM explorer.resources WHERE ent_id IN (%s)";
-        final String query = String.format(queryTpl, inPlaceholder);
+        final StringBuilder queryTpl = new StringBuilder();
+        queryTpl.append("SELECT resources.id as resource_id,resources.ent_id,resources.resource_unique_id, ");
+        queryTpl.append("       resources.creator_id, resources.version, resources.application, resources.resource_type, resources.shared, resources.muted_by, resources.rights, ");
+        queryTpl.append("       f.id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
+        queryTpl.append("FROM explorer.resources  ");
+        queryTpl.append("LEFT JOIN explorer.folder_resources fr ON resources.id=fr.resource_id ");
+        queryTpl.append("LEFT JOIN explorer.folders f ON fr.folder_id=f.id ");
+        queryTpl.append("WHERE resources.ent_id IN (%s)");
+        final String query = String.format(queryTpl.toString(), inPlaceholder);
         return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
-            for(final Row row : rows){ ;
-                final Integer id = row.getInteger("id");
-                final String entId = row.getString("ent_id");
-                final String creatorId = row.getString("creator_id");
-                final String resourceUniqueId = row.getString("resource_unique_id");
-                final String application = row.getString("application");
-                final String resource_type = row.getString("resource_type");
-                final long version = row.getLong("version");
-                resources.add(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
+            for(final Row row : rows){
+                resources.add(mapRowToModel(row, Function.identity()));
             }
             return  resources;
         });
@@ -403,6 +383,82 @@ public class ResourceExplorerDbSql {
             }
             return  resources;
         });
+    }
+    public Future<List<ResouceSql>> moveTo(final List<ResourceLink> links){
+        if(links.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final List<JsonObject> jsons = links.stream().map(e-> {
+            return new JsonObject().put("resource_id", e.resourceId).put("folder_id", e.parentId).put("user_id", e.updaterId);
+        }).collect(Collectors.toList());
+        final Tuple tuple = PostgresClient.insertValues(jsons, Tuple.tuple(),"folder_id", "resource_id", "user_id");
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(jsons, 1,"folder_id", "resource_id", "user_id");
+        final StringBuilder queryTpl = new StringBuilder();
+        queryTpl.append("WITH updated AS ( ");
+        queryTpl.append("   INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) VALUES %s ");
+        queryTpl.append("   ON CONFLICT(resource_id, user_id) DO UPDATE SET folder_id=EXCLUDED.folder_id RETURNING * ");
+        queryTpl.append(") ");
+        queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+        queryTpl.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
+        queryTpl.append("FROM explorer.resources AS upserted ");
+        queryTpl.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
+        queryTpl.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
+        final String query = String.format(queryTpl.toString(), insertPlaceholder);
+        return client.preparedQuery(query, tuple).map(rows->{
+            final Map<Integer, ResouceSql> results = new HashMap<>();
+            final List<ResouceSql> models = new ArrayList<>();
+            for(final Row row : rows){
+                models.add(mapRowToModel(row, model -> {
+                    // set if not exists -> ensure uniqueness
+                    results.putIfAbsent(model.id, model);
+                    // get model to update
+                    return results.get(model.id);
+                }));
+            }
+            return models;
+        });
+    }
+
+    public ResouceSql mapRowToModel(final Row row, final Function<ResouceSql, ResouceSql> getOrCreate){
+        final Integer id = row.getInteger("resource_id");
+        final String entId = row.getString("ent_id");
+        final String userId = row.getString("user_id");
+        final Integer folderId = row.getInteger("folder_id");
+        final String creatorId = row.getString("creator_id");
+        final String resourceUniqueId = row.getString("resource_unique_id");
+        final String application = row.getString("application");
+        final String resource_type = row.getString("resource_type");
+        final Boolean folder_trash = row.getBoolean("folder_trash");
+        final Object shared = row.getJson("shared");
+        final Object mutedBy = row.getJson("muted_by");
+        final long version = row.getLong("version");
+        final Object rights = row.getJson("rights");
+        final ResouceSql resource = getOrCreate.apply(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
+        if(folderId != null){
+            if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders()){
+                //do not link resource to folder if trashed
+                if(!Boolean.TRUE.equals(folder_trash)){
+                    resource.folders.add(new FolderSql(folderId, userId));
+                }
+            }else{
+                resource.folders.add(new FolderSql(folderId, userId));
+            }
+        }
+        if(shared != null){
+            if(shared instanceof JsonArray){
+                resource.shared.addAll((JsonArray) shared);
+            }
+        }
+        if(mutedBy instanceof JsonObject) {
+            resource.mutedBy.mergeIn((JsonObject) mutedBy);
+        }
+        if(rights != null){
+            if(rights instanceof JsonArray){
+                resource.rights.addAll((JsonArray) rights);
+            }
+        }
+        return resource;
     }
 
 
@@ -472,6 +528,17 @@ public class ResourceExplorerDbSql {
         return newIds;
     }
 
+    public static class ResourceLink{
+        final Number parentId;
+        final Number resourceId;
+        final String updaterId;
+        public ResourceLink(final Number parentId, final Number resourceId, final String updaterId){
+            this.parentId = parentId;
+            this.resourceId = resourceId;
+            this.updaterId = updaterId;
+        }
+    }
+
     public static class ResouceSql{
 
         public ResouceSql(String entId, Integer id, String resourceUniqId, String creatorId, String application, String resourceType, final long version) {
@@ -495,6 +562,14 @@ public class ResourceExplorerDbSql {
         public final String resourceType;
         public final String application;
         public final long version;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public String getEntId() {
+            return entId;
+        }
 
         public Set<String> getSharedUsers(){
             final Set<String> ids = new HashSet<>();

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
@@ -52,6 +53,7 @@ public class MessageIngesterPostgres implements MessageIngester {
         if (messages.isEmpty()) {
             return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
         }
+        final List<ExplorerMessageWithParent> moveResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteFolders = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertFolders = new ArrayList<>();
         final List<ExplorerMessageForIngest> upsertResources = new ArrayList<>();
@@ -75,27 +77,38 @@ public class MessageIngesterPostgres implements MessageIngester {
                         if (message.getResourceType().equals(ExplorerConfig.FOLDER_TYPE)) {
                             upsertFolders.add(message);
                         } else {
+                            // resource need to be moved
+                            if(message.getParentId().isPresent()){
+                                moveResources.add(new ExplorerMessageWithParent(message.getParentId().get(), message));
+                            }
                             upsertResources.add(message);
                         }
                         break;
                 }
             }
         }
-        //create or delete resources in postgres
-        return migrate(upsertFolders, upsertResources).compose(migrate -> {
-            final Future<List<ExplorerMessageForIngest>> beforeUpsertFolderFuture = onUpsertFolders(upsertFolders);
-            final Future<List<ExplorerMessageForIngest>> beforeUpsertFuture = onUpsertResources(upsertResources);
-            final Future<List<ExplorerMessageForIngest>> beforeDeleteFuture = onDeleteResources(deleteResources);
-            return CompositeFuture.join(beforeUpsertFuture, beforeDeleteFuture, beforeUpsertFolderFuture).compose(all -> {
+        // first upsert resource
+        final Future<List<ExplorerMessageForIngest>> upsertResourceFuture = onUpsertResources(upsertResources);
+        return upsertResourceFuture.compose(upsertedResource -> {
+            // then migrate folder: upsert resources before to compute links between folder and resources
+            return migrate(upsertFolders, upsertResources);
+        }).compose(migrate -> {
+            // then upsert folder (not part of migration)
+            final Future<List<ExplorerMessageForIngest>> upsertFolderFuture = onUpsertFolders(upsertFolders);
+            // move resource after upsert => case of a resource created and moved atomically
+            final Future<List<ExplorerMessageForIngest>> moveResourceFuture = onMoveResource(moveResources, upsertResourceFuture.result());
+            final Future<List<ExplorerMessageForIngest>> deleteResourceFuture = onDeleteResources(deleteResources);
+            return CompositeFuture.join(upsertResourceFuture, deleteResourceFuture, upsertFolderFuture, moveResourceFuture).compose(all -> {
                 recordDelay(messages, start);
                 if(all.succeeded()) {
                     //ingest only resources created or deleted successfully in postgres
                     final List<ExplorerMessageForIngest> toIngest = new ArrayList<>();
                     //TODO on delete folders => update related resources?
                     toIngest.addAll(deleteFolders);
-                    toIngest.addAll(beforeDeleteFuture.result());
-                    toIngest.addAll(beforeUpsertFuture.result());
-                    toIngest.addAll(beforeUpsertFolderFuture.result());
+                    toIngest.addAll(deleteResourceFuture.result());
+                    toIngest.addAll(upsertResourceFuture.result());
+                    toIngest.addAll(upsertFolderFuture.result());
+                    toIngest.addAll(moveResourceFuture.result());
                     return ingester.ingest(toIngest).map(ingestResult -> {
                         //add to failed all resources that cannot be deleted or created into postgres
                         final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
@@ -109,10 +122,10 @@ public class MessageIngesterPostgres implements MessageIngester {
                         ingestResult.getFailed().addAll(prepareFailed);
                         return ingestResult;
                     }).compose(ingestResult -> {
-                    //delete definitely all resources deleted from ES
-                        final List<ExplorerMessageForIngest> deleted = beforeDeleteFuture.result();
+                        //delete definitely all resources deleted from ES
+                        final List<ExplorerMessageForIngest> deleted = deleteResourceFuture.result();
                         final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
-                            final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
+                            final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).reduce((first, second) -> second);
                             return found.isPresent();
                         }).collect(Collectors.toList());
                         return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);
@@ -120,9 +133,9 @@ public class MessageIngesterPostgres implements MessageIngester {
                 } else {
                     log.warn("Error in PostgresIngester", all.cause());
                     final List<ExplorerMessageForIngest> failed = new ArrayList<>();
-                    failed.addAll(populateError(upsertFolders, beforeUpsertFolderFuture));
-                    failed.addAll(populateError(upsertResources, beforeUpsertFuture));
-                    failed.addAll(populateError(deleteResources, beforeDeleteFuture));
+                    failed.addAll(populateError(upsertFolders, upsertFolderFuture));
+                    failed.addAll(populateError(upsertResources, upsertResourceFuture));
+                    failed.addAll(populateError(deleteResources, deleteResourceFuture));
                     final Set<String> processedErrors = failed.stream()
                             .map(m -> m.getId()).filter(s -> isNotBlank(s))
                             .collect(Collectors.toSet());
@@ -168,37 +181,45 @@ public class MessageIngesterPostgres implements MessageIngester {
             return Future.succeededFuture(new ArrayList<>());
         }
         return sql.upsertResources(messages).map(resourcesSql -> {
-            final List<ExplorerMessageForIngest> backupSuccess = new ArrayList<>();
-            for (final ResourceExplorerDbSql.ResouceSql resSql : resourcesSql) {
-                final List<ExplorerMessageForIngest> found = messages.stream().filter(e -> e.getResourceUniqueId().equals(resSql.resourceUniqId)).collect(Collectors.toList());
-                for (final ExplorerMessageForIngest mess : found) {
-                    //set predictible id
-                    mess.setPredictibleId(resSql.id.toString());
-                    //set folder ids
-                    final Set<String> folderIds = new HashSet<>();
-                    final Set<String> usersForFolderIds = new HashSet<>();
-                    for (final ResourceExplorerDbSql.FolderSql folder : resSql.folders) {
-                        folderIds.add(folder.id.toString());
-                        usersForFolderIds.add(folder.userId);
-                    }
-                    mess.getMessage().put("folderIds", new JsonArray(new ArrayList(folderIds)));
-                    mess.getMessage().put("usersForFolderIds", new JsonArray(new ArrayList(usersForFolderIds)));
-                    if(resSql.shared != null && resSql.rights != null){
-                        mess.withShared(resSql.shared, new ArrayList<>(resSql.rights.getList()));
-                    }
-                    if(resSql.creatorId != null && ! resSql.creatorId.isEmpty()){
-                        mess.withCreatorId(resSql.creatorId);
-                    }
-                    //keep original id
-                    final JsonObject override = new JsonObject();
-                    override.put("assetId", mess.getId());
-                    mess.withOverrideFields(override);
-                    //add to success list
-                    backupSuccess.add(mess);
-                }
-            }
-            return backupSuccess;
+            return mapUpsertResourceToMessage(messages, resourcesSql);
         });
+    }
+
+    private List<ExplorerMessageForIngest> mapUpsertResourceToMessage(final List<ExplorerMessageForIngest> messages, final List<ResourceExplorerDbSql.ResouceSql> resourcesSql){
+        final List<ExplorerMessageForIngest> backupSuccess = new ArrayList<>();
+        for (final ResourceExplorerDbSql.ResouceSql resSql : resourcesSql) {
+            final List<ExplorerMessageForIngest> found = messages.stream().filter(e -> e.getResourceUniqueId().equals(resSql.resourceUniqId)).collect(Collectors.toList());
+            for (final ExplorerMessageForIngest mess : found) {
+                updateMessageFromResourceSql(mess, resSql);
+                //add to success list
+                backupSuccess.add(mess);
+            }
+        }
+        return backupSuccess;
+    }
+
+    private void updateMessageFromResourceSql(final ExplorerMessageForIngest mess, final ResourceExplorerDbSql.ResouceSql resSql ){
+        //set predictible id
+        mess.setPredictibleId(resSql.id.toString());
+        //set folder ids
+        final Set<String> folderIds = new HashSet<>();
+        final Set<String> usersForFolderIds = new HashSet<>();
+        for (final ResourceExplorerDbSql.FolderSql folder : resSql.folders) {
+            folderIds.add(folder.id.toString());
+            usersForFolderIds.add(folder.userId);
+        }
+        mess.getMessage().put("folderIds", new JsonArray(new ArrayList(folderIds)));
+        mess.getMessage().put("usersForFolderIds", new JsonArray(new ArrayList(usersForFolderIds)));
+        if(resSql.shared != null && resSql.rights != null){
+            mess.withShared(resSql.shared, new ArrayList<>(resSql.rights.getList()));
+        }
+        if(resSql.creatorId != null && ! resSql.creatorId.isEmpty()){
+            mess.withCreatorId(resSql.creatorId);
+        }
+        //keep original id
+        final JsonObject override = new JsonObject();
+        override.put("assetId", mess.getId());
+        mess.withOverrideFields(override);
     }
 
     protected Future<List<ExplorerMessageForIngest>> onDeleteResources(final List<ExplorerMessageForIngest> messages) {
@@ -221,10 +242,12 @@ public class MessageIngesterPostgres implements MessageIngester {
         final List<ExplorerMessageForIngest> toMigrate = upsertFolders.stream()
                 .filter(ExplorerMessage::getMigrationFlag)
                 .collect(Collectors.toList());
-        //upsert resources before computing links
-        final Future<List<ResourceExplorerDbSql.ResouceSql>> futureResources = sql.upsertResources(upsertResources);
+        //
+        if(toMigrate.isEmpty()){
+            return Future.succeededFuture();
+        }
         final  Future<FolderExplorerDbSql.FolderUpsertResult> futureFolders = folderSql.upsert(toMigrate);
-        return CompositeFuture.all(futureFolders, futureResources).compose(resourceUpserted -> {
+        return futureFolders.compose(p -> {
             final FolderExplorerDbSql.FolderUpsertResult upsertRes = futureFolders.result();
             final Map<String, JsonObject> folderByEntId = upsertRes.folderEntById;
             final Set<ResourceExplorerDbSql.ResouceSql> resourceUpdated = upsertRes.resourcesUpdated;
@@ -253,20 +276,47 @@ public class MessageIngesterPostgres implements MessageIngester {
                     for(final ResourceExplorerDbSql.ResouceSql r : resourceUpdated){
                         final UserInfos creator = new UserInfos();
                         creator.setUserId(r.creatorId);
-                        final Optional<ExplorerMessageForIngest> found = upsertResources.stream().filter(e-> e.getId().equals(r.entId)).findFirst();
-                        if(!found.isPresent()){
+                        final List<ExplorerMessageForIngest> found = upsertResources.stream().filter(e-> e.getId().equals(r.entId)).collect(Collectors.toList());
+                        // get resource to be updated or create new message to update resource
+                        if(found.isEmpty()){
                             //use id because upsertResource already done
                             final ExplorerMessage mess = ExplorerMessage.upsert(
                                     new IdAndVersion(r.entId, r.version), creator, false,
                                     r.application, r.resourceType, r.resourceType);
                             mess.withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
                             // TODO JBER check version to set
-                            upsertResources.add(new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString()));
+                            final ExplorerMessageForIngest messForIngest = new ExplorerMessageForIngest(mess).setPredictibleId(r.id.toString());
+                            upsertResources.add(messForIngest);
+                            found.add(messForIngest);
+                        }
+                        // update all messages
+                        for(final ExplorerMessageForIngest foundMessage: found){
+                            updateMessageFromResourceSql(foundMessage, r);
                         }
                     }
                     return Future.succeededFuture();
                 });
             }
+        });
+    }
+
+    protected Future<List<ExplorerMessageForIngest>> onMoveResource(final List<ExplorerMessageWithParent> toMoveList, final List<ExplorerMessageForIngest> upsertResources) {
+        if (toMoveList.isEmpty()) {
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        // get resource unique ID
+        final Map<String, ExplorerMessageForIngest> upsertedById = upsertResources.stream().collect(Collectors.toMap(ExplorerMessageForIngest::getId, Function.identity()));
+        final List<ResourceExplorerDbSql.ResourceLink> links = toMoveList.stream().map(toMove -> {
+            final Optional<String> predictibleId = upsertedById.get(toMove.message.getId()).getPredictibleId();
+            final Integer folderId = Integer.valueOf(toMove.parentId);
+            final String updaterId = toMove.message.getUpdaterId();
+            // predictible id has been setted on upsert
+            return new ResourceExplorerDbSql.ResourceLink(folderId, Long.valueOf(predictibleId.get()), updaterId);
+        }).collect(Collectors.toList());
+        return sql.moveTo(links).map(resourcesSql -> {
+            final List<ExplorerMessageForIngest> beforeMap = toMoveList.stream().map(e -> e.message).collect(Collectors.toList());
+            final List<ExplorerMessageForIngest> mapped = mapUpsertResourceToMessage(beforeMap, resourcesSql);
+            return mapped;
         });
     }
 
@@ -315,7 +365,7 @@ public class MessageIngesterPostgres implements MessageIngester {
             //update parent (childrenIds)
             for (final Integer parentId : parentIds) {
                 final String parentIdStr = parentId.toString();
-                final Optional<ExplorerMessageForIngest> found = messages.stream().filter(m-> m.getId().equals(parentIdStr)).findFirst();
+                final Optional<ExplorerMessageForIngest> found = messages.stream().filter(m-> m.getId().equals(parentIdStr)).reduce((first, second) -> second);
                 final ExplorerMessageForIngest message = found.orElseGet(() -> {
                     // TODO JBER check if that is the right thing to do. Should we not fetch the folder information first.
                     // This seems to be why the test FolderServiceTest.shouldCreateFolderTree fails
@@ -372,6 +422,16 @@ public class MessageIngesterPostgres implements MessageIngester {
         override.put("ancestors", ancestors);
         //END MOVE
         return message;
+    }
+
+    class ExplorerMessageWithParent{
+        final String parentId;
+        final ExplorerMessageForIngest message;
+
+        public ExplorerMessageWithParent(String parentId, ExplorerMessageForIngest message) {
+            this.parentId = parentId;
+            this.message = message;
+        }
     }
 
 }
