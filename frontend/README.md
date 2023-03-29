@@ -30,7 +30,7 @@ pnpm install
 Open your project with Vite Server + HMR at <http://localhost:3000>.
 
 ```bash
-turbo dev
+pnpm dev
 ```
 
 ### [Server Options](https://vitejs.dev/config/server-options.html)
@@ -81,7 +81,7 @@ Add your new path to `tsconfig.json`:
 ### Lint
 
 ```bash
-turbo lint
+pnpm lint
 ```
 
 ### Prettier
@@ -89,7 +89,7 @@ turbo lint
 Prettier everything once
 
 ```bash
-turbo format
+pnpm format
 ```
 
 ### Lighthouse
@@ -97,7 +97,7 @@ turbo format
 > LHCI will check if your app respect at least 90% of these categories: performance, a11y, Best practices and seo
 
 ```bash
-turbo lighthouse
+pnpm lighthouse
 ```
 
 ### Pre-commit
@@ -115,13 +115,13 @@ pnpm pre-commit
 TypeScript check + Vite Build
 
 ```bash
-turbo build
+pnpm build
 ```
 
 ## Preview
 
 ```bash
-turbo preview
+pnpm preview
 ```
 
 ## License
