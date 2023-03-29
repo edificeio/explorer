@@ -3,7 +3,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "application": { "type": "string"},
+    "application": { "type": "string" },
     "resourceIds": {
       "type": "array",
       "items": {
@@ -17,7 +17,5 @@
       }
     }
   },
-  "required": [
-    "resourceIds", "folderIds", "application"
-  ]
+  "required": ["resourceIds", "folderIds", "application"]
 }

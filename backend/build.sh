@@ -41,39 +41,39 @@ clean () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
 }
 
-buildNode () {
-  #jenkins
-  echo "[buildNode] Get branch name from jenkins env..."
-  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Get branch name from git..."
-    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-  fi
-  if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
-  fi
+# buildNode () {
+#   #jenkins
+#   echo "[buildNode] Get branch name from jenkins env..."
+#   BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+#   if [ "$BRANCH_NAME" = "" ]; then
+#     echo "[buildNode] Get branch name from git..."
+#     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+#   fi
+#   if [ "$BRANCH_NAME" = "" ]; then
+#     echo "[buildNode] Branch name should not be empty!"
+#     exit -1
+#   fi
 
-  if [ "$BRANCH_NAME" = 'master' ]; then
-      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm update entcore && node_modules/gulp/bin/gulp.js build"
-      esac
-  else
-      echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      case `uname -s` in
-        MINGW*)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-          ;;
-        *)
-          docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-      esac
-  fi
-}
+#   if [ "$BRANCH_NAME" = 'master' ]; then
+#       echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
+#       case `uname -s` in
+#         MINGW*)
+#           docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
+#           ;;
+#         *)
+#           docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm update entcore && node_modules/gulp/bin/gulp.js build"
+#       esac
+#   else
+#       echo "[buildNode] Use entcore tag $BRANCH_NAME"
+#       case `uname -s` in
+#         MINGW*)
+#           docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
+#           ;;
+#         *)
+#           docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install && npm rm --no-save entcore && yarn install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
+#       esac
+#   fi
+# }
 
 buildGradle () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle shadowJar install publishToMavenLocal
@@ -90,19 +90,19 @@ publish () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
 }
 
-buildStatic () {
-    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-save ode-bootstrap-neo@feat-explorer && npm run dev:build"
-}
+# buildStatic () {
+#     docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-save ode-bootstrap-neo@feat-explorer && npm run dev:build"
+# }
 
-watch () {
-  BUILD_APP="$(prop 'modowner')~$(prop 'modname')~$(prop 'version')"
-  echo "Watching app $BUILD_APP"
-  docker-compose run \
-    --rm \
-    -u "$USER_UID:$GROUP_GID" \
-    -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
-    node sh -c "npm run watch --springboard=/home/node/$SPRINGBOARD --app=\"$BUILD_APP\""
-}
+# watch () {
+#   BUILD_APP="$(prop 'modowner')~$(prop 'modname')~$(prop 'version')"
+#   echo "Watching app $BUILD_APP"
+#   docker-compose run \
+#     --rm \
+#     -u "$USER_UID:$GROUP_GID" \
+#     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
+#     node sh -c "npm run watch --springboard=/home/node/$SPRINGBOARD --app=\"$BUILD_APP\""
+# }
 
 for param in "$@"
 do
@@ -110,18 +110,18 @@ do
     clean)
       clean
       ;;
-    buildNode)
-      buildNode
-      ;;
+    # buildNode)
+    #   buildNode
+    #   ;;
     buildGradle)
       buildGradle
       ;;
     install)
       buildGradle
       ;;
-    watch)
-      watch
-      ;;
+    # watch)
+    #   watch
+    #   ;;
     publish)
       publish
       ;;
