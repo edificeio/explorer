@@ -223,21 +223,62 @@ export default function useShareResourceModal({
     }
   };
 
-  const handleSearchResultsChange = (model: Array<string | number>) => {
+  const handleSearchResultsChange = async (model: Array<string | number>) => {
     const shareSubject = searchAPIResults.find(
       (searchAPIResult) => searchAPIResult.id === model[0],
     );
 
+    const defaultAction: ShareRightAction = {
+      id: "read",
+      displayName: "read",
+    };
+
     if (shareSubject) {
-      setShareRights({
-        ...shareRights,
-        rights: [
-          ...shareRights.rights,
+      let rightsToAdd: ShareRight[] = [];
+      // if subject type is sharebookmark then get sharebookmark users and groups and add them to the table
+      if (shareSubject.type === "sharebookmark") {
+        const directoryService = odeServices.directory();
+        const bookmarkRes = await directoryService.getBookMarkById(
+          shareSubject.id,
+        );
+        bookmarkRes.users
+          .filter(
+            (user) => !shareRights.rights.find((right) => right.id === user.id),
+          )
+          .forEach((user) => {
+            rightsToAdd.push({
+              ...user,
+              type: "user",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: [defaultAction],
+            });
+          });
+        bookmarkRes.groups
+          .filter(
+            (group) =>
+              !shareRights.rights.find((right) => right.id === group.id),
+          )
+          .forEach((group) => {
+            rightsToAdd.push({
+              ...group,
+              type: "group",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: [defaultAction],
+            });
+          });
+      } else {
+        rightsToAdd = [
           {
             ...shareSubject,
-            actions: [{ id: "read", displayName: "read" }],
+            actions: [defaultAction],
           },
-        ],
+        ];
+      }
+      setShareRights({
+        ...shareRights,
+        rights: [...shareRights.rights, ...rightsToAdd],
       });
       setSearchResults(searchResults.filter((s) => s.value !== model[0]));
     }
