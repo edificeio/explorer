@@ -56,6 +56,7 @@ export default function Explorer(): JSX.Element | null {
     actions,
     init,
     isAppReady,
+    isLoading,
     getHasResourcesOrFolders, // Return number folder or ressources
     getIsTrashSelected, // Return boolean : true if trash is selected, false other
     getHasNoSelectedNodes, // Return Boolean : true if we are NOT in a folder, false if we are in a folder
@@ -154,7 +155,7 @@ export default function Explorer(): JSX.Element | null {
           <EmptyScreenApp />
           <EmptyScreenTrash />
 
-          {hasMoreResources ? (
+          {hasMoreResources && !isLoading ? (
             <div className="d-grid gap-2 col-4 mx-auto">
               <Button
                 type="button"
