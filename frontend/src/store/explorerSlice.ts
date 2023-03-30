@@ -32,6 +32,7 @@ type Thing = "folder" | "resource" | "all";
 type PromiseVoid = Promise<void>;
 
 export interface ExplorerSlice {
+  isLoading: boolean;
   isAppReady: boolean;
   actions: Array<IAction & { available: boolean }>;
   filters: IFilter[];
@@ -39,6 +40,7 @@ export interface ExplorerSlice {
   preferences?: IPreferences;
   searchParams: ISearchParameters;
   notifications: Notification[];
+  setLoadingState: <T>(promise: Promise<T>) => Promise<T>;
   init: (params: OdeProviderParams) => PromiseVoid;
   getHasResourcesOrFolders: () => number;
   moveSelectedTo: (destinationId: string) => PromiseVoid;
@@ -60,6 +62,7 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   set,
   get,
 ) => ({
+  isLoading: false,
   isAppReady: false,
   actions: [],
   filters: [],
@@ -75,12 +78,25 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       pageSize: 4,
     },
   },
+  setLoadingState: async <T>(promise: Promise<T>): Promise<T> => {
+    try {
+      set((state) => ({ ...state, isLoading: true }));
+      const res = await promise;
+      return res;
+    } finally {
+      set((state) => ({ ...state, isLoading: false }));
+    }
+  },
   init: async (_: OdeProviderParams) => {
     const { app, types } = getAppParams();
 
     try {
       // get context from backend
-      const { searchParams: previousParam, getCurrentFolderId } = get();
+      const {
+        searchParams: previousParam,
+        getCurrentFolderId,
+        setLoadingState,
+      } = get();
       const searchParams: ISearchParameters = {
         ...previousParam,
         orders: { updatedAt: "desc" },
@@ -89,15 +105,13 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       };
 
       const trashed = getCurrentFolderId() === FOLDER.BIN;
-      const { folders, resources, preferences, pagination } = await odeServices
-        .resource(searchParams.app)
-        .createContext({ ...searchParams, trashed });
-
-      console.log(
-        await odeServices
-          .resource(searchParams.app)
-          .createContext({ ...searchParams, trashed }),
-      );
+      // set loading state
+      const { folders, resources, preferences, pagination } =
+        await setLoadingState(
+          odeServices
+            .resource(searchParams.app)
+            .createContext({ ...searchParams, trashed }),
+        );
 
       const { actions, filters, orders } = getAppParams();
       const actionRights = actions.map((a) => a.workflow);
@@ -255,16 +269,18 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   },
   reloadListView: async () => {
     try {
-      const { clearListView, getCurrentFolderId } = get();
+      const { clearListView, getCurrentFolderId, setLoadingState } = get();
       // clear list view
       clearListView();
       // get params after clear
       const { searchParams } = get();
       // fetch subfolders
       const trashed = getCurrentFolderId() === FOLDER.BIN;
-      const { folders, resources, pagination } = await odeServices
-        .resource(searchParams.app)
-        .searchContext({ ...searchParams, trashed });
+      const { folders, resources, pagination } = await setLoadingState(
+        odeServices
+          .resource(searchParams.app)
+          .searchContext({ ...searchParams, trashed }),
+      );
 
       const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
       const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
