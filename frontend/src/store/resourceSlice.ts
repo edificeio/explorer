@@ -16,7 +16,7 @@ export interface ResourceSlice {
   resources: IResource[];
   selectedResources: string[];
   hasMoreResources: boolean;
-  openResource: (assetId: string) => void;
+  openResource: (resource: IResource) => void;
   openSelectedResource: () => Promise<void>;
   printSelectedResource: () => void;
   createResource: () => Promise<void>;
@@ -88,10 +88,13 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       return { ...state, resources };
     });
   },
-  openResource: (assetId: string) => {
+  openResource: (resource: IResource) => {
+    if (resource.trashed) {
+      return;
+    }
     try {
       const { searchParams } = get();
-      odeServices.resource(searchParams.app).gotoView(assetId);
+      odeServices.resource(searchParams.app).gotoView(resource.assetId);
     } catch (error) {
       // if failed push error
       console.error("explorer open failed: ", error);
