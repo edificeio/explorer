@@ -125,7 +125,7 @@ public class MessageIngesterPostgres implements MessageIngester {
                         //delete definitely all resources deleted from ES
                         final List<ExplorerMessageForIngest> deleted = deleteResourceFuture.result();
                         final List<ExplorerMessageForIngest> deletedSuccess = deleted.stream().filter(del -> {
-                            final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).reduce((first, second) -> second);
+                            final Optional<ExplorerMessageForIngest> found = ingestResult.getSucceed().stream().filter(current -> current.getResourceUniqueId().equals(del.getResourceUniqueId())).findFirst();
                             return found.isPresent();
                         }).collect(Collectors.toList());
                         return sql.deleteDefinitlyResources(deletedSuccess).map(ingestResult);

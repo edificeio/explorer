@@ -183,20 +183,36 @@ public class FolderExplorerDbSql {
                         final Set<String> resEntId = res.getChildEntId().get();
                         final String inQuery = PostgresClient.inPlaceholder(resEntId, 3);
                         final Tuple ituple = PostgresClient.inTuple(Tuple.of(userId, folderId), resEntId);
-                        final StringBuilder iquery = new StringBuilder();
-                        iquery.append("WITH updated AS ( ");
-                        iquery.append("     INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
-                        iquery.append("     SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
-                        iquery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
-                        iquery.append("     ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
-                        iquery.append(") ");
-                        iquery.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-                        iquery.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
-                        iquery.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
-                        iquery.append("FROM explorer.resources AS upserted ");
-                        iquery.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
-                        iquery.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
-                        futures.add(transaction.addPreparedQuery(iquery.toString(), ituple).onFailure(e->{
+                        /**
+                         * This query create or update a relationship between 1 folder and 1 resource
+                         * Folder and resources have a many-to-many relationships but
+                         * - for a specific user only 1 folder can be related to 1 resource
+                         * - 1 resource can be related to many folders (each owned by different users)
+                         * - 1 folder can have many resources (each from the same user)
+                         *
+                         * For theses reasons, upsert use the tupe (user_id,resource_id) as key for the upsert
+                         *
+                         * To Avoid many queries we are using "WITH" operator:
+                         * - 1 query for the upsert
+                         * - 1 query to fetch resources and folders
+                         *
+                         * So after upserting we are returning resources infos with alls folders (and users) related to each resources
+                         *
+                         */
+                        final StringBuilder upsertQuery = new StringBuilder();
+                        upsertQuery.append("WITH updated AS ( ");
+                        upsertQuery.append("     INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) ");
+                        upsertQuery.append("     SELECT f.id, r.id, $1 as user_id FROM explorer.folders f, explorer.resources r ");
+                        upsertQuery.append(String.format("WHERE f.ent_id = $2 AND r.ent_id IN (%s)  ", inQuery));
+                        upsertQuery.append("     ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
+                        upsertQuery.append(") ");
+                        upsertQuery.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
+                        upsertQuery.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+                        upsertQuery.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
+                        upsertQuery.append("FROM explorer.resources AS upserted ");
+                        upsertQuery.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
+                        upsertQuery.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
+                        futures.add(transaction.addPreparedQuery(upsertQuery.toString(), ituple).onFailure(e->{
                            log.error("Failed to insert relationship for folderId="+folderId, e);
                         }));
                         resourceEntIds.addAll(resEntId);

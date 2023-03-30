@@ -136,6 +136,19 @@ public class ResourceMoveTest {
         return elasticClientManager.getClient().createMapping(index, mapping);
     }
 
+    /**
+     * <u>GOAL</u> : Ensure that an application is able to create a resource into a folder using an upsert message
+     *
+     * <u>STEPS</u> :
+     * <ol>
+     *     <li>Create a folder "folder1" that will contains the resource</li>
+     *     <li>Create a resource "resource1" that will be moved into folder1 using a "notifyUpsert" from the plugin</li>
+     *     <li>Call the ingest job to ensure all messages has been processed</li>
+     *     <li>Fetch all resources which are inside "folder1" for the current user</li>
+     *     <li>Ensure that "resource1" is present and the unique resource in "folder1" </li>
+     * </ol>
+     * @param context Test context
+     */
     @Test
     public void shouldCreateAndMoveResource(TestContext context) {
         final Async async = context.async();
