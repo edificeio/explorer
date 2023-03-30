@@ -31,6 +31,11 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     public FolderExplorerDbSql getDbHelper() {return dbHelper;}
 
     @Override
+    protected Optional<String> getShareTableName() {
+        return Optional.empty();
+    }
+
+    @Override
     protected Map<String, SecuredAction> getSecuredActions() {
         return new HashMap<>();
     }
