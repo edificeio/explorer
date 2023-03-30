@@ -6,6 +6,7 @@ export function EmptyScreenApp(): JSX.Element | null {
   const { i18n, appCode, is1d } = useOdeClient();
   const {
     actions,
+    isLoading,
     getHasResourcesOrFolders, // Return number folder or ressources
     getIsTrashSelected, // Return boolean : true if trash is selected, false other
     getHasSelectedRoot,
@@ -14,6 +15,7 @@ export function EmptyScreenApp(): JSX.Element | null {
   const canCreate = actions.find((action) => action.id === "create");
   const labelEmptyScreenApp = () => {
     if (canCreate?.available && is1d) {
+      // TODO should not have specific app i18n
       return i18n("explorer.emptyScreen.blog.txt1d.create");
     } else if (canCreate?.available && !is1d) {
       return i18n("explorer.emptyScreen.blog.txt2d.create");
@@ -26,7 +28,8 @@ export function EmptyScreenApp(): JSX.Element | null {
 
   return getHasResourcesOrFolders() === 0 &&
     getHasSelectedRoot() &&
-    !getIsTrashSelected() ? (
+    !getIsTrashSelected() &&
+    !isLoading ? (
     <EmptyScreen
       imageSrc={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
       imageAlt={i18n("explorer.emptyScreen.app.alt")}

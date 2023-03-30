@@ -5,6 +5,7 @@ import useExplorerStore from "@store/index";
 export function EmptyScreenNoContentInFolder(): JSX.Element | null {
   const { i18n } = useOdeClient();
   const {
+    isLoading,
     getHasResourcesOrFolders, // Return number folder or ressources
     getIsTrashSelected, // Return boolean : true if trash is selected, false other
     getHasSelectedRoot, // Return Boolean : true if trash or folder default selected, false other
@@ -12,7 +13,8 @@ export function EmptyScreenNoContentInFolder(): JSX.Element | null {
 
   return getHasResourcesOrFolders() === 0 &&
     !getHasSelectedRoot() &&
-    !getIsTrashSelected() ? (
+    !getIsTrashSelected() &&
+    !isLoading ? (
     <EmptyScreen
       imageSrc={`${imageBootstrap}/emptyscreen/illu-noContentInFolder.svg`}
       imageAlt={i18n("explorer.emptyScreen.folder.empty.alt")}
