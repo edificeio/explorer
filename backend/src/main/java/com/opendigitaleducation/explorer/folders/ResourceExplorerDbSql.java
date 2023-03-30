@@ -384,6 +384,17 @@ public class ResourceExplorerDbSql {
             return  resources;
         });
     }
+
+    /**
+     * This method move resources into folders.
+     * Links between resources and folders are materialized by a ResourceLink.
+     * Each ResourceLink object contains a tuple (resourceId, folderId, updaterId) that allow us to create a relationship
+     * between a resource and a folder for a specific user.
+     * Reminder: we have a many-to-many relationship between resources and folders, but each user have one (or zero) folder related to each resource
+     *
+     * @param links a List of ResourceLink(folderId,resourceId,updaterId) to create or update
+     * @return a List of ResouceSql that contains all infos about resource upserted with their related folders (and users)
+     */
     public Future<List<ResouceSql>> moveTo(final List<ResourceLink> links){
         if(links.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
@@ -420,7 +431,14 @@ public class ResourceExplorerDbSql {
         });
     }
 
-    public ResouceSql mapRowToModel(final Row row, final Function<ResouceSql, ResouceSql> getOrCreate){
+    /**
+     * Map a ResourceSql java object from an sql Row
+     * @param row an sql Row containing result of queries like: SELECT ... FROM resources join resource_folders join folder
+     * @param getOrCreate a function that lets the caller using a new ResouceSql or returning an existing instance of ResourceSql.
+     *                    Could be useful in case we have duplicate entries in a batch of queries and we want to merge the result
+     * @return A ResouceSql object containing all info about a resource and related folders
+     */
+    private ResouceSql mapRowToModel(final Row row, final Function<ResouceSql, ResouceSql> getOrCreate){
         final Integer id = row.getInteger("resource_id");
         final String entId = row.getString("ent_id");
         final String userId = row.getString("user_id");
