@@ -62,7 +62,7 @@ export default function ResourcesList(): JSX.Element | null {
               isSelected={isResourceSelected(resource)}
               isShared={resourceIsShared(shared)}
               name={name}
-              onOpen={async () => openResource(assetId)}
+              onOpen={async () => openResource(resource)}
               onSelect={() => toggleSelect(resource)}
               resourceSrc={thumbnail}
               updatedAt={time}
