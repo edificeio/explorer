@@ -42,8 +42,10 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
   hasMoreResources: false,
   createResource: async () => {
     try {
-      const { searchParams } = get();
-      odeServices.resource(searchParams.app).gotoForm();
+      const { searchParams, getCurrentFolderId } = get();
+      const folderId = parseInt(getCurrentFolderId()!);
+      const safeFolderId = isNaN(folderId) ? undefined : folderId;
+      odeServices.resource(searchParams.app).gotoForm(safeFolderId);
     } catch (error) {
       // if failed push error
       console.error("explorer create failed: ", error);
