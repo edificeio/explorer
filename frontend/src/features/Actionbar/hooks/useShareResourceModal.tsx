@@ -10,7 +10,7 @@ import {
 import { Alert, useOdeClient } from "@ode-react-ui/core";
 import { type OptionListItemType } from "@ode-react-ui/core/dist/Dropdown/SelectListProps";
 import { useHotToast } from "@ode-react-ui/hooks";
-import { Bookmark, User, Users } from "@ode-react-ui/icons";
+import { Bookmark } from "@ode-react-ui/icons";
 import useExplorerStore from "@store/index";
 import {
   odeServices,
@@ -195,25 +195,11 @@ export default function useShareResourceModal({
             ),
         )
         .map((searchResult) => {
-          const returnObject: { value: string; label: string; icon?: any } = {
+          return {
             value: searchResult.id,
             label: searchResult.displayName,
+            icon: searchResult.type === "sharebookmark" ? Bookmark : null,
           };
-
-          switch (searchResult.type) {
-            case "user":
-              returnObject.icon = User;
-              break;
-            case "group":
-              returnObject.icon = Users;
-              break;
-            case "sharebookmark":
-              returnObject.icon = Bookmark;
-              break;
-            default:
-              break;
-          }
-          return returnObject;
         });
 
       setSearchResults(adaptedResults);
