@@ -87,7 +87,15 @@ export function OnBoardingTrash(): JSX.Element | null {
               src={`${imageBootstrap}/onboarding/corbeille-gif.gif`}
               alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
             />
-            <p>{i18n("explorer.modal.onboarding.trash.screen1.subtitle")}</p>
+            <p>{i18n("explorer.modal.onboarding.trash.screen1.subtitle1")}</p>
+            <ul>
+              <li>
+                {i18n("explorer.modal.onboarding.trash.screen1.subtitle2")}
+              </li>
+              <li>
+                {i18n("explorer.modal.onboarding.trash.screen1.subtitle3")}
+              </li>
+            </ul>
           </SwiperSlide>
           <SwiperSlide>
             <Modal.Subtitle>
