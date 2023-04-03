@@ -105,7 +105,7 @@ export default function useActionBar() {
       case ACTION.UPD_PROPS:
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.SHARE:
-        return noFolderSelected;
+        return noFolderSelected && onlyOneItemSelected;
       case ACTION.PRINT:
         return onlyOneItemSelected && noFolderSelected;
       case "edit" as any:
