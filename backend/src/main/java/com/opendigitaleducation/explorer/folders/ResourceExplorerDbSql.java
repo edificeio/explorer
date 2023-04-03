@@ -147,12 +147,6 @@ public class ResourceExplorerDbSql {
             if(e.getShared() != null &&  !e.getShared().isEmpty()){
                 params.put("shared", e.getShared());
             }
-            if(e.getMute() != null && !e.getMute().isEmpty()) {
-                params.put("muted_by", e.getMute());
-            }
-            if(e.getTrashedBy() != null && !e.getTrashedBy().isEmpty()) {
-                params.put("trashed_by", e.getTrashedBy());
-            }
             if(e.getRights() != null &&  !e.getRights().isEmpty()){
                 params.put("rights", e.getRights());
             }
@@ -173,15 +167,15 @@ public class ResourceExplorerDbSql {
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
         final Collection<JsonObject> resourcesColl = resourcesMap.values();
-        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "shared", "muted_by", "trashed_by", "rights");
-        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "muted_by", "trashed_by", "rights");
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "shared", "rights");
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "rights");
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
-        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by, trashed_by, rights) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), muted_by=COALESCE(EXCLUDED.muted_by, r.muted_by, '{}'), trashed_by=COALESCE(EXCLUDED.trashed_by, r.trashed_by, '{}'), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
+        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, rights) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.trashed_by, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.rights, ");
         queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
@@ -550,7 +544,7 @@ public class ResourceExplorerDbSql {
         final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(IdAndVersion::getId).collect(Collectors.toSet()));
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
-        final String query = String.format("UPDATE explorer.resources SET trashed_by=$1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
+        final String query = String.format("UPDATE explorer.resources SET trashed_by = trashed_by || $1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
         final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");

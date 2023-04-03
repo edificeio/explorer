@@ -74,8 +74,8 @@ CREATE TABLE explorer.resources (
     rights JSONB,
     version int,
     ingest_job_state VARCHAR(20),
-    muted_by JSONB,
-    trashed_by JSONB,
+    muted_by JSONB not null default '{}',
+    trashed_by JSONB not null default '{}',
     PRIMARY KEY(id)
 );
 CREATE UNIQUE INDEX idx_resources_ent_id ON explorer.resources(resource_unique_id);
