@@ -193,8 +193,9 @@ public class ResourceServiceElastic implements ResourceService {
                 messagesToIngest.addAll(trashedForUserOnlyFuture.result().values().stream()
                         .filter(folderTrashResult -> folderTrashResult.application.isPresent() && folderTrashResult.resourceType.isPresent())
                         .map(folderTrashResult -> ExplorerMessage.upsert(new IdAndVersion(folderTrashResult.entId.get(), now), user, false, folderTrashResult.application.get(), folderTrashResult.resourceType.get(), folderTrashResult.resourceType.get())
-                                .withMute(user.getUserId(), isTrash)
-                                .withTrashedBy(user.getUserId(), isTrash))
+                                .withTrashedBy(folderTrashResult.trashedBy)
+                                .withVersion(now)
+                                .withSkipCheckVersion(true))
                         .collect(Collectors.toList()));
                 return communication.pushMessage(messagesToIngest);
             }).compose(a -> {

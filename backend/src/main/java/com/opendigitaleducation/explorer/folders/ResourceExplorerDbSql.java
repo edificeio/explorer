@@ -445,7 +445,6 @@ public class ResourceExplorerDbSql {
         final String resource_type = row.getString("resource_type");
         final Boolean folder_trash = row.getBoolean("folder_trash");
         final Object shared = row.getJson("shared");
-        final Object mutedBy = row.getJson("muted_by");
         final long version = row.getLong("version");
         final Object rights = row.getJson("rights");
         final ResouceSql resource = getOrCreate.apply(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
@@ -463,9 +462,6 @@ public class ResourceExplorerDbSql {
             if(shared instanceof JsonArray){
                 resource.shared.addAll((JsonArray) shared);
             }
-        }
-        if(mutedBy instanceof JsonObject) {
-            resource.mutedBy.mergeIn((JsonObject) mutedBy);
         }
         if(rights != null){
             if(rights instanceof JsonArray){
@@ -524,7 +520,7 @@ public class ResourceExplorerDbSql {
                 final String resource_type = row.getString("resource_type");
                 final String ent_id = row.getString("ent_id");
                 final Optional<Integer> parentOpt = Optional.empty();
-                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id));
+                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id, Collections.emptyList()));
             }
         });
         return future.map(mapTrashed);
@@ -552,7 +548,11 @@ public class ResourceExplorerDbSql {
                 final String resource_type = row.getString("resource_type");
                 final String ent_id = row.getString("ent_id");
                 final Optional<Integer> parentOpt = Optional.empty();
-                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id));
+                final List<String> trashedBy = ((JsonObject) row.getValue("trashed_by")).stream()
+                        .filter(trashers -> trashers.getValue().toString().equals("true"))
+                        .map(trashers -> trashers.getKey())
+                        .collect(Collectors.toList());
+                mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id, trashedBy));
             }
         });
         return future.map(mapTrashed);
