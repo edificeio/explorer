@@ -330,7 +330,7 @@ public class FolderExplorerDbSql {
                         final String application = row.getString("application");
                         final String ent_id = row.getString("ent_id");
                         final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
-                        mapTrashed.folders.put(id, new FolderTrashResult(id, parentOpt, application, ExplorerConfig.FOLDER_TYPE, ent_id));
+                        mapTrashed.folders.put(id, new FolderTrashResult(id, parentOpt, application, ExplorerConfig.FOLDER_TYPE, ent_id, Collections.emptyList()));
                     }
                 }));
             }
@@ -543,17 +543,19 @@ public class FolderExplorerDbSql {
         public final Optional<String> application;
         public final Optional<String> resourceType;
         public final Optional<String> entId;
+        public final List<String> trashedBy;
 
-        public FolderTrashResult(Integer id, Optional<Integer> parentId, String application, String resourceType, String entId) {
-            this(id, parentId, Optional.ofNullable(application), Optional.ofNullable(resourceType), Optional.ofNullable(entId));
+        public FolderTrashResult(Integer id, Optional<Integer> parentId, String application, String resourceType, String entId, List<String> trashedBy) {
+            this(id, parentId, Optional.ofNullable(application), Optional.ofNullable(resourceType), Optional.ofNullable(entId), trashedBy);
         }
 
-        public FolderTrashResult(Integer id, Optional<Integer> parentId, Optional<String> application, Optional<String> resourceType, Optional<String> entId) {
+        public FolderTrashResult(Integer id, Optional<Integer> parentId, Optional<String> application, Optional<String> resourceType, Optional<String> entId, List<String> trashedBy) {
             this.id = id;
             this.parentId = parentId;
             this.application = application;
             this.resourceType = resourceType;
             this.entId = entId;
+            this.trashedBy = trashedBy;
         }
     }
 
