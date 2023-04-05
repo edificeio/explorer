@@ -498,6 +498,13 @@ public class ResourceExplorerDbSql {
             return  resources;
         });
     }
+
+    /**
+     * Trash resources for all users
+     * @param idsToTrashForEverybody ids of resources to be trashed for all users
+     * @param trashed whether a resource has to be trashed or restored
+     * @return resources info after trash status update
+     */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final Collection<Integer> idsToTrashForEverybody, final boolean trashed) {
         return client.transaction().compose(transaction->{
            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForAll(transaction, idsToTrashForEverybody, trashed);
@@ -526,6 +533,13 @@ public class ResourceExplorerDbSql {
         return future.map(mapTrashed);
     }
 
+    /**
+     * Trash resources for a specific user
+     * @param idsToTrashForUser ids of resources to be trashed for a specific user
+     * @param userId id of user trashing the resources
+     * @param trashed whether a resource has to be trashed or restored
+     * @return basic resources info after trash status update
+     */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<IdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
         return client.transaction().compose(transaction->{
             final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForUser(transaction, idsToTrashForUser, userId, trashed);
