@@ -6,8 +6,6 @@ import {
   TransportFrameworkFactory,
 } from "ode-ts-client";
 
-console.log(SessionFrameworkFactory.instance());
-
 export const sessionFramework = SessionFrameworkFactory.instance();
 export const configurationFramework = ConfigurationFrameworkFactory.instance();
 export const notifyFramework = NotifyFrameworkFactory.instance();
@@ -18,5 +16,4 @@ export const { http } = TransportFrameworkFactory.instance();
 export const translate = configurationFramework.Platform.idiom.translate;
 
 // Ode Bootstrap
-
 export const imageBootstrap = "/assets/themes/ode-bootstrap/images";
