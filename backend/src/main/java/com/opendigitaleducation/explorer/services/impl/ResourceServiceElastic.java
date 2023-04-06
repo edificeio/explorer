@@ -93,7 +93,7 @@ public class ResourceServiceElastic implements ResourceService {
                        if(e.succeeded()){
                            final JsonObject results = new JsonObject();
                            for(final ResourceExplorerDbSql.ResouceSql res : e.result()){
-                               results.put(res.entId, res.shared);
+                               results.put(res.entId, res.rights);
                            }
                            message.reply(results);
                        }else{

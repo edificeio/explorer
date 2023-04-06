@@ -104,18 +104,12 @@ public class ResourceExplorerDbSql {
         final String resourceUniqueId = row.getString("resource_unique_id");
         final String application = row.getString("application");
         final String resource_type = row.getString("resource_type");
-        final Object shared = row.getJson("shared");
         final Object mutedBy = row.getJson("muted_by");
         final long version = row.getLong("version");
         final Integer folderId = row.getInteger("folder_id");
         final ResouceSql resource = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version);
         if(folderId != null){
             resource.folders.add(new FolderSql(folderId, userId));
-        }
-        if(shared != null) {
-            if (shared instanceof JsonArray) {
-                resource.shared.addAll((JsonArray) shared);
-            }
         }
         if(mutedBy instanceof JsonObject) {
             resource.mutedBy.mergeIn((JsonObject) mutedBy);
@@ -143,14 +137,6 @@ public class ResourceExplorerDbSql {
             // TODO JBER check if this is not a problem when 2 share messages are executed in the same batch
             // because there is a single upsert per resource so if the messages are presented in a reverse chronological
             // order there could be some loss
-            if(e.getShared() != null &&  !e.getShared().isEmpty()){
-                params.put("shared", e.getShared());
-            }
-            if(e.getMute() != null && !e.getMute().isEmpty()) {
-                params.put("muted_by", e.getMute());
-            } else {
-                params.put("muted_by", new HashMap<>());
-            }
             if(e.getRights() != null &&  !e.getRights().isEmpty()){
                 params.put("rights", e.getRights());
             }
@@ -171,15 +157,15 @@ public class ResourceExplorerDbSql {
         final Map<String, Object> defaultVal = new HashMap<>();
         defaultVal.put("name", "");
         final Collection<JsonObject> resourcesColl = resourcesMap.values();
-        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "shared", "muted_by", "rights");
-        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "shared", "muted_by", "rights");
+        final Tuple tuple = PostgresClient.insertValues(resourcesColl, Tuple.tuple(), defaultVal, "ent_id", "name", "application","resource_type","resource_unique_id", "creator_id", "version", "rights");
+        final String insertPlaceholder = PostgresClient.insertPlaceholders(resourcesColl, 1, "ent_id", "name", "application","resource_type", "resource_unique_id", "creator_id", "version", "rights");
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH upserted AS ( ");
-        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by, rights) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), muted_by=EXCLUDED.muted_by, rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
+        queryTpl.append("  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, rights) ");
+        queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by, upserted.trashed_by, upserted.rights, ");
         queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
@@ -245,14 +231,8 @@ public class ResourceExplorerDbSql {
                 final String resourceUniqueId = row.getString("resource_unique_id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
-                final Object shared = row.getJson("shared");
                 final long version = row.getLong("version");
                 final ResouceSql res = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version);
-                if(shared != null){
-                    if(shared instanceof JsonArray){
-                        res.shared.addAll((JsonArray) shared);
-                    }
-                }
                 resources.add(res);
             }
             return  resources;
@@ -313,7 +293,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("SELECT resources.id as resource_id,resources.ent_id,resources.resource_unique_id, ");
-        queryTpl.append("       resources.creator_id, resources.version, resources.application, resources.resource_type, resources.shared, resources.muted_by, resources.rights, ");
+        queryTpl.append("       resources.creator_id, resources.version, resources.application, resources.resource_type, resources.muted_by, resources.rights, ");
         queryTpl.append("       f.id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM explorer.resources  ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON resources.id=fr.resource_id ");
@@ -324,31 +304,6 @@ public class ResourceExplorerDbSql {
             final Set<ResouceSql> resources = new HashSet<>();
             for(final Row row : rows){
                 resources.add(mapRowToModel(row, Function.identity()));
-            }
-            return  resources;
-        });
-    }
-
-    public Future<Set<ResouceSql>> updateShareById(final Set<Integer> ids, final JsonArray shared){
-        if(ids.isEmpty()){
-            return Future.succeededFuture(new HashSet<>());
-        }
-        final Tuple tuple = Tuple.tuple().addValue((shared));
-        PostgresClient.inTuple(tuple, ids);
-        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 2);
-        final String queryTpl = "UPDATE explorer.resources SET shared = $1 WHERE id IN (%s) RETURNING * ";
-        final String query = String.format(queryTpl, inPlaceholder);
-        return client.preparedQuery(query, tuple).map(rows ->{
-            final Set<ResouceSql> resources = new HashSet<>();
-            for(final Row row : rows){ ;
-                final Integer id = row.getInteger("id");
-                final String entId = row.getString("ent_id");
-                final String creatorId = row.getString("creator_id");
-                final String resourceUniqueId = row.getString("resource_unique_id");
-                final String application = row.getString("application");
-                final String resource_type = row.getString("resource_type");
-                final long version = row.getLong("version");
-                resources.add(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
             }
             return  resources;
         });
@@ -410,7 +365,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("   ON CONFLICT(resource_id, user_id) DO UPDATE SET folder_id=EXCLUDED.folder_id RETURNING * ");
         queryTpl.append(") ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by, upserted.rights, ");
         queryTpl.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM explorer.resources AS upserted ");
         queryTpl.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
@@ -448,7 +403,6 @@ public class ResourceExplorerDbSql {
         final String application = row.getString("application");
         final String resource_type = row.getString("resource_type");
         final Boolean folder_trash = row.getBoolean("folder_trash");
-        final Object shared = row.getJson("shared");
         final Object mutedBy = row.getJson("muted_by");
         final long version = row.getLong("version");
         final Object rights = row.getJson("rights");
@@ -461,11 +415,6 @@ public class ResourceExplorerDbSql {
                 }
             }else{
                 resource.folders.add(new FolderSql(folderId, userId));
-            }
-        }
-        if(shared != null){
-            if(shared instanceof JsonArray){
-                resource.shared.addAll((JsonArray) shared);
             }
         }
         if(mutedBy instanceof JsonObject) {
@@ -571,7 +520,6 @@ public class ResourceExplorerDbSql {
         public final String creatorId;
         //list of all folders
         public final List<FolderSql> folders = new ArrayList<>();
-        public final JsonArray shared = new JsonArray();
         public final JsonObject mutedBy = new JsonObject();
         public final JsonArray rights = new JsonArray();
         public final String entId;
@@ -587,65 +535,6 @@ public class ResourceExplorerDbSql {
 
         public String getEntId() {
             return entId;
-        }
-
-        public Set<String> getSharedUsers(){
-            final Set<String> ids = new HashSet<>();
-            for(final Object row : shared){
-                if(row instanceof JsonObject){
-                    final JsonObject jsonRow = (JsonObject) row;
-                    final String id = jsonRow.getString("userId");
-                    if(id!=null){
-                        ids.add(id);
-                    }
-                }
-            }
-            return ids;
-        }
-        public Set<String> getSharedGroups(){
-            final Set<String> ids = new HashSet<>();
-            for(final Object row : shared){
-                if(row instanceof JsonObject){
-                    final JsonObject jsonRow = (JsonObject) row;
-                    final String id = jsonRow.getString("groupId");
-                    if(id!=null){
-                        ids.add(id);
-                    }
-                }
-            }
-            return ids;
-        }
-
-        public Map<String, Set<String>> getRightsByUser(){
-            final Map<String, Set<String>> all = new HashMap<>();
-            for(final Object row : shared){
-                if(row instanceof JsonObject){
-                    final JsonObject jsonRow = (JsonObject) row;
-                    final String id = jsonRow.getString("userId");
-                    if(id!=null){
-                        final Set<String> rights = new HashSet<>(jsonRow.fieldNames());
-                        rights.remove("userId");
-                        all.put(id, rights);
-                    }
-                }
-            }
-            return all;
-        }
-
-        public Map<String, Set<String>> getRightsForGroup(){
-            final Map<String, Set<String>> all = new HashMap<>();
-            for(final Object row : shared){
-                if(row instanceof JsonObject){
-                    final JsonObject jsonRow = (JsonObject) row;
-                    final String id = jsonRow.getString("groupId");
-                    if(id!=null){
-                        final Set<String> rights = new HashSet<>(jsonRow.fieldNames());
-                        rights.remove("groupId");
-                        all.put(id, rights);
-                    }
-                }
-            }
-            return all;
         }
     }
     public static class FolderSql{
@@ -668,11 +557,11 @@ public class ResourceExplorerDbSql {
     }
 
     private static final String UPSERT_RESOURCE_QUERY = "WITH upserted AS ( " +
-            "  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, shared, muted_by) " +
-            "  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, shared=COALESCE(EXCLUDED.shared, COALESCE(r.shared, '[]')), muted_by=EXCLUDED.muted_by || r.muted_by RETURNING * " +
+            "  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, muted_by) " +
+            "  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, muted_by=EXCLUDED.muted_by || r.muted_by RETURNING * " +
             ")  " +
             "SELECT upserted.id as resource_id,ent_id,resource_unique_id, creator_id, version, " +
-            "       application, resource_type, shared, " +
+            "       application, resource_type, " +
             "       fr.folder_id as folder_id, fr.user_id as user_id, muted_by " +
             "FROM upserted " +
             "LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ";
@@ -681,7 +570,7 @@ public class ResourceExplorerDbSql {
             "SET muted_by = muted_by || $1 " +
             "WHERE ent_id = $2 RETURNING *) " +
             "SELECT updated.id as resource_id,ent_id,resource_unique_id, creator_id, version, " +
-            "       application, resource_type, shared, " +
+            "       application, resource_type, " +
             "       fr.folder_id as folder_id, fr.user_id as user_id, muted_by " +
             "FROM updated " +
             "LEFT JOIN explorer.folder_resources fr ON updated.id=fr.resource_id ";
