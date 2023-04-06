@@ -3,6 +3,7 @@ package com.opendigitaleducation.explorer;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -63,6 +64,9 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
         message.withName(source.getString("name"));
         message.withContent(source.getString("content"), ExplorerMessage.ExplorerContentType.Text);
         message.withContent(source.getString("html"), ExplorerMessage.ExplorerContentType.Html);
+        if(source.containsKey("rights")){
+            message.withShared(new JsonArray(), source.getJsonArray("rights").getList());
+        }
         return Future.succeededFuture(message);
     }
 

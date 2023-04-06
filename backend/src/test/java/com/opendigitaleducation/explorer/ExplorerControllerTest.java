@@ -75,7 +75,7 @@ public class ExplorerControllerTest {
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         final String folderIndex = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
-        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+        final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + System.currentTimeMillis();
         ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, resourceIndex);
         System.out.println("Using index: " + folderIndex + " / " + resourceIndex);

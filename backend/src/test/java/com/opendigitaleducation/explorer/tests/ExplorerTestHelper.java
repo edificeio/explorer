@@ -68,7 +68,7 @@ public class ExplorerTestHelper implements TestRule {
         try {
             final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
             elasticClientManager = new ElasticClientManager(testHelper.vertx(), uris);
-            resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + System.currentTimeMillis();
+            resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + System.currentTimeMillis();
             logger.info("Using index: " + resourceIndex);
             ExplorerPluginMetricsFactory.init(testHelper.vertx(), new JsonObject());
             IngestJobMetricsRecorderFactory.init(testHelper.vertx(), new JsonObject());
