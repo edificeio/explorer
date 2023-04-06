@@ -210,8 +210,8 @@ public class MessageIngesterPostgres implements MessageIngester {
         }
         mess.getMessage().put("folderIds", new JsonArray(new ArrayList(folderIds)));
         mess.getMessage().put("usersForFolderIds", new JsonArray(new ArrayList(usersForFolderIds)));
-        if(resSql.shared != null && resSql.rights != null){
-            mess.withShared(resSql.shared, new ArrayList<>(resSql.rights.getList()));
+        if(resSql.rights != null){
+            mess.withShared(new JsonArray(), new ArrayList<>(resSql.rights.getList()));
         }
         if(resSql.creatorId != null && ! resSql.creatorId.isEmpty()){
             mess.withCreatorId(resSql.creatorId);
