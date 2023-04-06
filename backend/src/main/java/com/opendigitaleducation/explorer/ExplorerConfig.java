@@ -19,8 +19,9 @@ public class ExplorerConfig {
     public static final String FOLDER_APPLICATION = "explorer";
     public static final String FOLDER_TYPE = "folder";
     public static final String DEFAULT_FOLDER_INDEX = "folder";
-    public static final String DEFAULT_RESOURCE_INDEX = "resource";
+    public static final String DEFAULT_RESOURCE_INDEX = "resource-";
     public static final Integer DEFAULT_SIZE = 10000;
+    protected Optional<String> prefixIndex = Optional.empty();
     protected JsonObject esIndexes = new JsonObject();
     protected boolean skipIndexOfTrashedFolders;
 
@@ -43,8 +44,9 @@ public class ExplorerConfig {
         return this;
     }
 
-    public static String getDefaultIndexName(final String application){
-        return DEFAULT_RESOURCE_INDEX+"_"+application;
+    public String getDefaultIndexName(final String application){
+        final String prefix = this.prefixIndex.orElse(DEFAULT_RESOURCE_INDEX);
+        return prefix + application;
     }
 
     public String getIndex(final String application){
@@ -67,5 +69,10 @@ public class ExplorerConfig {
 
     public Set<String> getApplications() {
         return esIndexes.fieldNames();
+    }
+
+    public ExplorerConfig setEsPrefix(final String prefix) {
+        this.prefixIndex = Optional.ofNullable(prefix);
+        return this;
     }
 }

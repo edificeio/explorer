@@ -303,6 +303,7 @@ public class ResourceServiceElastic implements ResourceService {
             return Future.succeededFuture(new JsonArray());
         }
         //CHECK IF HAVE MANAGE RIGHTS
+        //TODO we could make one call instead of making 2: count + search => only search and assert non empty
         final ResourceSearchOperation search = new ResourceSearchOperation().setIds(id).setSearchEverywhere(true).setRightType(ShareRoles.Manager);
         final Future<Integer> futureCheck = count(user, application, search);
         return futureCheck.compose(count-> {
@@ -310,7 +311,7 @@ public class ResourceServiceElastic implements ResourceService {
                 return Future.failedFuture("resource.delete.id.invalid");
             }
             final String index = getIndex(application);
-            final JsonObject payload = new ResourceQueryElastic(user).withId(id).getSearchQuery();
+            final JsonObject payload = new ResourceQueryElastic(user).withSearchOperation(search).getSearchQuery();
             final ElasticClient.ElasticOptions optios = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
             return manager.getClient().search(index, payload, optios).compose(e -> {
                 final List<JsonObject> jsons = e.stream().map(j -> (JsonObject) j).collect(Collectors.toList());

@@ -232,7 +232,13 @@ public class ResourceExplorerDbSql {
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
                 final long version = row.getLong("version");
+                final Object rights = row.getJson("rights");
                 final ResouceSql res = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version);
+                if(rights != null) {
+                    if (rights instanceof JsonArray) {
+                        res.rights.addAll((JsonArray) rights);
+                    }
+                }
                 resources.add(res);
             }
             return  resources;
