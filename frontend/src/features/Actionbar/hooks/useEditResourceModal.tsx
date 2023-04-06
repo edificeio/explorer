@@ -47,7 +47,6 @@ export default function useEditResourceModal({
   const id = useId();
 
   const handleUploadImage = (preview: Record<string, string>) => {
-    console.log(cover);
     setCover(preview as any);
   };
 
