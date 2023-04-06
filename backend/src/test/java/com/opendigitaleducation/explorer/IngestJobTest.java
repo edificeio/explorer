@@ -66,7 +66,7 @@ public abstract class IngestJobTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
-        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + "_" + currentTimeMillis();
+        esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + currentTimeMillis();
         IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
@@ -333,8 +333,10 @@ public abstract class IngestJobTest {
         }).onComplete(context.asyncAssertSuccess(r -> {
             System.out.println("end of shouldExploreResourceByShare");
             getExplorerPlugin().getShareInfo(new HashSet<>(Arrays.asList("idshare1","idshare2","idshare3"))).onComplete(context.asyncAssertSuccess(e->{
-                context.assertEquals(1, e.get("idshare1").size());
-                context.assertEquals(6, e.get("idshare2").size());
+                // 1 user (user2) * 3 roles
+                context.assertEquals(3, e.get("idshare1").size());
+                // 6 groups * 3 roles
+                context.assertEquals(18, e.get("idshare2").size());
                 context.assertEquals(0, e.get("idshare3").size());
                 async.countDown();
             }));

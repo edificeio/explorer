@@ -82,6 +82,7 @@ public class Explorer extends BaseServer {
         //set skip folder
         ExplorerConfig.getInstance().setSkipIndexOfTrashedFolders(config.getBoolean(DELETE_FOLDER_CONFIG, DELETE_FOLDER_CONFIG_DEFAULT));
         //init indexes
+        ExplorerConfig.getInstance().setEsPrefix(config.getString("index-prefix", ExplorerConfig.DEFAULT_RESOURCE_INDEX));
         ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
         if(config.getBoolean("create-index", true)) {
             //create elastic schema if needed
