@@ -5,15 +5,16 @@ import com.opendigitaleducation.explorer.ingest.MessageTransformer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.entcore.common.explorer.ExplorerMessage.CONTENT_HTML_KEY;
-import static org.entcore.common.explorer.ExplorerMessage.CONTENT_KEY;
+import static org.entcore.common.explorer.ExplorerMessage.*;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.util.List;
 
 public class HtmlAnalyserMessageTransformer implements MessageTransformer {
-
     public static final int DEFAULT_MIN_LENGTH = 8500;
     /**
      * Minimum length (bound excluded) of contentHtml to be processed by this analyser.
@@ -40,7 +41,7 @@ public class HtmlAnalyserMessageTransformer implements MessageTransformer {
                 messageMessage.put(CONTENT_KEY, parseHtml(contentHtml));
                 messageMessage.remove(CONTENT_HTML_KEY);
             }
-            final JsonArray subResources = message.getMessage().getJsonArray("subresrouces");
+            final JsonArray subResources = message.getMessage().getJsonArray(SUBRESOURCES_KEY);
             if(subResources != null) {
                 for (final Object element : subResources) {
                     final JsonObject subresource = (JsonObject) element;

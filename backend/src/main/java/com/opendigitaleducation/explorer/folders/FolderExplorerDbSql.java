@@ -207,7 +207,7 @@ public class FolderExplorerDbSql {
                         upsertQuery.append("     ON CONFLICT(user_id,resource_id) DO NOTHING RETURNING * ");
                         upsertQuery.append(") ");
                         upsertQuery.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-                        upsertQuery.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.rights, ");
+                        upsertQuery.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by, upserted.rights, ");
                         upsertQuery.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
                         upsertQuery.append("FROM explorer.resources AS upserted ");
                         upsertQuery.append("INNER JOIN updated ON updated.resource_id=upserted.id ");

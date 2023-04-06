@@ -196,7 +196,7 @@ public class MongoPluginTest {
                             final JsonObject first0 = fetch.getJsonObject(0);
                             final Set<String> ids = new HashSet<>();
                             ids.add(first0.getString("assetId"));
-                            context.assertEquals(first0.getJsonArray("shared", new JsonArray()).size(), 0);
+                            context.assertEquals(first0.getJsonArray("rights", new JsonArray()).size(), 0);
                             pluginClient.shareByIds(user, ids, shareUser).onComplete(context.asyncAssertSuccess(r1 -> {
                                 context.assertEquals(r1.notifyTimelineMap.size(), 1);
                                 plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r3 -> {
@@ -205,7 +205,7 @@ public class MongoPluginTest {
                                             resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch1 -> {
                                                 context.assertEquals(1, fetch1.size());
                                                 final JsonObject first = fetch1.getJsonObject(0);
-                                                context.assertEquals(first.getJsonArray("shared").size(), 1);
+                                                context.assertEquals(first.getJsonArray("rights").size(), 1);
                                                 async.complete();
                                             }));
                                         }));
@@ -304,7 +304,7 @@ public class MongoPluginTest {
         final String idResource = "reindex1" + currentTimeMillis();
         final JsonObject f1 = resource(idResource, user.getUserId()).put("id", idResource);
         final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Read.key, true);
-        f1.put("shared", new JsonArray().add(share));
+        f1.put("rights", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
@@ -331,7 +331,7 @@ public class MongoPluginTest {
         final UserInfos user3 = test.directory().generateUser("user_trash3_manage");
         final JsonObject f1 = resource("reindex1", user.getUserId()).put("id", "reindex1");
         final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Manager.key, true).put(ShareRoles.Read.key, true);
-        f1.put("shared", new JsonArray().add(share));
+        f1.put("rights", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.create(user, Arrays.asList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
@@ -361,7 +361,7 @@ public class MongoPluginTest {
         final String idResource = "reindex2" + currentTimeMillis();
         final JsonObject f1 = resource(idResource, user.getUserId()).put("id", idResource);
         final JsonObject share = new JsonObject().put("userId", user3.getUserId()).put(ShareRoles.Manager.key, true).put(ShareRoles.Read.key, true);
-        f1.put("shared", new JsonArray().add(share));
+        f1.put("rights", new JsonArray().add(share));
         final Async async = context.async(2);
         plugin.start();
         plugin.create(user, singletonList(f1), false).onComplete(context.asyncAssertSuccess(r -> {
