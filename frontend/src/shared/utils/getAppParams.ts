@@ -1,11 +1,11 @@
 import {
   APP,
-  type BooleanFilterType,
-  type SortByType,
   type App,
   type ResourceType,
+  type IAction,
+  type IFilter,
+  type IOrder,
 } from "ode-ts-client";
-import { type ShareRightActionDisplayNameExt } from "ode-ts-client/dist/services/ShareService";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
 let _appParams: AppParams;
@@ -48,33 +48,4 @@ export interface AppParams {
   filters: IFilter[];
   orders: IOrder[];
   actions: IAction[];
-}
-export type IActionType =
-  | "open"
-  | "edit"
-  | "create"
-  | "createPublic"
-  | "move"
-  | "delete"
-  | "publish"
-  | "print"
-  | "share";
-export interface IAction {
-  id: IActionType;
-  available: boolean;
-  target?: "actionbar" | "tree";
-  workflow: string;
-  right?: ShareRightActionDisplayNameExt;
-}
-
-export interface IOrder {
-  id: SortByType;
-  i18n: string;
-  defaultValue?: boolean;
-}
-
-export interface IFilter {
-  id: BooleanFilterType | string;
-  defaultValue?: string | string[] | boolean | boolean[];
-  values?: string[];
 }

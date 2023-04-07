@@ -162,13 +162,13 @@ export default function useActionBar() {
 
   const trashActions: IAction[] = [
     {
-      id: ACTION.DELETE,
+      id: ACTION.RESTORE,
       available: true,
       target: "actionbar",
       workflow: "",
     },
     {
-      id: ACTION.RESTORE,
+      id: ACTION.DELETE,
       available: true,
       target: "actionbar",
       workflow: "",
