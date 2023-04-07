@@ -3,12 +3,7 @@ import { type TreeNode } from "@ode-react-ui/advanced";
 import { type OdeProviderParams } from "@ode-react-ui/core";
 import { translate } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
-import {
-  getAppParams,
-  type IAction,
-  type IOrder,
-  type IFilter,
-} from "@shared/utils/getAppParams";
+import { getAppParams } from "@shared/utils/getAppParams";
 import { moveNode } from "@shared/utils/moveNode";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
@@ -23,6 +18,9 @@ import {
   type IFolder,
   type IActionResult,
   odeServices,
+  type IAction,
+  type IFilter,
+  type IOrder,
 } from "ode-ts-client";
 import { type StateCreator } from "zustand";
 
