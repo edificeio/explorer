@@ -175,7 +175,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("  VALUES %s ON CONFLICT(resource_unique_id) DO UPDATE SET name=EXCLUDED.name, version=EXCLUDED.version, creator_id=COALESCE(NULLIF(EXCLUDED.creator_id,''), NULLIF(r.creator_id, ''), ''), shared=COALESCE(EXCLUDED.shared, r.shared, '[]'), rights=COALESCE(EXCLUDED.rights, r.rights, '[]') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.shared, upserted.muted_by, upserted.trashed_by, upserted.rights, ");
         queryTpl.append("       fr.folder_id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM upserted ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON upserted.id=fr.resource_id ");
@@ -445,6 +445,8 @@ public class ResourceExplorerDbSql {
         final String resource_type = row.getString("resource_type");
         final Boolean folder_trash = row.getBoolean("folder_trash");
         final Object shared = row.getJson("shared");
+        final Object mutedBy = row.getJson("muted_by");
+        final Object trashedBy = row.getJson("trashed_by");
         final long version = row.getLong("version");
         final Object rights = row.getJson("rights");
         final ResouceSql resource = getOrCreate.apply(new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version));
@@ -462,6 +464,12 @@ public class ResourceExplorerDbSql {
             if(shared instanceof JsonArray){
                 resource.shared.addAll((JsonArray) shared);
             }
+        }
+        if(mutedBy instanceof JsonObject) {
+            resource.mutedBy.mergeIn((JsonObject) mutedBy);
+        }
+        if(trashedBy instanceof JsonObject) {
+            resource.trashedBy.mergeIn((JsonObject) trashedBy);
         }
         if(rights != null){
             if(rights instanceof JsonArray){
