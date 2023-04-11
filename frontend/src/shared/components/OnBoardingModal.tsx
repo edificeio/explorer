@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-import { Modal, Button, Image, useOdeClient } from "@ode-react-ui/core";
+import {
+  Modal,
+  Button,
+  Image,
+  useOdeClient,
+  LoadingScreen,
+} from "@ode-react-ui/core";
 import { useToggle } from "@ode-react-ui/hooks";
 import { imageBootstrap } from "@shared/constants";
 import { odeServices } from "ode-ts-client";
+import { createPortal } from "react-dom";
 import { Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
-
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -44,127 +49,144 @@ export function OnBoardingTrash(): JSX.Element | null {
         "showOnboardingTrash",
         JSON.stringify({ showOnboardingTrash: false }),
       );
-    toggle(false);
+    toggle();
     return result;
   }
 
   const handleCloseModal = () => {
-    toggle(false);
+    toggle();
   };
 
-  return isOnboardingTrash ? (
-    <Modal
-      id="TrashModal"
-      onModalClose={handleCloseModal}
-      size="md"
-      isOpen={isOpen}
-    >
-      <Modal.Header onModalClose={handleCloseModal}>
-        {i18n("explorer.modal.onboarding.trash.title")}
-      </Modal.Header>
-      <Modal.Body>
-        <Swiper
-          modules={[Pagination]}
-          onSwiper={(swiper) => {
-            setSwiperInstance(swiper);
-          }}
-          onSlideChange={(swiper) => {
-            setSwiperprogress(swiper.progress);
-          }}
-          pagination={{
-            clickable: true,
-          }}
-        >
-          <SwiperSlide>
-            <Modal.Subtitle>
-              {i18n("explorer.modal.onboarding.trash.screen1.title")}
-            </Modal.Subtitle>
-            <Image
-              width="auto"
-              height="auto"
-              className="mx-auto my-12"
-              loading="lazy"
-              src={`${imageBootstrap}/onboarding/corbeille-gif.gif`}
-              alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
-            />
-            <p>{i18n("explorer.modal.onboarding.trash.screen1.subtitle1")}</p>
-            <ul>
-              <li>
-                {i18n("explorer.modal.onboarding.trash.screen1.subtitle2")}
-              </li>
-              <li>
-                {i18n("explorer.modal.onboarding.trash.screen1.subtitle3")}
-              </li>
-            </ul>
-          </SwiperSlide>
-          <SwiperSlide>
-            <Modal.Subtitle>
-              {i18n("explorer.modal.onboarding.trash.screen2.title")}
-            </Modal.Subtitle>
-            <Image
-              width="270"
-              height="140"
-              className="mx-auto"
-              loading="lazy"
-              src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
-              alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
-            />
-            <p>{i18n("explorer.modal.onboarding.trash.screen2.subtitle")}</p>
-          </SwiperSlide>
-          <SwiperSlide>
-            <Image
-              width="270"
-              height="140"
-              className="mx-auto"
-              loading="lazy"
-              src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
-              alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
-            />
-            <p>{i18n("explorer.modal.onboarding.trash.screen3.subtitle")}</p>
-          </SwiperSlide>
-        </Swiper>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          type="button"
-          color="tertiary"
-          variant="ghost"
-          onClick={handleCloseModal}
-        >
-          {i18n("explorer.modal.onboarding.trash.later")}
-        </Button>
+  return isOnboardingTrash && isOpen
+    ? createPortal(
+        <Suspense fallback={<LoadingScreen />}>
+          <Modal
+            id="TrashModal"
+            onModalClose={handleCloseModal}
+            size="md"
+            isOpen={isOpen}
+            focusId="nextButtonId"
+          >
+            <Modal.Header onModalClose={handleCloseModal}>
+              {i18n("explorer.modal.onboarding.trash.title")}
+            </Modal.Header>
+            <Modal.Body>
+              <Swiper
+                modules={[Pagination]}
+                onSwiper={(swiper) => {
+                  setSwiperInstance(swiper);
+                }}
+                onSlideChange={(swiper) => {
+                  setSwiperprogress(swiper.progress);
+                }}
+                pagination={{
+                  clickable: true,
+                }}
+              >
+                <SwiperSlide>
+                  <Modal.Subtitle>
+                    {i18n("explorer.modal.onboarding.trash.screen1.title")}
+                  </Modal.Subtitle>
+                  <Image
+                    width="auto"
+                    height="auto"
+                    className="mx-auto my-12"
+                    loading="lazy"
+                    src={`${imageBootstrap}/onboarding/corbeille-gif.gif`}
+                    alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
+                  />
+                  <p>
+                    {i18n("explorer.modal.onboarding.trash.screen1.subtitle1")}
+                  </p>
+                  <ul>
+                    <li>
+                      {i18n(
+                        "explorer.modal.onboarding.trash.screen1.subtitle2",
+                      )}
+                    </li>
+                    <li>
+                      {i18n(
+                        "explorer.modal.onboarding.trash.screen1.subtitle3",
+                      )}
+                    </li>
+                  </ul>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Modal.Subtitle>
+                    {i18n("explorer.modal.onboarding.trash.screen2.title")}
+                  </Modal.Subtitle>
+                  <Image
+                    width="270"
+                    height="140"
+                    className="mx-auto"
+                    loading="lazy"
+                    src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
+                    alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
+                  />
+                  <p>
+                    {i18n("explorer.modal.onboarding.trash.screen2.subtitle")}
+                  </p>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Image
+                    width="270"
+                    height="140"
+                    className="mx-auto"
+                    loading="lazy"
+                    src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
+                    alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
+                  />
+                  <p>
+                    {i18n("explorer.modal.onboarding.trash.screen3.subtitle")}
+                  </p>
+                </SwiperSlide>
+              </Swiper>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                type="button"
+                color="tertiary"
+                variant="ghost"
+                onClick={handleCloseModal}
+              >
+                {i18n("explorer.modal.onboarding.trash.later")}
+              </Button>
 
-        {swiperProgress > 0 && (
-          <Button
-            type="button"
-            color="primary"
-            variant="outline"
-            onClick={() => swiperInstance.slidePrev()}
-          >
-            {i18n("explorer.modal.onboarding.trash.prev")}
-          </Button>
-        )}
-        {swiperProgress < 1 && (
-          <Button
-            type="button"
-            color="primary"
-            variant="filled"
-            onClick={() => swiperInstance.slideNext()}
-          >
-            {i18n("explorer.modal.onboarding.trash.next")}
-          </Button>
-        )}
-        {swiperProgress === 1 && (
-          <Button
-            type="button"
-            color="primary"
-            variant="filled"
-            onClick={setOnboardingTrash}
-          >
-            {i18n("explorer.modal.onboarding.trash.close")}
-          </Button>
-        )}
-      </Modal.Footer>
-    </Modal>
-  ) : null;
+              {swiperProgress > 0 && (
+                <Button
+                  type="button"
+                  color="primary"
+                  variant="outline"
+                  onClick={() => swiperInstance.slidePrev()}
+                >
+                  {i18n("explorer.modal.onboarding.trash.prev")}
+                </Button>
+              )}
+              {swiperProgress < 1 && (
+                <Button
+                  id="nextButtonId"
+                  type="button"
+                  color="primary"
+                  variant="filled"
+                  onClick={() => swiperInstance.slideNext()}
+                >
+                  {i18n("explorer.modal.onboarding.trash.next")}
+                </Button>
+              )}
+              {swiperProgress === 1 && (
+                <Button
+                  type="button"
+                  color="primary"
+                  variant="filled"
+                  onClick={setOnboardingTrash}
+                >
+                  {i18n("explorer.modal.onboarding.trash.close")}
+                </Button>
+              )}
+            </Modal.Footer>
+          </Modal>
+        </Suspense>,
+        document.getElementById("portal") as HTMLElement,
+      )
+    : null;
 }
