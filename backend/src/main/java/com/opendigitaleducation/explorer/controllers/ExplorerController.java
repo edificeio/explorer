@@ -525,6 +525,7 @@ public class ExplorerController extends BaseController {
         final String app = request.params().get("application");
         final String type = request.params().get("type");
         final String drop = request.params().get("drop");
+        final String dropfolder = request.params().get("dropfolder");
         final IExplorerPluginClient client =  IExplorerPluginClient.withBus(vertx, app, type);
         UserUtils.getUserInfos(eb, request, user -> {
             if (user == null) {
@@ -537,7 +538,11 @@ public class ExplorerController extends BaseController {
             final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
             try {
                 final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropMapping(app).compose(e->{
-                    return resourceService.initMapping(app);
+                    return resourceService.initMapping(app).compose(onInitMappingApp -> {
+                        return "true".equals(dropfolder)? resourceService.dropMapping(ExplorerConfig.FOLDER_APPLICATION).compose(onDropMappingFolder->{
+                            return resourceService.initMapping(ExplorerConfig.FOLDER_APPLICATION);
+                        }) :  Future.succeededFuture();
+                    });
                 }) :  Future.succeededFuture();
                 final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
                 final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();
