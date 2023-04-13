@@ -1,0 +1,19 @@
+{
+  "name": "tarteaucitron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "pkg": "pkg index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.6.0",
+    "@opensearch-project/opensearch": "^2.2.0",
+    "minimist": "^1.2.8",
+    "mongodb": "^4.15.0",
+    "node-fetch": "^2.0.0",
+    "pg": "^8.10.0"
+  }
+}
