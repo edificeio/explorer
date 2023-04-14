@@ -25,9 +25,11 @@
       "@features/*": ["./features/*"],
       "@hooks/*": ["./hooks/*"],
       "@pages/*": ["./pages/*"],
+      "@queries/*": ["./queries/*"],
+      "@services/*": ["./services/*"],
       "@shared/*": ["./shared/*"],
-      "@store/*": ["./store/*"],
+      "@store/*": ["./store/*"]
     }
   },
-  "include": ["src", "config", "./vite.config.ts"],
+  "include": ["src", "config", "./vite.config.ts"]
 }

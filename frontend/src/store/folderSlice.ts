@@ -132,11 +132,6 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer update failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.update.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   openFolder: async (folderId: string) => {
@@ -155,6 +150,10 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
         selectedNodeIds,
         searchParams: {
           ...searchParams,
+          pagination: {
+            ...searchParams.pagination,
+            startIdx: 0,
+          },
           filters: {
             ...searchParams.filters,
             folder: folderId,
@@ -192,11 +191,6 @@ export const createFolderSlice: StateCreator<State, [], [], FolderSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer reload failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.reload.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   gotoPreviousFolder: async () => {

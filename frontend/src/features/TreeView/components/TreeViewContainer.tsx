@@ -4,7 +4,9 @@ import { TreeView } from "@ode-react-ui/advanced";
 import { Button, LoadingScreen, useOdeClient } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
+import { useInvalidateQueries } from "@queries/index";
 import useExplorerStore from "@store/index";
+import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER } from "ode-ts-client";
 
 import TrashButton from "./TrashButton";
@@ -14,21 +16,29 @@ const CreateModal = lazy(
 );
 
 export const TreeViewContainer = () => {
+  const [isCreateFolderModalOpen, toggle] = useModal();
+
   const { i18n } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const {
-    foldTreeItem,
-    getIsTrashSelected,
-    gotoTrash,
-    selectedNodeIds,
-    selectTreeItem,
-    treeData,
-    unfoldTreeItem,
-  } = useExplorerStore((state) => state);
+  const selectedNodeIds = useExplorerStore((state) => state.selectedNodeIds);
+  const treeData = useExplorerStore((state) => state.treeData);
 
-  const [isCreateFolderModalOpen, toggle] = useModal();
+  const foldTreeItem = useExplorerStore((state) => state.foldTreeItem);
+  const getIsTrashSelected = useExplorerStore(
+    (state) => state.getIsTrashSelected,
+  );
+  const gotoTrash = useExplorerStore((state) => state.gotoTrash);
+  const selectTreeItem = useExplorerStore((state) => state.selectTreeItem);
+  const unfoldTreeItem = useExplorerStore((state) => state.unfoldTreeItem);
+  const getCurrentFolderId = useExplorerStore(
+    (state) => state.getCurrentFolderId,
+  );
+
+  const queryClient = useQueryClient();
+
+  const { removeQueries } = useInvalidateQueries(queryClient, gotoTrash);
 
   return (
     <>
@@ -42,10 +52,11 @@ export const TreeViewContainer = () => {
       <TrashButton
         id={FOLDER.BIN}
         selected={getIsTrashSelected()}
-        onSelect={gotoTrash}
+        onSelect={removeQueries}
       />
       <div className="d-grid my-16">
         <Button
+          disabled={getCurrentFolderId() === FOLDER.BIN}
           type="button"
           color="primary"
           variant="outline"

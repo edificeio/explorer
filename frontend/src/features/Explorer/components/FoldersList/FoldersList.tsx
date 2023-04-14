@@ -1,6 +1,7 @@
 import { Card, useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import useExplorerStore from "@store/index";
+import { useQueryClient } from "@tanstack/react-query";
 import { type IFolder } from "ode-ts-client";
 
 export default function FoldersList() {
@@ -26,6 +27,8 @@ export default function FoldersList() {
     to: { opacity: 1 },
   });
 
+  const queryClient = useQueryClient();
+
   return folders.length && !getIsTrashSelected() ? (
     <animated.ul className="grid ps-0 list-unstyled">
       {folders.map((folder: IFolder) => {
@@ -43,7 +46,13 @@ export default function FoldersList() {
               name={name}
               isFolder
               isSelected={isFolderSelected(folder)}
-              onOpen={async () => await openFolder(id)}
+              onOpen={async () => {
+                queryClient.removeQueries({
+                  queryKey: ["resources"],
+                  exact: true,
+                });
+                await openFolder(id);
+              }}
               onSelect={() => toggleSelect(folder)}
             />
           </animated.li>

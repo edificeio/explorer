@@ -1,9 +1,13 @@
+import React, { useEffect } from "react";
+
 import { Card, useOdeClient } from "@ode-react-ui/core";
-import { useSpring, animated } from "@react-spring/web";
+import { useInfiniteContext } from "@queries/index";
+import { useSpring, animated, useInView } from "@react-spring/web";
+import LoadMore from "@shared/components/LoadMore";
 import useExplorerStore from "@store/index";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { type IResource } from "ode-ts-client";
+import { FOLDER, type IResource } from "ode-ts-client";
 
 import "dayjs/locale/de";
 import "dayjs/locale/es";
@@ -18,8 +22,55 @@ export default function ResourcesList(): JSX.Element | null {
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const { resources, openResource, deselect, select, isResourceSelected } =
-    useExplorerStore((state) => state);
+  const searchParams = useExplorerStore((state) => state.searchParams);
+  const setResources = useExplorerStore((state) => state.setResources);
+  const openResource = useExplorerStore((state) => state.openResource);
+  const select = useExplorerStore((state) => state.select);
+  const deselect = useExplorerStore((state) => state.deselect);
+  const isResourceSelected = useExplorerStore(
+    (state) => state.isResourceSelected,
+  );
+  const updateSearchParams = useExplorerStore(
+    (state) => state.updateSearchParams,
+  );
+
+  const getCurrentFolderId = useExplorerStore(
+    (state) => state.getCurrentFolderId,
+  );
+
+  const currentMaxIdx =
+    searchParams.pagination.startIdx + searchParams.pagination.pageSize - 1;
+  const hasMoreResources =
+    currentMaxIdx < (searchParams.pagination.maxIdx || 0);
+
+  const { data, fetchNextPage, isFetching } = useInfiniteContext({
+    searchParams: {
+      ...searchParams,
+      trashed: getCurrentFolderId() === FOLDER.BIN,
+    },
+    onSuccess: (data: any) => {
+      const { pagination, resources } = data.pages[data.pages.length - 1];
+
+      updateSearchParams({
+        ...searchParams,
+        pagination,
+      });
+      setResources(resources);
+    },
+  });
+
+  const [ref, inView] = useInView();
+
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage();
+    }
+  });
+
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  });
 
   function toggleSelect(resource: IResource) {
     if (isResourceSelected(resource)) {
@@ -33,46 +84,52 @@ export default function ResourcesList(): JSX.Element | null {
     return shared && shared.length >= 1;
   }
 
-  const springs = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-  });
+  console.log(getCurrentFolderId());
 
-  return resources.length ? (
-    <animated.ul className="grid ps-0 list-unstyled mt-24">
-      {resources.map((resource: IResource) => {
-        const { assetId, creatorName, name, thumbnail, updatedAt, shared } =
-          resource;
+  return (
+    <React.Fragment>
+      <animated.ul className="grid ps-0 list-unstyled mt-24">
+        {data?.pages.map((page, index) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <React.Fragment key={index}>
+            {page.resources.map((resource) => {
+              const { id, creatorName, name, thumbnail, updatedAt, shared } =
+                resource;
 
-        const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
+              const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
 
-        return (
-          <animated.li
-            className="g-col-4"
-            key={assetId}
-            style={{
-              ...springs,
-            }}
-          >
-            <Card
-              app={app}
-              className="c-pointer"
-              creatorName={creatorName}
-              isPublic={resource.public}
-              isSelected={isResourceSelected(resource)}
-              isShared={resourceIsShared(shared)}
-              name={name}
-              onOpen={async () => openResource(resource)}
-              onSelect={() => toggleSelect(resource)}
-              resourceSrc={thumbnail}
-              updatedAt={time}
-              userSrc={session?.avatarUrl}
-              messagePublic={i18n("tooltip.public")}
-              messageShared={i18n("tooltip.shared")}
-            />
-          </animated.li>
-        );
-      })}
-    </animated.ul>
-  ) : null;
+              return (
+                <animated.li
+                  className="g-col-4"
+                  key={id}
+                  style={{
+                    ...springs,
+                  }}
+                >
+                  <Card
+                    app={app}
+                    className="c-pointer"
+                    creatorName={creatorName}
+                    isLoading={isFetching}
+                    isPublic={resource.public}
+                    isSelected={isResourceSelected(resource)}
+                    isShared={resourceIsShared(shared)}
+                    messagePublic={i18n("tooltip.public")}
+                    messageShared={i18n("tooltip.shared")}
+                    name={name}
+                    onOpen={async () => openResource(resource)}
+                    onSelect={() => toggleSelect(resource)}
+                    resourceSrc={thumbnail}
+                    updatedAt={time}
+                    userSrc={session?.avatarUrl}
+                  />
+                </animated.li>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </animated.ul>
+      {hasMoreResources && <LoadMore ref={ref} />}
+    </React.Fragment>
+  );
 }

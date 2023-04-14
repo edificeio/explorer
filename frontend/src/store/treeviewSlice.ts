@@ -73,7 +73,17 @@ export const createTreeviewSlice: StateCreator<State, [], [], TreeviewSlice> = (
     // select and open folder
     const { openFolder } = get();
     set((state) => {
-      return { ...state, status: "select" };
+      return {
+        ...state,
+        searchParams: {
+          ...state.searchParams,
+          pagination: {
+            ...state.searchParams.pagination,
+            startIdx: 0,
+          },
+        },
+        status: "select",
+      };
     });
     openFolder(folderId);
   },
