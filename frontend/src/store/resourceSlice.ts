@@ -1,6 +1,4 @@
-import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
-  FOLDER,
   type IResource,
   type IFolder,
   type UpdateParameters,
@@ -22,14 +20,13 @@ export interface ResourceSlice {
   createResource: () => Promise<void>;
   updateResource: (params: UpdateParameters) => Promise<void>;
   isResourceSelected: (res: IResource) => boolean;
-  getMoreResources: () => Promise<void>;
-  // getHasResources: () => boolean;
   getSelectedIResources: () => IResource[];
   getSelectedIFolders: () => IFolder[];
   shareResource: (
     entId: string,
     shares: ShareRight[],
   ) => Promise<PutShareResponse>;
+  setResources: (data: any) => void;
 }
 
 // https://docs.pmnd.rs/zustand/guides/typescript#slices-pattern
@@ -45,17 +42,19 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
       const { searchParams, getCurrentFolderId } = get();
       const folderId = parseInt(getCurrentFolderId()!);
       const safeFolderId = isNaN(folderId) ? undefined : folderId;
-      odeServices.resource(searchParams.app).gotoForm(safeFolderId);
+      odeServices
+        .resource(searchParams.app)
+        .gotoForm(safeFolderId as string | undefined);
     } catch (error) {
       // if failed push error
       console.error("explorer create failed: ", error);
-      /*  addNotification(
-        { type: "error", message: "explorer.create.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
+  setResources: (data: any) =>
+    set((state) => ({
+      ...state,
+      resources: [...state.resources, ...data],
+    })),
   updateResource: async (params: UpdateParameters) => {
     const { searchParams } = get();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,20 +88,13 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
     });
   },
   openResource: (resource: IResource) => {
-    if (resource.trashed) {
-      return;
-    }
+    if (resource.trashed) return;
     try {
       const { searchParams } = get();
       odeServices.resource(searchParams.app).gotoView(resource.assetId);
     } catch (error) {
       // if failed push error
       console.error("explorer open failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.open.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   openSelectedResource: async () => {
@@ -118,11 +110,6 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
     } catch (error) {
       // if failed push error
       console.error("explorer open failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.open.failed" },
-        toastDelay,
-        set,
-      ); */
     }
   },
   printSelectedResource: () => {
@@ -149,54 +136,7 @@ export const createResourceSlice: StateCreator<State, [], [], ResourceSlice> = (
     const { selectedResources } = get();
     return selectedResources.includes(resource.id);
   },
-  getMoreResources: async () => {
-    try {
-      const { searchParams: searchParamsOrig, getCurrentFolderId } = get();
-      const searchParams = { ...searchParamsOrig };
-      const { pagination: oldPagination } = searchParams;
-      // set new start idx and check maxidx
-      oldPagination.startIdx = oldPagination.startIdx + oldPagination.pageSize;
-      if (
-        typeof oldPagination.maxIdx !== "undefined" &&
-        oldPagination.startIdx > oldPagination.maxIdx
-      ) {
-        oldPagination.startIdx = oldPagination.maxIdx;
-      }
-      // call backend
-      const trashed = getCurrentFolderId() === FOLDER.BIN;
-      const { folders, resources, pagination } = await odeServices
-        .resource(searchParams.app)
-        .searchContext({ ...searchParams, trashed });
-      const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
-      const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
 
-      set((state) => {
-        return {
-          ...state,
-          folders,
-          resources: [...state.resources, ...resources],
-          treeData: wrapTreeNode(
-            state.treeData,
-            folders,
-            searchParams.filters.folder || FOLDER.DEFAULT,
-          ),
-          searchParams: {
-            ...state.searchParams,
-            pagination,
-          },
-          hasMoreResources,
-        };
-      });
-    } catch (error) {
-      // if failed push error
-      console.error("explorer getmore failed: ", error);
-      /* addNotification(
-        { type: "error", message: "explorer.getmore.failed" },
-        toastDelay,
-        set,
-      ); */
-    }
-  },
   getSelectedIResources(): IResource[] {
     const { selectedResources, resources } = get();
     return resources.filter((resource: IResource) =>

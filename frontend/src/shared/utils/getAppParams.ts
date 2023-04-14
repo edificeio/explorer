@@ -8,7 +8,9 @@ import {
 } from "ode-ts-client";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
+
 let _appParams: AppParams;
+
 export function getAppParams(): AppParams {
   if (_appParams) {
     return _appParams;

@@ -174,6 +174,7 @@ export default function useActionBar() {
       workflow: "",
     },
   ];
+
   const isTrashFolder = getIsTrashSelected();
 
   function onEdit() {

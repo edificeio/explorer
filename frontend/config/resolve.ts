@@ -36,6 +36,14 @@ export const resolve = {
       replacement: path.resolve(__dirname, "../src/pages"),
     },
     {
+      find: "@queries",
+      replacement: path.resolve(__dirname, "../src/queries"),
+    },
+    {
+      find: "@services",
+      replacement: path.resolve(__dirname, "../src/services"),
+    },
+    {
       find: "@shared",
       replacement: path.resolve(__dirname, "../src/shared"),
     },
@@ -44,4 +52,4 @@ export const resolve = {
       replacement: path.resolve(__dirname, "../src/store"),
     },
   ],
-}
+};

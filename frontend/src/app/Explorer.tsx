@@ -12,10 +12,7 @@ import {
   AppCard,
   Button,
   Grid,
-  // FormControl,
-  // Input,
   IconButton,
-  // SearchButton,
   useOdeClient,
   AppIcon,
   Library,
@@ -47,28 +44,40 @@ import useExplorerStore from "@store/index";
   );
 }; */
 
+const params = getAppParams();
+
 export default function Explorer(): JSX.Element | null {
   const { i18n, app, appCode, getBootstrapTheme } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const {
-    actions,
-    init,
-    isAppReady,
-    isLoading,
-    getHasResourcesOrFolders, // Return number folder or ressources
-    getIsTrashSelected, // Return boolean : true if trash is selected, false other
-    getHasNoSelectedNodes, // Return Boolean : true if we are NOT in a folder, false if we are in a folder
-    gotoPreviousFolder, // Go to previous folder (onClick)
-    hasMoreResources,
-    getMoreResources,
-    getPreviousFolder, // Return object informations previous folder (id, name, childNumber...) or return undefined if none previous folder
-    getHasSelectedRoot, // Return Boolean : true if trash or folder default selected, false other
-    createResource, // Create ressource (onClick)
-    isActionAvailable,
-  } = useExplorerStore((state) => state);
-  const params = getAppParams();
+  const actions = useExplorerStore((state) => state.actions);
+  const isAppReady = useExplorerStore((state) => state.isAppReady);
+
+  const init = useExplorerStore((state) => state.init);
+  const getHasResourcesOrFolders = useExplorerStore(
+    (state) => state.getHasResourcesOrFolders,
+  );
+  const getIsTrashSelected = useExplorerStore(
+    (state) => state.getIsTrashSelected,
+  );
+  const getHasNoSelectedNodes = useExplorerStore(
+    (state) => state.getHasNoSelectedNodes,
+  );
+  const gotoPreviousFolder = useExplorerStore(
+    (state) => state.gotoPreviousFolder,
+  );
+  const getPreviousFolder = useExplorerStore(
+    (state) => state.getPreviousFolder,
+  );
+  const getHasSelectedRoot = useExplorerStore(
+    (state) => state.getHasSelectedRoot,
+  );
+  const createResource = useExplorerStore((state) => state.createResource);
+  const isActionAvailable = useExplorerStore(
+    (state) => state.isActionAvailable,
+  );
+
   useEffect(() => {
     init(params);
   }, [params]);
@@ -151,22 +160,10 @@ export default function Explorer(): JSX.Element | null {
               <ResourcesList />
             </>
           ) : null}
+
           <EmptyScreenNoContentInFolder />
           <EmptyScreenApp />
           <EmptyScreenTrash />
-
-          {hasMoreResources && !isLoading ? (
-            <div className="d-grid gap-2 col-4 mx-auto">
-              <Button
-                type="button"
-                color="secondary"
-                variant="filled"
-                onClick={getMoreResources}
-              >
-                {i18n("explorer.see.more")}
-              </Button>
-            </div>
-          ) : null}
         </Grid.Col>
         <ActionBarContainer />
         <OnBoardingTrash />

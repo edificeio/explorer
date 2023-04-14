@@ -27,7 +27,7 @@ export default function FoldersList() {
   });
 
   return folders.length && !getIsTrashSelected() ? (
-    <animated.ul className="grid ps-0 list-unstyled">
+    <animated.ul className="grid ps-0 list-unstyled mb-24">
       {folders.map((folder: IFolder) => {
         const { id, name } = folder;
         return (

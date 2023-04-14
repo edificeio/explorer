@@ -21,9 +21,8 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
 
   async function onMove() {
     try {
-      if (!selectedFolder) {
-        throw new Error("explorer.move.selection.empty");
-      }
+      if (!selectedFolder) throw new Error("explorer.move.selection.empty");
+
       await moveSelectedTo(selectedFolder);
       onSuccess?.();
     } catch (e) {

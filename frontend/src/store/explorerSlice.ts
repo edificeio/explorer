@@ -1,6 +1,7 @@
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { type TreeNode } from "@ode-react-ui/advanced";
 import { type OdeProviderParams } from "@ode-react-ui/core";
+import { hasRights } from "@services/index";
 import { translate } from "@shared/constants";
 import { deleteNode } from "@shared/utils/deleteNode";
 import { getAppParams } from "@shared/utils/getAppParams";
@@ -38,8 +39,10 @@ export interface ExplorerSlice {
   preferences?: IPreferences;
   searchParams: ISearchParameters;
   notifications: Notification[];
-  setLoadingState: <T>(promise: Promise<T>) => Promise<T>;
+  // init: (data: Promise<GetContextResult>) => PromiseVoid;
   init: (params: OdeProviderParams) => PromiseVoid;
+  setLoadingState: <T>(promise: Promise<T>) => Promise<T>;
+  updateSearchParams: (searchParams: ISearchParameters) => void;
   getHasResourcesOrFolders: () => number;
   moveSelectedTo: (destinationId: string) => PromiseVoid;
   deleteSelection: () => PromiseVoid;
@@ -55,6 +58,8 @@ export interface ExplorerSlice {
   isActionAvailable: (action: "create" | "publish") => boolean;
 }
 
+const { app, types, actions, filters, orders } = getAppParams();
+
 // * https://docs.pmnd.rs/zustand/guides/typescript#slices-pattern
 export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   set,
@@ -68,26 +73,20 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
   notifications: [],
   preferences: undefined,
   searchParams: {
-    app: undefined!,
-    types: [],
-    filters: {},
+    app,
+    types,
+    filters: {
+      folder: "default",
+    },
+    orders: { updatedAt: "desc" },
     pagination: {
       startIdx: 0,
-      pageSize: 4,
+      pageSize: 12,
+      maxIdx: 0,
     },
+    // trashed: false,
   },
-  setLoadingState: async <T>(promise: Promise<T>): Promise<T> => {
-    try {
-      set((state) => ({ ...state, isLoading: true }));
-      const res = await promise;
-      return res;
-    } finally {
-      set((state) => ({ ...state, isLoading: false }));
-    }
-  },
-  init: async (_: OdeProviderParams) => {
-    const { app, types } = getAppParams();
-
+  init: async (params: OdeProviderParams) => {
     try {
       // get context from backend
       const {
@@ -95,27 +94,24 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         getCurrentFolderId,
         setLoadingState,
       } = get();
+
       const searchParams: ISearchParameters = {
         ...previousParam,
-        orders: { updatedAt: "desc" },
         app,
         types,
       };
 
       const trashed = getCurrentFolderId() === FOLDER.BIN;
       // set loading state
-      const { folders, resources, preferences, pagination } =
-        await setLoadingState(
-          odeServices
-            .resource(searchParams.app)
-            .createContext({ ...searchParams, trashed }),
-        );
+      const { folders, preferences, pagination } = await setLoadingState(
+        odeServices
+          .resource(searchParams.app)
+          .createContext({ ...searchParams, trashed }),
+      );
+      // const { folders, preferences, pagination } = await setLoadingState(data);
 
-      const { actions, filters, orders } = getAppParams();
       const actionRights = actions.map((a) => a.workflow);
-      const availableRights = await odeServices
-        .rights()
-        .sessionHasWorkflowRights(actionRights);
+      const availableRights = await hasRights(actionRights);
       const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;
       const hasMoreResources = currentMaxIdx < (pagination.maxIdx || 0);
       set((state) => ({
@@ -129,8 +125,10 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         orders,
         filters,
         folders,
-        resources,
-        searchParams,
+        searchParams: {
+          ...searchParams,
+          pagination,
+        },
         hasMoreResources,
         treeData: {
           ...state.treeData,
@@ -143,6 +141,17 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       console.error("explorer init failed: ", error);
     }
   },
+  setLoadingState: async <T>(promise: Promise<T>): Promise<T> => {
+    try {
+      set((state) => ({ ...state, isLoading: true }));
+      const res = await promise;
+      return res;
+    } finally {
+      set((state) => ({ ...state, isLoading: false }));
+    }
+  },
+  updateSearchParams: (searchParams: ISearchParameters) =>
+    set((state) => ({ ...state, searchParams })),
   getHasResourcesOrFolders() {
     const { resources, folders } = get();
     return resources?.length || folders.length;

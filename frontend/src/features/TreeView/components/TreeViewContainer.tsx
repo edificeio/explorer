@@ -14,21 +14,25 @@ const CreateModal = lazy(
 );
 
 export const TreeViewContainer = () => {
+  const [isCreateFolderModalOpen, toggle] = useModal();
+
   const { i18n } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const {
-    foldTreeItem,
-    getIsTrashSelected,
-    gotoTrash,
-    selectedNodeIds,
-    selectTreeItem,
-    treeData,
-    unfoldTreeItem,
-  } = useExplorerStore((state) => state);
+  const selectedNodeIds = useExplorerStore((state) => state.selectedNodeIds);
+  const treeData = useExplorerStore((state) => state.treeData);
 
-  const [isCreateFolderModalOpen, toggle] = useModal();
+  const foldTreeItem = useExplorerStore((state) => state.foldTreeItem);
+  const getIsTrashSelected = useExplorerStore(
+    (state) => state.getIsTrashSelected,
+  );
+  const gotoTrash = useExplorerStore((state) => state.gotoTrash);
+  const selectTreeItem = useExplorerStore((state) => state.selectTreeItem);
+  const unfoldTreeItem = useExplorerStore((state) => state.unfoldTreeItem);
+  const getCurrentFolderId = useExplorerStore(
+    (state) => state.getCurrentFolderId,
+  );
 
   return (
     <>
@@ -46,11 +50,12 @@ export const TreeViewContainer = () => {
       />
       <div className="d-grid my-16">
         <Button
+          disabled={getCurrentFolderId() === FOLDER.BIN}
           type="button"
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={() => toggle()}
+          onClick={toggle}
         >
           {i18n("explorer.folder.new")}
         </Button>
@@ -60,8 +65,8 @@ export const TreeViewContainer = () => {
           <CreateModal
             edit={false}
             isOpen={isCreateFolderModalOpen}
-            onSuccess={() => toggle()}
-            onCancel={() => toggle()}
+            onSuccess={toggle}
+            onCancel={toggle}
           />
         )}
       </Suspense>
