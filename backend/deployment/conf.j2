@@ -24,7 +24,7 @@
         "elasticsearchConfig":{
             "uris": {{explorerEsUris}},
             "poolSize": {{explorerEsPoolSize | default(16)}},
-            "keepAlive": {{explorerEsKeepAlive | default('true')}},
+            "keepAlive": {{explorerEsKeepAlive | default('true')}}
         },
         "indexes": {{explorerIndexes | default({})}},
         "index-prefix": "{{explorerIndexPrefix | default("recette-")}}",
