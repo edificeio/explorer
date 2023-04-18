@@ -81,7 +81,6 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
-                final boolean isTrashView = queryParams.getBoolean("trashed");
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 json.put("preferences", new JsonObject());
@@ -102,8 +101,7 @@ public class ExplorerController extends BaseController {
                     //load root resource using filters
                     final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
                     return resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
-                        List<JsonObject> resources = this.filterTrash(e.rows, isTrashView, user.getUserId());
-                        json.put("resources", adaptResource(resources));
+                        json.put("resources", adaptResource(e.rows));
                         //pagination details
                         final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0L));
                         pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
@@ -136,7 +134,6 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
-                final boolean isTrashView = queryParams.getBoolean("trashed");
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
@@ -144,8 +141,7 @@ public class ExplorerController extends BaseController {
                 });
                 final ResourceSearchOperation searchOperation = toResourceSearch(queryParams);
                 final Future<ResourceService.FetchResult> resourcesF = resourceService.fetchWithMeta(user, application, searchOperation).onSuccess(e -> {
-                    List<JsonObject> resources = this.filterTrash(e.rows, isTrashView, user.getUserId());
-                    json.put("resources", adaptResource(resources));
+                    json.put("resources", adaptResource(e.rows));
                     //pagination details
                     final JsonObject pagination = new JsonObject().put("startIdx", searchOperation.getStartIndex().orElse(0L));
                     pagination.put("pageSize", searchOperation.getPageSize().orElse(DEFAULT_PAGESIZE));
@@ -622,19 +618,5 @@ public class ExplorerController extends BaseController {
         final Object id = folder.remove("_id");
         if( id != null ) folder.put( "id", id );
         return folder;
-    }
-
-    private List<JsonObject> filterTrash(List<JsonObject> resources, boolean isTrashView, String userId) {
-        if (isTrashView) {
-            return resources.stream()
-                    .filter(resource -> resource.getBoolean("trashed").equals(true)
-                            || resource.getJsonArray("trashedBy").contains(userId))
-                    .collect(Collectors.toList());
-        } else {
-            return resources.stream()
-                    .filter(resource -> resource.getBoolean("trashed").equals(false)
-                            && !resource.getJsonArray("trashedBy").contains(userId))
-                    .collect(Collectors.toList());
-        }
     }
 }
