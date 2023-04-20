@@ -92,7 +92,7 @@ export function OnBoardingTrash(): JSX.Element | null {
                     height="auto"
                     className="mx-auto my-12"
                     loading="lazy"
-                    src={`${imageBootstrap}/onboarding/corbeille-gif.gif`}
+                    src={`${imageBootstrap}/onboarding/corbeille-menu.svg`}
                     alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
                   />
                   <p>
@@ -107,6 +107,11 @@ export function OnBoardingTrash(): JSX.Element | null {
                     <li>
                       {i18n(
                         "explorer.modal.onboarding.trash.screen1.subtitle3",
+                      )}
+                    </li>
+                    <li>
+                      {i18n(
+                        "explorer.modal.onboarding.trash.screen1.subtitle4",
                       )}
                     </li>
                   </ul>
