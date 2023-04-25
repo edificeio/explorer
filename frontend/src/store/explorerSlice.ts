@@ -102,14 +102,15 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
         types,
       };
 
-      const trashed = getCurrentFolderId() === FOLDER.BIN;
+      const isTrashView = getCurrentFolderId() === FOLDER.BIN;
       // set loading state
       const { folders, resources, preferences, pagination } =
         await setLoadingState(
           odeServices
             .resource(searchParams.app)
-            .createContext({ ...searchParams, trashed }),
+            .createContext({ ...searchParams, isTrashView }),
         );
+      // const { folders, preferences, pagination } = await setLoadingState(data);
 
       const { actions, filters, orders } = getAppParams();
       const actionRights = actions.map((a) => a.workflow);
@@ -273,11 +274,11 @@ export const createExplorerSlice: StateCreator<State, [], [], ExplorerSlice> = (
       // get params after clear
       const { searchParams } = get();
       // fetch subfolders
-      const trashed = getCurrentFolderId() === FOLDER.BIN;
+      const isTrashView = getCurrentFolderId() === FOLDER.BIN;
       const { folders, resources, pagination } = await setLoadingState(
         odeServices
           .resource(searchParams.app)
-          .searchContext({ ...searchParams, trashed }),
+          .searchContext({ ...searchParams, isTrashView }),
       );
 
       const currentMaxIdx = pagination.startIdx + pagination.pageSize - 1;

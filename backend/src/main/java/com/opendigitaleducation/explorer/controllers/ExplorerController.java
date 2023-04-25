@@ -81,7 +81,7 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
-                final boolean isTrashView = queryParams.getBoolean("trashed");
+                final boolean isTrashView = queryParams.getBoolean("is_trash_view", false);
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 json.put("preferences", new JsonObject());
@@ -136,7 +136,7 @@ public class ExplorerController extends BaseController {
                 return;
             }
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
-                final boolean isTrashView = queryParams.getBoolean("trashed");
+                final boolean isTrashView = queryParams.getBoolean("is_trash_view", false);
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
                 final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
