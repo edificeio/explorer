@@ -213,55 +213,22 @@ export default function useShareResourceModal({
     const shareSubject = searchAPIResults.find(
       (searchAPIResult) => searchAPIResult.id === model[0],
     );
-
-    const defaultAction: ShareRightAction = {
-      id: "read",
-      displayName: "read",
-    };
-
     if (shareSubject) {
-      let rightsToAdd: ShareRight[] = [];
-      // if subject type is sharebookmark then get sharebookmark users and groups and add them to the table
-      if (shareSubject.type === "sharebookmark") {
-        const directoryService = odeServices.directory();
-        const bookmarkRes = await directoryService.getBookMarkById(
-          shareSubject.id,
-        );
-        bookmarkRes.users
-          .filter(
-            (user) => !shareRights.rights.find((right) => right.id === user.id),
-          )
-          .forEach((user) => {
-            rightsToAdd.push({
-              ...user,
-              type: "user",
-              avatarUrl: "",
-              directoryUrl: "",
-              actions: [defaultAction],
-            });
-          });
-        bookmarkRes.groups
-          .filter(
-            (group) =>
-              !shareRights.rights.find((right) => right.id === group.id),
-          )
-          .forEach((group) => {
-            rightsToAdd.push({
-              ...group,
-              type: "group",
-              avatarUrl: "",
-              directoryUrl: "",
-              actions: [defaultAction],
-            });
-          });
-      } else {
-        rightsToAdd = [
-          {
-            ...shareSubject,
-            actions: [defaultAction],
-          },
-        ];
-      }
+      const rightsToAdd: ShareRight[] = [
+        {
+          ...shareSubject,
+          actions: [
+            {
+              id: "read",
+              displayName: "read",
+            },
+            {
+              id: "comment",
+              displayName: "comment",
+            },
+          ],
+        },
+      ];
       setShareRights({
         ...shareRights,
         rights: [...shareRights.rights, ...rightsToAdd],

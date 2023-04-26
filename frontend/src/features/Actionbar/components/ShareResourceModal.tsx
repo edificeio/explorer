@@ -92,14 +92,14 @@ export default function ShareResourceModal({
             <tbody>
               {currentIsAuthor() && (
                 <tr>
-                  <th scope="row">
+                  <td scope="row">
                     <Avatar
                       alt={i18n("explorer.modal.share.avatar.me.alt")}
                       size="xs"
                       src={myAvatar}
                       variant="circle"
                     />
-                  </th>
+                  </td>
                   <td>{i18n("share.me")}</td>
                   {shareRightActions.map((shareRightAction) => (
                     <td
@@ -115,14 +115,18 @@ export default function ShareResourceModal({
               )}
               {shareRights?.rights.map((shareRight: ShareRight) => (
                 <tr key={shareRight.id}>
-                  <th scope="row">
-                    <Avatar
-                      alt={i18n("explorer.modal.share.avatar.shared.alt")}
-                      size="xs"
-                      src={shareRight.avatarUrl}
-                      variant="circle"
-                    />
-                  </th>
+                  <td scope="row">
+                    {shareRight.type !== "sharebookmark" && (
+                      <Avatar
+                        alt={i18n("explorer.modal.share.avatar.shared.alt")}
+                        size="xs"
+                        src={shareRight.avatarUrl}
+                        variant="circle"
+                      />
+                    )}
+
+                    {shareRight.type === "sharebookmark" && <Bookmark />}
+                  </td>
                   <td>{shareRight.displayName}</td>
                   {shareRightActions.map((shareRightAction) => (
                     <td
