@@ -1,10 +1,10 @@
-import useExplorerStore from "@store/index";
+import { useSearchParams } from "@store/store";
 import { APP } from "ode-ts-client";
 
 import ShareResourceModalFooterBlog from "./ShareResourceModalFooterBlog";
 
 export default function ShareResourceModalFooter() {
-  const { app } = useExplorerStore((state) => state.searchParams);
+  const { app } = useSearchParams();
   if (app === APP.BLOG) {
     return <ShareResourceModalFooterBlog />;
   }

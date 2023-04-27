@@ -2,7 +2,6 @@ import path from "path";
 
 export const resolve = {
   alias: [
-    { find: "~", replacement: path.resolve(__dirname, "src") },
     {
       find: "@app",
       replacement: path.resolve(__dirname, "../src/app"),
@@ -18,10 +17,6 @@ export const resolve = {
     {
       find: "@components",
       replacement: path.resolve(__dirname, "../src/components"),
-    },
-    {
-      find: "@contexts",
-      replacement: path.resolve(__dirname, "../src/contexts"),
     },
     {
       find: "@features",
@@ -40,8 +35,12 @@ export const resolve = {
       replacement: path.resolve(__dirname, "../src/shared"),
     },
     {
+      find: "@services",
+      replacement: path.resolve(__dirname, "../src/services"),
+    },
+    {
       find: "@store",
       replacement: path.resolve(__dirname, "../src/store"),
     },
   ],
-}
+};

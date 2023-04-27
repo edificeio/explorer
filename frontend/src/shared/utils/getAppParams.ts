@@ -18,6 +18,7 @@ export function getAppParams(): AppParams {
     types: ["folder"],
     filters: [],
     actions: [],
+    trashActions: [],
     orders: [],
   };
   if (rootElement?.dataset?.odeApp) {
@@ -48,4 +49,5 @@ export interface AppParams {
   filters: IFilter[];
   orders: IOrder[];
   actions: IAction[];
+  trashActions: IAction[];
 }

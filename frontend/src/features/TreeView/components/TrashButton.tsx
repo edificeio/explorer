@@ -1,12 +1,19 @@
 import { useOdeClient } from "@ode-react-ui/core";
 import { Delete } from "@ode-react-ui/icons";
+
 export interface TrashButtonProps {
   id: string;
   selected: boolean;
   onSelect: () => void;
 }
-export const TrashButton = ({ id, selected, onSelect }: TrashButtonProps) => {
+
+export const TrashButton = ({
+  id,
+  selected,
+  onSelect,
+}: TrashButtonProps): JSX.Element | null => {
   const { i18n } = useOdeClient();
+
   return (
     <div className="treeview">
       <ul role="tree" className="m-0 p-0">

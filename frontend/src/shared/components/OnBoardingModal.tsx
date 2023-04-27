@@ -8,15 +8,15 @@ import {
   LoadingScreen,
 } from "@ode-react-ui/core";
 import { useToggle } from "@ode-react-ui/hooks";
+import { getOnboardingTrash, saveOnboardingTrash } from "@services/api";
 import { imageBootstrap } from "@shared/constants";
-import { odeServices } from "ode-ts-client";
 import { createPortal } from "react-dom";
 import { Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 
-export function OnBoardingTrash(): JSX.Element | null {
+export default function OnBoardingTrash(): JSX.Element | null {
   const { i18n } = useOdeClient();
   const [swiperInstance, setSwiperInstance] = useState<any>();
   const [swiperProgress, setSwiperprogress] = useState<number>(0);
@@ -26,32 +26,17 @@ export function OnBoardingTrash(): JSX.Element | null {
   useEffect(() => {
     (async () => {
       const response: any = await getOnboardingTrash();
-      if (!response) {
-        setIsOnboardingTrash(true);
-      } else {
-        // si la response n'est pas undefined, alors on set
+      if (response) {
         setIsOnboardingTrash(JSON.parse(response?.showOnboardingTrash));
+        return;
       }
+      setIsOnboardingTrash(true);
     })();
   }, []);
 
-  async function getOnboardingTrash() {
-    const res = await odeServices
-      .conf()
-      .getPreference<{ showOnboardingTrash: boolean }>("showOnboardingTrash");
-    return res;
-  }
-
-  async function setOnboardingTrash() {
-    const result = await odeServices
-      .conf()
-      .savePreference(
-        "showOnboardingTrash",
-        JSON.stringify({ showOnboardingTrash: false }),
-      );
-    toggle();
-    return result;
-  }
+  const handleSavePreference = async () => {
+    await saveOnboardingTrash({ onSuccess: toggle() });
+  };
 
   const handleCloseModal = () => {
     toggle();
@@ -84,42 +69,17 @@ export function OnBoardingTrash(): JSX.Element | null {
                 }}
               >
                 <SwiperSlide>
-                  <Modal.Subtitle>
-                    {i18n("explorer.modal.onboarding.trash.screen1.title")}
-                  </Modal.Subtitle>
                   <Image
-                    width="auto"
-                    height="auto"
+                    width="270"
+                    height="140"
                     className="mx-auto my-12"
                     loading="lazy"
                     src={`${imageBootstrap}/onboarding/corbeille-menu.svg`}
                     alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
                   />
-                  <p>
-                    {i18n("explorer.modal.onboarding.trash.screen1.subtitle1")}
-                  </p>
-                  <ul>
-                    <li>
-                      {i18n(
-                        "explorer.modal.onboarding.trash.screen1.subtitle2",
-                      )}
-                    </li>
-                    <li>
-                      {i18n(
-                        "explorer.modal.onboarding.trash.screen1.subtitle3",
-                      )}
-                    </li>
-                    <li>
-                      {i18n(
-                        "explorer.modal.onboarding.trash.screen1.subtitle4",
-                      )}
-                    </li>
-                  </ul>
+                  <p>{i18n("explorer.modal.onboarding.trash.screen1.title")}</p>
                 </SwiperSlide>
                 <SwiperSlide>
-                  <Modal.Subtitle>
-                    {i18n("explorer.modal.onboarding.trash.screen2.title")}
-                  </Modal.Subtitle>
                   <Image
                     width="270"
                     height="140"
@@ -128,9 +88,7 @@ export function OnBoardingTrash(): JSX.Element | null {
                     src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
                     alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
                   />
-                  <p>
-                    {i18n("explorer.modal.onboarding.trash.screen2.subtitle")}
-                  </p>
+                  <p>{i18n("explorer.modal.onboarding.trash.screen2.title")}</p>
                 </SwiperSlide>
                 <SwiperSlide>
                   <Image
@@ -141,9 +99,7 @@ export function OnBoardingTrash(): JSX.Element | null {
                     src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
                     alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
                   />
-                  <p>
-                    {i18n("explorer.modal.onboarding.trash.screen3.subtitle")}
-                  </p>
+                  <p>{i18n("explorer.modal.onboarding.trash.screen3.title")}</p>
                 </SwiperSlide>
               </Swiper>
             </Modal.Body>
@@ -183,7 +139,7 @@ export function OnBoardingTrash(): JSX.Element | null {
                   type="button"
                   color="primary"
                   variant="filled"
-                  onClick={setOnboardingTrash}
+                  onClick={handleSavePreference}
                 >
                   {i18n("explorer.modal.onboarding.trash.close")}
                 </Button>

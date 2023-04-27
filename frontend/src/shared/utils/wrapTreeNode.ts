@@ -6,14 +6,14 @@ import { modifyNode } from "./modifyNode";
 
 export const wrapTreeNode = (
   treeNode: TreeNode,
-  folders: IFolder[],
+  folders: IFolder[] | undefined,
   parentId: string,
 ) => {
   // const folderIds = folders.map((e) => e.id);
   return modifyNode(treeNode, (node, parent) => {
     // add missing children if needed
     if (node.id === parentId) {
-      node.children = folders.map((e) => new TreeNodeFolderWrapper(e));
+      node.children = folders?.map((e) => new TreeNodeFolderWrapper(e));
     }
     return node;
   });

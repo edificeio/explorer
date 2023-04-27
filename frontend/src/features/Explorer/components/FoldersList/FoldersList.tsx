@@ -1,23 +1,37 @@
 import { Card, useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
-import useExplorerStore from "@store/index";
-import { type IFolder } from "ode-ts-client";
+import { useSearchContext } from "@services/queries/index";
+import {
+  useStoreActions,
+  useFolderIds,
+  useSelectedFolders,
+} from "@store/store";
+import { type ID, type IFolder } from "ode-ts-client";
 
-export default function FoldersList() {
+export const FoldersList = (): JSX.Element | null => {
   const { app } = useOdeClient();
+
+  const { data, isFetching } = useSearchContext();
+
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const isFolderSelected = useExplorerStore((state) => state.isFolderSelected);
-  const folders = useExplorerStore((state) => state.folders);
-  const { deselect, select, openFolder, getIsTrashSelected } = useExplorerStore(
-    (state) => state,
-  );
+  const selectedFolders = useSelectedFolders();
+  const folderIds = useFolderIds();
+  const { setSelectedFolders, setFolderIds, openFolder } = useStoreActions();
 
   function toggleSelect(folder: IFolder) {
-    if (isFolderSelected(folder)) {
-      deselect([folder.id], "folder");
+    if (folderIds.includes(folder.id)) {
+      setFolderIds(
+        folderIds.filter((selectedFolder: ID) => selectedFolder !== folder.id),
+      );
+      setSelectedFolders(
+        selectedFolders.filter(
+          (selectedFolder) => selectedFolder.id !== folder.id,
+        ),
+      );
     } else {
-      select([folder.id], "folder");
+      setFolderIds([...folderIds, folder.id]);
+      setSelectedFolders([...selectedFolders, folder]);
     }
   }
 
@@ -26,9 +40,9 @@ export default function FoldersList() {
     to: { opacity: 1 },
   });
 
-  return folders.length && !getIsTrashSelected() ? (
-    <animated.ul className="grid ps-0 list-unstyled">
-      {folders.map((folder: IFolder) => {
+  return data?.pages[0]?.folders.length ? (
+    <animated.ul className="grid ps-0 list-unstyled mb-24">
+      {data?.pages[0]?.folders.map((folder: IFolder) => {
         const { id, name } = folder;
         return (
           <animated.li
@@ -42,8 +56,9 @@ export default function FoldersList() {
               app={app}
               name={name}
               isFolder
-              isSelected={isFolderSelected(folder)}
-              onOpen={async () => await openFolder(id)}
+              isLoading={isFetching}
+              isSelected={folderIds.includes(folder.id)}
+              onOpen={() => openFolder({ folder, folderId: folder.id })}
               onSelect={() => toggleSelect(folder)}
             />
           </animated.li>
@@ -51,4 +66,4 @@ export default function FoldersList() {
       })}
     </animated.ul>
   ) : null;
-}
+};

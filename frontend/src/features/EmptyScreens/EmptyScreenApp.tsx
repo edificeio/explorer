@@ -1,18 +1,14 @@
 import { useOdeClient, EmptyScreen } from "@ode-react-ui/core";
+import { useActions } from "@services/queries";
 import { imageBootstrap } from "@shared/constants";
-import useExplorerStore from "@store/index";
+import { type IAction } from "ode-ts-client";
 
-export function EmptyScreenApp(): JSX.Element | null {
+export function EmptyScreenApp(): JSX.Element {
   const { i18n, appCode, is1d } = useOdeClient();
-  const {
-    actions,
-    isLoading,
-    getHasResourcesOrFolders, // Return number folder or ressources
-    getIsTrashSelected, // Return boolean : true if trash is selected, false other
-    getHasSelectedRoot,
-  } = useExplorerStore((state) => state);
 
-  const canCreate = actions.find((action) => action.id === "create");
+  const { data: actions } = useActions();
+
+  const canCreate = actions?.find((action: IAction) => action.id === "create");
   const labelEmptyScreenApp = () => {
     if (canCreate?.available && is1d) {
       // TODO should not have specific app i18n
@@ -26,10 +22,7 @@ export function EmptyScreenApp(): JSX.Element | null {
     }
   };
 
-  return getHasResourcesOrFolders() === 0 &&
-    getHasSelectedRoot() &&
-    !getIsTrashSelected() &&
-    !isLoading ? (
+  return (
     <EmptyScreen
       imageSrc={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
       imageAlt={i18n("explorer.emptyScreen.app.alt")}
@@ -40,5 +33,5 @@ export function EmptyScreenApp(): JSX.Element | null {
       }`}
       text={labelEmptyScreenApp()}
     />
-  ) : null;
+  );
 }

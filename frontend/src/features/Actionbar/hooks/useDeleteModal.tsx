@@ -1,39 +1,34 @@
-/* import { Alert } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks"; */
-import { Alert } from "@ode-react-ui/core";
+import { Alert, useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import useExplorerStore from "@store/index";
+import { useDelete, useTrash } from "@services/queries";
+import { useIsTrash } from "@store/store";
 
 interface ModalProps {
   onSuccess?: () => void;
 }
 
 export default function useDeleteModal({ onSuccess }: ModalProps) {
+  const { i18n } = useOdeClient();
+  const deleteItem = useDelete();
+  const trashItem = useTrash();
+
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const { getIsTrashSelected, trashSelection, deleteSelection } =
-    useExplorerStore((state) => state);
-  const isTrashFolder = getIsTrashSelected();
+  const isTrashFolder = useIsTrash();
 
   const { hotToast } = useHotToast(Alert);
 
   // ? We could pass hotToast as argument inside deleteSelection or trashSelection ?
-  // const { hotToast } = useHotToast(Alert);
   async function onDelete() {
     try {
       if (isTrashFolder) {
-        await deleteSelection();
+        await deleteItem.mutate();
         // TODO i18n
         hotToast.success("Supprimé de la corbeille");
-        /* toast.promise(deleteSelection, {
-          loading: "Loading",
-          success: "Got the data",
-          error: "Error when fetching",
-        }); */
       } else {
-        await trashSelection();
+        await trashItem.mutate();
         // TODO i18n
-        hotToast.success("Mis en corbeille");
+        hotToast.success(i18n("explorer.trash.title"));
       }
       onSuccess?.();
     } catch (e) {
@@ -43,7 +38,7 @@ export default function useDeleteModal({ onSuccess }: ModalProps) {
   }
 
   return {
-    isTrashFolder: getIsTrashSelected(),
+    isTrashFolder,
     onDelete,
   };
 }

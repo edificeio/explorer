@@ -10,7 +10,7 @@ import {
   useOdeClient,
 } from "@ode-react-ui/core";
 import { Copy } from "@ode-react-ui/icons";
-import useExplorerStore from "@store/index";
+import { useSelectedResources } from "@store/store";
 import { createPortal } from "react-dom";
 
 import useEditResourceModal from "../hooks/useEditResourceModal";
@@ -29,10 +29,9 @@ export default function EditResourceModal({
   onCancel,
 }: EditResourceModalProps) {
   const { i18n, appCode } = useOdeClient();
-  const getSelectedIResources = useExplorerStore(
-    (state) => state.getSelectedIResources,
-  );
-  const resource = getSelectedIResources()[0];
+
+  const selectedResources = useSelectedResources();
+  const resource = selectedResources[0];
   const {
     slug,
     formId,

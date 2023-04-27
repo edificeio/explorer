@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-import useExplorerStore from "@store/index";
+import { useMoveItem } from "@services/queries/index";
+import { useStoreActions, useSelectedFolders } from "@store/store";
+import { useQueryClient } from "@tanstack/react-query";
+import { type ID } from "ode-ts-client";
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -9,23 +12,21 @@ interface ModalProps {
 export default function useMoveModal({ onSuccess }: ModalProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
 
+  const moveItem = useMoveItem();
+
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const {
-    treeData,
-    foldTreeItem,
-    unfoldTreeItem,
-    moveSelectedTo,
-    getSelectedFolders,
-  } = useExplorerStore();
+  const selectedFolders = useSelectedFolders();
+  const { foldTreeItem, unfoldTreeItem } = useStoreActions();
+
+  const queryclient = useQueryClient();
 
   async function onMove() {
     try {
-      if (!selectedFolder) {
-        throw new Error("explorer.move.selection.empty");
-      }
-      await moveSelectedTo(selectedFolder);
-      onSuccess?.();
+      if (!selectedFolder) throw new Error("explorer.move.selection.empty");
+
+      await moveItem.mutate(selectedFolder);
+      await onSuccess?.();
     } catch (e) {
       // TODO display an alert?
       console.error(e);
@@ -33,7 +34,7 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
   }
 
   const canMove = (destination: string) => {
-    for (const selectedFolder of getSelectedFolders()) {
+    for (const selectedFolder of selectedFolders) {
       if (
         destination === selectedFolder.id ||
         destination === selectedFolder.parentId
@@ -54,10 +55,10 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
       }
     },
     handleTreeItemFold: foldTreeItem,
-    handleTreeItemUnfold: unfoldTreeItem,
+    handleTreeItemUnfold: async (folderId: ID) =>
+      await unfoldTreeItem(folderId, queryclient),
     onMove: () => {
       onMove();
     },
-    treeData,
   };
 }

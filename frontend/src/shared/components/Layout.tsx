@@ -1,23 +1,13 @@
-import Explorer from "@app/Explorer";
+import { type ReactNode } from "react";
+
 import { Header } from "@ode-react-ui/advanced";
 import { Main, useOdeClient } from "@ode-react-ui/core";
-import { clsx } from "@shared/config/index";
 import { configurationFramework } from "@shared/constants";
+import clsx from "clsx";
 import { Toaster } from "react-hot-toast";
 
-function App() {
-  const { session, is1d, basePath } = useOdeClient();
-
-  if (!session || session.notLoggedIn) {
-    return (
-      <div className="d-grid min-vh-100 align-items-center justify-content-center">
-        <a href="/auth/login" target="_blank" rel="noreferrer">
-          S'identifier sur le backend...
-        </a>
-      </div>
-    );
-  }
-
+export const Layout = ({ children }: { children: ReactNode }) => {
+  const { is1d, basePath } = useOdeClient();
   return (
     <>
       <Header
@@ -31,7 +21,7 @@ function App() {
           "mt-24": is1d,
         })}
       >
-        <Explorer />
+        {children}
       </Main>
       <Toaster
         toastOptions={{
@@ -40,6 +30,4 @@ function App() {
       />
     </>
   );
-}
-
-export default App;
+};

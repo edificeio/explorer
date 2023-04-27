@@ -1,6 +1,7 @@
-import useDeleteModal from "@features/Actionbar/hooks/useDeleteModal";
 import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
+
+import useDeleteModal from "../hooks/useDeleteModal";
 
 interface ModalProps {
   isOpen: boolean;

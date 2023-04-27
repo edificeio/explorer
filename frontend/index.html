@@ -93,6 +93,20 @@
             right: "read",
           },
         ],
+        trashActions: [
+          {
+            id: "restore",
+            available: true,
+            target: "actionbar",
+            workflow: "",
+          },
+          {
+            id: "delete",
+            available: true,
+            target: "actionbar",
+            workflow: "",
+          },
+        ],
       };
       var rootElement = document.querySelector("[data-ode-app]");
       rootElement.setAttribute("data-ode-app", JSON.stringify(odeConfig));
