@@ -49,6 +49,8 @@ export default function useShareResourceModal({
   const [searchInputValue, setSearchInputValue] = useState<string>("");
   const [searchAPIResults, setSearchAPIResults] = useState<ShareSubject[]>([]);
   const [searchResults, setSearchResults] = useState<OptionListItemType[]>([]);
+  const [showBookmarkMembers, setShowBookmarkMembers] =
+    useState<boolean>(false);
 
   const getSelectedIResources = useExplorerStore(
     (state) => state.getSelectedIResources,
@@ -80,7 +82,7 @@ export default function useShareResourceModal({
   }, []);
 
   const handleActionCheckbox = (
-    item: { id: string },
+    item: ShareRight,
     actionName: ShareRightActionDisplayName,
   ) => {
     setShareRights(({ rights, ...props }: ShareRightWithVisibles) => {
@@ -102,6 +104,26 @@ export default function useShareResourceModal({
             ),
           ],
         };
+
+        // if bookmark then apply right to users and groups
+        if (item.type === "sharebookmark") {
+          newItems[index].users?.forEach((user) => {
+            const userIndex = newItems.findIndex((item) => item.id === user.id);
+            newItems[userIndex] = {
+              ...newItems[userIndex],
+              actions: newItems[index].actions,
+            };
+          });
+
+          newItems[index].groups?.forEach((user) => {
+            const userIndex = newItems.findIndex((item) => item.id === user.id);
+            newItems[userIndex] = {
+              ...newItems[userIndex],
+              actions: newItems[index].actions,
+            };
+          });
+        }
+
         return {
           rights: newItems,
           ...props,
@@ -116,6 +138,26 @@ export default function useShareResourceModal({
             ),
           ],
         };
+
+        // if bookmark then apply right to users and groups
+        if (item.type === "sharebookmark") {
+          newItems[index].users?.forEach((user) => {
+            const userIndex = newItems.findIndex((item) => item.id === user.id);
+            newItems[userIndex] = {
+              ...newItems[userIndex],
+              actions: newItems[index].actions,
+            };
+          });
+
+          newItems[index].groups?.forEach((user) => {
+            const userIndex = newItems.findIndex((item) => item.id === user.id);
+            newItems[userIndex] = {
+              ...newItems[userIndex],
+              actions: newItems[index].actions,
+            };
+          });
+        }
+
         return {
           rights: newItems,
           ...props,
@@ -141,12 +183,15 @@ export default function useShareResourceModal({
     }
   };
 
-  const handleDeleteRow = (shareRightId: string) => {
+  const handleDeleteRow = (shareRight: ShareRight) => {
     setShareRights((state) => {
       return {
         ...state,
         rights: shareRights.rights.filter(
-          (shareRight) => shareRight.id !== shareRightId,
+          (right) =>
+            right.id !== shareRight.id &&
+            !shareRight.users?.find((user) => user.id === right.id) &&
+            !shareRight.groups?.find((group) => group.id === right.id),
         ),
       };
     });
@@ -213,22 +258,81 @@ export default function useShareResourceModal({
     const shareSubject = searchAPIResults.find(
       (searchAPIResult) => searchAPIResult.id === model[0],
     );
+
+    const defaultActions: ShareRightAction[] = [
+      {
+        id: "read",
+        displayName: "read",
+      },
+      {
+        id: "comment",
+        displayName: "comment",
+      },
+    ];
+
     if (shareSubject) {
-      const rightsToAdd: ShareRight[] = [
-        {
-          ...shareSubject,
-          actions: [
-            {
-              id: "read",
-              displayName: "read",
-            },
-            {
-              id: "comment",
-              displayName: "comment",
-            },
-          ],
-        },
-      ];
+      let rightsToAdd: ShareRight[] = [];
+
+      if (shareSubject.type === "sharebookmark") {
+        const bookmarkRes = await odeServices
+          .directory()
+          .getBookMarkById(shareSubject.id);
+
+        rightsToAdd.push({
+          ...bookmarkRes,
+          type: "sharebookmark",
+          avatarUrl: "",
+          directoryUrl: "",
+          actions: defaultActions,
+        });
+
+        bookmarkRes?.users
+          .filter(
+            (user) => !shareRights.rights.find((right) => right.id === user.id),
+          )
+          .forEach((user) => {
+            rightsToAdd.push({
+              ...user,
+              type: "user",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: defaultActions,
+              isBookmarkMember: true,
+            });
+          });
+        bookmarkRes.groups
+          .filter(
+            (group) =>
+              !shareRights.rights.find((right) => right.id === group.id),
+          )
+          .forEach((group) => {
+            rightsToAdd.push({
+              ...group,
+              type: "group",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: defaultActions,
+              isBookmarkMember: true,
+            });
+          });
+      } else {
+        rightsToAdd = [
+          {
+            ...shareSubject,
+            actions: [
+              {
+                id: "read",
+                displayName: "read",
+              },
+              {
+                id: "comment",
+                displayName: "comment",
+              },
+            ],
+          },
+        ];
+      }
+
       setShareRights({
         ...shareRights,
         rights: [...shareRights.rights, ...rightsToAdd],
@@ -298,6 +402,14 @@ export default function useShareResourceModal({
     }
   };
 
+  const handleBookmarkMembersToggle = () => {
+    setShowBookmarkMembers(!showBookmarkMembers);
+  };
+
+  const showShareRightLine = (shareRight: ShareRight): boolean =>
+    (shareRight.isBookmarkMember && showBookmarkMembers) ||
+    !shareRight.isBookmarkMember;
+
   return {
     currentIsAuthor,
     idBookmark,
@@ -308,6 +420,7 @@ export default function useShareResourceModal({
     searchInputValue,
     searchResults,
     bookmarkName,
+    showBookmarkMembers,
     setBookmarkName,
     saveBookmark,
     canSave,
@@ -319,6 +432,8 @@ export default function useShareResourceModal({
     handleSearchInputKeyUp,
     handleSearchButtonClick,
     handleSearchResultsChange,
+    handleBookmarkMembersToggle,
     hasRight,
+    showShareRightLine,
   };
 }

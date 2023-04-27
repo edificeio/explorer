@@ -47,6 +47,7 @@ export default function ShareResourceModal({
     searchInputValue,
     searchResults,
     bookmarkName,
+    showBookmarkMembers,
     currentIsAuthor,
     setBookmarkName,
     saveBookmark,
@@ -59,7 +60,9 @@ export default function ShareResourceModal({
     handleSearchInputKeyUp,
     handleSearchButtonClick,
     handleSearchResultsChange,
+    handleBookmarkMembersToggle,
     hasRight,
+    showShareRightLine,
   } = useShareResourceModal({ onSuccess, onCancel });
   const { i18n } = useOdeClient();
   const refBookmark = useRef<HTMLInputElement>(null);
@@ -75,7 +78,7 @@ export default function ShareResourceModal({
           <table className="table  border align-middle mb-0">
             <thead className="bg-secondary text-white">
               <tr>
-                <th scope="col"></th>
+                <th scope="col" className="w-32"></th>
                 <th scope="col"></th>
                 {shareRightActions.map((shareRightAction) => (
                   <th
@@ -114,46 +117,86 @@ export default function ShareResourceModal({
                 </tr>
               )}
               {shareRights?.rights.map((shareRight: ShareRight) => (
-                <tr key={shareRight.id}>
-                  <td scope="row">
-                    {shareRight.type !== "sharebookmark" && (
-                      <Avatar
-                        alt={i18n("explorer.modal.share.avatar.shared.alt")}
-                        size="xs"
-                        src={shareRight.avatarUrl}
-                        variant="circle"
-                      />
-                    )}
-
-                    {shareRight.type === "sharebookmark" && <Bookmark />}
-                  </td>
-                  <td>{shareRight.displayName}</td>
-                  {shareRightActions.map((shareRightAction) => (
-                    <td
-                      key={shareRightAction.displayName}
-                      style={{ width: "80px" }}
-                      className="text-center"
+                <>
+                  {showShareRightLine(shareRight) && (
+                    <tr
+                      key={shareRight.id}
+                      className={shareRight.isBookmarkMember ? "bg-light" : ""}
                     >
-                      <Checkbox
-                        checked={hasRight(shareRight, shareRightAction)}
-                        onChange={() =>
-                          handleActionCheckbox(shareRight, shareRightAction.id)
-                        }
-                      />
-                    </td>
-                  ))}
-                  <td>
-                    <IconButton
-                      aria-label="Delete"
-                      color="tertiary"
-                      icon={<Close />}
-                      type="button"
-                      variant="ghost"
-                      title="Delete"
-                      onClick={() => handleDeleteRow(shareRight.id)}
-                    />
-                  </td>
-                </tr>
+                      <td scope="row">
+                        {shareRight.type !== "sharebookmark" && (
+                          <Avatar
+                            alt={i18n("explorer.modal.share.avatar.shared.alt")}
+                            size="xs"
+                            src={shareRight.avatarUrl}
+                            variant="circle"
+                          />
+                        )}
+
+                        {shareRight.type === "sharebookmark" && <Bookmark />}
+                      </td>
+                      <td>
+                        <div className="d-flex">
+                          {shareRight.type === "sharebookmark" && (
+                            <Button
+                              color="tertiary"
+                              rightIcon={
+                                <RafterDown
+                                  title="Show"
+                                  className="w-16 min-w-0"
+                                  style={{
+                                    transition: "rotate 0.2s ease-out",
+                                    rotate: showBookmarkMembers
+                                      ? "-180deg"
+                                      : "0deg",
+                                  }}
+                                />
+                              }
+                              type="button"
+                              variant="ghost"
+                              className="fw-normal ps-0"
+                              onClick={handleBookmarkMembersToggle}
+                            >
+                              {shareRight.displayName}
+                            </Button>
+                          )}
+                          {shareRight.type !== "sharebookmark" &&
+                            shareRight.displayName}
+                        </div>
+                      </td>
+                      {shareRightActions.map((shareRightAction) => (
+                        <td
+                          key={shareRightAction.displayName}
+                          style={{ width: "80px" }}
+                          className="text-center"
+                        >
+                          <Checkbox
+                            checked={hasRight(shareRight, shareRightAction)}
+                            onChange={() =>
+                              handleActionCheckbox(
+                                shareRight,
+                                shareRightAction.id,
+                              )
+                            }
+                          />
+                        </td>
+                      ))}
+                      <td>
+                        {!shareRight.isBookmarkMember && (
+                          <IconButton
+                            aria-label="Delete"
+                            color="tertiary"
+                            icon={<Close />}
+                            type="button"
+                            variant="ghost"
+                            title="Delete"
+                            onClick={() => handleDeleteRow(shareRight)}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
