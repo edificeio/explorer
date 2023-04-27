@@ -1,12 +1,13 @@
 import { useId } from "react";
 
-import useExplorerStore from "@store/index";
-import { FOLDER, type IFolder } from "ode-ts-client";
+import { useCreateFolder, useUpdatefolder } from "@services/queries/index";
+import { useCurrentFolder, useSelectedFolders } from "@store/store";
+import { FOLDER } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 interface useEditFolderModalProps {
   edit: boolean;
-  onSuccess?: (folder: IFolder) => void;
+  onSuccess?: () => void;
   onClose: () => void;
 }
 
@@ -21,16 +22,13 @@ export default function useEditFolderModal({
 }: useEditFolderModalProps) {
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const getSelectedFolders = useExplorerStore(
-    (state) => state.getSelectedFolders,
-  );
-  const getCurrentFolderId = useExplorerStore(
-    (state) => state.getCurrentFolderId,
-  );
-  const createFolder = useExplorerStore((state) => state.createFolder);
-  const updateFolder = useExplorerStore((state) => state.updateFolder);
 
-  const name = edit ? getSelectedFolders()[0]?.name : undefined;
+  const selectedFolders = useSelectedFolders();
+  const currentFolder = useCurrentFolder();
+  const createFolder = useCreateFolder();
+  const updatefolder = useUpdatefolder();
+
+  const name = edit ? selectedFolders[0]?.name : undefined;
   const {
     reset,
     register,
@@ -48,17 +46,18 @@ export default function useEditFolderModal({
     name,
   }: HandlerProps) {
     try {
-      const parentId = getCurrentFolderId() || FOLDER.DEFAULT;
       if (edit) {
-        const folder = getSelectedFolders()[0];
+        const parentId = selectedFolders[0]?.parentId;
+        const folder = selectedFolders[0];
         const folderId = folder!.id;
-        await updateFolder({ id: folderId, parentId, name });
+        await updatefolder.mutate({ folderId, parentId, name });
         reset();
-        onSuccess?.(folder);
+        onSuccess?.();
       } else {
-        const folder = await createFolder(name, parentId);
+        const parentId = currentFolder?.id || FOLDER.DEFAULT;
+        await createFolder.mutate({ name, parentId });
         reset();
-        onSuccess?.(folder);
+        onSuccess?.();
       }
     } catch (e) {
       // TODO display an alert?

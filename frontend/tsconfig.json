@@ -21,13 +21,13 @@
       "@assets/*": ["./assets/*"],
       "@components/*": ["./components/*"],
       "@config/*": ["./config/*"],
-      "@contexts/*": ["./contexts/*"],
       "@features/*": ["./features/*"],
       "@hooks/*": ["./hooks/*"],
       "@pages/*": ["./pages/*"],
+      "@services/*": ["./services/*"],
       "@shared/*": ["./shared/*"],
-      "@store/*": ["./store/*"],
+      "@store/*": ["./store/*"]
     }
   },
-  "include": ["src", "config", "./vite.config.ts"],
+  "include": ["src", "config", "./vite.config.ts"]
 }

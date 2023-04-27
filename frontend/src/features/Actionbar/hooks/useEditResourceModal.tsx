@@ -1,9 +1,11 @@
 import { useId, useState } from "react";
 
-import useExplorerStore from "@store/index";
+import { Alert, useOdeClient } from "@ode-react-ui/core";
+import { useHotToast } from "@ode-react-ui/hooks";
+import { useUpdateResource } from "@services/queries/index";
+import { useSelectedResources } from "@store/store";
 import { type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
 
 interface useEditResourceModalProps {
   resource: IResource;
@@ -23,6 +25,7 @@ export default function useEditResourceModal({
   onSuccess,
   onCancel,
 }: useEditResourceModalProps) {
+  const { i18n } = useOdeClient();
   const [cover, setCover] = useState<{ name: string; image: string }>({
     name: "",
     image: "",
@@ -30,10 +33,10 @@ export default function useEditResourceModal({
   const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
   const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
   const [slug, setSlug] = useState<string>(resource.slug || "");
-  const updateResource = useExplorerStore((state) => state.updateResource);
-  const selectedResources = useExplorerStore((state) =>
-    state.getSelectedIResources(),
-  );
+
+  const { hotToast } = useHotToast(Alert);
+  const updateResource = useUpdateResource();
+  const selectedResources = useSelectedResources();
   const {
     reset,
     register,
@@ -81,7 +84,7 @@ export default function useEditResourceModal({
   ) {
     try {
       // call API
-      updateResource({
+      updateResource.mutate({
         description: formData.description,
         entId: selectedResources[0].assetId,
         name: formData.title,
@@ -90,9 +93,9 @@ export default function useEditResourceModal({
         trashed: selectedResources[0].trashed,
         thumbnail: cover.image || selectedResources[0].thumbnail,
       });
-      toast.success(
+      hotToast.success(
         <>
-          <h3>Coming Soon!</h3>
+          <strong>{i18n("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
           <p>Public: {formData.enablePublic}</p>
@@ -101,13 +104,13 @@ export default function useEditResourceModal({
       onSuccess?.();
     } catch (error) {
       console.error(error);
-      toast.error(`Error: ${error}`);
+      hotToast.error(`Error: ${error}`);
     }
   };
 
   function onCopyToClipBoard(_: string) {
     navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
-    toast.success(<>{"L'adresse a été copié dans le presse papier"}</>);
+    hotToast.success("L'adresse a été copié dans le presse papier");
   }
 
   function onFormCancel() {

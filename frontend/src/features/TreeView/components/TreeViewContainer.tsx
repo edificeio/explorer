@@ -1,56 +1,61 @@
 import { lazy, Suspense } from "react";
 
+import TrashButton from "@features/TreeView/components/TrashButton";
 import { TreeView } from "@ode-react-ui/advanced";
 import { Button, LoadingScreen, useOdeClient } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
-import useExplorerStore from "@store/index";
-import { FOLDER } from "ode-ts-client";
-
-import TrashButton from "./TrashButton";
+import {
+  useStoreActions,
+  useIsTrash,
+  useSelectedNodesIds,
+  useTreeData,
+} from "@store/store";
+import { useQueryClient } from "@tanstack/react-query";
+import { FOLDER, type ID } from "ode-ts-client";
 
 const CreateModal = lazy(
-  async () => await import("@features/Actionbar/components/EditFolderModal"),
+  async () => await import("../../Actionbar/components/EditFolderModal"),
 );
 
 export const TreeViewContainer = () => {
+  const queryclient = useQueryClient();
   const { i18n } = useOdeClient();
-
+  const [isCreateFolderModalOpen, toggle] = useModal();
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const {
-    foldTreeItem,
-    getIsTrashSelected,
-    gotoTrash,
-    selectedNodeIds,
-    selectTreeItem,
-    treeData,
-    unfoldTreeItem,
-  } = useExplorerStore((state) => state);
+  const treeData = useTreeData();
+  const isTrashFolder = useIsTrash();
+  const selectedNodesIds = useSelectedNodesIds();
+  const { goToTrash, selectTreeItem, unfoldTreeItem, foldTreeItem } =
+    useStoreActions();
 
-  const [isCreateFolderModalOpen, toggle] = useModal();
+  const handleTreeItemUnfold = async (folderId: ID) => {
+    await unfoldTreeItem(folderId, queryclient);
+  };
 
-  return (
+  return treeData ? (
     <>
       <TreeView
         data={treeData}
-        selectedNodesIds={selectedNodeIds}
+        selectedNodesIds={selectedNodesIds}
         onTreeItemSelect={selectTreeItem}
         onTreeItemFold={foldTreeItem}
-        onTreeItemUnfold={unfoldTreeItem}
+        onTreeItemUnfold={handleTreeItemUnfold}
       />
       <TrashButton
         id={FOLDER.BIN}
-        selected={getIsTrashSelected()}
-        onSelect={gotoTrash}
+        selected={isTrashFolder}
+        onSelect={goToTrash}
       />
       <div className="d-grid my-16">
         <Button
+          disabled={isTrashFolder}
           type="button"
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={() => toggle()}
+          onClick={toggle}
         >
           {i18n("explorer.folder.new")}
         </Button>
@@ -60,11 +65,11 @@ export const TreeViewContainer = () => {
           <CreateModal
             edit={false}
             isOpen={isCreateFolderModalOpen}
-            onSuccess={() => toggle()}
-            onCancel={() => toggle()}
+            onSuccess={toggle}
+            onCancel={toggle}
           />
         )}
       </Suspense>
     </>
-  );
+  ) : null;
 };

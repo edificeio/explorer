@@ -2,7 +2,17 @@ import { useState, useEffect } from "react";
 
 import { useOdeClient, Alert } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import useExplorerStore from "@store/index";
+import { useActions, useRestore } from "@services/queries/index";
+import { getAppParams } from "@shared/utils/getAppParams";
+import {
+  useStoreActions,
+  useCurrentFolder,
+  useFolderIds,
+  useIsTrash,
+  useResourceIds,
+  useSelectedFolders,
+  useSelectedResources,
+} from "@store/store";
 import { type IAction, ACTION } from "ode-ts-client";
 
 type ModalName =
@@ -14,6 +24,8 @@ type ModalName =
   | "share"
   | "void";
 
+const { trashActions } = getAppParams();
+
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
@@ -21,30 +33,28 @@ export default function useActionBar() {
 
   const { i18n } = useOdeClient();
   const { hotToast } = useHotToast(Alert);
-  const {
-    actions,
-    openFolder,
-    getIsTrashSelected,
-    getCurrentFolderId,
-    openSelectedResource,
-    printSelectedResource,
-    createResource,
-    restoreSelection,
-    getSelectedIResources,
-    getSelectedFolders,
-    selectedResources,
-    selectedFolders,
-  } = useExplorerStore();
+
+  const currentFolder = useCurrentFolder();
+  const resourceIds = useResourceIds();
+  const selectedResources = useSelectedResources();
+  const selectedFolders = useSelectedFolders();
+  const folderIds = useFolderIds();
+  const isTrashFolder = useIsTrash();
+  const restoreItem = useRestore();
+  const { openResource, createResource, printSelectedResource, openFolder } =
+    useStoreActions();
+
+  const { data: actions } = useActions();
 
   useEffect(() => {
-    if (selectedResources.length === 0 && selectedFolders.length === 0) {
+    if (resourceIds.length === 0 && folderIds.length === 0) {
       setIsActionBarOpen(false);
       return;
     }
     setIsActionBarOpen(true);
-  }, [selectedResources, selectedFolders]);
+  }, [resourceIds, folderIds]);
 
-  function handleClick(action: IAction) {
+  async function handleClick(action: IAction) {
     // A11Y: fix Screen readers can read parent page content outside the modal
     // https://docs.deque.com/issue-help/1.0.0/en/reading-order-browse-outside-modal
     document.getElementById("root")?.setAttribute("aria-hidden", "true");
@@ -54,10 +64,10 @@ export default function useActionBar() {
 
     switch (action.id) {
       case ACTION.OPEN:
-        if (selectedResources.length > 0) {
-          return openSelectedResource();
+        if (resourceIds.length > 0) {
+          return openResource(selectedResources[0]);
         } else {
-          return openFolder(selectedFolders[0]);
+          return openFolder({ folderId: selectedFolders[0].id });
         }
       case ACTION.CREATE:
         return createResource();
@@ -68,7 +78,7 @@ export default function useActionBar() {
       case ACTION.DELETE:
         return setOpenedModalName("delete");
       case ACTION.RESTORE:
-        return onRestore();
+        return await onRestore();
       case ACTION.PUBLISH:
         return setOpenedModalName("publish");
       // TODO fix in ode-ts
@@ -90,11 +100,11 @@ export default function useActionBar() {
    * @returns true if the action button must be visible
    */
   function isActivable(action: IAction): boolean {
-    const all = selectedResources.length + selectedFolders.length;
+    const all = resourceIds.length + folderIds.length;
     const onlyOneItemSelected =
-      selectedResources.length === 1 || selectedFolders.length === 1;
+      resourceIds.length === 1 || folderIds.length === 1;
     const onlyOneSelected = all === 1;
-    const noFolderSelected = selectedFolders.length === 0;
+    const noFolderSelected = folderIds.length === 0;
     switch (action.id) {
       case ACTION.OPEN:
         return onlyOneSelected;
@@ -114,14 +124,14 @@ export default function useActionBar() {
         return true;
     }
   }
-  function isActivableForTrash(action: IAction): boolean {
+  function isActivableForTrash(): boolean {
     return true;
   }
 
   async function onRestore() {
     try {
-      if (getIsTrashSelected()) {
-        await restoreSelection();
+      if (isTrashFolder) {
+        await restoreItem.mutate();
         hotToast.success(i18n("explorer.trash.toast"));
       } else {
         throw new Error("Cannot restore untrashed resources");
@@ -160,24 +170,8 @@ export default function useActionBar() {
   const onShareResourceSuccess = onFinish("share");
   const onShareResourceCancel = onFinish("share");
 
-  const trashActions: IAction[] = [
-    {
-      id: ACTION.RESTORE,
-      available: true,
-      target: "actionbar",
-      workflow: "",
-    },
-    {
-      id: ACTION.DELETE,
-      available: true,
-      target: "actionbar",
-      workflow: "",
-    },
-  ];
-  const isTrashFolder = getIsTrashSelected();
-
   function onEdit() {
-    if (selectedResources && selectedResources.length > 0) {
+    if (resourceIds && resourceIds.length > 0) {
       setOpenedModalName("edit_resource");
     } else {
       setOpenedModalName("edit_folder");
@@ -185,16 +179,17 @@ export default function useActionBar() {
   }
 
   function overrideLabel(action: IAction) {
-    if ((action.id as any) === "edit" && selectedFolders.length > 0) {
+    if ((action.id as any) === "edit" && folderIds.length > 0) {
       return "explorer.rename";
     }
+
     return `explorer.actions.${action.id}`;
   }
 
   return {
-    selectedElement: [...getSelectedIResources(), ...getSelectedFolders()],
     actions: isTrashFolder ? trashActions : actions,
-    currentFolderId: getCurrentFolderId(),
+    selectedElement: [...selectedResources, ...selectedFolders],
+    currentFolderId: currentFolder?.id,
     overrideLabel,
     handleClick,
     isActivable: isTrashFolder ? isActivableForTrash : isActivable,

@@ -2,7 +2,11 @@ import { useState } from "react";
 
 import { useOdeClient, Alert } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import useExplorerStore from "@store/index";
+import {
+  useStoreActions,
+  useResourceIds,
+  useSelectedResources,
+} from "@store/store";
 import {
   RESOURCE,
   type PublishParameters,
@@ -11,8 +15,8 @@ import {
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
-  PublishModalError,
   PublishModalSuccess,
+  PublishModalError,
 } from "../components/PublishModal";
 
 interface ModalProps {
@@ -42,13 +46,9 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const getSelectedIResources = useExplorerStore(
-    (state) => state.getSelectedIResources,
-  );
-  const selectedResources = useExplorerStore(
-    (state) => state.selectedResources,
-  );
-  const publishApi = useExplorerStore((state) => state.publish);
+  const selectedResources = useSelectedResources();
+  const resourceIds = useResourceIds();
+  const { publishApi } = useStoreActions();
 
   const {
     register,
@@ -75,8 +75,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       let coverBlob = new Blob();
       if (cover.image) {
         coverBlob = await http.get(cover.image, { responseType: "blob" });
-      } else if (getSelectedIResources()[0].thumbnail) {
-        coverBlob = await http.get(getSelectedIResources()[0].thumbnail, {
+      } else if (selectedResources[0].thumbnail) {
+        coverBlob = await http.get(selectedResources[0].thumbnail, {
           responseType: "blob",
         });
       }
@@ -100,7 +100,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         keyWords: formData.keyWords,
         language: formData.language,
         licence: "CC-BY",
-        resourceId: selectedResources[0],
+        resourceId: resourceIds[0],
         subjectArea: selectedSubjectAreas as string[],
         teacherAvatar,
         title: formData.title,
@@ -133,7 +133,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   };
 
   return {
-    selectedResources: getSelectedIResources(),
+    selectedResources,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },

@@ -11,7 +11,8 @@ import { Alert, useOdeClient } from "@ode-react-ui/core";
 import { type OptionListItemType } from "@ode-react-ui/core/dist/Dropdown/SelectListProps";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
-import useExplorerStore from "@store/index";
+import { useShareResource } from "@services/queries/index";
+import { useSelectedResources } from "@store/store";
 import {
   odeServices,
   type ShareRight,
@@ -52,10 +53,7 @@ export default function useShareResourceModal({
   const [showBookmarkMembers, setShowBookmarkMembers] =
     useState<boolean>(false);
 
-  const getSelectedIResources = useExplorerStore(
-    (state) => state.getSelectedIResources,
-  );
-  const shareResource = useExplorerStore((state) => state.shareResource);
+  const selectedResources = useSelectedResources();
 
   const { appCode } = useOdeClient();
 
@@ -76,7 +74,7 @@ export default function useShareResourceModal({
 
     const rights: ShareRightWithVisibles = await odeServices
       .share()
-      .getRightsForResource(appCode, getSelectedIResources()[0]?.assetId);
+      .getRightsForResource(appCode, selectedResources[0]?.assetId);
 
     setShareRights(rights);
   }, []);
@@ -166,13 +164,15 @@ export default function useShareResourceModal({
     });
   };
 
+  const shareResource = useShareResource();
+
   const { hotToast } = useHotToast(Alert);
   const handleShare = async () => {
     try {
-      await shareResource(
-        getSelectedIResources()[0]?.assetId,
-        shareRights.rights,
-      );
+      await shareResource.mutate({
+        entId: selectedResources[0]?.assetId,
+        shares: shareRights.rights,
+      });
       // TODO i18n
       hotToast.success("Partage sauvegardé");
       onSuccess?.();
@@ -235,9 +235,7 @@ export default function useShareResourceModal({
         // exclude owner from results
         .filter(
           (r) =>
-            !(
-              r.type === "user" && r.id === getSelectedIResources()[0].creatorId
-            ),
+            !(r.type === "user" && r.id === selectedResources[0].creatorId),
         )
         .map((searchResult) => {
           return {
@@ -348,7 +346,7 @@ export default function useShareResourceModal({
     return shareRight.actions.filter((a) => shareAction.id === a.id).length > 0;
   };
   const currentIsAuthor = (): boolean => {
-    for (const res of getSelectedIResources()) {
+    for (const res of selectedResources) {
       if (res.creatorId !== session.user.userId) {
         return false;
       }

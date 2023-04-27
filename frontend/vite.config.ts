@@ -23,6 +23,7 @@ export default ({ mode }: { mode: string }) => {
         "Cache-Control": "public, max-age=300",
       }
     : {};
+
   const proxyObj = hasEnvFile
     ? {
         target: envs.VITE_RECETTE,
@@ -40,10 +41,6 @@ export default ({ mode }: { mode: string }) => {
     "^/(?=help-1d|help-2d)": proxyObj,
     "^/(?=assets)": proxyObj,
     "^/(?=theme|locale|i18n|skin)": proxyObj,
-    "^/(?=assets|theme|locale|i18n|skin)": {
-      target: envs.VITE_LOCALHOST || "http://localhost:8090",
-      changeOrigin: false,
-    },
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,
     "/blog": proxyObj,

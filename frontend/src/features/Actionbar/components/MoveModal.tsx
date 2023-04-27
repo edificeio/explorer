@@ -1,7 +1,9 @@
-import useMoveModal from "@features/Actionbar/hooks/useMoveModal";
 import { TreeView } from "@ode-react-ui/advanced";
 import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
+import { useTreeData } from "@store/store";
 import { createPortal } from "react-dom";
+
+import useMoveModal from "../hooks/useMoveModal";
 
 interface MoveModalProps {
   isOpen: boolean;
@@ -20,9 +22,11 @@ export default function MoveModal({
     handleTreeItemSelect,
     handleTreeItemUnfold,
     onMove,
-    treeData,
     disableSubmit,
   } = useMoveModal({ onSuccess });
+
+  const treeData = useTreeData();
+
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
       <Modal.Header

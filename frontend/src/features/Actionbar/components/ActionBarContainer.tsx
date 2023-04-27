@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 
-import useActionBar from "@features/Actionbar/hooks/useActionBar";
 import {
   Button,
   ActionBar,
@@ -11,15 +10,13 @@ import { useTransition, animated } from "@react-spring/web";
 import { AccessControl } from "@shared/components/AccessControl";
 import { type IAction } from "ode-ts-client";
 
+import useActionBar from "../hooks/useActionBar";
+
 const ShareResourceModal = lazy(
-  async () => await import("@features/Actionbar/components/ShareResourceModal"),
+  async () => await import("./ShareResourceModal"),
 );
-const DeleteModal = lazy(
-  async () => await import("@features/Actionbar/components/DeleteModal"),
-);
-const MoveModal = lazy(
-  async () => await import("@features/Actionbar/components/MoveModal"),
-);
+const DeleteModal = lazy(async () => await import("./DeleteModal"));
+const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
 const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
 const PublishModal = lazy(async () => await import("./PublishModal"));
@@ -70,7 +67,7 @@ export default function ActionBarContainer() {
             >
               <ActionBar>
                 {actions
-                  .filter(
+                  ?.filter(
                     (action: IAction) =>
                       action.available && action.target === "actionbar",
                   )

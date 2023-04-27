@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
+// import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
 import {
   Modal,
   Button,
@@ -9,13 +9,14 @@ import {
   Input,
   useOdeClient,
 } from "@ode-react-ui/core";
-import { type IFolder } from "ode-ts-client";
 import { createPortal } from "react-dom";
+
+import useEditFolderModal from "../hooks/useEditFolderModal";
 
 interface EditFolderModalProps {
   isOpen: boolean;
   edit: boolean;
-  onSuccess?: (folder: IFolder) => void;
+  onSuccess?: () => void;
   onCancel: () => void;
 }
 

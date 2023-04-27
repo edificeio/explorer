@@ -13,6 +13,7 @@ import {
   DropdownTrigger,
   SelectList,
 } from "@ode-react-ui/core";
+import { useSelectedResources } from "@store/store";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
@@ -30,8 +31,9 @@ export default function PublishModal({
   onSuccess = () => {},
   onCancel = () => {},
 }: PublishModalProps) {
+  const { i18n, app } = useOdeClient();
+
   const {
-    selectedResources,
     register,
     handleSubmit,
     publish,
@@ -43,14 +45,14 @@ export default function PublishModal({
     setSelectedSubjectAreas,
   } = usePublishModal({ onSuccess });
 
+  const selectedResources = useSelectedResources();
+
   const {
     activityTypeOptions,
     subjectAreaOptions,
     languageOptions,
     ageOptions,
   } = usePublishLibraryModalOptions();
-
-  const { i18n, app } = useOdeClient();
 
   const defaultSelectLanguageOption = i18n("bpr.form.publication.language");
   const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");

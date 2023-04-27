@@ -95,14 +95,14 @@ export default function ShareResourceModal({
             <tbody>
               {currentIsAuthor() && (
                 <tr>
-                  <td scope="row">
+                  <th scope="row">
                     <Avatar
                       alt={i18n("explorer.modal.share.avatar.me.alt")}
                       size="xs"
                       src={myAvatar}
                       variant="circle"
                     />
-                  </td>
+                  </th>
                   <td>{i18n("share.me")}</td>
                   {shareRightActions.map((shareRightAction) => (
                     <td
