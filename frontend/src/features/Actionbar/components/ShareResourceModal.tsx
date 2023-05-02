@@ -116,9 +116,9 @@ export default function ShareResourceModal({
                   <td></td>
                 </tr>
               )}
-              {shareRights?.rights.map((shareRight: ShareRight) => (
-                <>
-                  {showShareRightLine(shareRight) && (
+              {shareRights?.rights.map((shareRight: ShareRight) => {
+                return (
+                  showShareRightLine(shareRight) && (
                     <tr
                       key={shareRight.id}
                       className={shareRight.isBookmarkMember ? "bg-light" : ""}
@@ -195,9 +195,9 @@ export default function ShareResourceModal({
                         )}
                       </td>
                     </tr>
-                  )}
-                </>
-              ))}
+                  )
+                );
+              })}
             </tbody>
           </table>
         </div>
