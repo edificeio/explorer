@@ -80,87 +80,84 @@ export default function useShareResourceModal({
   }, []);
 
   const handleActionCheckbox = (
-    item: ShareRight,
+    shareRight: ShareRight,
     actionName: ShareRightActionDisplayName,
   ) => {
     setShareRights(({ rights, ...props }: ShareRightWithVisibles) => {
-      const newItems = [...rights];
-      const index = newItems.findIndex((x) => x.id === item.id);
-      const findAction = newItems[index].actions.filter(
-        (a) => a.id === actionName,
+      const newShareRights: ShareRight[] = [...rights];
+      const index: number = newShareRights.findIndex(
+        (x) => x.id === shareRight.id,
       );
       const actionObject = shareRightActions.filter(
         (a) => a.id === actionName,
       )[0];
-      if (findAction.length > 0) {
-        // if already has right => keep only lowest rights
-        newItems[index] = {
-          ...newItems[index],
-          actions: [
-            ...shareRightActions.filter(
-              (a) => (a.priority || 0) < (actionObject.priority || 0),
-            ),
-          ],
-        };
 
-        // if bookmark then apply right to users and groups
-        if (item.type === "sharebookmark") {
-          newItems[index].users?.forEach((user) => {
-            const userIndex = newItems.findIndex((item) => item.id === user.id);
-            newItems[userIndex] = {
-              ...newItems[userIndex],
-              actions: newItems[index].actions,
-            };
-          });
+      const isActionRemoving: boolean =
+        newShareRights[index].actions.findIndex((a) => a.id === actionName) >
+        -1;
 
-          newItems[index].groups?.forEach((user) => {
-            const userIndex = newItems.findIndex((item) => item.id === user.id);
-            newItems[userIndex] = {
-              ...newItems[userIndex],
-              actions: newItems[index].actions,
-            };
-          });
-        }
+      if (isActionRemoving) {
+        // remove selected action and actions that requires the selected action
+        let updatedActions = newShareRights[index].actions.filter(
+          (action) => action.id !== actionName,
+        );
+        const requiredActions = shareRightActions.filter((action) =>
+          action.requires?.includes(actionName),
+        );
+        updatedActions = updatedActions.filter(
+          (action) => !requiredActions.includes(action),
+        );
 
-        return {
-          rights: newItems,
-          ...props,
+        newShareRights[index] = {
+          ...newShareRights[index],
+          actions: updatedActions,
         };
       } else {
-        // if not have right => keep only lowest rights and equals
-        newItems[index] = {
-          ...newItems[index],
-          actions: [
-            ...shareRightActions.filter(
-              (a) => (a.priority || 0) <= (actionObject.priority || 0),
+        // add required actions
+        const requiredActions = shareRightActions.filter(
+          (shareRightAction) =>
+            actionObject.requires?.includes(shareRightAction.id) &&
+            !newShareRights[index].actions.find(
+              (action) => action.id === shareRightAction.id,
             ),
+        );
+        newShareRights[index] = {
+          ...newShareRights[index],
+          actions: [
+            ...newShareRights[index].actions,
+            actionObject,
+            ...requiredActions,
           ],
         };
-
-        // if bookmark then apply right to users and groups
-        if (item.type === "sharebookmark") {
-          newItems[index].users?.forEach((user) => {
-            const userIndex = newItems.findIndex((item) => item.id === user.id);
-            newItems[userIndex] = {
-              ...newItems[userIndex],
-              actions: newItems[index].actions,
-            };
-          });
-
-          newItems[index].groups?.forEach((user) => {
-            const userIndex = newItems.findIndex((item) => item.id === user.id);
-            newItems[userIndex] = {
-              ...newItems[userIndex],
-              actions: newItems[index].actions,
-            };
-          });
-        }
-
-        return {
-          rights: newItems,
-          ...props,
-        };
       }
+
+      // if bookmark then apply right to users and groups
+      if (shareRight.type === "sharebookmark") {
+        newShareRights[index].users?.forEach((user) => {
+          const userIndex = newShareRights.findIndex(
+            (item) => item.id === user.id,
+          );
+          newShareRights[userIndex] = {
+            ...newShareRights[userIndex],
+            actions: newShareRights[index].actions,
+          };
+        });
+
+        newShareRights[index].groups?.forEach((user) => {
+          const userIndex = newShareRights.findIndex(
+            (item) => item.id === user.id,
+          );
+          newShareRights[userIndex] = {
+            ...newShareRights[userIndex],
+            actions: newShareRights[index].actions,
+          };
+        });
+      }
+
+      return {
+        rights: newShareRights,
+        ...props,
+      };
     });
   };
 
