@@ -154,6 +154,13 @@ export default function EditResourceModal({
                   type="text"
                   key={refSlug}
                   {...register("safeSlug", {
+                    validate: {
+                      required: (value) => {
+                        if (!value && !disableSlug)
+                          return "Requis lorsque la checkbox 'Accessible publiquement via une URL est cochée'";
+                        return true;
+                      },
+                    },
                     disabled: disableSlug,
                     value: slug,
                     onChange: (e) => onSlugChange(e.target.value),
