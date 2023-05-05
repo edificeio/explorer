@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import { Modal, Button, Image, useOdeClient } from "@ode-react-ui/core";
 import { imageBootstrap } from "@shared/constants";
-import { useOnboardingModal } from "@shared/hooks/useOnboardingModal";
 import { createPortal } from "react-dom";
 import { Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,18 +9,18 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 
-export default function OnboardingModal({
+export default function OnboardingTrash({
   isOpen,
   setIsOpen,
+  handleSavePreference,
 }: {
   isOpen: boolean;
   setIsOpen: (bool: boolean) => void;
+  handleSavePreference: () => void;
 }): JSX.Element | null {
   const { i18n } = useOdeClient();
   const [swiperInstance, setSwiperInstance] = useState<any>();
   const [swiperProgress, setSwiperprogress] = useState<number>(0);
-
-  const { handleSavePreference } = useOnboardingModal();
 
   return isOpen
     ? createPortal(

@@ -51,7 +51,7 @@
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",
-    "@react-spring/web": "9.7.2",
+    "@react-spring/web": "9.7.0",
     "@tanstack/react-query": "4.29.5",
     "dayjs": "1.11.7",
     "ode-ts-client": "%odeTsClientVersion%",
@@ -59,9 +59,9 @@
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.4",
     "react-hook-form": "7.43.9",
-    "react-hot-toast": "2.4.0",
+    "react-hot-toast": "2.4.1",
     "react-intersection-observer": "9.4.3",
-    "swiper": "9.2.4",
+    "swiper": "9.0.4",
     "zustand": "4.3.7"
   },
   "devDependencies": {

@@ -11,6 +11,7 @@ function renderChunks(deps: Record<string, string>) {
 
 export const build = {
   assetsDir: "assets/js/ode-explorer/",
+  cssCodeSplit: false,
   rollupOptions: {
     output: {
       entryFileNames: `[name].js`,

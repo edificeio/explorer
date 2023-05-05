@@ -4,7 +4,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { configurationFramework } from "@shared/constants";
 
 function Root() {
-  const { session } = useOdeClient();
+  const { session, isAppLoading } = useOdeClient();
 
   if (!session || session.notLoggedIn) {
     return (
@@ -15,6 +15,8 @@ function Root() {
       </div>
     );
   }
+
+  console.log({ isAppLoading });
 
   return (
     <Layout configurationFramework={configurationFramework}>

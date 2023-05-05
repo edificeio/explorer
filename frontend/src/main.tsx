@@ -31,19 +31,19 @@ const queryClient = new QueryClient({
 
 createRoot(root!).render(
   <StrictMode>
-    <OdeClientProvider
-      framework={{
-        sessionFramework,
-        configurationFramework,
-        notifyFramework,
-        http,
-      }}
-      params={getAppParams()}
-    >
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <OdeClientProvider
+        framework={{
+          sessionFramework,
+          configurationFramework,
+          notifyFramework,
+          http,
+        }}
+        params={getAppParams()}
+      >
         <Root />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </OdeClientProvider>
+      </OdeClientProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   </StrictMode>,
 );

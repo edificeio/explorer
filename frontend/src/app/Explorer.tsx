@@ -16,8 +16,8 @@ import { Breadcrumb } from "@shared/components/Breadcrumb";
 import { useOnboardingModal } from "@shared/hooks/useOnboardingModal";
 import { type IAction } from "ode-ts-client";
 
-const OnboardingModal = lazy(
-  async () => await import("@shared/components/OnboardingModal"),
+const OnboardingTrash = lazy(
+  async () => await import("@shared/components/OnboardingTrash"),
 );
 
 const AppAction = lazy(
@@ -30,8 +30,27 @@ const Library = lazy(
 
 export default function Explorer(): JSX.Element | null {
   const { app } = useOdeClient();
-  const { isOnboardingTrash, isOpen, setIsOpen } = useOnboardingModal();
+  const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
+    useOnboardingModal();
   const { data: actions } = useActions();
+
+  /* const [isOnboardingTrash, setIsOnboardingTrash] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); */
+
+  /* useEffect(() => {
+    (async () => {
+      const response: any = await getOnboardingTrash();
+      if (response) {
+        setIsOnboardingTrash(JSON.parse(response?.showOnboardingTrash));
+        return;
+      }
+      setIsOnboardingTrash(true);
+    })();
+  }, []); */
+
+  /* const handleSavePreference = async () => {
+    await saveOnboardingTrash({ onSuccess: () => setIsOpen(false) });
+  }; */
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
@@ -75,11 +94,15 @@ export default function Explorer(): JSX.Element | null {
           <List />
         </Grid.Col>
         <ActionBarContainer />
-        <Suspense fallback={<LoadingScreen />}>
-          {isOnboardingTrash && (
-            <OnboardingModal isOpen={isOpen} setIsOpen={setIsOpen} />
-          )}
-        </Suspense>
+        {isOnboardingTrash && (
+          <Suspense fallback={<LoadingScreen />}>
+            <OnboardingTrash
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              handleSavePreference={handleSavePreference}
+            />
+          </Suspense>
+        )}
       </Grid>
     </>
   );
