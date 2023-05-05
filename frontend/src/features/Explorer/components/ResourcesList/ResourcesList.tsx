@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 import { Button, Card, useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
@@ -22,7 +22,7 @@ import "dayjs/locale/it";
 
 dayjs.extend(relativeTime);
 
-export const ResourcesList = (): JSX.Element | null => {
+const ResourcesList = (): JSX.Element | null => {
   const { app, currentLanguage, session, i18n } = useOdeClient();
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
@@ -44,9 +44,9 @@ export const ResourcesList = (): JSX.Element | null => {
   const hasMoreResources =
     currentMaxIdx < (searchParams.pagination.maxIdx || 0);
 
-  function handleNextPage() {
+  const handleNextPage = useCallback(() => {
     fetchNextPage();
-  }
+  }, []);
 
   function toggleSelect(resource: IResource) {
     if (resourceIds.includes(resource.id)) {
@@ -111,7 +111,6 @@ export const ResourcesList = (): JSX.Element | null => {
           </React.Fragment>
         ))}
       </animated.ul>
-      {/* {hasMoreResources && <LoadMore onClick={fetchNextPage} />} */}
       {hasMoreResources && (
         <div className="d-grid gap-2 col-4 mx-auto my-24">
           <Button
@@ -127,3 +126,5 @@ export const ResourcesList = (): JSX.Element | null => {
     </React.Fragment>
   );
 };
+
+export default ResourcesList;

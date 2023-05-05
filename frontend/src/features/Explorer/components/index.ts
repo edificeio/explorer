@@ -1,5 +1,5 @@
 export * from "./AppHeader/AppHeader";
-export * from "./AppAction/AppAction";
 export * from "./List/List";
-export * from "./FoldersList/FoldersList";
-export * from "./ResourcesList/ResourcesList";
+export { default as AppAction } from "./AppAction/AppAction";
+export { default as FoldersList } from "./FoldersList/FoldersList";
+export { default as ResourcesList } from "./ResourcesList/ResourcesList";

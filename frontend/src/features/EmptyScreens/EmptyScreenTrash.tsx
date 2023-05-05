@@ -1,7 +1,7 @@
 import { useOdeClient, EmptyScreen } from "@ode-react-ui/core";
 import { imageBootstrap } from "@shared/constants";
 
-export function EmptyScreenTrash(): JSX.Element {
+export default function EmptyScreenTrash(): JSX.Element {
   const { i18n } = useOdeClient();
 
   return (

@@ -1,6 +1,7 @@
+import { Suspense, lazy } from "react";
+
 import ActionBarContainer from "@features/Actionbar/components/ActionBarContainer";
 import { AppHeader } from "@features/Explorer/components";
-import { AppAction } from "@features/Explorer/components/AppAction/AppAction";
 import { List } from "@features/Explorer/components/List/List";
 import { TreeViewContainer } from "@features/TreeView/components/TreeViewContainer";
 import {
@@ -8,24 +9,40 @@ import {
   Grid,
   useOdeClient,
   AppIcon,
-  Library,
+  LoadingScreen,
 } from "@ode-react-ui/core";
 import { useActions } from "@services/queries";
 import { Breadcrumb } from "@shared/components/Breadcrumb";
-import OnBoardingTrash from "@shared/components/OnBoardingModal";
-import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
+import { useOnboardingModal } from "@shared/hooks/useOnboardingModal";
 import { type IAction } from "ode-ts-client";
 
+const OnboardingModal = lazy(
+  async () => await import("@shared/components/OnboardingModal"),
+);
+
+const AppAction = lazy(
+  async () => await import("@features/Explorer/components/AppAction/AppAction"),
+);
+
+const Library = lazy(
+  async () => await import("@features/Explorer/components/Library/Library"),
+);
+
 export default function Explorer(): JSX.Element | null {
-  const { i18n, app, appCode, getBootstrapTheme } = useOdeClient();
+  const { app } = useOdeClient();
+  const { isOnboardingTrash, isOpen, setIsOpen } = useOnboardingModal();
   const { data: actions } = useActions();
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
   );
-  const LIB_URL = `https://library.opendigitaleducation.com/search/?application%5B0%5D=${capitalizeFirstLetter(
-    appCode,
-  )}&page=1&sort_field=views&sort_order=desc`;
+
+  function isActionAvailable(value: string) {
+    const found = actions?.filter(
+      (action: IAction) => action.id === value && action.available,
+    );
+    return found && found.length > 0;
+  }
 
   return (
     <>
@@ -34,7 +51,11 @@ export default function Explorer(): JSX.Element | null {
           <AppIcon app={app} size="40" />
           <AppCard.Name />
         </AppCard>
-        <AppAction />
+        {isActionAvailable("create") && (
+          <Suspense fallback={<LoadingScreen />}>
+            <AppAction />
+          </Suspense>
+        )}
       </AppHeader>
       <Grid>
         <Grid.Col
@@ -44,13 +65,9 @@ export default function Explorer(): JSX.Element | null {
         >
           <TreeViewContainer />
           {canPublish?.available && (
-            <Library
-              src={`${getBootstrapTheme()}/images/image-library.svg`}
-              alt={i18n("explorer.libray.img.alt")}
-              text={i18n("explorer.libray.title")}
-              url={LIB_URL}
-              textButton={i18n("explorer.libray.btn")}
-            />
+            <Suspense fallback={<LoadingScreen />}>
+              <Library />
+            </Suspense>
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="9">
@@ -58,7 +75,11 @@ export default function Explorer(): JSX.Element | null {
           <List />
         </Grid.Col>
         <ActionBarContainer />
-        <OnBoardingTrash />
+        <Suspense fallback={<LoadingScreen />}>
+          {isOnboardingTrash && (
+            <OnboardingModal isOpen={isOpen} setIsOpen={setIsOpen} />
+          )}
+        </Suspense>
       </Grid>
     </>
   );

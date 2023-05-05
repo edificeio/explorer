@@ -1,11 +1,27 @@
-import { EmptyScreenApp } from "@features/EmptyScreens/EmptyScreenApp";
-import { EmptyScreenNoContentInFolder } from "@features/EmptyScreens/EmptyScreenNoContentInFolder";
-import { EmptyScreenTrash } from "@features/EmptyScreens/EmptyScreenTrash";
+import { Suspense, lazy } from "react";
+
+import { LoadingScreen } from "@ode-react-ui/core";
 import { useSearchContext } from "@services/queries";
 import { useIsRoot, useIsTrash, useHasSelectedNodes } from "@store/store";
 
-import { FoldersList } from "../FoldersList/FoldersList";
-import { ResourcesList } from "../ResourcesList/ResourcesList";
+const EmptyScreenApp = lazy(
+  async () => await import("@features/EmptyScreens/EmptyScreenApp"),
+);
+const EmptyScreenNoContentInFolder = lazy(
+  async () =>
+    await import("@features/EmptyScreens/EmptyScreenNoContentInFolder"),
+);
+const EmptyScreenTrash = lazy(
+  async () => await import("@features/EmptyScreens/EmptyScreenTrash"),
+);
+const FoldersList = lazy(
+  async () =>
+    await import("@features/Explorer/components/FoldersList/FoldersList"),
+);
+const ResourcesList = lazy(
+  async () =>
+    await import("@features/Explorer/components/ResourcesList/ResourcesList"),
+);
 
 export const List = () => {
   const isRoot = useIsRoot();
@@ -19,7 +35,7 @@ export const List = () => {
   const hasNoData = hasNoFolders && hasNoResources;
 
   return (
-    <>
+    <Suspense fallback={<LoadingScreen />}>
       {!hasNoData && !isLoading && (
         <>
           <FoldersList />
@@ -36,6 +52,6 @@ export const List = () => {
       {isTrashFolder && data?.pages[0].resources.length === 0 && (
         <EmptyScreenTrash />
       )}
-    </>
+    </Suspense>
   );
 };

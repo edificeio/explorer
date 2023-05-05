@@ -8,7 +8,7 @@ import {
 } from "@store/store";
 import { type ID, type IFolder } from "ode-ts-client";
 
-export const FoldersList = (): JSX.Element | null => {
+const FoldersList = (): JSX.Element | null => {
   const { app } = useOdeClient();
 
   const { data, isFetching } = useSearchContext();
@@ -67,3 +67,5 @@ export const FoldersList = (): JSX.Element | null => {
     </animated.ul>
   ) : null;
 };
+
+export default FoldersList;

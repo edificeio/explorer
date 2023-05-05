@@ -3,7 +3,7 @@ import { useActions } from "@services/queries";
 import { imageBootstrap } from "@shared/constants";
 import { type IAction } from "ode-ts-client";
 
-export function EmptyScreenApp(): JSX.Element {
+export default function EmptyScreenApp(): JSX.Element {
   const { i18n, appCode, is1d } = useOdeClient();
 
   const { data: actions } = useActions();
