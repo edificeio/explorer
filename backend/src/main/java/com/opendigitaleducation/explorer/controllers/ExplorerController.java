@@ -587,6 +587,7 @@ public class ExplorerController extends BaseController {
         op.setPageSize(queryParams.getLong("folder_page_size", ExplorerConfig.DEFAULT_SIZE.longValue()));
         op.setStartIndex(queryParams.getLong("folder_start_idx", 0l));
         op.setParentId(queryParams.getValue("folder"));
+        op.setTrashed(queryParams.getBoolean("trashed"));
         return op;
     }
 
