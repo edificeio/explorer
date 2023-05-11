@@ -45,17 +45,4 @@ public class MuteController extends BaseController {
         .onFailure(th -> renderError(request));
     }
 
-    // TODO what rights are allowed here
-    @Get("resources/:id/mutedBy")
-    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-    public void getMutedBy(final HttpServerRequest request) {
-        getAuthenticatedUserInfos(eb, request)
-        .compose(userInfos -> {
-            final String id = request.getParam("id");
-            return muteService.getMutedBy(id, userInfos);
-        })
-        .onSuccess(e -> Renders.render(request, e))
-        .onFailure(th -> renderError(request));
-    }
-
 }

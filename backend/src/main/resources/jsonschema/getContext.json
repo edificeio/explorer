@@ -14,7 +14,6 @@
     "public": { "type": "boolean" },
     "favorite": { "type": "boolean" },
     "trashed": { "type": "boolean" },
-    "is_trash_view": { "type": "boolean" },
     "folder": {
       "anyOf": [
         {
