@@ -76,7 +76,7 @@ export default function Explorer(): JSX.Element | null {
           </Suspense>
         )}
       </AppHeader>
-      <Grid>
+      <Grid className="flex-grow-1">
         <Grid.Col
           sm="3"
           className="border-end pt-16 pe-16 d-none d-lg-block"
