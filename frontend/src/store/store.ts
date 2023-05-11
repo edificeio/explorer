@@ -91,7 +91,7 @@ export const useStoreContext = create<State>()((set, get) => ({
       pageSize: 48,
       maxIdx: 0,
     },
-    isTrashView: false,
+    trashed: false,
   },
   treeData: {
     id: FOLDER.DEFAULT,
@@ -190,7 +190,7 @@ export const useStoreContext = create<State>()((set, get) => ({
               ...searchParams.filters,
               folder: folderId,
             },
-            isTrashView: folderId === FOLDER.BIN,
+            trashed: folderId === FOLDER.BIN,
           },
         };
       });
@@ -206,7 +206,7 @@ export const useStoreContext = create<State>()((set, get) => ({
             "prefetchContext",
             {
               folderId,
-              isTrashView: false,
+              trashed: false,
             },
           ],
           queryFn: async () =>
@@ -222,7 +222,7 @@ export const useStoreContext = create<State>()((set, get) => ({
           "prefetchContext",
           {
             folderId,
-            isTrashView: false,
+            trashed: false,
           },
         ]);
         set((state) => ({
@@ -275,7 +275,7 @@ export const useStoreContext = create<State>()((set, get) => ({
           filters: {
             folder: FOLDER.BIN,
           },
-          isTrashView: true,
+          trashed: true,
         },
         currentFolder: {
           id: FOLDER.BIN,

@@ -79,7 +79,7 @@ export const useSearchContext = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -142,7 +142,7 @@ export const useTrash = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -204,7 +204,7 @@ export const useRestore = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -263,7 +263,7 @@ export const useDelete = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -316,7 +316,7 @@ export const useMoveItem = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -366,7 +366,7 @@ export const useCreateFolder = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -418,7 +418,7 @@ export const useUpdatefolder = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -477,7 +477,7 @@ export const useShareResource = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 
@@ -536,7 +536,7 @@ export const useUpdateResource = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
-      isTrashView: searchParams.isTrashView,
+      trashed: searchParams.trashed,
     },
   ];
 

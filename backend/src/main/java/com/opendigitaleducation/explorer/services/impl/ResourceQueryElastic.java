@@ -234,12 +234,14 @@ public class ResourceQueryElastic {
         final JsonArray filter = new JsonArray();
         final JsonArray mustNot = new JsonArray();
         final JsonArray must = new JsonArray();
+        final JsonArray should = new JsonArray();
         payload.put("sort", sort);
         payload.put("query", query);
         query.put("bool", bool);
         bool.put("filter", filter);
         bool.put("must_not", mustNot);
         bool.put("must", must);
+        bool.put("should", should);
         //by creator
         final Optional<JsonObject> creatorIdTerm = createTerm("creatorId", creatorId);
         if (creatorIdTerm.isPresent()) {
@@ -307,7 +309,17 @@ public class ResourceQueryElastic {
             must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text.get()).put("fields", fields)));
         }
         if (trashed.isPresent()) {
-            filter.add(new JsonObject().put("term", new JsonObject().put("trashed", trashed.get())));
+            if(trashed.get()){
+                should.add(new JsonObject().put("term", new JsonObject().put("trashed", true)));
+                if(this.user.isPresent()){
+                    should.add(new JsonObject().put("term", new JsonObject().put("trashedBy", this.user.get().getUserId())));
+                }
+            }else{
+                mustNot.add(new JsonObject().put("term", new JsonObject().put("trashed", true)));
+                if(this.user.isPresent()){
+                    mustNot.add(new JsonObject().put("term", new JsonObject().put("trashedBy", this.user.get().getUserId())));
+                }
+            }
         }
         if (pub.isPresent()) {
             filter.add(new JsonObject().put("term", new JsonObject().put("public", pub.get())));

@@ -71,6 +71,9 @@
       "trashed": {
         "type": "boolean"
       },
+      "trashedBy": {
+        "type": "keyword"
+      },
       "favoriteFor": {
         "type": "keyword"
       },

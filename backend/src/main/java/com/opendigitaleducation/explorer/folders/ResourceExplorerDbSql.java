@@ -300,7 +300,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("SELECT resources.id as resource_id,resources.ent_id,resources.resource_unique_id, ");
-        queryTpl.append("       resources.creator_id, resources.version, resources.application, resources.resource_type, resources.muted_by, resources.rights, ");
+        queryTpl.append("       resources.creator_id, resources.version, resources.application, resources.resource_type, resources.muted_by, resources.trashed_by, resources.rights, ");
         queryTpl.append("       f.id as folder_id, fr.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM explorer.resources  ");
         queryTpl.append("LEFT JOIN explorer.folder_resources fr ON resources.id=fr.resource_id ");
@@ -372,7 +372,7 @@ public class ResourceExplorerDbSql {
         queryTpl.append("   ON CONFLICT(resource_id, user_id) DO UPDATE SET folder_id=EXCLUDED.folder_id RETURNING * ");
         queryTpl.append(") ");
         queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
-        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by, upserted.rights, ");
+        queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by,upserted.trashed_by, upserted.rights, ");
         queryTpl.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
         queryTpl.append("FROM explorer.resources AS upserted ");
         queryTpl.append("INNER JOIN updated ON updated.resource_id=upserted.id ");

@@ -15,7 +15,6 @@ import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -25,7 +24,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.elasticsearch.ElasticClientManager;
+import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
+import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.redis.RedisClient;
 import org.entcore.common.user.UserInfos;
@@ -43,9 +44,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import static io.vertx.core.CompositeFuture.all;
@@ -53,7 +53,7 @@ import static java.lang.System.currentTimeMillis;
 
 @RunWith(VertxUnitRunner.class)
 @FixMethodOrder(MethodSorters.DEFAULT)
-public class ResourceMoveTest {
+public class ResourceTrashTest {
     private static final TestHelper test = TestHelper.helper();
     @ClassRule
     public static ElasticsearchContainer esContainer = test.database().createOpenSearchContainer().withReuse(true);
@@ -67,9 +67,7 @@ public class ResourceMoveTest {
     static IngestJob job;
     static FolderExplorerDbSql helper;
     static ResourceService resourceService;
-    static final String APPLICATION = ExplorerConfig.FOLDER_APPLICATION;
-    private String id3;
-//TODO error in move queries?
+
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
@@ -107,30 +105,8 @@ public class ResourceMoveTest {
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, plugin.getCommunication(), postgresClient, muteService);
     }
 
-    static JsonObject folder(final String name) {
-        return folder(name, APPLICATION, ExplorerConfig.FOLDER_TYPE, null);
-    }
-
-    static JsonObject createHtml(String id, String name, String html, String content, final UserInfos user) {
-        final JsonObject json = new JsonObject()
-                .put("id", id)
-                .put("html", html)
-                .put("content", content)
-                .put("name", name)
-                .put("version", 1).put("creator_id", user.getUserId());
-        return json;
-    }
-
-    static JsonObject folder(final String name, final String application, final String resourceType, final Integer parentId) {
-        final JsonObject folder = new JsonObject()
-                .put("name", name)
-                .put("application", application)
-                .put("resourceType", resourceType)
-                .put("version", 1);
-        if (parentId != null) {
-            folder.put("parentId", parentId);
-        }
-        return folder;
+    static ExplorerMessage createHtml(String id, String name, String html, final UserInfos user) {
+        return ExplorerMessage.upsert(new IdAndVersion(id, 1), user, false, plugin.getApplication(), plugin.getResourceType(), plugin.getResourceType()).withName(name).withContent(html, ExplorerMessage.ExplorerContentType.Html).withCreator(user).withCreatedAt(new Date());
     }
 
     static Future<Void> createMappingResource(ElasticClientManager elasticClientManager,TestContext context, String index) {
@@ -143,42 +119,50 @@ public class ResourceMoveTest {
     }
 
     /**
-     * <u>GOAL</u> : Ensure that an application is able to create a resource into a folder using an upsert message
+     * <u>GOAL</u> : Ensure that an application is able to create a resource and trash it by user and also for all users
      *
      * <u>STEPS</u> :
      * <ol>
-     *     <li>Create a folder "folder1" that will contains the resource</li>
-     *     <li>Create a resource "resource1" that will be moved into folder1 using a "notifyUpsert" from the plugin</li>
+     *     <li>Create a resource "resource1" that will be trashed for all users using a "notifyUpsert" from the plugin</li>
+     *     <li>Create a resource "resource2" that will be trashed for one user using a "notifyUpsert" from the plugin</li>
      *     <li>Call the ingest job to ensure all messages has been processed</li>
-     *     <li>Fetch all resources which are inside "folder1" for the current user</li>
-     *     <li>Ensure that "resource1" is present and the unique resource in "folder1" </li>
+     *     <li>Fetch all non-trashed resources for the current user: it should be empty</li>
+     *     <li>Fetch all trashed resources: should return resource1 and resource2</li>
+     *     <li>Ensure that "resource1" has trashed=true AND trashedBy empty </li>
+     *     <li>Ensure that "resource2" has trashed=false AND trashedBy non empty </li>
      * </ol>
+     *
      * @param context Test context
      */
     @Test
-    public void shouldCreateAndMoveResource(TestContext context) {
+    public void shouldCreateAndTrashResource(TestContext context) {
         final Async async = context.async();
-        final UserInfos user = test.directory().generateUser("usermoveresource");
-        final JsonObject folder1 = folder("folder1_" + currentTimeMillis());
-        final JsonObject resource1 = createHtml("html-create-move", "name1", "<div><h1>MONHTML1</h1></div>", "content1", user);
-        folderService.create(user, APPLICATION, Arrays.asList(folder1)).compose(r -> {
-            id3 = r.get(0).getValue("id").toString();
-            return job.execute(true).compose(ra1 -> {
-                return folderService.fetch(user, APPLICATION, Optional.empty()).onComplete(context.asyncAssertSuccess(fetchRes -> {
-                    context.assertEquals(1, fetchRes.size());
+        final UserInfos user = test.directory().generateUser("user-trash-resource");
+        final ExplorerMessage resource1 = createHtml("resource-trash1", "name1", "<div><h1>MONHTML1</h1></div>", user).withTrashed(true);
+        final ExplorerMessage resource2 = createHtml("resource-trash2", "name2", "<div><h1>MONHTML2</h1></div>", user).withTrashedBy(Arrays.asList(user.getUserId()));
+        final Future<Void> future1 = plugin.notifyUpsert(Arrays.asList(resource1, resource2));
+        future1.compose(upsertRes -> {
+            return job.execute(true);
+        }).onComplete(context.asyncAssertSuccess(executeRes -> {
+            resourceService.fetch(user, plugin.getApplication(), new ResourceSearchOperation().setSearchEverywhere(true)).onComplete(context.asyncAssertSuccess(resources -> {
+                context.assertEquals(2, resources.size());
+            })).compose(zeroFetch -> {
+                return resourceService.fetch(user, plugin.getApplication(), new ResourceSearchOperation().setSearchEverywhere(true).setTrashed(false)).onComplete(context.asyncAssertSuccess(resources -> {
+                    System.out.println(resources);
+                    context.assertEquals(0, resources.size());
+                }));
+            }).compose(firstFetch -> {
+                return resourceService.fetch(user, plugin.getApplication(), new ResourceSearchOperation().setSearchEverywhere(true).setTrashed(true)).onComplete(context.asyncAssertSuccess(resources -> {
+                    context.assertEquals(2, resources.size());
+                    context.assertEquals("resource-trash1", resources.getJsonObject(0).getString("assetId"));
+                    context.assertEquals("resource-trash2", resources.getJsonObject(1).getString("assetId"));
+                    context.assertEquals(true, resources.getJsonObject(0).getBoolean("trashed"));
+                    context.assertEquals(0, resources.getJsonObject(0).getJsonArray("trashedBy", new JsonArray()).size());
+                    context.assertEquals(false, resources.getJsonObject(1).getBoolean("trashed"));
+                    context.assertEquals(1, resources.getJsonObject(1).getJsonArray("trashedBy").size());
+                    async.complete();
                 }));
             });
-        }).compose(e -> {
-            final Future<Void> future1 = plugin.notifyUpsert(user, Arrays.asList(resource1), Optional.of(Integer.valueOf(id3)));
-            return future1.compose(ee -> {
-                return job.execute(true);
-            });
-        }).onComplete(context.asyncAssertSuccess(e->{
-            resourceService.fetch(user, FakePostgresPlugin.FAKE_APPLICATION, new ResourceSearchOperation().setParentId(id3)).onComplete(context.asyncAssertSuccess(resources->{
-                context.assertEquals(1, resources.size());
-                context.assertEquals("html-create-move", resources.getJsonObject(0).getString("assetId"));
-                async.complete();
-            }));
         }));
     }
 
