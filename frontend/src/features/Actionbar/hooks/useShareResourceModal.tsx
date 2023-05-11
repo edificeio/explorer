@@ -212,19 +212,23 @@ export default function useShareResourceModal({
   };
 
   const search = async (searchInputValue: string) => {
-    // start from 1 because it is front search
-    if (searchInputValue.length >= 1) {
-      const service = odeServices.share();
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      const response = await service.findUsers(searchInputValue, {
-        visibleBookmarks: shareRights.visibleBookmarks,
-        visibleUsers: shareRights.visibleUsers,
-        visibleGroups: shareRights.visibleGroups,
-      });
+    const isAdml = await odeServices.session().isAdml();
+    // start search from 1 caracter length for non Adml but start from 3 for Adml
+    if (
+      (!isAdml && searchInputValue.length >= 1) ||
+      (isAdml && searchInputValue.length >= 3)
+    ) {
+      const resSearchShareSubjects = await odeServices
+        .share()
+        .searchShareSubjects(
+          appCode,
+          selectedResources[0]?.assetId,
+          searchInputValue,
+        );
+      setSearchAPIResults(resSearchShareSubjects);
 
-      setSearchAPIResults(response);
-
-      const adaptedResults = response
+      const adaptedResults = resSearchShareSubjects
+        // exclude subjects that are already in the share table
         .filter(
           (r) =>
             !shareRights.rights.find((shareRight) => shareRight.id === r.id),
