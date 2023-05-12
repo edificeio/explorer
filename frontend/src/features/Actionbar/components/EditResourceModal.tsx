@@ -28,7 +28,7 @@ export default function EditResourceModal({
   onSuccess,
   onCancel,
 }: EditResourceModalProps) {
-  const { i18n, appCode } = useOdeClient();
+  const { i18n, appCode, app } = useOdeClient();
 
   const selectedResources = useSelectedResources();
   const resource = selectedResources[0];
@@ -76,6 +76,7 @@ export default function EditResourceModal({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <div className="d-flex flex-column flex-md-row gap-16 mb-24">
             <ImagePicker
+              app={app}
               src={resource?.thumbnail}
               label={i18n("explorer.imagepicker.label")}
               addButtonLabel={i18n("explorer.imagepicker.button.add")}
