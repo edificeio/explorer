@@ -9,7 +9,11 @@ import {
   sessionFramework,
 } from "@shared/constants";
 import { getAppParams } from "@shared/utils/getAppParams";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
@@ -22,9 +26,15 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (error === "0090") window.location.replace("/auth/login");
+    },
+  }),
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // default: true
+      retry: false,
+      refetchOnWindowFocus: false,
     },
   },
 });

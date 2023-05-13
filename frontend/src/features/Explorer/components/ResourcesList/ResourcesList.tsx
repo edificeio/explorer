@@ -23,7 +23,8 @@ import "dayjs/locale/it";
 dayjs.extend(relativeTime);
 
 const ResourcesList = (): JSX.Element | null => {
-  const { app, currentLanguage, session, i18n } = useOdeClient();
+  const { currentApp, currentLanguage, user, i18n } = useOdeClient();
+
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
@@ -89,7 +90,7 @@ const ResourcesList = (): JSX.Element | null => {
                   }}
                 >
                   <Card
-                    app={app}
+                    app={currentApp}
                     className="c-pointer"
                     creatorName={creatorName}
                     isPublic={resource.public}
@@ -103,7 +104,7 @@ const ResourcesList = (): JSX.Element | null => {
                     onSelect={() => toggleSelect(resource)}
                     resourceSrc={thumbnail}
                     updatedAt={time}
-                    userSrc={session?.avatarUrl}
+                    userSrc={user?.avatar}
                   />
                 </animated.li>
               );

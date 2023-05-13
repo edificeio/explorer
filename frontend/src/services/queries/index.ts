@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
+import { useOdeClient } from "@ode-react-ui/core";
 import {
   createFolder,
   deleteAll,
@@ -12,7 +13,6 @@ import {
   updateFolder,
   updateResource,
 } from "@services/api/index";
-import { translate } from "@shared/constants";
 import { getAppParams } from "@shared/utils/getAppParams";
 import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
 import {
@@ -69,6 +69,7 @@ export const useActions = () => {
  * @returns infinite query to load resources
  */
 export const useSearchContext = () => {
+  const { i18n } = useOdeClient();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
@@ -104,7 +105,7 @@ export const useSearchContext = () => {
           children: folders.map(
             (folder: IFolder) => new TreeNodeFolderWrapper(folder),
           ),
-          name: translate("explorer.filters.mine"),
+          name: i18n("explorer.filters.mine"),
         });
       } else {
         setTreeData(
@@ -121,7 +122,7 @@ export const useSearchContext = () => {
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
       });
     },
-    refetchOnMount: false,
+    // refetchOnMount: false,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined,
   });

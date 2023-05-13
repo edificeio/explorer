@@ -9,7 +9,7 @@ import {
 import { type ID, type IFolder } from "ode-ts-client";
 
 const FoldersList = (): JSX.Element | null => {
-  const { app } = useOdeClient();
+  const { currentApp } = useOdeClient();
 
   const { data, isFetching } = useSearchContext();
 
@@ -53,7 +53,7 @@ const FoldersList = (): JSX.Element | null => {
             }}
           >
             <Card
-              app={app}
+              app={currentApp}
               name={name}
               isFolder
               isLoading={isFetching}

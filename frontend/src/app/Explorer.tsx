@@ -29,28 +29,11 @@ const Library = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { app } = useOdeClient();
+  const { currentApp } = useOdeClient();
+
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
   const { data: actions } = useActions();
-
-  /* const [isOnboardingTrash, setIsOnboardingTrash] = useState(false);
-  const [isOpen, setIsOpen] = useState(true); */
-
-  /* useEffect(() => {
-    (async () => {
-      const response: any = await getOnboardingTrash();
-      if (response) {
-        setIsOnboardingTrash(JSON.parse(response?.showOnboardingTrash));
-        return;
-      }
-      setIsOnboardingTrash(true);
-    })();
-  }, []); */
-
-  /* const handleSavePreference = async () => {
-    await saveOnboardingTrash({ onSuccess: () => setIsOpen(false) });
-  }; */
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
@@ -66,8 +49,8 @@ export default function Explorer(): JSX.Element | null {
   return (
     <>
       <AppHeader>
-        <AppCard app={app} isHeading headingStyle="h3" level="h1">
-          <AppIcon app={app} size="40" />
+        <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
+          <AppIcon app={currentApp} size="40" />
           <AppCard.Name />
         </AppCard>
         {isActionAvailable("create") && (

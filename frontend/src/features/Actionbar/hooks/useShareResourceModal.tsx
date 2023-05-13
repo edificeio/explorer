@@ -33,7 +33,7 @@ export default function useShareResourceModal({
   onSuccess,
   onCancel,
 }: useShareResourceModalProps) {
-  const { session } = useOdeClient();
+  const { session, appCode } = useOdeClient();
   const [idBookmark, setIdBookmark] = useState<string>(useId());
   const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
     rights: [],
@@ -54,8 +54,6 @@ export default function useShareResourceModal({
     useState<boolean>(false);
 
   const selectedResources = useSelectedResources();
-
-  const { appCode } = useOdeClient();
 
   useEffect(() => {
     initShareRightsAndActions();

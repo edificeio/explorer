@@ -289,13 +289,17 @@ export const useSearchParams = () =>
 
 export const useSelectedNodesIds = () =>
   useStoreContext((state) => state.selectedNodesIds);
+
 export const useTreeData = () => useStoreContext((state) => state.treeData);
+
 export const useSelectedFolders = () =>
   useStoreContext((state) => state.selectedFolders);
+
 export const useSelectedResources = () =>
   useStoreContext((state) => state.selectedResources);
 
 export const useFolderIds = () => useStoreContext((state) => state.folderIds);
+
 export const useResourceIds = () =>
   useStoreContext((state) => state.resourceIds);
 

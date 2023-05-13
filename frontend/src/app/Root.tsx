@@ -1,28 +1,17 @@
 import Explorer from "@app/Explorer";
 import { Layout } from "@ode-react-ui/advanced";
-import { useOdeClient } from "@ode-react-ui/core";
-import { configurationFramework } from "@shared/constants";
+import { useOdeClient, LoadingScreen } from "@ode-react-ui/core";
 
 function Root() {
-  const { session, isAppLoading } = useOdeClient();
+  const { init } = useOdeClient();
 
-  if (!session || session.notLoggedIn) {
-    return (
-      <div className="d-grid min-vh-100 align-items-center justify-content-center">
-        <a href="/auth/login" target="_blank" rel="noreferrer">
-          S'identifier sur le backend...
-        </a>
-      </div>
-    );
-  }
+  if (!init) return <LoadingScreen position={false} />;
 
-  console.log({ isAppLoading });
-
-  return (
-    <Layout configurationFramework={configurationFramework}>
+  return init ? (
+    <Layout>
       <Explorer />
     </Layout>
-  );
+  ) : null;
 }
 
 export default Root;

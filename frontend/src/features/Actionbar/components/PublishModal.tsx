@@ -31,7 +31,7 @@ export default function PublishModal({
   onSuccess = () => {},
   onCancel = () => {},
 }: PublishModalProps) {
-  const { i18n, app } = useOdeClient();
+  const { i18n, currentApp } = useOdeClient();
 
   const {
     register,
@@ -85,7 +85,7 @@ export default function PublishModal({
               {i18n("bpr.form.publication.cover.title")}
             </div>
             <ImagePicker
-              app={app}
+              app={currentApp}
               src={selectedResources[0]?.thumbnail}
               label={i18n("bpr.form.publication.cover.upload.label")}
               addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}

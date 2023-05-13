@@ -37,20 +37,28 @@ export const List = () => {
   return (
     <Suspense fallback={<LoadingScreen />}>
       {!hasNoData && !isLoading && (
-        <>
+        <Suspense fallback={<LoadingScreen />}>
           <FoldersList />
           <ResourcesList />
-        </>
+        </Suspense>
       )}
 
-      {isRoot && hasNoData && <EmptyScreenApp />}
+      {isRoot && hasNoData && (
+        <Suspense fallback={<LoadingScreen />}>
+          <EmptyScreenApp />
+        </Suspense>
+      )}
 
       {hasSelectedNodes && hasNoData && !isTrashFolder && (
-        <EmptyScreenNoContentInFolder />
+        <Suspense fallback={<LoadingScreen />}>
+          <EmptyScreenNoContentInFolder />
+        </Suspense>
       )}
 
       {isTrashFolder && data?.pages[0].resources.length === 0 && (
-        <EmptyScreenTrash />
+        <Suspense fallback={<LoadingScreen />}>
+          <EmptyScreenTrash />
+        </Suspense>
       )}
     </Suspense>
   );

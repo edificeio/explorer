@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { Modal, Button, Image, useOdeClient } from "@ode-react-ui/core";
-import { imageBootstrap } from "@shared/constants";
 import { createPortal } from "react-dom";
 import { Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -18,7 +17,7 @@ export default function OnboardingTrash({
   setIsOpen: (bool: boolean) => void;
   handleSavePreference: () => void;
 }): JSX.Element | null {
-  const { i18n } = useOdeClient();
+  const { i18n, theme } = useOdeClient();
   const [swiperInstance, setSwiperInstance] = useState<any>();
   const [swiperProgress, setSwiperprogress] = useState<number>(0);
 
@@ -53,7 +52,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto my-12"
                   loading="lazy"
-                  src={`${imageBootstrap}/onboarding/corbeille-menu.svg`}
+                  src={`${theme?.bootstrapPath}/onboarding/corbeille-menu.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen1.title")}</p>
@@ -64,7 +63,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${imageBootstrap}/onboarding/corbeille-notif.svg`}
+                  src={`${theme?.bootstrapPath}/onboarding/corbeille-notif.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen2.title")}</p>
@@ -75,7 +74,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${imageBootstrap}/onboarding/corbeille-delete.svg`}
+                  src={`${theme?.bootstrapPath}/onboarding/corbeille-delete.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen3.title")}</p>

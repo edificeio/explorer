@@ -1,21 +1,20 @@
 import { useOdeClient, EmptyScreen } from "@ode-react-ui/core";
 import { useActions } from "@services/queries";
-import { imageBootstrap } from "@shared/constants";
 import { type IAction } from "ode-ts-client";
 
 export default function EmptyScreenApp(): JSX.Element {
-  const { i18n, appCode, is1d } = useOdeClient();
+  const { i18n, appCode, theme } = useOdeClient();
 
   const { data: actions } = useActions();
 
   const canCreate = actions?.find((action: IAction) => action.id === "create");
   const labelEmptyScreenApp = () => {
-    if (canCreate?.available && is1d) {
+    if (canCreate?.available && theme?.is1d) {
       // TODO should not have specific app i18n
       return i18n("explorer.emptyScreen.blog.txt1d.create");
-    } else if (canCreate?.available && !is1d) {
+    } else if (canCreate?.available && !theme?.is1d) {
       return i18n("explorer.emptyScreen.blog.txt2d.create");
-    } else if (!canCreate?.available && is1d) {
+    } else if (!canCreate?.available && theme?.is1d) {
       return i18n("explorer.emptyScreen.blog.txt1d.consultation");
     } else {
       return i18n("explorer.emptyScreen.blog.txt2d.consultation");
@@ -24,7 +23,7 @@ export default function EmptyScreenApp(): JSX.Element {
 
   return (
     <EmptyScreen
-      imageSrc={`${imageBootstrap}/emptyscreen/illu-${appCode}.svg`}
+      imageSrc={`${theme?.bootstrapPath}/emptyscreen/illu-${appCode}.svg`}
       imageAlt={i18n("explorer.emptyScreen.app.alt")}
       title={`${
         canCreate?.available

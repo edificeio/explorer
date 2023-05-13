@@ -35,12 +35,12 @@ interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
+  const { user, http, app } = useOdeClient();
+
   const [cover, setCover] = useState<Record<string, string>>({
     name: "",
     image: "",
   });
-
-  const { session, http, app } = useOdeClient();
 
   const { hotToast } = useHotToast(Alert);
 
@@ -68,10 +68,10 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     setCover(preview);
   }
 
+  const userId = user ? user?.userId : "";
+
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
     try {
-      const userId = session ? session.user.userId : "";
-
       let coverBlob = new Blob();
       if (cover.image) {
         coverBlob = await http.get(cover.image, { responseType: "blob" });
@@ -104,9 +104,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         subjectArea: selectedSubjectAreas as string[],
         teacherAvatar,
         title: formData.title,
-        userId: session?.user.userId,
-        userStructureName:
-          resAttachmentSchool.name || session?.user.structureNames[0],
+        userId,
+        userStructureName: resAttachmentSchool.name || user?.structureNames[0],
       };
 
       const resourceType = [RESOURCE.BLOG][0];
