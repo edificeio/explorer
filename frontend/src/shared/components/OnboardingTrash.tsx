@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { Modal, Button, Image, useOdeClient } from "@ode-react-ui/core";
+import { Modal, Button, Image } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 import { Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";

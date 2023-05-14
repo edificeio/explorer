@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202305131809",
+  "version": "1.0.0-feat-explorer.202305141836",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -47,7 +47,7 @@
     ]
   },
   "dependencies": {
-    "@ode-react-ui/advanced": "dev",
+    "@ode-react-ui/components": "dev",
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",

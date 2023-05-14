@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 
-import { Alert, useOdeClient } from "@ode-react-ui/core";
+import { Alert } from "@ode-react-ui/components";
+import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { useUpdateResource } from "@services/queries/index";
 import { useSelectedResources } from "@store/store";
@@ -25,7 +26,7 @@ export default function useEditResourceModal({
   onSuccess,
   onCancel,
 }: useEditResourceModalProps) {
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
   const [cover, setCover] = useState<{ name: string; image: string }>({
     name: "",
     image: "",

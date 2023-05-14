@@ -1,4 +1,5 @@
-import { useOdeClient, EmptyScreen } from "@ode-react-ui/core";
+import { EmptyScreen } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useActions } from "@services/queries";
 import { type IAction } from "ode-ts-client";
 

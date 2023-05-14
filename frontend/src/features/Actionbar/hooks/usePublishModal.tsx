@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { useOdeClient, Alert } from "@ode-react-ui/core";
+import { Alert } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import {
   useStoreActions,
@@ -35,7 +36,7 @@ interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
-  const { user, http, app } = useOdeClient();
+  const { user, http, currentApp } = useOdeClient();
 
   const [cover, setCover] = useState<Record<string, string>>({
     name: "",
@@ -94,7 +95,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application: app?.displayName || "",
+        application: currentApp?.displayName || "",
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,

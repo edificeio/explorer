@@ -8,11 +8,11 @@ import {
   Input,
   ImagePicker,
   Select,
-  useOdeClient,
   Dropdown,
   DropdownTrigger,
   SelectList,
-} from "@ode-react-ui/core";
+} from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useSelectedResources } from "@store/store";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";

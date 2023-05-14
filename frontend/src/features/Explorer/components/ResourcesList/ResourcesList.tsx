@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 
-import { Button, Card, useOdeClient } from "@ode-react-ui/core";
+import { Button, Card } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import { useSearchContext } from "@services/queries/index";
 import {

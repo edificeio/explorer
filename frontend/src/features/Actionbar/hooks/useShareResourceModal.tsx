@@ -7,22 +7,20 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { Alert, useOdeClient } from "@ode-react-ui/core";
-import { type OptionListItemType } from "@ode-react-ui/core/dist/Dropdown/SelectListProps";
+import { Alert, type OptionListItemType } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
 import { useShareResource } from "@services/queries/index";
 import { useSelectedResources } from "@store/store";
+import { odeServices } from "ode-ts-client";
 import {
-  odeServices,
-  type ShareRight,
+  type ShareRightWithVisibles,
   type ShareRightAction,
   type ShareSubject,
-} from "ode-ts-client";
-import {
+  type ShareRight,
   type ShareRightActionDisplayName,
-  type ShareRightWithVisibles,
-} from "ode-ts-client/dist/services/ShareService";
+} from "ode-ts-client/dist/share/interface";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;

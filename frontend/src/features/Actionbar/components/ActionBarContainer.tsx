@@ -1,11 +1,7 @@
 import { lazy, Suspense } from "react";
 
-import {
-  Button,
-  ActionBar,
-  useOdeClient,
-  LoadingScreen,
-} from "@ode-react-ui/core";
+import { Button, ActionBar, LoadingScreen } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useTransition, animated } from "@react-spring/web";
 import { AccessControl } from "@shared/components/AccessControl";
 import { type IAction } from "ode-ts-client";

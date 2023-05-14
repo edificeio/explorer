@@ -1,4 +1,5 @@
-import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
+import { Modal, Button } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 
 import useDeleteModal from "../hooks/useDeleteModal";

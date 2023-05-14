@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 
 import TrashButton from "@features/TreeView/components/TrashButton";
-import { TreeView } from "@ode-react-ui/advanced";
-import { Button, LoadingScreen, useOdeClient } from "@ode-react-ui/core";
+import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
+import { useI18n } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import {
@@ -20,7 +20,7 @@ const CreateModal = lazy(
 
 export const TreeViewContainer = () => {
   const queryclient = useQueryClient();
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
   const [isCreateFolderModalOpen, toggle] = useModal();
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913

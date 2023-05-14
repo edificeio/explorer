@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-import { useOdeClient, Alert } from "@ode-react-ui/core";
+import { Alert } from "@ode-react-ui/components";
+import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { useActions, useRestore } from "@services/queries/index";
 import { getAppParams } from "@shared/utils/getAppParams";
@@ -31,7 +32,7 @@ export default function useActionBar() {
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
   const [clickedAction, setClickedAction] = useState<IAction>();
 
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
   const { hotToast } = useHotToast(Alert);
 
   const currentFolder = useCurrentFolder();
@@ -73,7 +74,10 @@ export default function useActionBar() {
         if (resourceIds.length > 0) {
           return openResource(selectedResources[0]);
         } else {
-          return openFolder({ folderId: selectedFolders[0].id });
+          return openFolder({
+            folder: selectedFolders[0],
+            folderId: selectedFolders[0].id,
+          });
         }
       case ACTION.CREATE:
         return createResource();

@@ -1,4 +1,5 @@
-import { Card, useOdeClient } from "@ode-react-ui/core";
+import { Card } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import { useSearchContext } from "@services/queries/index";
 import {

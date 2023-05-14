@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 
-import { LoadingScreen } from "@ode-react-ui/core";
+import { LoadingScreen } from "@ode-react-ui/components";
 import { useSearchContext } from "@services/queries";
 import { useIsRoot, useIsTrash, useHasSelectedNodes } from "@store/store";
 

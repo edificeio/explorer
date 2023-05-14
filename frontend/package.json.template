@@ -47,7 +47,7 @@
     ]
   },
   "dependencies": {
-    "@ode-react-ui/advanced": "dev",
+    "@ode-react-ui/components": "dev",
     "@ode-react-ui/core": "dev",
     "@ode-react-ui/hooks": "dev",
     "@ode-react-ui/icons": "dev",

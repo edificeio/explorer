@@ -7,10 +7,10 @@ import { TreeViewContainer } from "@features/TreeView/components/TreeViewContain
 import {
   AppCard,
   Grid,
-  useOdeClient,
   AppIcon,
   LoadingScreen,
-} from "@ode-react-ui/core";
+} from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useActions } from "@services/queries";
 import { Breadcrumb } from "@shared/components/Breadcrumb";
 import { useOnboardingModal } from "@shared/hooks/useOnboardingModal";

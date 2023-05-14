@@ -1,5 +1,5 @@
-import { TreeView } from "@ode-react-ui/advanced";
-import { Modal, Button, useOdeClient } from "@ode-react-ui/core";
+import { Modal, Button, TreeView } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useTreeData } from "@store/store";
 import { createPortal } from "react-dom";
 

@@ -11,8 +11,8 @@ import {
   Modal,
   SearchButton,
   SelectList,
-  useOdeClient,
-} from "@ode-react-ui/core";
+} from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import {
   Bookmark,
   Close,
@@ -21,7 +21,7 @@ import {
   Save,
   Search,
 } from "@ode-react-ui/icons";
-import { type ShareRight } from "ode-ts-client";
+import { type ShareRight } from "ode-ts-client/dist/share/interface";
 import { createPortal } from "react-dom";
 
 import ShareResourceModalFooter from "./ShareResourceModalFooter";

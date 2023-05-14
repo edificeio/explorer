@@ -1,17 +1,15 @@
 import { useEffect } from "react";
 
-// import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
+import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
 import {
   Modal,
   Button,
   FormControl,
   Label,
   Input,
-  useOdeClient,
-} from "@ode-react-ui/core";
+} from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
-
-import useEditFolderModal from "../hooks/useEditFolderModal";
 
 interface EditFolderModalProps {
   isOpen: boolean;

@@ -1,4 +1,5 @@
-import { Library as CoreLibrary, useOdeClient } from "@ode-react-ui/core";
+import { Library as CoreLibrary } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
 import { getAppParams } from "@shared/utils/getAppParams";
 

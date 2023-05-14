@@ -1,6 +1,7 @@
 import { forwardRef, type Ref } from "react";
 
-import { Button, useOdeClient } from "@ode-react-ui/core";
+import { Button } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 
 const LoadMore = forwardRef((props, ref: Ref<HTMLButtonElement>) => {
   const { i18n } = useOdeClient();

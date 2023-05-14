@@ -1,4 +1,4 @@
-import { Heading, Radio } from "@ode-react-ui/core";
+import { Heading, Radio } from "@ode-react-ui/components";
 
 import useShareResourceModalFooterBlog, {
   type PublicationType,

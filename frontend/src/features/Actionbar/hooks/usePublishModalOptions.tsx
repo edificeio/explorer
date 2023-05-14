@@ -1,8 +1,8 @@
-import { useOdeClient } from "@ode-react-ui/core";
-import { type OptionsType } from "@ode-react-ui/core/dist/Form/Select";
+import { type OptionsType } from "@ode-react-ui/components";
+import { useI18n } from "@ode-react-ui/core";
 
 export default function usePublishLibraryModalOptions() {
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
 
   // static values and labels to display in Dropdown select lists
   const activityTypeOptions: OptionsType[] = [

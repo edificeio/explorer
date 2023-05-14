@@ -1,4 +1,5 @@
-import { Button, useOdeClient } from "@ode-react-ui/core";
+import { Button } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
 import { useStoreActions } from "@store/store";
 

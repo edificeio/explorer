@@ -1,4 +1,5 @@
-import { IconButton, useOdeClient } from "@ode-react-ui/core";
+import { IconButton } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { ArrowLeft } from "@ode-react-ui/icons";
 import {
   useStoreActions,

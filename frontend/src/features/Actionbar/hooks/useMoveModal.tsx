@@ -1,7 +1,11 @@
 import { useState } from "react";
 
 import { useMoveItem } from "@services/queries/index";
-import { useStoreActions, useSelectedFolders } from "@store/store";
+import {
+  useStoreActions,
+  useSelectedFolders,
+  useSelectedResources,
+} from "@store/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ID } from "ode-ts-client";
 
@@ -17,6 +21,7 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const selectedFolders = useSelectedFolders();
+  const selectedResources = useSelectedResources();
   const { foldTreeItem, unfoldTreeItem } = useStoreActions();
 
   const queryclient = useQueryClient();
@@ -39,6 +44,13 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
         destination === selectedFolder.id ||
         destination === selectedFolder.parentId
       ) {
+        return false;
+      }
+    }
+
+    for (const selectedResource of selectedResources) {
+      console.log("canMove", { selectedResource, destination });
+      if (destination === selectedResource.folderIds[0]) {
         return false;
       }
     }
