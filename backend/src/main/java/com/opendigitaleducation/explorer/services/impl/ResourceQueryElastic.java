@@ -314,6 +314,8 @@ public class ResourceQueryElastic {
                 if(this.user.isPresent()){
                     should.add(new JsonObject().put("term", new JsonObject().put("trashedBy", this.user.get().getUserId())));
                 }
+                // should match at least one of theses conditions
+                bool.put("minimum_should_match", 1);
             }else{
                 mustNot.add(new JsonObject().put("term", new JsonObject().put("trashed", true)));
                 if(this.user.isPresent()){
