@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   FormControl,
+  FormText,
   Heading,
   ImagePicker,
   Input,
@@ -39,6 +40,7 @@ export default function EditResourceModal({
     isSubmitting,
     disableSlug,
     versionSlug,
+    correctSlug,
     register,
     handleSubmit,
     onSubmit,
@@ -146,7 +148,7 @@ export default function EditResourceModal({
             </FormControl.Label>
           </FormControl>
 
-          <FormControl id="slug">
+          <FormControl id="slug" status={correctSlug ? "invalid" : undefined}>
             <div className="d-flex flex-wrap align-items-center gap-4">
               <div>{window.location.origin}/</div>
 
@@ -171,6 +173,13 @@ export default function EditResourceModal({
                     "explorer.resource.editModal.access.url.extension",
                   )}
                 />
+                {correctSlug && (
+                  <div className="position-absolute">
+                    <FormText>
+                      Choisissez une autre URL pour votre blog
+                    </FormText>
+                  </div>
+                )}
               </div>
               <Button
                 color="primary"

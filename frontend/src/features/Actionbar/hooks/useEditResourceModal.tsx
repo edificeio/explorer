@@ -34,6 +34,7 @@ export default function useEditResourceModal({
   const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
   const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
   const [slug, setSlug] = useState<string>(resource.slug || "");
+  const [correctSlug, setCorrectSlug] = useState<boolean>(false);
 
   const { hotToast } = useHotToast(Alert);
   const updateResource = useUpdateResource();
@@ -85,7 +86,7 @@ export default function useEditResourceModal({
   ) {
     try {
       // call API
-      updateResource.mutate({
+      await updateResource.mutateAsync({
         description: formData.description,
         entId: selectedResources[0].assetId,
         name: formData.title,
@@ -94,18 +95,20 @@ export default function useEditResourceModal({
         trashed: selectedResources[0].trashed,
         thumbnail: cover.image || selectedResources[0].thumbnail,
       });
+      setCorrectSlug(false);
       hotToast.success(
         <>
           <strong>{i18n("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
-          <p>Public: {formData.enablePublic}</p>
+          <p>Public: {formData.enablePublic ? "Oui" : "Non"}</p>
         </>,
       );
       onSuccess?.();
-    } catch (error) {
-      console.error(error);
-      hotToast.error(`Error: ${error}`);
+    } catch (e) {
+      setCorrectSlug(true);
+      console.error(e);
+      // hotToast.error(`Error: ${error}`);
     }
   };
 
@@ -129,6 +132,7 @@ export default function useEditResourceModal({
     isSubmitting,
     isValid,
     versionSlug,
+    correctSlug,
     onPublicChange,
     onSlugChange,
     register,
