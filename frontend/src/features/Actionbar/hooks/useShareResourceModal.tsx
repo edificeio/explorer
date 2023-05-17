@@ -4,14 +4,14 @@ import {
   useEffect,
   useId,
   useState,
-  type KeyboardEvent,
 } from "react";
 
 import { Alert, type OptionListItemType } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
 import { useShareResource } from "@services/queries/index";
+import { useIsAdml } from "@shared/hooks/useIsAdml";
 import { useSelectedResources } from "@store/store";
 import { odeServices } from "ode-ts-client";
 import {
@@ -46,16 +46,24 @@ export default function useShareResourceModal({
   const [bookmarkName, setBookmarkName] = useState("");
   const [showBookmarkInput, toggleBookmarkInput] = useState<boolean>(false);
   const [searchInputValue, setSearchInputValue] = useState<string>("");
+  const debouncedSearchInputValue = useDebounce<string>(searchInputValue, 500);
   const [searchAPIResults, setSearchAPIResults] = useState<ShareSubject[]>([]);
   const [searchResults, setSearchResults] = useState<OptionListItemType[]>([]);
   const [showBookmarkMembers, setShowBookmarkMembers] =
     useState<boolean>(false);
+  const [searchPending, setSearchPending] = useState<boolean>(false);
+
+  const { isAdml } = useIsAdml();
 
   const selectedResources = useSelectedResources();
 
   useEffect(() => {
     initShareRightsAndActions();
   }, []);
+
+  useEffect(() => {
+    search(debouncedSearchInputValue);
+  }, [debouncedSearchInputValue]);
 
   /**
    * Init share data for the sharing table:
@@ -192,23 +200,31 @@ export default function useShareResourceModal({
 
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchInputValue(event.target.value);
-    search(event.target.value);
   };
 
-  const handleSearchInputKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      search(searchInputValue);
-    }
+  const showSearchNoResults = (): boolean => {
+    return (
+      (!searchPending &&
+        !isAdml &&
+        debouncedSearchInputValue.length > 0 &&
+        searchResults.length === 0) ||
+      (!searchPending &&
+        isAdml &&
+        debouncedSearchInputValue.length > 3 &&
+        searchResults.length === 0)
+    );
   };
 
-  const handleSearchButtonClick = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    search(searchInputValue);
+  const showSearchAdmlHint = (): boolean => {
+    return isAdml && searchInputValue.length < 3;
+  };
+
+  const showSearchLoading = (): boolean => {
+    return searchPending && searchInputValue.length > 0;
   };
 
   const search = async (searchInputValue: string) => {
-    const isAdml = await odeServices.session().isAdml();
+    setSearchPending(true);
     // start search from 1 caracter length for non Adml but start from 3 for Adml
     if (
       (!isAdml && searchInputValue.length >= 1) ||
@@ -247,6 +263,8 @@ export default function useShareResourceModal({
       setSearchResults([]);
       Promise.resolve();
     }
+
+    setSearchPending(false);
   };
 
   const handleSearchResultsChange = async (model: Array<string | number>) => {
@@ -416,6 +434,8 @@ export default function useShareResourceModal({
     searchResults,
     bookmarkName,
     showBookmarkMembers,
+    debouncedSearchInputValue,
+    searchPending,
     setBookmarkName,
     saveBookmark,
     canSave,
@@ -424,9 +444,10 @@ export default function useShareResourceModal({
     handleShare,
     handleDeleteRow,
     handleSearchInputChange,
-    handleSearchInputKeyUp,
-    handleSearchButtonClick,
     handleSearchResultsChange,
+    showSearchNoResults,
+    showSearchAdmlHint,
+    showSearchLoading,
     handleBookmarkMembersToggle,
     hasRight,
     showShareRightLine,

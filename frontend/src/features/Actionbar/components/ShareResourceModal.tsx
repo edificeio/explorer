@@ -9,8 +9,8 @@ import {
   IconButton,
   Input,
   Modal,
-  SearchButton,
   SelectList,
+  Loading,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import {
@@ -19,7 +19,6 @@ import {
   InfoCircle,
   RafterDown,
   Save,
-  Search,
 } from "@ode-react-ui/icons";
 import { type ShareRight } from "ode-ts-client/dist/share/interface";
 import { createPortal } from "react-dom";
@@ -44,10 +43,10 @@ export default function ShareResourceModal({
     shareRights,
     shareRightActions,
     showBookmarkInput,
-    searchInputValue,
     searchResults,
     bookmarkName,
     showBookmarkMembers,
+    searchPending,
     currentIsAuthor,
     setBookmarkName,
     saveBookmark,
@@ -57,9 +56,10 @@ export default function ShareResourceModal({
     handleShare,
     handleDeleteRow,
     handleSearchInputChange,
-    handleSearchInputKeyUp,
-    handleSearchButtonClick,
     handleSearchResultsChange,
+    showSearchNoResults,
+    showSearchAdmlHint,
+    showSearchLoading,
     handleBookmarkMembersToggle,
     hasRight,
     showShareRightLine,
@@ -267,23 +267,31 @@ export default function ShareResourceModal({
           {i18n("explorer.modal.share.search")} <InfoCircle className="ms-8" />
         </Heading>
 
-        <FormControl className="input-group max-w-512" id="search">
+        <FormControl className="d-flex align-items-center" id="search">
           <Input
+            className="max-w-512"
             noValidationIcon
-            placeholder={i18n("explorer.modal.share.search.placeholder")}
+            placeholder={
+              showSearchAdmlHint()
+                ? i18n("explorer.search.adml.hint")
+                : i18n("explorer.modal.share.search.placeholder")
+            }
             size="md"
             type="search"
             onChange={handleSearchInputChange}
-            onKeyUp={handleSearchInputKeyUp}
           />
-          <SearchButton
-            aria-label="search"
-            icon={<Search />}
-            onClick={handleSearchButtonClick}
-          />
+          {showSearchLoading() && (
+            <div className="d-flex align-items-center p-4">
+              <Loading isLoading={searchPending} />
+              <span className="ps-4">{i18n("explorer.search.pending")}</span>
+            </div>
+          )}
+          {showSearchNoResults() && (
+            <div className="p-4">{i18n("portal.no.result")}</div>
+          )}
         </FormControl>
         {searchResults?.length > 0 && (
-          <div className="bg-white shadow rounded-4 d-block show py-12 px-8 max-w-512">
+          <div className="position-absolute w-100 max-w-512 z-1 bg-white shadow rounded-4 d-block show py-12 px-8">
             <SelectList
               options={searchResults}
               hideCheckbox={true}
@@ -291,9 +299,6 @@ export default function ShareResourceModal({
               onChange={handleSearchResultsChange}
             ></SelectList>
           </div>
-        )}
-        {searchInputValue.length > 0 && searchResults.length === 0 && (
-          <div className="p-8">{i18n("portal.no.result")}</div>
         )}
         <ShareResourceModalFooter />
       </Modal.Body>
