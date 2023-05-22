@@ -11,6 +11,7 @@ import {
   Modal,
   SelectList,
   Loading,
+  Tooltip,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import {
@@ -263,8 +264,20 @@ export default function ShareResourceModal({
 
         <hr />
 
-        <Heading headingStyle="h4" level="h3" className="mb-16 d-flex">
-          {i18n("explorer.modal.share.search")} <InfoCircle className="ms-8" />
+        <Heading
+          headingStyle="h4"
+          level="h3"
+          className="mb-16 d-flex align-items-center"
+        >
+          {i18n("explorer.modal.share.search")}
+          <Tooltip
+            message={
+              "Vos favoris de partage s’affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l’annuaire."
+            }
+            placement="right"
+          >
+            <InfoCircle className="ms-8 c-pointer" height="18" />
+          </Tooltip>
         </Heading>
 
         <FormControl className="d-flex align-items-center" id="search">
