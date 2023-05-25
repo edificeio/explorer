@@ -1,4 +1,4 @@
-import { useOdeClient } from "@ode-react-ui/core";
+import { useI18n } from "@ode-react-ui/core";
 import { Delete } from "@ode-react-ui/icons";
 
 export interface TrashButtonProps {
@@ -12,7 +12,7 @@ export const TrashButton = ({
   selected,
   onSelect,
 }: TrashButtonProps): JSX.Element | null => {
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
 
   return (
     <div className="treeview">

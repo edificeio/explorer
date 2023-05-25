@@ -7,20 +7,20 @@ import {
 } from "react";
 
 import { Alert, type OptionListItemType } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { useOdeClient, useUser } from "@ode-react-ui/core";
 import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
 import { useShareResource } from "@services/queries/index";
 import { useIsAdml } from "@shared/hooks/useIsAdml";
 import { useSelectedResources } from "@store/store";
-import { odeServices } from "ode-ts-client";
 import {
-  type ShareRightWithVisibles,
+  odeServices,
   type ShareRightAction,
+  type ShareRightWithVisibles,
   type ShareSubject,
   type ShareRight,
   type ShareRightActionDisplayName,
-} from "ode-ts-client/dist/share/interface";
+} from "ode-ts-client";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;
@@ -31,7 +31,8 @@ export default function useShareResourceModal({
   onSuccess,
   onCancel,
 }: useShareResourceModalProps) {
-  const { session, appCode } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { user, avatar } = useUser();
   const [idBookmark, setIdBookmark] = useState<string>(useId());
   const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
     rights: [],
@@ -97,8 +98,9 @@ export default function useShareResourceModal({
       )[0];
 
       const isActionRemoving: boolean =
-        newShareRights[index].actions.findIndex((a) => a.id === actionName) >
-        -1;
+        newShareRights[index].actions.findIndex(
+          (action) => action.id === actionName,
+        ) > -1;
 
       if (isActionRemoving) {
         // remove selected action and actions that requires the selected action
@@ -137,7 +139,7 @@ export default function useShareResourceModal({
 
       // if bookmark then apply right to users and groups
       if (shareRight.type === "sharebookmark") {
-        newShareRights[index].users?.forEach((user) => {
+        newShareRights[index].users?.forEach((user: { id: any }) => {
           const userIndex = newShareRights.findIndex(
             (item) => item.id === user.id,
           );
@@ -147,7 +149,7 @@ export default function useShareResourceModal({
           };
         });
 
-        newShareRights[index].groups?.forEach((user) => {
+        newShareRights[index].groups?.forEach((user: { id: any }) => {
           const userIndex = newShareRights.findIndex(
             (item) => item.id === user.id,
           );
@@ -185,14 +187,18 @@ export default function useShareResourceModal({
   };
 
   const handleDeleteRow = (shareRight: ShareRight) => {
-    setShareRights((state) => {
+    setShareRights((state: any) => {
       return {
         ...state,
         rights: shareRights.rights.filter(
-          (right) =>
+          (right: { id: any }) =>
             right.id !== shareRight.id &&
-            !shareRight.users?.find((user) => user.id === right.id) &&
-            !shareRight.groups?.find((group) => group.id === right.id),
+            !shareRight.users?.find(
+              (user: { id: any }) => user.id === right.id,
+            ) &&
+            !shareRight.groups?.find(
+              (group: { id: any }) => group.id === right.id,
+            ),
         ),
       };
     });
@@ -242,15 +248,20 @@ export default function useShareResourceModal({
       const adaptedResults = resSearchShareSubjects
         // exclude subjects that are already in the share table
         .filter(
-          (r) =>
-            !shareRights.rights.find((shareRight) => shareRight.id === r.id),
+          (right: { id: any }) =>
+            !shareRights.rights.find(
+              (shareRight: { id: any }) => shareRight.id === right.id,
+            ),
         )
         // exclude owner from results
         .filter(
-          (r) =>
-            !(r.type === "user" && r.id === selectedResources[0].creatorId),
+          (right: { type: string; id: any }) =>
+            !(
+              right.type === "user" &&
+              right.id === selectedResources[0].creatorId
+            ),
         )
-        .map((searchResult) => {
+        .map((searchResult: { id: any; displayName: any; type: string }) => {
           return {
             value: searchResult.id,
             label: searchResult.displayName,
@@ -301,9 +312,12 @@ export default function useShareResourceModal({
 
         bookmarkRes?.users
           .filter(
-            (user) => !shareRights.rights.find((right) => right.id === user.id),
+            (user: { id: any }) =>
+              !shareRights.rights.find(
+                (right: { id: any }) => right.id === user.id,
+              ),
           )
-          .forEach((user) => {
+          .forEach((user: any) => {
             rightsToAdd.push({
               ...user,
               type: "user",
@@ -315,10 +329,12 @@ export default function useShareResourceModal({
           });
         bookmarkRes.groups
           .filter(
-            (group) =>
-              !shareRights.rights.find((right) => right.id === group.id),
+            (group: { id: any }) =>
+              !shareRights.rights.find(
+                (right: { id: any }) => right.id === group.id,
+              ),
           )
-          .forEach((group) => {
+          .forEach((group: any) => {
             rightsToAdd.push({
               ...group,
               type: "group",
@@ -358,11 +374,14 @@ export default function useShareResourceModal({
     shareRight: ShareRight,
     shareAction: ShareRightAction,
   ): boolean => {
-    return shareRight.actions.filter((a) => shareAction.id === a.id).length > 0;
+    return (
+      shareRight.actions.filter((a: { id: any }) => shareAction.id === a.id)
+        .length > 0
+    );
   };
   const currentIsAuthor = (): boolean => {
     for (const res of selectedResources) {
-      if (res.creatorId !== session.user.userId) {
+      if (res.creatorId !== user?.userId) {
         return false;
       }
     }
@@ -385,14 +404,14 @@ export default function useShareResourceModal({
     try {
       const res = await odeServices.directory().saveBookmarks(name, {
         users: shareRights.rights
-          .filter((right) => right.type === "user")
-          .map((u) => u.id),
+          .filter((right: { type: string }) => right.type === "user")
+          .map((u: { id: any }) => u.id),
         groups: shareRights.rights
-          .filter((right) => right.type === "group")
-          .map((u) => u.id),
+          .filter((right: { type: string }) => right.type === "group")
+          .map((u: { id: any }) => u.id),
         bookmarks: shareRights.rights
-          .filter((right) => right.type === "sharebookmark")
-          .map((u) => u.id),
+          .filter((right: { type: string }) => right.type === "sharebookmark")
+          .map((u: { id: any }) => u.id),
       });
       hotToast.success("Favoris sauvegardé");
       setShareRights((state) => {
@@ -426,7 +445,7 @@ export default function useShareResourceModal({
   return {
     currentIsAuthor,
     idBookmark,
-    myAvatar: session.avatarUrl,
+    myAvatar: avatar,
     shareRights,
     shareRightActions,
     showBookmarkInput,

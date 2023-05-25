@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 
 import { Button, ActionBar, LoadingScreen } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { useI18n } from "@ode-react-ui/core";
 import { useTransition, animated } from "@react-spring/web";
 import { AccessControl } from "@shared/components/AccessControl";
 import { type IAction } from "ode-ts-client";
@@ -18,7 +18,7 @@ const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
 const PublishModal = lazy(async () => await import("./PublishModal"));
 
 export default function ActionBarContainer() {
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
   const {
     actions,
     selectedElement,

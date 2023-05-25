@@ -172,13 +172,6 @@ export const useStoreContext = create<State>()((set, get) => ({
       const ancestors = getAncestors(folderId, treeData);
       const selectedNodesIds = arrayUnique([...ancestors, folderId]);
 
-      console.log({ folderId });
-      console.log(
-        folder || {
-          id: folderId,
-        },
-      );
-
       if (previousId === folderId) return;
 
       set((state) => {

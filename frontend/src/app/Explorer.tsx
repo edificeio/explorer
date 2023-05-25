@@ -14,7 +14,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { useActions } from "@services/queries";
 import { Breadcrumb } from "@shared/components/Breadcrumb";
 import { useOnboardingModal } from "@shared/hooks/useOnboardingModal";
-import { type IAction } from "ode-ts-client";
+import { type IWebApp, type IAction } from "ode-ts-client";
 
 const OnboardingTrash = lazy(
   async () => await import("@shared/components/OnboardingTrash"),
@@ -39,17 +39,22 @@ export default function Explorer(): JSX.Element | null {
     (action: IAction) => action.id === "publish",
   );
 
-  function isActionAvailable(value: string) {
+  const isActionAvailable = (value: string) => {
     const found = actions?.filter(
       (action: IAction) => action.id === value && action.available,
     );
     return found && found.length > 0;
-  }
+  };
 
   return (
     <>
       <AppHeader>
-        <AppCard app={currentApp} isHeading headingStyle="h3" level="h1">
+        <AppCard
+          app={currentApp as IWebApp}
+          isHeading
+          headingStyle="h3"
+          level="h1"
+        >
           <AppIcon app={currentApp} size="40" />
           <AppCard.Name />
         </AppCard>

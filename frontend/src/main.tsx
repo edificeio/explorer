@@ -2,12 +2,6 @@ import React, { StrictMode } from "react";
 
 import Root from "@app/Root";
 import { OdeClientProvider } from "@ode-react-ui/core";
-import {
-  configurationFramework,
-  http,
-  notifyFramework,
-  sessionFramework,
-} from "@shared/constants";
 import { getAppParams } from "@shared/utils/getAppParams";
 import {
   QueryCache,
@@ -42,15 +36,7 @@ const queryClient = new QueryClient({
 createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider
-        framework={{
-          sessionFramework,
-          configurationFramework,
-          notifyFramework,
-          http,
-        }}
-        params={getAppParams()}
-      >
+      <OdeClientProvider params={getAppParams()}>
         <Root />
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />

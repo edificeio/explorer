@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
+import { http } from "@shared/constants";
 import {
   useStoreActions,
   useResourceIds,
@@ -36,7 +37,7 @@ interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
-  const { user, http, currentApp } = useOdeClient();
+  const { user, currentApp } = useOdeClient();
 
   const [cover, setCover] = useState<Record<string, string>>({
     name: "",
