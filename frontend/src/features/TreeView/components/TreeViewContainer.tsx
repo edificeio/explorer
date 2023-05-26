@@ -1,18 +1,19 @@
 import { lazy, Suspense } from "react";
 
-import TrashButton from "@features/TreeView/components/TrashButton";
 import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 import { useModal } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { FOLDER, type ID } from "ode-ts-client";
+
+import TrashButton from "~features/TreeView/components/TrashButton";
 import {
   useStoreActions,
   useIsTrash,
   useSelectedNodesIds,
   useTreeData,
-} from "@store/store";
-import { useQueryClient } from "@tanstack/react-query";
-import { FOLDER, type ID } from "ode-ts-client";
+} from "~store/store";
 
 const CreateModal = lazy(
   async () => await import("../../Actionbar/components/EditFolderModal"),

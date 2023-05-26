@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-feat-explorer.202305251542",
+  "version": "1.0.0-feat-explorer.20230526949",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -65,6 +65,7 @@
     "zustand": "4.3.7"
   },
   "devDependencies": {
+    "vite-tsconfig-paths": "4.2.0",
     "@axe-core/react": "4.6.1",
     "@tanstack/react-query-devtools": "4.29.5",
     "@types/node": "18.16.1",

@@ -1,9 +1,10 @@
 import { useId } from "react";
 
-import { useCreateFolder, useUpdatefolder } from "@services/queries/index";
-import { useCurrentFolder, useSelectedFolders } from "@store/store";
 import { FOLDER } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
+
+import { useCreateFolder, useUpdatefolder } from "~services/queries/index";
+import { useCurrentFolder, useSelectedFolders } from "~store/store";
 
 interface useEditFolderModalProps {
   edit: boolean;

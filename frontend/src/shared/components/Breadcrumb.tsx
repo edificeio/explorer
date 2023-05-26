@@ -1,12 +1,13 @@
 import { IconButton } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { ArrowLeft } from "@ode-react-ui/icons";
+
 import {
   useStoreActions,
   useCurrentFolder,
   useIsTrash,
   useSelectedNodesIds,
-} from "@store/store";
+} from "~store/store";
 
 export function Breadcrumb() {
   const { i18n } = useOdeClient();

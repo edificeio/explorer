@@ -1,21 +1,16 @@
 # Open Digital Education Explorer
 
-This is a [ReactJS](https://reactjs.org) + [Vite](https://vitejs.dev) app.
-
-## What is inside?
-
-Many tools are already configured like:
-
-- [ReactJS](https://reactjs.org)
-- [Vite](https://vitejs.dev)
-- [TypeScript](https://www.typescriptlang.org)
-- [...](./TOOLS.md)
-
-[See all tools](./TOOLS.md)
+Explorer App
 
 ## Getting Started
 
 ### Install
+
+Without Docker, you need to generate a `package.json`
+
+```bash
+node scripts/package.js
+```
 
 Install all dependencies.
 
@@ -25,23 +20,17 @@ pnpm install
 
 ## Dev
 
-### Start project
-
-Open your project with Vite Server + HMR at <http://localhost:3000>.
-
 ```bash
 pnpm dev
 ```
 
 ### [Server Options](https://vitejs.dev/config/server-options.html)
 
-You can change Vite Server by editing `vite.config.ts`
+You can configure Vite Proxy with backend routes needed for development inside `vite.config.ts`
 
 ```bash
-server: {
-  host: "0.0.0.0",
-  port: 3000,
-  open: true // open the page on <http://localhost:3000> when dev server starts.
+const proxy = {
+  "/example": proxyObj,
 }
 ```
 
@@ -50,35 +39,23 @@ server: {
 You should use absolute imports in your app
 
 ```bash
-Replace ../components/* by components/*
+Replace ../components/* by ~/components/*
 ```
 
-Edit `vite.config.ts` and add an `alias`
-
-> Telling Vite how to build import path:
-
-```bash
-alias: [
-  { find: "~", replacement: path.resolve(__dirname, "src") },
-  {
-    find: "components",
-    replacement: path.resolve(__dirname, "./src/components"),
-  },
-]
-```
-
-Add your new path to `tsconfig.json`:
+Configure your paths `tsconfig.json`:
 
 > Telling TypeScript how to resolve import path:
 
 ```bash
-"baseUrl": "./src",
 "paths": {
-  "components/*": ["./components/*"],
+  "~/*": ["./src/*"],
+  "~app/*": ["./src/app/*"]
 }
 ```
 
 ### Lint
+
+Detect ESlint issues
 
 ```bash
 pnpm lint
@@ -86,7 +63,7 @@ pnpm lint
 
 ### Prettier
 
-Prettier everything once
+Format code
 
 ```bash
 pnpm format

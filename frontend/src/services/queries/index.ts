@@ -1,28 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { useOdeClient } from "@ode-react-ui/core";
-import {
-  createFolder,
-  deleteAll,
-  moveToFolder,
-  restoreAll,
-  searchContext,
-  sessionHasWorkflowRights,
-  shareResource,
-  trashAll,
-  updateFolder,
-  updateResource,
-} from "@services/api/index";
-import { getAppParams } from "@shared/utils/getAppParams";
-import { wrapTreeNode } from "@shared/utils/wrapTreeNode";
-import {
-  useStoreActions,
-  useSearchParams,
-  useFolderIds,
-  useResourceIds,
-  useCurrentFolder,
-  useTreeData,
-} from "@store/store";
 import {
   useInfiniteQuery,
   type InfiniteData,
@@ -38,6 +15,30 @@ import {
   type UpdateParameters,
   FOLDER,
 } from "ode-ts-client";
+
+import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
+import {
+  createFolder,
+  deleteAll,
+  moveToFolder,
+  restoreAll,
+  searchContext,
+  sessionHasWorkflowRights,
+  shareResource,
+  trashAll,
+  updateFolder,
+  updateResource,
+} from "~services/api/index";
+import { getAppParams } from "~shared/utils/getAppParams";
+import { wrapTreeNode } from "~shared/utils/wrapTreeNode";
+import {
+  useStoreActions,
+  useSearchParams,
+  useFolderIds,
+  useResourceIds,
+  useCurrentFolder,
+  useTreeData,
+} from "~store/store";
 
 const { actions } = getAppParams();
 

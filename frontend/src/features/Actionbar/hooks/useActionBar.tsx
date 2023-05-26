@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { Alert } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import { useActions, useRestore } from "@services/queries/index";
-import { getAppParams } from "@shared/utils/getAppParams";
+import { type IAction, ACTION } from "ode-ts-client";
+
+import { useActions, useRestore } from "~services/queries/index";
+import { getAppParams } from "~shared/utils/getAppParams";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -13,8 +15,7 @@ import {
   useResourceIds,
   useSelectedFolders,
   useSelectedResources,
-} from "@store/store";
-import { type IAction, ACTION } from "ode-ts-client";
+} from "~store/store";
 
 type ModalName =
   | "move"

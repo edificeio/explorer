@@ -1,7 +1,8 @@
 import { Library as CoreLibrary } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
-import { capitalizeFirstLetter } from "@shared/utils/capitalizeFirstLetter";
-import { getAppParams } from "@shared/utils/getAppParams";
+
+import { capitalizeFirstLetter } from "~shared/utils/capitalizeFirstLetter";
+import { getAppParams } from "~shared/utils/getAppParams";
 
 const Library = () => {
   const params = getAppParams();

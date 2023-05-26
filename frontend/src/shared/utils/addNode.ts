@@ -1,9 +1,9 @@
-import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { type TreeNode } from "@ode-react-ui/advanced";
 import { type IFolder } from "ode-ts-client";
 
 import { arrayUnique } from "./arrayUnique";
 import { modifyNode } from "./modifyNode";
+import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
 
 export function addNode(
   treeData: TreeNode,

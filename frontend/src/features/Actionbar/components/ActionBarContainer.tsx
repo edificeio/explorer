@@ -3,10 +3,10 @@ import { lazy, Suspense } from "react";
 import { Button, ActionBar, LoadingScreen } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 import { useTransition, animated } from "@react-spring/web";
-import { AccessControl } from "@shared/components/AccessControl";
 import { type IAction } from "ode-ts-client";
 
-import useActionBar from "../hooks/useActionBar";
+import useActionBar from "~features/Actionbar/hooks/useActionBar";
+import { AccessControl } from "~shared/components/AccessControl";
 
 const ShareResourceModal = lazy(
   async () => await import("./ShareResourceModal"),

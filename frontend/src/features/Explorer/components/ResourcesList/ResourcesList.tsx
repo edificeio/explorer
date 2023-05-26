@@ -3,17 +3,18 @@ import React, { useCallback } from "react";
 import { Button, Card } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
-import { useSearchContext } from "@services/queries/index";
+import clsx from "clsx";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { type ID, type IResource } from "ode-ts-client";
+
+import { useSearchContext } from "~services/queries/index";
 import {
   useStoreActions,
   useResourceIds,
   useSelectedResources,
   useSearchParams,
-} from "@store/store";
-import clsx from "clsx";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { type ID, type IResource } from "ode-ts-client";
+} from "~store/store";
 
 import "dayjs/locale/de";
 import "dayjs/locale/es";

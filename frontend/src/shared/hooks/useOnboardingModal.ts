@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getOnboardingTrash, saveOnboardingTrash } from "@services/api";
+import { getOnboardingTrash, saveOnboardingTrash } from "~services/api";
 
 export const useOnboardingModal = () => {
   const [isOnboardingTrash, setIsOnboardingTrash] = useState(false);

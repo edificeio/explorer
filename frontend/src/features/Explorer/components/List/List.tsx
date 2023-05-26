@@ -1,26 +1,27 @@
 import { Suspense, lazy } from "react";
 
 import { LoadingScreen } from "@ode-react-ui/components";
-import { useSearchContext } from "@services/queries";
-import { useIsRoot, useIsTrash, useHasSelectedNodes } from "@store/store";
+
+import { useSearchContext } from "~services/queries";
+import { useIsRoot, useIsTrash, useHasSelectedNodes } from "~store/store";
 
 const EmptyScreenApp = lazy(
-  async () => await import("@features/EmptyScreens/EmptyScreenApp"),
+  async () => await import("~features/EmptyScreens/EmptyScreenApp"),
 );
 const EmptyScreenNoContentInFolder = lazy(
   async () =>
-    await import("@features/EmptyScreens/EmptyScreenNoContentInFolder"),
+    await import("~features/EmptyScreens/EmptyScreenNoContentInFolder"),
 );
 const EmptyScreenTrash = lazy(
-  async () => await import("@features/EmptyScreens/EmptyScreenTrash"),
+  async () => await import("~features/EmptyScreens/EmptyScreenTrash"),
 );
 const FoldersList = lazy(
   async () =>
-    await import("@features/Explorer/components/FoldersList/FoldersList"),
+    await import("~features/Explorer/components/FoldersList/FoldersList"),
 );
 const ResourcesList = lazy(
   async () =>
-    await import("@features/Explorer/components/ResourcesList/ResourcesList"),
+    await import("~features/Explorer/components/ResourcesList/ResourcesList"),
 );
 
 export const List = () => {

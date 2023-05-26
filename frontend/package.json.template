@@ -65,6 +65,7 @@
     "zustand": "4.3.7"
   },
   "devDependencies": {
+    "vite-tsconfig-paths": "4.2.0",
     "@axe-core/react": "4.6.1",
     "@tanstack/react-query-devtools": "4.29.5",
     "@types/node": "18.16.1",

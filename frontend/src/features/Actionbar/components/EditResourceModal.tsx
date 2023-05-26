@@ -11,10 +11,10 @@ import {
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { Copy } from "@ode-react-ui/icons";
-import { useSelectedResources } from "@store/store";
 import { createPortal } from "react-dom";
 
 import useEditResourceModal from "../hooks/useEditResourceModal";
+import { useSelectedResources } from "~store/store";
 
 interface EditResourceModalProps {
   isOpen: boolean;

@@ -1,9 +1,9 @@
 import { Modal, Button, TreeView } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
-import { useTreeData } from "@store/store";
 import { createPortal } from "react-dom";
 
 import useMoveModal from "../hooks/useMoveModal";
+import { useTreeData } from "~store/store";
 
 interface MoveModalProps {
   isOpen: boolean;

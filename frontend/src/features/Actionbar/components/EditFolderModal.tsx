@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 
-import useEditFolderModal from "@features/Actionbar/hooks/useEditFolderModal";
 import {
   Modal,
   Button,
@@ -10,6 +9,8 @@ import {
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
+
+import useEditFolderModal from "~features/Actionbar/hooks/useEditFolderModal";
 
 interface EditFolderModalProps {
   isOpen: boolean;
@@ -56,14 +57,14 @@ export default function EditFolderModal({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <FormControl id="nameFolder" isRequired>
             <Label>{i18n("explorer.create.folder.name")}</Label>
-            <Input
-              type="text"
-              {...register("name", { required: true })}
-              placeholder={i18n("explorer.create.folder.name")}
-              size="md"
-              aria-required={true}
-            />
           </FormControl>
+          <Input
+            type="text"
+            {...register("name", { required: true })}
+            placeholder={i18n("explorer.create.folder.name")}
+            size="md"
+            aria-required={true}
+          />
         </form>
       </Modal.Body>
       <Modal.Footer>

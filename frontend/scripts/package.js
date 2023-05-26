@@ -38,7 +38,6 @@ function generatePackage(content) {
 }
 
 function createPackage() {
-  
   fs.readFile(path.resolve(__dirname, '../package.json.template'), (err, data) => {
     if (err) {
       console.error(err);

@@ -10,9 +10,6 @@ import { Alert, type OptionListItemType } from "@ode-react-ui/components";
 import { useOdeClient, useUser } from "@ode-react-ui/core";
 import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
-import { useShareResource } from "@services/queries/index";
-import { useIsAdml } from "@shared/hooks/useIsAdml";
-import { useSelectedResources } from "@store/store";
 import {
   odeServices,
   type ShareRightAction,
@@ -21,6 +18,10 @@ import {
   type ShareRight,
   type ShareRightActionDisplayName,
 } from "ode-ts-client";
+
+import { useShareResource } from "~services/queries/index";
+import { useIsAdml } from "~shared/hooks/useIsAdml";
+import { useSelectedResources } from "~store/store";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;

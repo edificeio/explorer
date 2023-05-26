@@ -13,12 +13,12 @@ import {
   SelectList,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
-import { useSelectedResources } from "@store/store";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
 import usePublishModal from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
+import { useSelectedResources } from "~store/store";
 
 interface PublishModalProps {
   isOpen: boolean;

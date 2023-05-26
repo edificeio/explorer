@@ -1,8 +1,8 @@
-import { TreeNodeFolderWrapper } from "@features/Explorer/adapters";
 import { type TreeNode } from "@ode-react-ui/advanced";
 import { type IFolder } from "ode-ts-client";
 
 import { modifyNode } from "./modifyNode";
+import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
 
 export const wrapTreeNode = (
   treeNode: TreeNode,

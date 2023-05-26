@@ -3,12 +3,6 @@ import { useState } from "react";
 import { Alert } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import { http } from "@shared/constants";
-import {
-  useStoreActions,
-  useResourceIds,
-  useSelectedResources,
-} from "@store/store";
 import {
   RESOURCE,
   type PublishParameters,
@@ -20,6 +14,12 @@ import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
+import { http } from "~shared/constants";
+import {
+  useStoreActions,
+  useResourceIds,
+  useSelectedResources,
+} from "~store/store";
 
 interface ModalProps {
   onSuccess?: () => void;

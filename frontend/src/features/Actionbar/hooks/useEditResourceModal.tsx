@@ -3,10 +3,11 @@ import { useId, useState } from "react";
 import { Alert } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import { useUpdateResource } from "@services/queries/index";
-import { useSelectedResources } from "@store/store";
 import { type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
+
+import { useUpdateResource } from "~services/queries/index";
+import { useSelectedResources } from "~store/store";
 
 interface useEditResourceModalProps {
   resource: IResource;

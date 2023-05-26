@@ -1,9 +1,10 @@
 import { type ReactNode, type ReactElement } from "react";
 
+import { type RightRole } from "ode-ts-client/dist/services";
+
 import useAccessControl, {
   type IObjectWithRights,
-} from "@shared/hooks/useAccessControl";
-import { type RightRole } from "ode-ts-client/dist/services";
+} from "~shared/hooks/useAccessControl";
 
 // TODO move it to ode-react-ui with useAccessControl
 

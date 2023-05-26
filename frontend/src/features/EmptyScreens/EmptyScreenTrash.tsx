@@ -6,7 +6,7 @@ export default function EmptyScreenTrash(): JSX.Element {
 
   return (
     <EmptyScreen
-      imageSrc={`${theme?.bootstrapPath}/emptyscreen/illu-trash.svg`}
+      imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-trash.svg`}
       imageAlt={i18n("explorer.emptyScreen.trash.alt")}
       title={i18n("explorer.emptyScreen.trash.title")}
       text={i18n("explorer.emptyScreen.trash.empty")}

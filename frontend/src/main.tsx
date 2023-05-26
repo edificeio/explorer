@@ -1,8 +1,6 @@
 import React, { StrictMode } from "react";
 
-import Root from "@app/Root";
 import { OdeClientProvider } from "@ode-react-ui/core";
-import { getAppParams } from "@shared/utils/getAppParams";
 import {
   QueryCache,
   QueryClient,
@@ -10,6 +8,9 @@ import {
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
+
+import Root from "~app/Root";
+import { getAppParams } from "~shared/utils/getAppParams";
 
 const root = document.getElementById("root");
 
