@@ -21,6 +21,7 @@ const CreateModal = lazy(
 
 export const TreeViewContainer = () => {
   const queryclient = useQueryClient();
+
   const { i18n } = useI18n();
   const [isCreateFolderModalOpen, toggle] = useToggle();
   // * https://github.com/pmndrs/zustand#fetching-everything

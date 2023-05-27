@@ -9,7 +9,7 @@ export function addNode(
   treeData: TreeNode,
   { parentId, newFolder }: { parentId: string; newFolder: IFolder },
 ): TreeNode {
-  return modifyNode(treeData, (node, parent) => {
+  return modifyNode(treeData, (node) => {
     if (node.id === parentId) {
       const parentAncestors = [
         ...((node as TreeNodeFolderWrapper).folder?.ancestors || []),

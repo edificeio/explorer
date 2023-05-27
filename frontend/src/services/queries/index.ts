@@ -16,6 +16,9 @@ import {
   FOLDER,
 } from "ode-ts-client";
 
+import { addNode } from "~/shared/utils/addNode";
+import { deleteNode } from "~/shared/utils/deleteNode";
+import { moveNode } from "~/shared/utils/moveNode";
 import { updateNode } from "~/shared/utils/updateNode";
 import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
 import {
@@ -137,9 +140,11 @@ export const useSearchContext = () => {
 export const useTrash = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const treeData = useTreeData();
   const folderIds = useFolderIds();
   const resourceIds = useResourceIds();
-  const { clearSelectedItems, clearSelectedIds } = useStoreActions();
+  const { clearSelectedItems, clearSelectedIds, setTreeData } =
+    useStoreActions();
 
   const queryKey = [
     "context",
@@ -161,7 +166,7 @@ export const useTrash = () => {
           InfiniteData<ISearchResults> | undefined
         >(queryKey, (prev) => {
           if (prev) {
-            return {
+            const newData = {
               ...prev,
               pages: prev?.pages.map((page) => {
                 return {
@@ -175,6 +180,14 @@ export const useTrash = () => {
                 };
               }),
             };
+
+            const update = deleteNode(treeData, {
+              folders: folderIds,
+            });
+
+            setTreeData(update);
+
+            return newData;
           }
           return undefined;
         });
@@ -282,7 +295,7 @@ export const useDelete = () => {
           InfiniteData<ISearchResults> | undefined
         >(queryKey, (prev) => {
           if (prev) {
-            return {
+            const newData = {
               ...prev,
               pages: prev?.pages.map((page) => {
                 return {
@@ -296,6 +309,8 @@ export const useDelete = () => {
                 };
               }),
             };
+
+            return newData;
           }
           return undefined;
         });
@@ -311,9 +326,11 @@ export const useDelete = () => {
 export const useMoveItem = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const treeData = useTreeData();
   const folderIds = useFolderIds();
   const resourceIds = useResourceIds();
-  const { clearSelectedIds, clearSelectedItems } = useStoreActions();
+  const { clearSelectedIds, clearSelectedItems, setTreeData } =
+    useStoreActions();
 
   const queryKey = [
     "context",
@@ -326,7 +343,7 @@ export const useMoveItem = () => {
   return useMutation({
     mutationFn: async (folderId: string) =>
       await moveToFolder({ searchParams, folderId, folderIds, resourceIds }),
-    onSuccess: async () => {
+    onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -335,6 +352,13 @@ export const useMoveItem = () => {
           InfiniteData<ISearchResults> | undefined
         >(queryKey, (prev) => {
           if (prev) {
+            const update = moveNode(treeData, {
+              destinationId: variables,
+              folders: folderIds,
+            });
+
+            setTreeData(update);
+
             return {
               ...prev,
               pages: prev?.pages.map((page) => {
@@ -364,6 +388,8 @@ export const useMoveItem = () => {
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const treeData = useTreeData();
+  const { setTreeData } = useStoreActions();
 
   const queryKey = [
     "context",
@@ -388,6 +414,7 @@ export const useCreateFolder = () => {
       const newFolder = {
         ...data,
         parentId: variables.parentId,
+        children: [],
         rights: [`creator:${data?.creator_id}`],
       };
 
@@ -396,7 +423,7 @@ export const useCreateFolder = () => {
           InfiniteData<ISearchResults> | undefined
         >(queryKey, (prev) => {
           if (prev) {
-            return {
+            const newData = {
               ...prev,
               pages: prev?.pages.map((page) => {
                 return {
@@ -405,11 +432,21 @@ export const useCreateFolder = () => {
                 };
               }),
             };
+
+            const update = addNode(treeData, {
+              parentId: variables.parentId,
+              newFolder,
+            });
+
+            setTreeData(update);
+
+            return newData;
           }
           return undefined;
         });
       }
     },
+    onSettled: async () => await queryClient.cancelQueries({ queryKey }),
   });
 };
 
