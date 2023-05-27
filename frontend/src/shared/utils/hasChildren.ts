@@ -1,4 +1,4 @@
-import { type TreeNode } from "@ode-react-ui/advanced";
+import { type TreeNode } from "@ode-react-ui/components";
 
 export function hasChildren(folderId: string, data: TreeNode): boolean {
   if (data.id === folderId && data.children) {

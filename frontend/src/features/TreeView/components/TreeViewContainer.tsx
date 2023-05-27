@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 
 import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
-import { useModal } from "@ode-react-ui/hooks";
+import { useToggle } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "ode-ts-client";
@@ -22,7 +22,7 @@ const CreateModal = lazy(
 export const TreeViewContainer = () => {
   const queryclient = useQueryClient();
   const { i18n } = useI18n();
-  const [isCreateFolderModalOpen, toggle] = useModal();
+  const [isCreateFolderModalOpen, toggle] = useToggle();
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const treeData = useTreeData();

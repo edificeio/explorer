@@ -50,8 +50,10 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
     }
 
     for (const selectedResource of selectedResources) {
-      console.log("canMove", { selectedResource, destination });
-      if (destination === selectedResource.folderIds[0]) {
+      if (
+        destination ===
+        (selectedResource?.folderIds && selectedResource.folderIds[0])
+      ) {
         return false;
       }
     }
