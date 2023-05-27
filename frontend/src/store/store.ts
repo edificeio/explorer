@@ -1,4 +1,4 @@
-import { type TreeNode } from "@ode-react-ui/advanced";
+import { type TreeNode } from "@ode-react-ui/components";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import {
   FOLDER,

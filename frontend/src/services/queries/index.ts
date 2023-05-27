@@ -16,6 +16,7 @@ import {
   FOLDER,
 } from "ode-ts-client";
 
+import { updateNode } from "~/shared/utils/updateNode";
 import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
 import {
   createFolder,
@@ -380,12 +381,13 @@ export const useCreateFolder = () => {
       name: string;
       parentId: string;
     }) => await createFolder({ searchParams, name, parentId }),
-    onSuccess: async (data) => {
+    onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       const newFolder = {
         ...data,
+        parentId: variables.parentId,
         rights: [`creator:${data?.creator_id}`],
       };
 
@@ -414,7 +416,8 @@ export const useCreateFolder = () => {
 export const useUpdatefolder = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const { setFolderIds, setSelectedFolders } = useStoreActions();
+  const treeData = useTreeData();
+  const { setFolderIds, setSelectedFolders, setTreeData } = useStoreActions();
 
   const queryKey = [
     "context",
@@ -434,7 +437,7 @@ export const useUpdatefolder = () => {
       name: string;
       parentId: string;
     }) => await updateFolder({ searchParams, folderId, parentId, name }),
-    onSuccess: async (data) => {
+    onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -443,14 +446,18 @@ export const useUpdatefolder = () => {
           InfiniteData<ISearchResults> | undefined
         >(queryKey, (prev) => {
           if (prev) {
-            return {
+            const newData = {
               ...prev,
               pages: prev?.pages.map((page) => {
                 return {
                   ...page,
                   folders: page.folders.map((folder: IFolder) => {
                     if (folder.id === data.id) {
-                      return { ...data, rights: folder.rights };
+                      return {
+                        ...data,
+                        parentId: variables.parentId,
+                        rights: folder.rights,
+                      };
                     } else {
                       return folder;
                     }
@@ -458,6 +465,15 @@ export const useUpdatefolder = () => {
                 };
               }),
             };
+
+            const update = updateNode(treeData, {
+              folderId: variables.folderId,
+              newFolder: data,
+            });
+
+            setTreeData(update);
+
+            return newData;
           }
           return undefined;
         });

@@ -7,7 +7,7 @@ import {
   Label,
   Input,
 } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { useI18n } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 
 import useEditFolderModal from "~features/Actionbar/hooks/useEditFolderModal";
@@ -25,7 +25,7 @@ export default function EditFolderModal({
   onSuccess,
   onCancel: onClose,
 }: EditFolderModalProps) {
-  const { i18n } = useOdeClient();
+  const { i18n } = useI18n();
   const {
     isDirty,
     isValid,
@@ -57,14 +57,14 @@ export default function EditFolderModal({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <FormControl id="nameFolder" isRequired>
             <Label>{i18n("explorer.create.folder.name")}</Label>
+            <Input
+              type="text"
+              {...register("name", { required: true })}
+              placeholder={i18n("explorer.create.folder.name")}
+              size="md"
+              aria-required={true}
+            />
           </FormControl>
-          <Input
-            type="text"
-            {...register("name", { required: true })}
-            placeholder={i18n("explorer.create.folder.name")}
-            size="md"
-            aria-required={true}
-          />
         </form>
       </Modal.Body>
       <Modal.Footer>
