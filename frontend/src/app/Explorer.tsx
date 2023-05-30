@@ -9,24 +9,25 @@ import {
 import { useOdeClient } from "@ode-react-ui/core";
 import { type IWebApp, type IAction } from "ode-ts-client";
 
-import ActionBarContainer from "~features/Actionbar/components/ActionBarContainer";
-import { AppHeader } from "~features/Explorer/components";
-import { List } from "~features/Explorer/components/List/List";
-import { TreeViewContainer } from "~features/TreeView/components/TreeViewContainer";
-import { useActions } from "~services/queries";
-import { Breadcrumb } from "~shared/components/Breadcrumb";
-import { useOnboardingModal } from "~shared/hooks/useOnboardingModal";
+import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
+import { AppHeader } from "~/features/Explorer/components";
+import { List } from "~/features/Explorer/components/List/List";
+import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
+import { useActions } from "~/services/queries";
+import { Breadcrumb } from "~/shared/components/Breadcrumb";
+import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
 
 const OnboardingTrash = lazy(
-  async () => await import("~shared/components/OnboardingTrash"),
+  async () => await import("~/shared/components/OnboardingTrash"),
 );
 
 const AppAction = lazy(
-  async () => await import("~features/Explorer/components/AppAction/AppAction"),
+  async () =>
+    await import("~/features/Explorer/components/AppAction/AppAction"),
 );
 
 const Library = lazy(
-  async () => await import("~features/Explorer/components/Library/Library"),
+  async () => await import("~/features/Explorer/components/Library/Library"),
 );
 
 export default function Explorer(): JSX.Element | null {

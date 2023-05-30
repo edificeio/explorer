@@ -14,12 +14,8 @@ import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
-import { http } from "~shared/constants";
-import {
-  useStoreActions,
-  useResourceIds,
-  useSelectedResources,
-} from "~store/store";
+import { http } from "~/shared/constants";
+import { useStoreActions, useResourceIds, useSelectedResources } from "~/store";
 
 interface ModalProps {
   onSuccess?: () => void;

@@ -2,7 +2,7 @@ import { Button } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
 
-import { useStoreActions } from "~store/store";
+import { useStoreActions } from "~/store";
 
 export default function AppAction() {
   const { i18n } = useOdeClient();

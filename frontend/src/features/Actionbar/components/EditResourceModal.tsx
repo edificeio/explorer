@@ -14,7 +14,7 @@ import { Copy } from "@ode-react-ui/icons";
 import { createPortal } from "react-dom";
 
 import useEditResourceModal from "../hooks/useEditResourceModal";
-import { useSelectedResources } from "~store/store";
+import { useSelectedResources } from "~/store";
 
 interface EditResourceModalProps {
   isOpen: boolean;

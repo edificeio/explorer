@@ -19,9 +19,9 @@ import {
   type ShareRightActionDisplayName,
 } from "ode-ts-client";
 
-import { useShareResource } from "~services/queries/index";
-import { useIsAdml } from "~shared/hooks/useIsAdml";
-import { useSelectedResources } from "~store/store";
+import { useShareResource } from "~/services/queries";
+import { useIsAdml } from "~/shared/hooks/useIsAdml";
+import { useSelectedResources } from "~/store";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;

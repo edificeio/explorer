@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { type BlogResource, type BlogUpdate } from "ode-ts-client";
 
-import { useUpdateResource } from "~services/queries/index";
-import { useSelectedResources } from "~store/store";
+import { useUpdateResource } from "~/services/queries";
+import { useSelectedResources } from "~/store";
 
 export type PublicationType = "RESTRAINT" | "IMMEDIATE";
 

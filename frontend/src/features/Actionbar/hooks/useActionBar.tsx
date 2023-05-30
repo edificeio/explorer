@@ -5,8 +5,8 @@ import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { type IAction, ACTION } from "ode-ts-client";
 
-import { useActions, useRestore } from "~services/queries/index";
-import { getAppParams } from "~shared/utils/getAppParams";
+import { useActions, useRestore } from "~/services/queries";
+import { getAppParams } from "~/shared/utils/getAppParams";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -15,7 +15,7 @@ import {
   useResourceIds,
   useSelectedFolders,
   useSelectedResources,
-} from "~store/store";
+} from "~/store";
 
 type ModalName =
   | "move"

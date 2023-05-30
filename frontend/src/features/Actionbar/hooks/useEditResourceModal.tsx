@@ -6,8 +6,8 @@ import { useHotToast } from "@ode-react-ui/hooks";
 import { type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-import { useUpdateResource } from "~services/queries/index";
-import { useSelectedResources } from "~store/store";
+import { useUpdateResource } from "~/services/queries";
+import { useSelectedResources } from "~/store";
 
 interface useEditResourceModalProps {
   resource: IResource;

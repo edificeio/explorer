@@ -17,16 +17,7 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "paths": {
-      "~/*": ["./src/*"],
-      "~app/*": ["./src/app/*"],
-      "~assets/*": ["./src/assets/*"],
-      "~components/*": ["./src/components/*"],
-      "~features/*": ["./src/features/*"],
-      "~hooks/*": ["./src/hooks/*"],
-      "~pages/*": ["./src/pages/*"],
-      "~services/*": ["./src/services/*"],
-      "~shared/*": ["./src/shared/*"],
-      "~store/*": ["./src/store/*"]
+      "~/*": ["./src/*"]
     }
   },
   "include": ["src", "config", "./vite.config.ts"]

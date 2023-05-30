@@ -3,7 +3,7 @@ import { type IFolder } from "ode-ts-client";
 
 import { arrayUnique } from "./arrayUnique";
 import { modifyNode } from "./modifyNode";
-import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
+import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 
 export function addNode(
   treeData: TreeNode,

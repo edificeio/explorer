@@ -4,7 +4,7 @@ import { type RightRole } from "ode-ts-client/dist/services";
 
 import useAccessControl, {
   type IObjectWithRights,
-} from "~shared/hooks/useAccessControl";
+} from "~/shared/hooks/useAccessControl";
 
 // TODO move it to ode-react-ui with useAccessControl
 

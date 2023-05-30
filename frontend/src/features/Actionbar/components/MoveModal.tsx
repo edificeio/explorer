@@ -3,7 +3,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 
 import useMoveModal from "../hooks/useMoveModal";
-import { useTreeData } from "~store/store";
+import { useTreeData } from "~/store";
 
 interface MoveModalProps {
   isOpen: boolean;

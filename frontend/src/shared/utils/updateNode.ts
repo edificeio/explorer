@@ -2,7 +2,7 @@ import { type TreeNode } from "@ode-react-ui/components";
 import { type IFolder } from "ode-ts-client";
 
 import { modifyNode } from "./modifyNode";
-import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
+import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 
 export function updateNode(
   treeData: TreeNode,

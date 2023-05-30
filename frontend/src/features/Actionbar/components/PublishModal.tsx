@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 
 import usePublishModal from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
-import { useSelectedResources } from "~store/store";
+import { useSelectedResources } from "~/store";
 
 interface PublishModalProps {
   isOpen: boolean;

@@ -8,13 +8,13 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { type ID, type IResource } from "ode-ts-client";
 
-import { useSearchContext } from "~services/queries/index";
+import { useSearchContext } from "~/services/queries";
 import {
   useStoreActions,
   useResourceIds,
   useSelectedResources,
   useSearchParams,
-} from "~store/store";
+} from "~/store";
 
 import "dayjs/locale/de";
 import "dayjs/locale/es";

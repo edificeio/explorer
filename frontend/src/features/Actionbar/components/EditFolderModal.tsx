@@ -10,7 +10,7 @@ import {
 import { useI18n } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 
-import useEditFolderModal from "~features/Actionbar/hooks/useEditFolderModal";
+import useEditFolderModal from "~/features/Actionbar/hooks/useEditFolderModal";
 
 interface EditFolderModalProps {
   isOpen: boolean;

@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ID } from "ode-ts-client";
 
-import { useMoveItem } from "~services/queries/index";
+import { useMoveItem } from "~/services/queries";
 import {
   useStoreActions,
   useSelectedFolders,
   useSelectedResources,
-} from "~store/store";
+} from "~/store";
 
 interface ModalProps {
   onSuccess?: () => void;

@@ -3,12 +3,8 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import { type ID, type IFolder } from "ode-ts-client";
 
-import { useSearchContext } from "~services/queries/index";
-import {
-  useStoreActions,
-  useFolderIds,
-  useSelectedFolders,
-} from "~store/store";
+import { useSearchContext } from "~/services/queries";
+import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = (): JSX.Element | null => {
   const { currentApp } = useOdeClient();

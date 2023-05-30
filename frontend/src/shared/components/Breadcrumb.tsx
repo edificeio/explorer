@@ -7,7 +7,7 @@ import {
   useCurrentFolder,
   useIsTrash,
   useSelectedNodesIds,
-} from "~store/store";
+} from "~/store";
 
 export function Breadcrumb() {
   const { i18n } = useOdeClient();

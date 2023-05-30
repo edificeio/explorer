@@ -16,11 +16,7 @@ import {
   FOLDER,
 } from "ode-ts-client";
 
-import { addNode } from "~/shared/utils/addNode";
-import { deleteNode } from "~/shared/utils/deleteNode";
-import { moveNode } from "~/shared/utils/moveNode";
-import { updateNode } from "~/shared/utils/updateNode";
-import { TreeNodeFolderWrapper } from "~features/Explorer/adapters";
+import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 import {
   createFolder,
   deleteAll,
@@ -32,9 +28,13 @@ import {
   trashAll,
   updateFolder,
   updateResource,
-} from "~services/api/index";
-import { getAppParams } from "~shared/utils/getAppParams";
-import { wrapTreeNode } from "~shared/utils/wrapTreeNode";
+} from "~/services/api";
+import { addNode } from "~/shared/utils/addNode";
+import { deleteNode } from "~/shared/utils/deleteNode";
+import { getAppParams } from "~/shared/utils/getAppParams";
+import { moveNode } from "~/shared/utils/moveNode";
+import { updateNode } from "~/shared/utils/updateNode";
+import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
 import {
   useStoreActions,
   useSearchParams,
@@ -42,7 +42,7 @@ import {
   useResourceIds,
   useCurrentFolder,
   useTreeData,
-} from "~store/store";
+} from "~/store";
 
 const { actions } = getAppParams();
 
@@ -344,7 +344,7 @@ export const useMoveItem = () => {
     mutationFn: async (folderId: string) =>
       await moveToFolder({ searchParams, folderId, folderIds, resourceIds }),
     onSuccess: async (data, variables) => {
-      await queryClient.cancelQueries({ queryKey });
+      // await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       if (previousData) {
@@ -432,6 +432,8 @@ export const useCreateFolder = () => {
                 };
               }),
             };
+
+            console.log({ newData });
 
             const update = addNode(treeData, {
               parentId: variables.parentId,

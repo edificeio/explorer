@@ -5,8 +5,8 @@ import { useI18n } from "@ode-react-ui/core";
 import { useTransition, animated } from "@react-spring/web";
 import { type IAction } from "ode-ts-client";
 
-import useActionBar from "~features/Actionbar/hooks/useActionBar";
-import { AccessControl } from "~shared/components/AccessControl";
+import useActionBar from "~/features/Actionbar/hooks/useActionBar";
+import { AccessControl } from "~/shared/components/AccessControl";
 
 const ShareResourceModal = lazy(
   async () => await import("./ShareResourceModal"),

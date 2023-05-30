@@ -7,13 +7,13 @@ import { Plus } from "@ode-react-ui/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "ode-ts-client";
 
-import TrashButton from "~features/TreeView/components/TrashButton";
+import TrashButton from "~/features/TreeView/components/TrashButton";
 import {
   useStoreActions,
   useIsTrash,
   useSelectedNodesIds,
   useTreeData,
-} from "~store/store";
+} from "~/store";
 
 const CreateModal = lazy(
   async () => await import("../../Actionbar/components/EditFolderModal"),

@@ -2,8 +2,8 @@ import { Alert } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 
-import { useDelete, useTrash } from "~services/queries";
-import { useIsTrash } from "~store/store";
+import { useDelete, useTrash } from "~/services/queries";
+import { useIsTrash } from "~/store";
 
 interface ModalProps {
   onSuccess?: () => void;
