@@ -45,6 +45,7 @@ export default function EditResourceModal({
     handleSubmit,
     onSubmit,
     handleUploadImage,
+    handleDeleteImage,
     onCopyToClipBoard,
     onSlugChange,
     onPublicChange,
@@ -84,7 +85,7 @@ export default function EditResourceModal({
               addButtonLabel={i18n("explorer.imagepicker.button.add")}
               deleteButtonLabel={i18n("explorer.imagepicker.button.delete")}
               onUploadImage={handleUploadImage}
-              onDeleteImage={() => {}}
+              onDeleteImage={handleDeleteImage}
               className="align-self-center"
             />
 

@@ -28,16 +28,6 @@ export default function useEditResourceModal({
   onCancel,
 }: useEditResourceModalProps) {
   const { i18n } = useI18n();
-  const [cover, setCover] = useState<{ name: string; image: string }>({
-    name: "",
-    image: "",
-  });
-  const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
-  const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
-  const [slug, setSlug] = useState<string>(resource.slug || "");
-  const [correctSlug, setCorrectSlug] = useState<boolean>(false);
-
-  const { hotToast } = useHotToast(Alert);
   const updateResource = useUpdateResource();
   const selectedResources = useSelectedResources();
   const {
@@ -49,11 +39,27 @@ export default function useEditResourceModal({
   } = useForm<FormInputs>({
     mode: "onChange",
   });
-
   const id = useId();
+
+  const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
+  const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
+  const [slug, setSlug] = useState<string>(resource.slug || "");
+  const [correctSlug, setCorrectSlug] = useState<boolean>(false);
+  const { hotToast } = useHotToast(Alert);
+  const [cover, setCover] = useState<{ name: string; image: string }>({
+    name: "",
+    image: selectedResources[0].thumbnail,
+  });
 
   const handleUploadImage = (preview: Record<string, string>) => {
     setCover(preview as any);
+  };
+
+  const handleDeleteImage = () => {
+    setCover({
+      name: "",
+      image: "",
+    });
   };
 
   function onPublicChange(pub: boolean) {
@@ -94,7 +100,7 @@ export default function useEditResourceModal({
         public: formData.enablePublic,
         slug: formData.safeSlug,
         trashed: selectedResources[0].trashed,
-        thumbnail: cover.image || selectedResources[0].thumbnail,
+        thumbnail: cover.image,
       });
       setCorrectSlug(false);
       hotToast.success(
@@ -142,6 +148,7 @@ export default function useEditResourceModal({
     onFormCancel,
     onSubmit,
     handleUploadImage,
+    handleDeleteImage,
     onCopyToClipBoard,
   };
 }
