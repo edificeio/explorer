@@ -42,6 +42,7 @@ interface State {
   selectedResources: IResource[];
   folderIds: ID[];
   resourceIds: ID[];
+  resourceIsTrash: boolean;
   updaters: {
     setTreeData: (treeData: TreeNode) => void;
     setSearchParams: (searchParams: ISearchParameters) => void;
@@ -50,6 +51,7 @@ interface State {
     setSelectedResources: (selectedResources: IResource[]) => void;
     setFolderIds: (folderIds: ID[]) => void;
     setResourceIds: (resourceIds: ID[]) => void;
+    setResourceIsTrash: (resourceIsTrash: boolean) => void;
     clearSelectedItems: () => void;
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
@@ -108,6 +110,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   selectedResources: [],
   folderIds: [],
   resourceIds: [],
+  resourceIsTrash: false,
   updaters: {
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
     setSearchParams: (searchParams: ISearchParameters) =>
@@ -118,13 +121,14 @@ export const useStoreContext = create<State>()((set, get) => ({
       set(() => ({ selectedResources })),
     setFolderIds: (folderIds: ID[]) => set(() => ({ folderIds })),
     setResourceIds: (resourceIds: ID[]) => set(() => ({ resourceIds })),
+    setResourceIsTrash: (resourceIsTrash: boolean) =>
+      set(() => ({ resourceIsTrash })),
     setCurrentFolder: (currentFolder: Partial<IFolder>) =>
       set(() => ({ currentFolder })),
     clearSelectedItems: () =>
       set(() => ({ selectedFolders: [], selectedResources: [] })),
     clearSelectedIds: () => set(() => ({ resourceIds: [], folderIds: [] })),
     openResource: (resource: IResource) => {
-      if (resource.trashed) return;
       try {
         const { searchParams } = get();
         goToResource({ searchParams, assetId: resource.assetId });
@@ -312,6 +316,10 @@ export const useStoreActions = () => useStoreContext((state) => state.updaters);
 export const useIsTrash = () => {
   const currentFolder = useCurrentFolder();
   return currentFolder?.id === FOLDER.BIN;
+};
+
+export const useResourceIsTrash = () => {
+  return useStoreContext((state) => state.resourceIsTrash);
 };
 
 export const useIsRoot = () => {

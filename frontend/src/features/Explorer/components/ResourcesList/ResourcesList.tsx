@@ -1,6 +1,6 @@
-import React, { useCallback } from "react";
+import React, { Suspense, useCallback } from "react";
 
-import { Button, Card } from "@ode-react-ui/components";
+import { Button, Card, LoadingScreen } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
@@ -8,12 +8,14 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { type ID, type IResource } from "ode-ts-client";
 
+import TrashedResourceModal from "./TrashedResourceModal";
 import { useSearchContext } from "~/services/queries";
 import {
   useStoreActions,
   useResourceIds,
   useSelectedResources,
   useSearchParams,
+  useResourceIsTrash,
 } from "~/store";
 
 import "dayjs/locale/de";
@@ -29,13 +31,20 @@ const ResourcesList = (): JSX.Element | null => {
 
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
+  const isTrashedModalOpen = useResourceIsTrash();
+
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const searchParams = useSearchParams();
   const resourceIds = useResourceIds();
   const selectedResources = useSelectedResources();
-  const { setSelectedResources, setResourceIds, openResource } =
-    useStoreActions();
+  const {
+    setSelectedResources,
+    setResourceIds,
+    openResource,
+    clearSelectedIds,
+    setResourceIsTrash,
+  } = useStoreActions();
 
   const springs = useSpring({
     from: { opacity: 0 },
@@ -50,6 +59,20 @@ const ResourcesList = (): JSX.Element | null => {
   const handleNextPage = useCallback(() => {
     fetchNextPage();
   }, []);
+
+  const clickOnResource = (resource: IResource) => {
+    if (resource.trashed) {
+      setResourceIsTrash(true);
+      setResourceIds([resource.id]);
+    } else {
+      openResource(resource);
+    }
+  };
+
+  const onTrashedCancel = () => {
+    clearSelectedIds();
+    setResourceIsTrash(false);
+  };
 
   function toggleSelect(resource: IResource) {
     if (resourceIds.includes(resource.id)) {
@@ -102,7 +125,7 @@ const ResourcesList = (): JSX.Element | null => {
                     messagePublic={i18n("tooltip.public")}
                     messageShared={i18n("tooltip.shared")}
                     name={name}
-                    onOpen={() => openResource(resource)}
+                    onOpen={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
                     resourceSrc={thumbnail}
                     updatedAt={time}
@@ -113,6 +136,14 @@ const ResourcesList = (): JSX.Element | null => {
             })}
           </React.Fragment>
         ))}
+        <Suspense fallback={<LoadingScreen />}>
+          {isTrashedModalOpen && (
+            <TrashedResourceModal
+              isOpen={isTrashedModalOpen}
+              onCancel={onTrashedCancel}
+            />
+          )}
+        </Suspense>
       </animated.ul>
       {hasMoreResources && (
         <div className="d-grid gap-2 col-4 mx-auto my-24">

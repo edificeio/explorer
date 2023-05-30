@@ -15,6 +15,7 @@ import {
   useResourceIds,
   useSelectedFolders,
   useSelectedResources,
+  useResourceIsTrash,
 } from "~/store";
 
 type ModalName =
@@ -43,6 +44,7 @@ export default function useActionBar() {
   const folderIds = useFolderIds();
   const isTrashFolder = useIsTrash();
   const restoreItem = useRestore();
+  const isTrashResource = useResourceIsTrash();
   const {
     openResource,
     createResource,
@@ -56,6 +58,10 @@ export default function useActionBar() {
 
   useEffect(() => {
     if (resourceIds.length === 0 && folderIds.length === 0) {
+      setIsActionBarOpen(false);
+      return;
+    }
+    if (isTrashResource) {
       setIsActionBarOpen(false);
       return;
     }
@@ -200,6 +206,7 @@ export default function useActionBar() {
   }
 
   return {
+    onRestore,
     actions: isTrashFolder ? trashActions : actions,
     selectedElement: [...selectedResources, ...selectedFolders],
     currentFolderId: currentFolder?.id,
