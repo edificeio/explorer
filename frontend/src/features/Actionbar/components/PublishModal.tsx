@@ -117,7 +117,7 @@ export default function PublishModal({
             {i18n("bpr.form.publication.heading.infos")}
           </Heading>
 
-          <div className="row mb-24">
+          <div className="d-flex flex-column flex-md-row gap-16 row mb-24">
             <div className="col d-flex">
               <Dropdown
                 trigger={
