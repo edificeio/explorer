@@ -3,18 +3,25 @@ package com.opendigitaleducation.explorer.services.impl;
 import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.*;
+import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.explorer.to.*;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.opendigitaleducation.explorer.ExplorerConfig.ROOT_FOLDER_ID;
@@ -24,11 +31,153 @@ public class FolderServiceElastic implements FolderService {
     final ElasticClientManager manager;
     final FolderExplorerPlugin plugin;
     final FolderExplorerDbSql dbHelper;
+    final MessageConsumer messageConsumer;
 
     public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
         this.manager = aManager;
         this.plugin = plugin;
         this.dbHelper =  plugin.getDbHelper();
+        this.messageConsumer = plugin.getCommunication().vertx().eventBus().consumer(ExplorerPlugin.FOLDERS_ADDRESS, message->{
+            try {
+                final String actionName = message.headers().get("action");
+                final ExplorerPlugin.FolderActions action = ExplorerPlugin.FolderActions.valueOf(actionName);
+                switch (action) {
+                    case List: {
+                        final JsonObject body = (JsonObject) message.body();
+                        final FolderListRequest request = body.mapTo(FolderListRequest.class);
+                        final UserInfos user = new UserInfos();
+                        user.setGroupsIds(new ArrayList<>());
+                        user.setUserId(request.getUserId());
+                        user.setUsername(request.getUserName());
+                        // search folders by user with max batch size (10000)
+                        this.fetch(user, request.getApplication(), new FolderSearchOperation().setSearchEverywhere(true).setPageSize(10000l)).compose(result -> {
+                            final Map<Long, FolderResponse> folders = result.stream().map(object -> {
+                                final JsonObject json = (JsonObject) object;
+                                final Long id = NumberUtils.toLong(json.getValue("_id").toString());
+                                final String entId = json.getString("assetId");
+                                final String name = json.getString("name");
+                                final Long parentId = NumberUtils.toLong(json.getString("parentId"), -1l);
+                                final Long safeParentId = parentId == -1l ? null : parentId;
+                                final Boolean trashed = json.getBoolean("trashed");
+                                final String creatorId = json.getString("creatorId");
+                                final String creatorName = json.getString("creatorName");
+                                final Long createdAt = json.getLong("createdAt");
+                                final Long updatedAt = json.getLong("updatedAt");
+                                final FolderResponse folder = new FolderResponse(id, name, entId, safeParentId, trashed, new ArrayList<>(), creatorId, creatorName, createdAt, updatedAt);
+                                return folder;
+                            }).collect(Collectors.toMap(FolderResponse::getId, Function.identity()));
+                            // find subresources ids related to theses folders
+                            final String index = ExplorerConfig.getInstance().getIndex(request.getApplication());
+                            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(request.getApplication()).withSearchOperation(new ResourceSearchOperation().setFolderIds(folders.keySet()).setSearchEverywhere(true));
+                            final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(request.getApplication());
+                            final JsonObject queryJson = query.withLimitedFieldNames(Arrays.asList("_id", "folderIds", "assetId")).getSearchQuery();
+                            return manager.getClient().search(index, queryJson, options).map(resources -> {
+                                // for each resource get folders related
+                                for (final Object resource : resources) {
+                                    final JsonObject json = (JsonObject) resource;
+                                    final String entId = json.getString("assetId");
+                                    final List<Long> folderIds = json.getJsonArray("folderIds", new JsonArray()).stream().map(e -> NumberUtils.toLong(e.toString())).collect(Collectors.toList());
+                                    // add resources to related folders
+                                    for (final Long folderId : folderIds) {
+                                        final FolderResponse folder = folders.get(folderId);
+                                        if (folder != null) {
+                                            folder.getEntResourceIds().add(entId);
+                                        }
+                                    }
+                                }
+                                return folders.values();
+                            });
+                        }).onComplete(result -> {
+                            if (result.succeeded()) {
+                                final List<JsonObject> jsons = result.result().stream().map(e -> JsonObject.mapFrom(e)).collect(Collectors.toList());
+                                final JsonArray jsonArray = new JsonArray(jsons);
+                                message.reply(jsonArray);
+                            } else {
+                                message.fail(500, result.cause().getMessage());
+                            }
+                        });
+                        break;
+                    }
+                    case Delete: {
+                        final JsonObject body = (JsonObject) message.body();
+                        final FolderDeleteRequest request = body.mapTo(FolderDeleteRequest.class);
+                        final UserInfos user = new UserInfos();
+                        user.setGroupsIds(new ArrayList<>());
+                        user.setUserId(request.getUserId());
+                        final Set<String> ids = request.getToDelete().stream().map(Object::toString).collect(Collectors.toSet());
+                        this.delete(user, request.getApplication(), ids).onComplete(result -> {
+                            if (result.succeeded()) {
+                                final Set<Long> deleted = result.result().stream().map(e -> NumberUtils.toLong(e)).collect(Collectors.toSet());
+                                final FolderDeleteResponse response = new FolderDeleteResponse(deleted);
+                                final JsonObject json = JsonObject.mapFrom(response);
+                                message.reply(json);
+                            } else {
+                                message.fail(500, result.cause().getMessage());
+                            }
+                        });
+                        break;
+                    }
+                    case Upsert: {
+                        final JsonObject body = (JsonObject) message.body();
+                        final FolderUpsertRequest request = body.mapTo(FolderUpsertRequest.class);
+                        final UserInfos user = new UserInfos();
+                        user.setGroupsIds(new ArrayList<>());
+                        user.setUserId(request.getUserId());
+                        final JsonObject folder = new JsonObject().put("name", request.getName());
+                        if (request.getTrashed() != null) {
+                            folder.put("trashed", request.getTrashed());
+                        }
+                        if (request.getParentId() != null) {
+                            folder.put("parentId", request.getParentId().toString());
+                        }
+                        folder.put("resourceType", ExplorerConfig.FOLDER_TYPE);
+                        folder.put("entityType", ExplorerConfig.FOLDER_TYPE);
+                        if(request.getParentId() == null){
+                            folder.put("parentId", ROOT_FOLDER_ID);
+                        }
+                        if (request.getId() == null) {
+                            this.create(user, request.getApplication(), folder).onComplete(result -> {
+                                if (result.succeeded()) {
+                                    final Long id = NumberUtils.toLong(result.result());
+                                    final long now = new Date().getTime();
+                                    final FolderResponse response = new FolderResponse(id, request.getName(), "", request.getParentId(), request.getTrashed(), new ArrayList<>(), user.getUserId(), user.getUsername(), now, now);
+                                    final JsonObject json = JsonObject.mapFrom(response);
+                                    message.reply(json);
+                                } else {
+                                    message.fail(500, result.cause().getMessage());
+                                }
+                            });
+                        } else {
+                            this.update(user, request.getId().toString(), request.getApplication(), folder).onComplete(result -> {
+                                if (result.succeeded()) {
+                                    final Long createdAt = result.result().getLong("createdAt");
+                                    final String assetId = result.result().getString("assetId");
+                                    final String name = Optional.ofNullable(request.getName()).orElse(result.result().getString("name"));
+                                    final Long parentId = Optional.ofNullable(request.getParentId()).orElse(result.result().getLong("parentId"));
+                                    final Boolean trashed = Optional.ofNullable(request.getTrashed()).orElse(result.result().getBoolean("trashed"));
+                                    final long now = new Date().getTime();
+                                    final FolderResponse response = new FolderResponse(request.getId(), name, assetId, parentId, trashed, new ArrayList<>(), user.getUserId(), user.getUsername(), createdAt, now);
+                                    final JsonObject json = JsonObject.mapFrom(response);
+                                    message.reply(json);
+                                } else {
+                                    message.fail(500, result.cause().getMessage());
+                                }
+                            });
+                        }
+                        break;
+                    }
+                    default:
+                        message.fail(500, "Action not found");
+                        break;
+                }
+            }catch(Exception e){
+                message.fail(500, e.getMessage());
+            }
+        });
+    }
+    @Override
+    public void stopConsumer() {
+        this.messageConsumer.unregister();
     }
 
     protected String getIndex(){

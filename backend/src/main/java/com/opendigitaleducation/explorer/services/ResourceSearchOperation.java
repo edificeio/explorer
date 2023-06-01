@@ -25,6 +25,7 @@ public class ResourceSearchOperation {
     private Optional<String> id = Optional.empty();
     private Optional<String> rightType = Optional.empty();
     private Set<String> ids = new HashSet<>();
+    private Set<Long> folderIds = new HashSet<>();
     private Optional<String> searchAfter = Optional.empty();
     private boolean searchEverywhere = false;
     private boolean waitFor = false;
@@ -102,6 +103,10 @@ public class ResourceSearchOperation {
         this.favorite = Optional.ofNullable(favorite);
         return this;
     }
+    public ResourceSearchOperation setFolderIds(final Set<Long> parentIds) {
+        this.folderIds.addAll(parentIds);
+        return this;
+    }
 
     public Optional<Boolean> getPub() {return pub;}
 
@@ -129,6 +134,10 @@ public class ResourceSearchOperation {
             this.shared = Optional.ofNullable(shared);
         }
         return this;
+    }
+
+    public Set<Long> getFolderIds() {
+        return folderIds;
     }
 
     public ResourceSearchOperation setId(final String id) {

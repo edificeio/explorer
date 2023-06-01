@@ -13,6 +13,7 @@ public interface FolderService {
     default Future<JsonArray> fetch(final UserInfos creator, final String application, final Optional<String> parentId){
         return fetch(creator, Optional.ofNullable(application), parentId);
     }
+    void stopConsumer();
 
     Future<JsonArray> fetch(final UserInfos creator, final Optional<String> application, final Optional<String> parentId);
 

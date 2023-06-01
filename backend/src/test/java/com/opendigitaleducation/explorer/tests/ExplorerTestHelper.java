@@ -111,6 +111,12 @@ public class ExplorerTestHelper implements TestRule {
         final Async async = context.async();
         createMapping(elasticClientManager, context, resourceIndex).compose(e -> {
             return createUpsertScript(context, "explorer-upsert-ressource", elasticClientManager);
+        }).compose(e->{
+            // create folder mapping
+            final String folderIndex = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
+            ExplorerConfig.getInstance().setEsIndex(ExplorerConfig.FOLDER_APPLICATION, folderIndex);
+            final Buffer mapping = testHelper.vertx().fileSystem().readFileBlocking("es/mappingFolder.json");
+            return elasticClientManager.getClient().createMapping(folderIndex, mapping);
         }).onComplete(r -> async.complete());
     }
 
