@@ -8,6 +8,7 @@ import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ResourceQueryElastic {
     private final Optional<UserInfos> user;
@@ -28,6 +29,7 @@ public class ResourceQueryElastic {
     private Optional<Boolean> pub = Optional.empty();
     private Optional<String> text = Optional.empty();
     private Optional<String> userRightType = Optional.empty();
+    private List<String> selectFields = new ArrayList<>();
 
     public ResourceQueryElastic(final UserInfos u) {
         this.user = Optional.ofNullable(u);
@@ -132,6 +134,11 @@ public class ResourceQueryElastic {
         return this;
     }
 
+    public ResourceQueryElastic withFolderIds(final Set<String> folderId) {
+        this.folderId.addAll(folderId);
+        return this;
+    }
+
     public ResourceQueryElastic withId(final String id) {
         this.id.add(id);
         return this;
@@ -139,6 +146,11 @@ public class ResourceQueryElastic {
 
     public ResourceQueryElastic withId(final Collection<String> id) {
         this.id.addAll(id);
+        return this;
+    }
+
+    public ResourceQueryElastic withLimitedFieldNames(final Collection<String> names) {
+        this.selectFields.addAll(names);
         return this;
     }
 
@@ -223,6 +235,9 @@ public class ResourceQueryElastic {
         if(operation.getRightType().isPresent()){
             this.userRightType = operation.getRightType();
         }
+        if(!operation.getFolderIds().isEmpty()){
+            this.folderId.addAll(operation.getFolderIds().stream().map(Object::toString).collect(Collectors.toSet()));
+        }
         return this;
     }
 
@@ -242,6 +257,10 @@ public class ResourceQueryElastic {
         bool.put("must_not", mustNot);
         bool.put("must", must);
         bool.put("should", should);
+        // select fields
+        if(!this.selectFields.isEmpty()){
+            payload.put("_source", new JsonArray(this.selectFields));
+        }
         //by creator
         final Optional<JsonObject> creatorIdTerm = createTerm("creatorId", creatorId);
         if (creatorIdTerm.isPresent()) {

@@ -85,9 +85,10 @@ public class ResourceServiceElastic implements ResourceService {
         this.shareTableManager = shareTableManager;
         this.muteService = muteService;
         this.messageConsumer = communication.vertx().eventBus().consumer(ExplorerPlugin.RESOURCES_ADDRESS, message->{
-            final String action = message.headers().get("action");
+            final String actionName = message.headers().get("action");
+            final ExplorerPlugin.ResourceActions action = ExplorerPlugin.ResourceActions.valueOf(actionName);
             switch (action) {
-                case ExplorerPlugin.RESOURCES_GETSHARE:
+                case GetShares:
                     final JsonArray ids = (JsonArray)message.body();
                     final Set<String> idSet = ids.stream().map(e->e.toString()).collect(Collectors.toSet());
                     this.sql.getSharedByEntIds(idSet).onComplete(e->{
