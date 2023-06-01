@@ -19,9 +19,9 @@ import {
   type ShareRightActionDisplayName,
 } from "ode-ts-client";
 
-import { useShareResource } from "~/services/queries";
+import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useIsAdml } from "~/shared/hooks/useIsAdml";
-import { useSelectedResources } from "~/store";
+import { usePayloadUpdatePublishType, useSelectedResources } from "~/store";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;
@@ -58,6 +58,10 @@ export default function useShareResourceModal({
   const { isAdml } = useIsAdml();
 
   const selectedResources = useSelectedResources();
+
+  const updateResource = useUpdateResource();
+
+  const payloadUpdatePublishType = usePayloadUpdatePublishType();
 
   useEffect(() => {
     initShareRightsAndActions();
@@ -177,6 +181,7 @@ export default function useShareResourceModal({
         entId: selectedResources[0]?.assetId,
         shares: shareRights.rights,
       });
+      await updateResource.mutate(payloadUpdatePublishType);
       // TODO i18n
       hotToast.success("Partage sauvegardé");
       onSuccess?.();

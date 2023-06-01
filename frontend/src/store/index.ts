@@ -12,6 +12,7 @@ import {
   type IFilter,
   type IOrder,
   type ISearchResults,
+  type BlogUpdate,
 } from "ode-ts-client";
 import { create } from "zustand";
 
@@ -36,6 +37,7 @@ interface State {
   orders: IOrder[];
   searchParams: ISearchParameters;
   treeData: TreeNode;
+  payloadUpdatePublishType: BlogUpdate;
   selectedNodesIds: string[];
   currentFolder: Partial<IFolder> | undefined;
   selectedFolders: IFolder[];
@@ -45,6 +47,7 @@ interface State {
   resourceIsTrash: boolean;
   updaters: {
     setTreeData: (treeData: TreeNode) => void;
+    setPayloadUpdatePublishType: (payloadUpdatePublishType: BlogUpdate) => void;
     setSearchParams: (searchParams: ISearchParameters) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
@@ -102,6 +105,15 @@ export const useStoreContext = create<State>()((set, get) => ({
     section: true,
     children: [],
   },
+  payloadUpdatePublishType: {
+    entId: "",
+    trashed: false,
+    name: "",
+    thumbnail: "",
+    description: "",
+    public: false,
+    slug: "",
+  },
   selectedNodesIds: ["default"],
   currentFolder: {
     id: "default",
@@ -113,6 +125,8 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIsTrash: false,
   updaters: {
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
+    setPayloadUpdatePublishType: (payloadUpdatePublishType: BlogUpdate) =>
+      set(() => ({ payloadUpdatePublishType })),
     setSearchParams: (searchParams: ISearchParameters) =>
       set(() => ({ searchParams })),
     setSelectedFolders: (selectedFolders: IFolder[]) =>
@@ -296,6 +310,9 @@ export const useSelectedNodesIds = () =>
   useStoreContext((state) => state.selectedNodesIds);
 
 export const useTreeData = () => useStoreContext((state) => state.treeData);
+
+export const usePayloadUpdatePublishType = () =>
+  useStoreContext((state) => state.payloadUpdatePublishType);
 
 export const useSelectedFolders = () =>
   useStoreContext((state) => state.selectedFolders);

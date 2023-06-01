@@ -2,13 +2,11 @@ import { useState } from "react";
 
 import { type BlogResource, type BlogUpdate } from "ode-ts-client";
 
-import { useUpdateResource } from "~/services/queries";
-import { useSelectedResources } from "~/store";
+import { useSelectedResources, useStoreActions } from "~/store";
 
 export type PublicationType = "RESTRAINT" | "IMMEDIATE";
 
 export default function useShareResourceModalFooterBlog() {
-  const updateResource = useUpdateResource();
   const selectedResources = useSelectedResources();
   const {
     assetId,
@@ -22,6 +20,7 @@ export default function useShareResourceModalFooterBlog() {
   } = selectedResources[0] as BlogResource;
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<PublicationType>(publishType || "IMMEDIATE");
+  const { setPayloadUpdatePublishType } = useStoreActions();
   const handleRadioPublicationChange = async (value: PublicationType) => {
     setRadioPublicationValue(value);
     const payload: BlogUpdate = {
@@ -34,7 +33,7 @@ export default function useShareResourceModalFooterBlog() {
       trashed,
       "publish-type": value,
     };
-    await updateResource.mutate(payload);
+    setPayloadUpdatePublishType(payload);
   };
   return {
     radioPublicationValue,
