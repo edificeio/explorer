@@ -16,6 +16,7 @@ import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContai
 import { useActions } from "~/services/queries";
 import { Breadcrumb } from "~/shared/components/Breadcrumb";
 import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
+import { useTrashModal } from "~/shared/hooks/useTrashedModal";
 
 const OnboardingTrash = lazy(
   async () => await import("~/shared/components/OnboardingTrash"),
@@ -30,12 +31,20 @@ const Library = lazy(
   async () => await import("~/features/Explorer/components/Library/Library"),
 );
 
+const TrashedResourceModal = lazy(
+  async () =>
+    await import(
+      "~/features/Explorer/components/ResourcesList/TrashedResourceModal"
+    ),
+);
+
 export default function Explorer(): JSX.Element | null {
   const { currentApp } = useOdeClient();
 
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
   const { data: actions } = useActions();
+  const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
@@ -90,6 +99,15 @@ export default function Explorer(): JSX.Element | null {
               isOpen={isOpen}
               setIsOpen={setIsOpen}
               handleSavePreference={handleSavePreference}
+            />
+          </Suspense>
+        )}
+
+        {isTrashedModalOpen && (
+          <Suspense fallback={<LoadingScreen />}>
+            <TrashedResourceModal
+              isOpen={isTrashedModalOpen}
+              onCancel={onTrashedCancel}
             />
           </Suspense>
         )}
