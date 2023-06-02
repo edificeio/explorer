@@ -59,6 +59,7 @@ export default function useAccessControl({
       setVisible(true);
       return;
     }
+
     if (rights instanceof Array) {
       // rights are of type Array
       if (rights.length > 0) {

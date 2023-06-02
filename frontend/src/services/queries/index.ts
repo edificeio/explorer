@@ -433,8 +433,6 @@ export const useCreateFolder = () => {
               }),
             };
 
-            console.log({ newData });
-
             const update = addNode(treeData, {
               parentId: variables.parentId,
               newFolder,

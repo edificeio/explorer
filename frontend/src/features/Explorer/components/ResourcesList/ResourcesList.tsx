@@ -1,7 +1,7 @@
 import React, { Suspense, useCallback } from "react";
 
-import { Button, Card, LoadingScreen } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { Button, Card } from "@ode-react-ui/components";
+import { useOdeClient, useUser } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
 import dayjs from "dayjs";
@@ -27,7 +27,8 @@ import "dayjs/locale/it";
 dayjs.extend(relativeTime);
 
 const ResourcesList = (): JSX.Element | null => {
-  const { currentApp, currentLanguage, user, i18n } = useOdeClient();
+  const { currentApp, currentLanguage, i18n } = useOdeClient();
+  const { avatar } = useUser();
 
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
@@ -104,7 +105,9 @@ const ResourcesList = (): JSX.Element | null => {
               const { id, creatorName, name, thumbnail, updatedAt, shared } =
                 resource;
 
-              const time = dayjs(updatedAt).locale(currentLanguage).fromNow();
+              const time = dayjs(updatedAt)
+                .locale(currentLanguage as string)
+                .fromNow();
 
               return (
                 <animated.li
@@ -129,7 +132,7 @@ const ResourcesList = (): JSX.Element | null => {
                     onSelect={() => toggleSelect(resource)}
                     resourceSrc={thumbnail}
                     updatedAt={time}
-                    userSrc={user?.avatar}
+                    userSrc={avatar}
                   />
                 </animated.li>
               );

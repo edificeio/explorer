@@ -65,7 +65,6 @@
     "zustand": "4.3.7"
   },
   "devDependencies": {
-    "vite-tsconfig-paths": "4.2.0",
     "@axe-core/react": "4.6.1",
     "@tanstack/react-query-devtools": "4.29.5",
     "@types/node": "18.16.1",
@@ -90,9 +89,9 @@
     "husky": "8.0.3",
     "lint-staged": "13.2.2",
     "prettier": "2.8.8",
-    "rollup-plugin-visualizer": "5.9.0",
     "typescript": "5.0.4",
-    "vite": "4.3.3"
+    "vite": "4.3.3",
+    "vite-tsconfig-paths": "4.2.0"
   },
   "packageManager": "pnpm@7.21.0",
   "engines": {

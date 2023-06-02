@@ -76,7 +76,7 @@ export default function ShareResourceModal({
         </Heading>
 
         <div className="table-responsive">
-          <table className="table  border align-middle mb-0">
+          <table className="table border align-middle mb-0">
             <thead className="bg-secondary text-white">
               <tr>
                 <th scope="col" className="w-32"></th>

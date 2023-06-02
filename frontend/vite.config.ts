@@ -1,7 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
-import { build, resolve } from "./config";
 import react from "@vitejs/plugin-react";
-import { visualizer } from "rollup-plugin-visualizer";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
@@ -49,15 +47,22 @@ export default ({ mode }: { mode: string }) => {
   };
 
   return defineConfig({
-    // resolve,
-    build,
-    plugins: [
-      react(),
-      visualizer({
-        gzipSize: true,
-      }),
-      tsconfigPaths(),
-    ],
+    build: {
+      assetsDir: "assets/js/ode-explorer/",
+      cssCodeSplit: false,
+      rollupOptions: {
+        output: {
+          entryFileNames: `[name].js`,
+          chunkFileNames: `[name].js`,
+          assetFileNames: `[name].[ext]`,
+          /* manualChunks: {
+            vendor: ["react", "react-dom"],
+            ...renderChunks(dependencies),
+          }, */
+        },
+      },
+    },
+    plugins: [react(), tsconfigPaths()],
     server: {
       proxy,
       host: "0.0.0.0",

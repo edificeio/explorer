@@ -38,8 +38,6 @@ export function moveNode(
         children: newChildren,
       };
 
-      console.log({ newChildren });
-
       return newNode;
     } else if (folders.includes(node.id) && destinationId !== parent?.id) {
       // delete from original position
