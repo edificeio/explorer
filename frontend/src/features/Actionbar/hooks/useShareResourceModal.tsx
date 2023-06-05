@@ -19,9 +19,10 @@ import {
   type ShareRightActionDisplayName,
 } from "ode-ts-client";
 
+import useShareResourceModalFooterBlog from "./useShareResourceModalFooterBlog";
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useIsAdml } from "~/shared/hooks/useIsAdml";
-import { usePayloadUpdatePublishType, useSelectedResources } from "~/store";
+import { useSelectedResources } from "~/store";
 
 interface useShareResourceModalProps {
   onSuccess: () => void;
@@ -61,7 +62,8 @@ export default function useShareResourceModal({
 
   const updateResource = useUpdateResource();
 
-  const payloadUpdatePublishType = usePayloadUpdatePublishType();
+  // const payloadUpdatePublishType = usePayloadUpdatePublishType();
+  const { payloadUpdatePublishType } = useShareResourceModalFooterBlog();
 
   useEffect(() => {
     initShareRightsAndActions();

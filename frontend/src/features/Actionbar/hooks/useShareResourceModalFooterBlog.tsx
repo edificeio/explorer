@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { type BlogResource, type BlogUpdate } from "ode-ts-client";
 
-import { useSelectedResources, useStoreActions } from "~/store";
+import { useSelectedResources } from "~/store";
 
 export type PublicationType = "RESTRAINT" | "IMMEDIATE";
 
 export default function useShareResourceModalFooterBlog() {
   const selectedResources = useSelectedResources();
+  // const { setPayloadUpdatePublishType } = useStoreActions();
+
   const {
     assetId,
     description,
@@ -18,25 +20,34 @@ export default function useShareResourceModalFooterBlog() {
     slug,
     "publish-type": publishType,
   } = selectedResources[0] as BlogResource;
+
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<PublicationType>(publishType || "IMMEDIATE");
-  const { setPayloadUpdatePublishType } = useStoreActions();
+  const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
+    description,
+    entId: assetId,
+    name,
+    public: !!pub,
+    slug: slug || "",
+    thumbnail,
+    trashed,
+  } satisfies BlogUpdate);
+
+  useEffect(() => {
+    if (radioPublicationValue) {
+      setPayloadUpdatePublishType((prevPayload: BlogUpdate) => ({
+        ...prevPayload,
+        "publish-type": radioPublicationValue,
+      }));
+    }
+  }, [radioPublicationValue]);
+
   const handleRadioPublicationChange = async (value: PublicationType) => {
     setRadioPublicationValue(value);
-    const payload: BlogUpdate = {
-      description,
-      entId: assetId,
-      name,
-      public: !!pub,
-      slug: slug || "",
-      thumbnail,
-      trashed,
-      "publish-type": value,
-    };
-    setPayloadUpdatePublishType(payload);
   };
   return {
     radioPublicationValue,
+    payloadUpdatePublishType,
     handleRadioPublicationChange,
   };
 }
