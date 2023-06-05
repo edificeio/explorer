@@ -9,6 +9,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { type ID, type IResource } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
+import { isResourceShared } from "~/shared/utils/isResourceShared";
 import {
   useStoreActions,
   useResourceIds,
@@ -92,8 +93,9 @@ const ResourcesList = (): JSX.Element | null => {
           // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
-              const { id, creatorName, name, thumbnail, updatedAt, shared } =
-                resource;
+              const { id, creatorName, name, thumbnail, updatedAt } = resource;
+
+              const isShared = isResourceShared(resource);
 
               const time = dayjs(updatedAt)
                 .locale(currentLanguage as string)
@@ -114,7 +116,7 @@ const ResourcesList = (): JSX.Element | null => {
                     isPublic={resource.public}
                     isSelected={resourceIds.includes(resource.id)}
                     isLoading={isFetching}
-                    isShared={shared}
+                    isShared={isShared}
                     messagePublic={i18n("tooltip.public")}
                     messageShared={i18n("tooltip.shared")}
                     name={name}
