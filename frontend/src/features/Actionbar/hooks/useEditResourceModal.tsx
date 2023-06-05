@@ -115,7 +115,6 @@ export default function useEditResourceModal({
     } catch (e) {
       setCorrectSlug(true);
       console.error(e);
-      // hotToast.error(`Error: ${error}`);
     }
   };
 

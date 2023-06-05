@@ -26,21 +26,11 @@ export default function TrashedResourceModal({
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="trash_resource">
-      <Modal.Header
-        onModalClose={() => {
-          // TODO fix onModalClose type to avoid this hack
-          onCancel();
-          return {};
-        }}
-      >
-        {i18n("Accès à la ressource")}
+      <Modal.Header onModalClose={() => onCancel()}>
+        {i18n("explorer.trash.modal.title")}
       </Modal.Header>
       <Modal.Body>
-        <p className="body">
-          Les ressources placées dans la corbeille ne sont pas consultables.
-          Veuillez restaurer la ressource ou demander à l’auteur ou un
-          gestionnaire de le faire pour vous afin de pouvoir la consulter
-        </p>
+        <p className="body">{i18n("explorer.trash.modal.text")}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -49,7 +39,7 @@ export default function TrashedResourceModal({
           type="button"
           variant="outline"
         >
-          {i18n("Fermer")}
+          {i18n("close")}
         </Button>
         {rightToRestore && (
           <Button
@@ -58,7 +48,7 @@ export default function TrashedResourceModal({
             type="button"
             variant="filled"
           >
-            {i18n("Restaurer")}
+            {i18n("restore")}
           </Button>
         )}
       </Modal.Footer>

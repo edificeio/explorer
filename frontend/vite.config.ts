@@ -55,10 +55,6 @@ export default ({ mode }: { mode: string }) => {
           entryFileNames: `[name].js`,
           chunkFileNames: `[name].js`,
           assetFileNames: `[name].[ext]`,
-          /* manualChunks: {
-            vendor: ["react", "react-dom"],
-            ...renderChunks(dependencies),
-          }, */
         },
       },
     },
