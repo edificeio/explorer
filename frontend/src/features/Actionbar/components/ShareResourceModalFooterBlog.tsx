@@ -1,10 +1,12 @@
 import { Heading, Radio } from "@ode-react-ui/components";
+import { useI18n } from "@ode-react-ui/core";
 
 import useShareResourceModalFooterBlog, {
   type PublicationType,
 } from "../hooks/useShareResourceModalFooterBlog";
 
 export default function ShareResourceModalFooterBlog() {
+  const { i18n } = useI18n();
   const { radioPublicationValue, handleRadioPublicationChange } =
     useShareResourceModalFooterBlog();
   return (
@@ -12,11 +14,11 @@ export default function ShareResourceModalFooterBlog() {
       <hr />
 
       <Heading headingStyle="h4" level="h3" className="mb-16">
-        Circuit de publication des billets
+        {i18n("explorer.publication.steps")}
       </Heading>
 
       <Radio
-        label="Publication immédiate"
+        label={i18n("explorer.immediat.publication")}
         id="publication-now"
         name="publication"
         value={"IMMEDIATE" as PublicationType}
@@ -26,7 +28,7 @@ export default function ShareResourceModalFooterBlog() {
         }
       />
       <Radio
-        label="Billets soumis à validation"
+        label={i18n("explorer.validate.publication")}
         id="publication-validate"
         name="publication"
         value={"RESTRAINT" as PublicationType}

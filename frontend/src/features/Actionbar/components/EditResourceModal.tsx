@@ -161,7 +161,7 @@ export default function EditResourceModal({
                     validate: {
                       required: (value) => {
                         if (!value && !disableSlug)
-                          return "Requis lorsque la checkbox 'Accessible publiquement via une URL est cochée'";
+                          return i18n("explorer.slug.name.mandatory");
                         return true;
                       },
                     },
@@ -176,9 +176,7 @@ export default function EditResourceModal({
                 />
                 {correctSlug && (
                   <div className="position-absolute">
-                    <FormText>
-                      Choisissez une autre URL pour votre blog
-                    </FormText>
+                    <FormText>{i18n("explorer.slug.name.error")}</FormText>
                   </div>
                 )}
               </div>

@@ -26,7 +26,7 @@ export default function useDeleteModal({ onSuccess }: ModalProps) {
       if (isTrashFolder) {
         await deleteItem.mutate();
         // TODO i18n
-        hotToast.success("Supprimé de la corbeille");
+        hotToast.success(i18n("explorer.removed.from.trash"));
       } else {
         await trashItem.mutate();
         // TODO i18n

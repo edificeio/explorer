@@ -32,7 +32,7 @@ export default function useShareResourceModal({
   onSuccess,
   onCancel,
 }: useShareResourceModalProps) {
-  const { appCode } = useOdeClient();
+  const { appCode, i18n } = useOdeClient();
   const { user, avatar } = useUser();
   const [idBookmark, setIdBookmark] = useState<string>(useId());
   const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
@@ -183,12 +183,12 @@ export default function useShareResourceModal({
       });
       await updateResource.mutate(payloadUpdatePublishType);
       // TODO i18n
-      hotToast.success("Partage sauvegardé");
+      hotToast.success(i18n("explorer.shared.status.saved"));
       onSuccess?.();
     } catch (e) {
       console.error("Failed to save share", e);
       // TODO i18N
-      hotToast.error("Erreur lors du partage");
+      hotToast.error(i18n("explorer.shared.status.error"));
     }
   };
 
@@ -419,7 +419,7 @@ export default function useShareResourceModal({
           .filter((right: { type: string }) => right.type === "sharebookmark")
           .map((u: { id: any }) => u.id),
       });
-      hotToast.success("Favoris sauvegardé");
+      hotToast.success(i18n("explorer.bookmarked.status.saved"));
       setShareRights((state) => {
         return {
           ...state,
@@ -436,7 +436,7 @@ export default function useShareResourceModal({
       toggleBookmarkInput(false);
     } catch (e) {
       console.error("Failed to save bookmark", e);
-      hotToast.error("Erreur lors de la sauvegarde");
+      hotToast.error(i18n("explorer.bookmarked.status.error"));
     }
   };
 

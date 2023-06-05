@@ -108,7 +108,12 @@ export default function useEditResourceModal({
           <strong>{i18n("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
-          <p>Public: {formData.enablePublic ? "Oui" : "Non"}</p>
+          <p>
+            Public:{" "}
+            {formData.enablePublic
+              ? i18n("explorer.enable.public.yes")
+              : i18n("explorer.enable.public.no")}
+          </p>
         </>,
       );
       onSuccess?.();
@@ -120,7 +125,7 @@ export default function useEditResourceModal({
 
   function onCopyToClipBoard(_: string) {
     navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
-    hotToast.success("L'adresse a été copié dans le presse papier");
+    hotToast.success(i18n("explorer.copy.clipboard"));
   }
 
   function onFormCancel() {
