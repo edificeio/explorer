@@ -21,13 +21,7 @@ export default function DeleteModal({
   });
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
-      <Modal.Header
-        onModalClose={() => {
-          // TODO fix onModalClose type to avoid this hack
-          onCancel();
-          return {};
-        }}
-      >
+      <Modal.Header onModalClose={onCancel}>
         {i18n(isTrashFolder ? "explorer.delete.title" : "explorer.trash.title")}
       </Modal.Header>
       <Modal.Body>

@@ -12,6 +12,7 @@ import {
   SelectList,
   Loading,
   Tooltip,
+  VisuallyHidden,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import {
@@ -79,8 +80,16 @@ export default function ShareResourceModal({
           <table className="table border align-middle mb-0">
             <thead className="bg-secondary text-white">
               <tr>
-                <th scope="col" className="w-32"></th>
-                <th scope="col"></th>
+                <th scope="col" className="w-32">
+                  <VisuallyHidden>
+                    {i18n("explorer.modal.share.avatar.shared.alt")}
+                  </VisuallyHidden>
+                </th>
+                <th scope="col">
+                  <VisuallyHidden>
+                    {i18n("explorer.modal.share.search.placeholder")}
+                  </VisuallyHidden>
+                </th>
                 {shareRightActions.map((shareRightAction) => (
                   <th
                     key={shareRightAction.displayName}
@@ -90,7 +99,9 @@ export default function ShareResourceModal({
                     {i18n(shareRightAction.displayName)}
                   </th>
                 ))}
-                <th scope="col"></th>
+                <th scope="col">
+                  <VisuallyHidden>{i18n("close")}</VisuallyHidden>
+                </th>
               </tr>
             </thead>
             <tbody>
