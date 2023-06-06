@@ -8,7 +8,6 @@ export type PublicationType = "RESTRAINT" | "IMMEDIATE";
 
 export default function useShareResourceModalFooterBlog() {
   const selectedResources = useSelectedResources();
-  // const { setPayloadUpdatePublishType } = useStoreActions();
 
   const {
     assetId,
@@ -23,6 +22,7 @@ export default function useShareResourceModalFooterBlog() {
 
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<PublicationType>(publishType || "IMMEDIATE");
+
   const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
     description,
     entId: assetId,
@@ -31,11 +31,12 @@ export default function useShareResourceModalFooterBlog() {
     slug: slug || "",
     thumbnail,
     trashed,
+    "publish-type": publishType,
   } satisfies BlogUpdate);
 
   useEffect(() => {
     if (radioPublicationValue) {
-      setPayloadUpdatePublishType((prevPayload: BlogUpdate) => ({
+      setPayloadUpdatePublishType((prevPayload) => ({
         ...prevPayload,
         "publish-type": radioPublicationValue,
       }));

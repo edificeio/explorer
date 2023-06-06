@@ -1,14 +1,18 @@
 import { Heading, Radio } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
 
-import useShareResourceModalFooterBlog, {
-  type PublicationType,
-} from "../hooks/useShareResourceModalFooterBlog";
+import { type PublicationType } from "../hooks/useShareResourceModalFooterBlog";
 
-export default function ShareResourceModalFooterBlog() {
+export interface ShareResourceModalFooterBlogProps {
+  radioPublicationValue: PublicationType;
+  onRadioPublicationChange: (event: PublicationType) => void;
+}
+
+export default function ShareResourceModalFooterBlog({
+  radioPublicationValue,
+  onRadioPublicationChange,
+}: ShareResourceModalFooterBlogProps) {
   const { i18n } = useI18n();
-  const { radioPublicationValue, handleRadioPublicationChange } =
-    useShareResourceModalFooterBlog();
   return (
     <>
       <hr />
@@ -23,8 +27,8 @@ export default function ShareResourceModalFooterBlog() {
         name="publication"
         value={"IMMEDIATE" as PublicationType}
         model={radioPublicationValue}
-        onChange={async (e) =>
-          await handleRadioPublicationChange(e.target.value as PublicationType)
+        onChange={(e) =>
+          onRadioPublicationChange(e.target.value as PublicationType)
         }
       />
       <Radio
@@ -33,8 +37,8 @@ export default function ShareResourceModalFooterBlog() {
         name="publication"
         value={"RESTRAINT" as PublicationType}
         model={radioPublicationValue}
-        onChange={async (e) =>
-          await handleRadioPublicationChange(e.target.value as PublicationType)
+        onChange={(e) =>
+          onRadioPublicationChange(e.target.value as PublicationType)
         }
       />
     </>

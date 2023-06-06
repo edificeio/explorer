@@ -27,6 +27,7 @@ import { createPortal } from "react-dom";
 
 import ShareResourceModalFooter from "./ShareResourceModalFooter";
 import useShareResourceModal from "../hooks/useShareResourceModal";
+import useShareResourceModalFooterBlog from "../hooks/useShareResourceModalFooterBlog";
 
 interface ShareResourceModalProps {
   isOpen: boolean;
@@ -39,6 +40,12 @@ export default function ShareResourceModal({
   onSuccess,
   onCancel,
 }: ShareResourceModalProps) {
+  // const { payloadUpdatePublishType } = useShareResourceModalFooterBlog();
+  const {
+    payloadUpdatePublishType,
+    radioPublicationValue,
+    handleRadioPublicationChange,
+  } = useShareResourceModalFooterBlog();
   const {
     myAvatar,
     idBookmark,
@@ -65,7 +72,8 @@ export default function ShareResourceModal({
     handleBookmarkMembersToggle,
     hasRight,
     showShareRightLine,
-  } = useShareResourceModal({ onSuccess, onCancel });
+  } = useShareResourceModal({ payloadUpdatePublishType, onSuccess, onCancel });
+
   const { i18n } = useOdeClient();
   const refBookmark = useRef<HTMLInputElement>(null);
   return createPortal(
@@ -324,7 +332,10 @@ export default function ShareResourceModal({
             ></SelectList>
           </div>
         )}
-        <ShareResourceModalFooter />
+        <ShareResourceModalFooter
+          radioPublicationValue={radioPublicationValue}
+          onRadioPublicationChange={handleRadioPublicationChange}
+        />
       </Modal.Body>
       <Modal.Footer>
         <Button

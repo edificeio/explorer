@@ -17,9 +17,9 @@ import {
   type ShareSubject,
   type ShareRight,
   type ShareRightActionDisplayName,
+  type BlogUpdate,
 } from "ode-ts-client";
 
-import useShareResourceModalFooterBlog from "./useShareResourceModalFooterBlog";
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useIsAdml } from "~/shared/hooks/useIsAdml";
 import { useSelectedResources } from "~/store";
@@ -27,11 +27,13 @@ import { useSelectedResources } from "~/store";
 interface useShareResourceModalProps {
   onSuccess: () => void;
   onCancel: () => void;
+  payloadUpdatePublishType: BlogUpdate;
 }
 
 export default function useShareResourceModal({
   onSuccess,
   onCancel,
+  payloadUpdatePublishType,
 }: useShareResourceModalProps) {
   const { appCode, i18n } = useOdeClient();
   const { user, avatar } = useUser();
@@ -61,9 +63,6 @@ export default function useShareResourceModal({
   const selectedResources = useSelectedResources();
 
   const updateResource = useUpdateResource();
-
-  // const payloadUpdatePublishType = usePayloadUpdatePublishType();
-  const { payloadUpdatePublishType } = useShareResourceModalFooterBlog();
 
   useEffect(() => {
     initShareRightsAndActions();
@@ -183,6 +182,7 @@ export default function useShareResourceModal({
         entId: selectedResources[0]?.assetId,
         shares: shareRights.rights,
       });
+
       await updateResource.mutate(payloadUpdatePublishType);
       // TODO i18n
       hotToast.success(i18n("explorer.shared.status.saved"));
