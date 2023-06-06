@@ -4,11 +4,10 @@ import { Button, Card } from "@ode-react-ui/components";
 import { useOdeClient, useUser } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import { type ID, type IResource } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
+import { dayjs } from "~/shared/config";
 import { isResourceShared } from "~/shared/utils/isResourceShared";
 import {
   useStoreActions,
@@ -16,14 +15,6 @@ import {
   useSelectedResources,
   useSearchParams,
 } from "~/store";
-
-import "dayjs/locale/de";
-import "dayjs/locale/es";
-import "dayjs/locale/pt";
-import "dayjs/locale/fr";
-import "dayjs/locale/it";
-
-dayjs.extend(relativeTime);
 
 const ResourcesList = (): JSX.Element | null => {
   const { currentApp, currentLanguage, i18n } = useOdeClient();
