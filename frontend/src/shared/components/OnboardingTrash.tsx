@@ -53,7 +53,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto my-12"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/onboarding/corbeille-menu.svg`}
+                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-menu.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen1.title")}</p>
@@ -64,7 +64,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/onboarding/corbeille-notif.svg`}
+                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-notif.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen2.title")}</p>
@@ -75,7 +75,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/onboarding/corbeille-delete.svg`}
+                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-delete.svg`}
                   alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
                 />
                 <p>{i18n("explorer.modal.onboarding.trash.screen3.title")}</p>
