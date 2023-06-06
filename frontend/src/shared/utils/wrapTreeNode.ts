@@ -10,7 +10,7 @@ export const wrapTreeNode = (
   parentId: string,
 ) => {
   // const folderIds = folders.map((e) => e.id);
-  return modifyNode(treeNode, (node, parent) => {
+  return modifyNode(treeNode, (node) => {
     // add missing children if needed
     if (node.id === parentId) {
       node.children = folders?.map((e) => new TreeNodeFolderWrapper(e));

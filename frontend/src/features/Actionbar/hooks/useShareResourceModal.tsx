@@ -32,7 +32,6 @@ interface useShareResourceModalProps {
 
 export default function useShareResourceModal({
   onSuccess,
-  onCancel,
   payloadUpdatePublishType,
 }: useShareResourceModalProps) {
   const { appCode, i18n } = useOdeClient();

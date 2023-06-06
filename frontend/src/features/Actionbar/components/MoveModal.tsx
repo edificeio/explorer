@@ -7,14 +7,14 @@ import { useTreeData } from "~/store";
 
 interface MoveModalProps {
   isOpen: boolean;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function MoveModal({
   isOpen,
-  onSuccess = () => {},
-  onCancel = () => {},
+  onSuccess,
+  onCancel,
 }: MoveModalProps) {
   const { i18n } = useOdeClient();
   const {

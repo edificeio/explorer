@@ -17,7 +17,7 @@ function doModify(
   const result = callback(current, parent);
   if (result?.children?.length) {
     const children: TreeNode[] = [];
-    for (const child of result?.children) {
+    for (const child of result?.children || []) {
       const res = doModify(child, callback, result);
       if (res) {
         children.push(res);

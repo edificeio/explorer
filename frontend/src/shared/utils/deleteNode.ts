@@ -6,7 +6,7 @@ export function deleteNode(
   treeData: TreeNode,
   { folders }: { folders: string[] },
 ): TreeNode {
-  return modifyNode(treeData, (node, parent) => {
+  return modifyNode(treeData, (node) => {
     if (folders.includes(node.id)) {
       return undefined;
     } else {

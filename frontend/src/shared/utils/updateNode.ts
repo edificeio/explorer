@@ -8,7 +8,7 @@ export function updateNode(
   treeData: TreeNode,
   { folderId, newFolder }: { folderId: string; newFolder: IFolder },
 ): TreeNode {
-  return modifyNode(treeData, (node, parent) => {
+  return modifyNode(treeData, (node) => {
     if (node.id === folderId) {
       return new TreeNodeFolderWrapper(newFolder);
     } else {

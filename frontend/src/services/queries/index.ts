@@ -620,7 +620,6 @@ export const useUpdateResource = () => {
                         public: pub,
                         description,
                         slug,
-                        entId,
                         ...others
                       } = variables;
                       return {

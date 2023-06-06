@@ -22,14 +22,14 @@ import { useSelectedResources } from "~/store";
 
 interface PublishModalProps {
   isOpen: boolean;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function PublishModal({
   isOpen,
-  onSuccess = () => {},
-  onCancel = () => {},
+  onSuccess,
+  onCancel,
 }: PublishModalProps) {
   const { i18n, currentApp } = useOdeClient();
 
@@ -43,6 +43,7 @@ export default function PublishModal({
     setSelectedActivities,
     selectedSubjectAreas,
     setSelectedSubjectAreas,
+    handleDeleteImage,
   } = usePublishModal({ onSuccess });
 
   const selectedResources = useSelectedResources();
@@ -93,7 +94,7 @@ export default function PublishModal({
                 "bpr.form.publication.cover.upload.remove",
               )}
               onUploadImage={handleUploadImage}
-              onDeleteImage={() => {}}
+              onDeleteImage={handleDeleteImage}
               className="align-self-center"
             />
           </div>

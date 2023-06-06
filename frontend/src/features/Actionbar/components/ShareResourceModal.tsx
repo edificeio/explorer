@@ -22,7 +22,7 @@ import {
   RafterDown,
   Save,
 } from "@ode-react-ui/icons";
-import { type ShareRight } from "ode-ts-client/dist/share/interface";
+import { ShareRight } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
 import ShareResourceModalFooter from "./ShareResourceModalFooter";
@@ -143,7 +143,7 @@ export default function ShareResourceModal({
                       key={shareRight.id}
                       className={shareRight.isBookmarkMember ? "bg-light" : ""}
                     >
-                      <td scope="row">
+                      <td>
                         {shareRight.type !== "sharebookmark" && (
                           <Avatar
                             alt={i18n("explorer.modal.share.avatar.shared.alt")}
@@ -269,7 +269,7 @@ export default function ShareResourceModal({
                   variant="ghost"
                   disabled={bookmarkName.length === 0}
                   leftIcon={<Save />}
-                  onClick={(_) => {
+                  onClick={() => {
                     saveBookmark(refBookmark.current!.value!);
                   }}
                   className="text-nowrap"

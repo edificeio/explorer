@@ -68,6 +68,13 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   const userId = user ? user?.userId : "";
 
+  const handleDeleteImage = () => {
+    setCover({
+      name: "",
+      image: "",
+    });
+  };
+
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
     try {
       let coverBlob = new Blob();
@@ -135,6 +142,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
     publish,
+    handleDeleteImage,
     handleUploadImage,
     selectedActivities,
     setSelectedActivities,

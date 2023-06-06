@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useI18n } from "@ode-react-ui/core";
 import { Delete } from "@ode-react-ui/icons";
 

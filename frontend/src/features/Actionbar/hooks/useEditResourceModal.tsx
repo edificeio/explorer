@@ -123,7 +123,7 @@ export default function useEditResourceModal({
     }
   };
 
-  function onCopyToClipBoard(_: string) {
+  function onCopyToClipBoard() {
     navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
     hotToast.success(i18n("explorer.copy.clipboard"));
   }
