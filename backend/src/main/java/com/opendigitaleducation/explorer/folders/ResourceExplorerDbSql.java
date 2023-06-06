@@ -138,7 +138,7 @@ public class ResourceExplorerDbSql {
             // TODO JBER check if this is not a problem when 2 share messages are executed in the same batch
             // because there is a single upsert per resource so if the messages are presented in a reverse chronological
             // order there could be some loss
-            if(e.getRights() != null &&  !e.getRights().isEmpty()){
+            if(e.getOptionalRights().isPresent()){
                 params.put("rights", e.getRights());
             }
             return params;
