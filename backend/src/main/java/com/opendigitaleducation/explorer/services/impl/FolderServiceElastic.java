@@ -238,7 +238,8 @@ public class FolderServiceElastic implements FolderService {
             return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
         }).map(e-> (e.getValue("parentId").toString())).collect(Collectors.toSet());
         final FolderSearchOperation search = new FolderSearchOperation().setIds(parentIds).setSearchEverywhere(true);
-        final Future<Integer> checkFuture = parentIds.isEmpty()?Future.succeededFuture(0):count(creator,application, search);
+        final Set<Integer> parentIdAsNumbers = parentIds.stream().map(e -> NumberUtils.toInt(e)).filter(e -> e!=null).collect(Collectors.toSet());
+        final Future<Integer> checkFuture = parentIdAsNumbers.isEmpty()?Future.succeededFuture(0):this.dbHelper.countByIds(parentIdAsNumbers);
         return checkFuture.compose(e->{
            if(e < parentIds.size()){
                return Future.failedFuture("folder.create.parent.invalid");

@@ -87,8 +87,7 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
     }
 
     public boolean isFolderMessage(){
-        return ExplorerConfig.FOLDER_APPLICATION.equals(getApplication())
-                && ExplorerConfig.FOLDER_TYPE.equals(getResourceType())
+        return ExplorerConfig.FOLDER_TYPE.equals(getResourceType())
                 && ExplorerConfig.FOLDER_TYPE.equals(getEntityType());
     }
 

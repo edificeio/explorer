@@ -431,17 +431,18 @@ public class FolderExplorerDbSql {
     public Future<Map<String, FolderRelationship>> getRelationships(final Set<Integer> ids) {
         final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
         final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
-        final String query = String.format("SELECT f1.id, f1.parent_id FROM explorer.folders f1 WHERE f1.parent_id IN (%s) OR f1.id IN (%s) ", inPlaceholder,inPlaceholder);
+        final String query = String.format("SELECT f1.id, f1.parent_id, f1.application FROM explorer.folders f1 WHERE f1.parent_id IN (%s) OR f1.id IN (%s) ", inPlaceholder,inPlaceholder);
         return client.preparedQuery(query, inTuple).map(ancestors -> {
             final Map<String, FolderRelationship> relationShips = new HashMap<>();
             for (final Row row : ancestors) {
                 //get parent of each
                 final String id = row.getInteger("id").toString();
+                final String application = row.getString("application");
                 final Integer parent_id = row.getInteger("parent_id");
-                relationShips.putIfAbsent(id, new FolderRelationship(id));
+                relationShips.putIfAbsent(id, new FolderRelationship(id, application));
                 if(parent_id != null){
                     final String parentIdStr = parent_id.toString();
-                    relationShips.putIfAbsent(parentIdStr, new FolderRelationship(parentIdStr));
+                    relationShips.putIfAbsent(parentIdStr, new FolderRelationship(parentIdStr, application));
                     //add to children
                     relationShips.get(parentIdStr).childrenIds.add(id);
                     //set parent
@@ -449,6 +450,19 @@ public class FolderExplorerDbSql {
                 }
             }
             return relationShips;
+        });
+    }
+
+    public Future<Integer> countByIds(final Collection<Integer> ids) {
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        final Tuple inTuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+        final String query = String.format("SELECT COUNT(f1.id) as count FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder,inPlaceholder);
+        return client.preparedQuery(query, inTuple).map(ancestors -> {
+            for (final Row row : ancestors) {
+                //get parent of each
+                return row.getInteger("count");
+            }
+            return 0;
         });
     }
 
@@ -476,11 +490,13 @@ public class FolderExplorerDbSql {
 
     public static class FolderRelationship{
         public final String id;
+        public final String application;
         public Optional<String> parentId = Optional.empty();
         public final List<String> childrenIds = new ArrayList<>();
 
-        public FolderRelationship(String id) {
+        public FolderRelationship(String id, String application) {
             this.id = id;
+            this.application = application;
         }
     }
 

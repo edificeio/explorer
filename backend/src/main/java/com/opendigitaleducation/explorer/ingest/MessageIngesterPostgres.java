@@ -367,10 +367,12 @@ public class MessageIngesterPostgres implements MessageIngester {
                 final String parentIdStr = parentId.toString();
                 final Optional<ExplorerMessageForIngest> found = messages.stream().filter(m-> m.getId().equals(parentIdStr)).reduce((first, second) -> second);
                 final ExplorerMessageForIngest message = found.orElseGet(() -> {
+                    //reuse application from child if absent
+                    final String application = relations.values().stream().filter(relation -> relation.parentId.orElse("").equals(parentIdStr)).map(rel -> rel.application).findAny().orElse(ExplorerConfig.FOLDER_APPLICATION);
                     // TODO JBER check if that is the right thing to do. Should we not fetch the folder information first.
                     // This seems to be why the test FolderServiceTest.shouldCreateFolderTree fails
                     // When version is set to System.currentTimeMillis() then it still fails and another one fails
-                    final ExplorerMessage mess = ExplorerMessage.upsert(new IdAndVersion(parentIdStr, System.currentTimeMillis()), new UserInfos(), false, ExplorerConfig.FOLDER_APPLICATION, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
+                    final ExplorerMessage mess = ExplorerMessage.upsert(new IdAndVersion(parentIdStr, System.currentTimeMillis()), new UserInfos(), false, application, ExplorerConfig.FOLDER_TYPE, ExplorerConfig.FOLDER_TYPE)
                             .withSkipCheckVersion(true);
                     return new ExplorerMessageForIngest(mess);
                 });
