@@ -238,7 +238,7 @@ public class FolderServiceElastic implements FolderService {
             return !(ROOT_FOLDER_ID.equalsIgnoreCase(parentId));
         }).map(e-> (e.getValue("parentId").toString())).collect(Collectors.toSet());
         final FolderSearchOperation search = new FolderSearchOperation().setIds(parentIds).setSearchEverywhere(true);
-        final Set<Integer> parentIdAsNumbers = parentIds.stream().map(e -> NumberUtils.toInt(e)).filter(e -> e!=null).collect(Collectors.toSet());
+        final Set<Integer> parentIdAsNumbers = parentIds.stream().map(e -> NumberUtils.toInt(e,-1)).filter(e -> e!=-1).collect(Collectors.toSet());
         final Future<Integer> checkFuture = parentIdAsNumbers.isEmpty()?Future.succeededFuture(0):this.dbHelper.countByIds(parentIdAsNumbers);
         return checkFuture.compose(e->{
            if(e < parentIds.size()){
@@ -428,8 +428,16 @@ public class FolderServiceElastic implements FolderService {
                         sources.add(plugin.setIdForModel(source.copy(), dest.get()));
                     }
                 }
-                plugin.setVersion(sources, now);
-                return plugin.notifyUpsert(creator, sources);
+                final Set<Integer> idAsInt = id.stream().map(e -> NumberUtils.toInt(e,-1)).filter(e -> e!= -1).collect(Collectors.toSet());
+                return this.dbHelper.getDescendants(idAsInt).compose(descendants -> {
+                    for(final FolderExplorerDbSql.FolderDescendant folderWithDescendant : descendants.values()) {
+                        for(final String descendantId : folderWithDescendant.descendantIds) {
+                            sources.add(plugin.setIdForModel(new JsonObject().put("application", application), descendantId));
+                        }
+                    }
+                    plugin.setVersion(sources, now);
+                    return plugin.notifyUpsert(creator, sources);
+                });
             }).compose(e -> {
                 return plugin.get(creator, id);
             });
