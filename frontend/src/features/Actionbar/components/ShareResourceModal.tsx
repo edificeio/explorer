@@ -293,7 +293,7 @@ export default function ShareResourceModal({
             message={
               "Vos favoris de partage s’affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l’annuaire."
             }
-            placement="right"
+            placement="top"
           >
             <InfoCircle className="ms-8 c-pointer" height="18" />
           </Tooltip>
