@@ -14,6 +14,7 @@ import {
   useResourceIds,
   useSelectedResources,
   useSearchParams,
+  useIsTrash,
 } from "~/store";
 
 const ResourcesList = (): JSX.Element | null => {
@@ -34,6 +35,8 @@ const ResourcesList = (): JSX.Element | null => {
     setResourceIsTrash,
   } = useStoreActions();
 
+  const isTrashFolder = useIsTrash();
+
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -49,15 +52,18 @@ const ResourcesList = (): JSX.Element | null => {
   }, []);
 
   const clickOnResource = (resource: IResource) => {
-    if (resource.trashed) {
+    if (isTrashFolder) {
       setResourceIsTrash(true);
       setResourceIds([resource.id]);
+      setSelectedResources([resource]);
     } else {
       openResource(resource);
     }
   };
 
   function toggleSelect(resource: IResource) {
+    if (resource?.trashedBy?.length >= 1) return;
+
     if (resourceIds.includes(resource.id)) {
       setResourceIds(
         resourceIds.filter(
@@ -100,6 +106,7 @@ const ResourcesList = (): JSX.Element | null => {
                     ...springs,
                   }}
                 >
+                  {String(resource.trashedBy)}
                   <Card
                     app={currentApp}
                     className="c-pointer"

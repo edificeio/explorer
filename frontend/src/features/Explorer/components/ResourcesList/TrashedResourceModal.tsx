@@ -3,7 +3,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
-import { useStoreActions } from "~/store";
+import { useSelectedResources, useStoreActions } from "~/store";
 
 export default function TrashedResourceModal({
   isOpen,
@@ -13,16 +13,15 @@ export default function TrashedResourceModal({
   onCancel?: () => void;
 }) {
   const { i18n } = useOdeClient();
-  const { onRestore, actions } = useActionBar();
+  const { onRestore } = useActionBar();
 
   const { setResourceIsTrash } = useStoreActions();
+  const selectedResources = useSelectedResources();
 
   async function restoreTrashResource() {
     await onRestore();
     setResourceIsTrash(false);
   }
-
-  const rightToRestore = actions?.some((action) => action.id === "restore");
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="trash_resource">
@@ -41,7 +40,7 @@ export default function TrashedResourceModal({
         >
           {i18n("close")}
         </Button>
-        {rightToRestore && (
+        {selectedResources[0]?.trashedBy.length === 0 && (
           <Button
             color="primary"
             onClick={async () => await restoreTrashResource()}
