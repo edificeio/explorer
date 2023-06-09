@@ -344,7 +344,6 @@ export const useMoveItem = () => {
     mutationFn: async (folderId: string) =>
       await moveToFolder({ searchParams, folderId, folderIds, resourceIds }),
     onSuccess: async (data, variables) => {
-      // await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       if (previousData) {
@@ -560,9 +559,22 @@ export const useShareResource = () => {
                   ...page,
                   resources: page.resources.map((resource: IResource) => {
                     if (resource.assetId === variables?.entId) {
+                      let rights: string[] = [`creator:${resource.creatorId}`];
+
+                      if (variables?.shares.length >= 1) {
+                        rights = [
+                          ...rights,
+                          ...variables.shares.flatMap((share) => {
+                            return share.actions.map((action) => {
+                              return `${share.type}:${share.id}:${action.id}`;
+                            });
+                          }),
+                        ];
+                      }
+
                       return {
                         ...resource,
-                        shared: variables?.shares.length > 0,
+                        rights,
                       };
                     } else {
                       return resource;
