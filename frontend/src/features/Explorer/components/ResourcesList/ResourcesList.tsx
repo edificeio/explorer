@@ -106,7 +106,6 @@ const ResourcesList = (): JSX.Element | null => {
                     ...springs,
                   }}
                 >
-                  {String(resource.trashedBy)}
                   <Card
                     app={currentApp}
                     className="c-pointer"
