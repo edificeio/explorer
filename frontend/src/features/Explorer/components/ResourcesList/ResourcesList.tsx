@@ -19,7 +19,7 @@ import {
 
 const ResourcesList = (): JSX.Element | null => {
   const { currentApp, currentLanguage, i18n } = useOdeClient();
-  const { avatar } = useUser();
+  const { avatar, user } = useUser();
 
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
@@ -62,7 +62,13 @@ const ResourcesList = (): JSX.Element | null => {
   };
 
   function toggleSelect(resource: IResource) {
-    if (resource?.trashedBy?.length >= 1) return;
+    console.log(resource?.trashedBy?.includes(user?.userId));
+    if (
+      isTrashFolder &&
+      resource.trashed &&
+      resource?.trashedBy?.includes(user?.userId)
+    )
+      return;
 
     if (resourceIds.includes(resource.id)) {
       setResourceIds(
