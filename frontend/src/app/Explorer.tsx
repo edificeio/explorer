@@ -6,7 +6,7 @@ import {
   AppIcon,
   LoadingScreen,
 } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { useOdeClient, useXitiTrackPageLoad } from "@ode-react-ui/core";
 import { type IWebApp, type IAction } from "ode-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
@@ -45,6 +45,8 @@ export default function Explorer(): JSX.Element | null {
     useOnboardingModal();
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
+
+  useXitiTrackPageLoad();
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
