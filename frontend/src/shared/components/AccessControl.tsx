@@ -13,6 +13,7 @@ interface AccessControlProps {
   resourceRights: string | string[] | IObjectWithRights | IObjectWithRights[];
   children: ReactNode;
   renderWhenForbidden?: () => ReactElement;
+  actionId: string | undefined;
 }
 
 export function AccessControl({
@@ -20,10 +21,12 @@ export function AccessControl({
   roleExpected,
   children,
   renderWhenForbidden,
+  actionId,
 }: AccessControlProps): ReactElement {
   const { visible } = useAccessControl({
     roles: roleExpected,
     rights: resourceRights,
+    action: actionId,
   });
   if (visible) {
     return <>{children}</>;

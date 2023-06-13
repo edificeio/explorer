@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { type RightRole, odeServices } from "ode-ts-client";
+import { useUser } from "@ode-react-ui/core";
+import { type RightRole, odeServices, IResource } from "ode-ts-client";
+
+import { useIsTrash } from "~/store";
+
 // TODO move it to ode-react-ui with AccessControl
 
 export interface IObjectWithRights {
@@ -10,13 +14,17 @@ export interface IObjectWithRights {
 interface AccessControlProps {
   roles: RightRole | RightRole[];
   rights: string | string[] | IObjectWithRights | IObjectWithRights[];
+  action: string | undefined;
 }
 
 export default function useAccessControl({
   roles,
   rights,
+  action,
 }: AccessControlProps) {
   const [visible, setVisible] = useState<boolean>(false);
+  const { user } = useUser();
+  const isTrashFolder = useIsTrash();
   // run effect if params changes
   useEffect(() => {
     refreshState();
@@ -56,6 +64,15 @@ export default function useAccessControl({
   // compute visibility according to rights
   const refreshState = async function () {
     if (roles === undefined) {
+      setVisible(true);
+      return;
+    }
+
+    if (
+      isTrashFolder &&
+      (rights as IResource[])[0]?.trashedBy?.includes(user?.userId) &&
+      action === "restore"
+    ) {
       setVisible(true);
       return;
     }
