@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import { Alert, type OptionListItemType } from "@ode-react-ui/components";
-import { useOdeClient, useUser } from "@ode-react-ui/core";
+import { useIsAdml, useOdeClient, useUser } from "@ode-react-ui/core";
 import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
 import { Bookmark } from "@ode-react-ui/icons";
 import {
@@ -21,7 +21,6 @@ import {
 } from "ode-ts-client";
 
 import { useShareResource, useUpdateResource } from "~/services/queries";
-import { useIsAdml } from "~/shared/hooks/useIsAdml";
 import { useSelectedResources } from "~/store";
 
 interface useShareResourceModalProps {
