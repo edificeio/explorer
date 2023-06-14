@@ -115,7 +115,10 @@ export default function useShareResourceModal({
           action.requires?.includes(actionName),
         );
         updatedActions = updatedActions.filter(
-          (action) => !requiredActions.includes(action),
+          (action) =>
+            !requiredActions.find(
+              (requiredAction) => requiredAction.id === action.id,
+            ),
         );
 
         newShareRights[index] = {
