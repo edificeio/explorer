@@ -288,14 +288,14 @@ export default function ShareResourceModal({
           level="h3"
           className="mb-16 d-flex align-items-center"
         >
-          {i18n("explorer.modal.share.search")}
+          <div className="me-8">{i18n("explorer.modal.share.search")}</div>
           <Tooltip
             message={
               "Vos favoris de partage s’affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l’annuaire."
             }
             placement="top"
           >
-            <InfoCircle className="ms-8 c-pointer" height="18" />
+            <InfoCircle className="c-pointer" height="18" />
           </Tooltip>
         </Heading>
 
