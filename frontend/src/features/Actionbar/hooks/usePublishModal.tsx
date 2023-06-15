@@ -106,6 +106,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         language: formData.language,
         licence: "CC-BY",
         resourceId: resourceIds[0],
+        resourceEntId: selectedResources[0].assetId,
         subjectArea: selectedSubjectAreas as string[],
         teacherAvatar,
         title: formData.title,
