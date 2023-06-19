@@ -42,5 +42,6 @@ createRoot(root!).render(
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+    ,
   </StrictMode>,
 );

@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 
 import { Button, Card } from "@ode-react-ui/components";
-import { useOdeClient, useUser } from "@ode-react-ui/core";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
 import { type ID, type IResource } from "ode-ts-client";
@@ -19,7 +19,6 @@ import {
 
 const ResourcesList = (): JSX.Element | null => {
   const { currentApp, currentLanguage, i18n } = useOdeClient();
-  const { avatar } = useUser();
 
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
@@ -88,7 +87,8 @@ const ResourcesList = (): JSX.Element | null => {
           // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
-              const { id, creatorName, name, thumbnail, updatedAt } = resource;
+              const { id, creatorName, creatorId, name, thumbnail, updatedAt } =
+                resource;
 
               const isShared = isResourceShared(resource);
 
@@ -119,7 +119,7 @@ const ResourcesList = (): JSX.Element | null => {
                     onSelect={() => toggleSelect(resource)}
                     resourceSrc={thumbnail}
                     updatedAt={time}
-                    userSrc={avatar}
+                    userSrc={`/userbook/avatar/${creatorId}`}
                   />
                 </animated.li>
               );
