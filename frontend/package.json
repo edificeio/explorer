@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-dev.202307111403",
+  "version": "1.0.0-b2school.20230671116",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -55,9 +55,7 @@
     "@react-spring/web": "9.7.2",
     "@tanstack/react-query": "4.29.12",
     "dayjs": "1.11.8",
-    "i18next": "23.2.6",
-    "i18next-http-backend": "2.2.1",
-    "ode-ts-client": "dev",
+    "ode-ts-client": "develop-b2school",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.9",
