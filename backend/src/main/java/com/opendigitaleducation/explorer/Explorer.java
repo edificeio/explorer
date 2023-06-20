@@ -38,6 +38,8 @@ import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
 import com.opendigitaleducation.explorer.tasks.ExplorerTaskManager;
+import com.opendigitaleducation.explorer.tasks.MigrateCronTask;
+import fr.wseduc.cron.CronTrigger;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -51,6 +53,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.IPostgresClient;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +67,7 @@ public class Explorer extends BaseServer {
     public static final String CLEAN_FOLDER_CRON_CONFIG = "clean-folder-cron";
 
     private Optional<ExplorerTaskManager> taskManager = Optional.empty();
+
     @Override
     public void start() throws Exception {
         log.info("Starting explorer...");
@@ -73,7 +77,7 @@ public class Explorer extends BaseServer {
         final List<Future> futures = new ArrayList<>();
         //create postgres client
         log.info("Init postgres bus consumer...");
-        if(runjobInWroker){
+        if (runjobInWroker) {
             IPostgresClient.initPostgresConsumer(vertx, config, poolMode);
         }
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
@@ -84,7 +88,8 @@ public class Explorer extends BaseServer {
         //init indexes
         ExplorerConfig.getInstance().setEsPrefix(config.getString("index-prefix", ExplorerConfig.DEFAULT_RESOURCE_INDEX));
         ExplorerConfig.getInstance().setEsIndexes(config.getJsonObject("indexes", new JsonObject()));
-        if(config.getBoolean("create-index", true)) {
+        final Set<String> apps = config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet());
+        if (config.getBoolean("create-index", true)) {
             //create elastic schema if needed
             final Buffer mappingRes = vertx.fileSystem().readFileBlocking("es/mappingResource.json");
             //create custom indexs
@@ -98,7 +103,6 @@ public class Explorer extends BaseServer {
                 }
             }
             //create default index apps
-            final Set<String> apps = config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet());
             for (final String app : apps) {
                 if (!customApps.contains(app) && !ExplorerConfig.FOLDER_APPLICATION.equals(app)) {
                     final String index = ExplorerConfig.getInstance().getIndex(app);
@@ -133,22 +137,38 @@ public class Explorer extends BaseServer {
         AbstractFilter.setFolderService(folderService);
         //deploy ingest worker
         folderPlugin.start();
-        if(config.getBoolean("enable-job", true)){
+        if (config.getBoolean("enable-job", true)) {
             final Promise<String> onWorkerDeploy = Promise.promise();
             final DeploymentOptions dep = new DeploymentOptions().setConfig(config);
-            if(runjobInWroker){
+            if (runjobInWroker) {
                 dep.setWorker(true).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
             }
-            vertx.deployVerticle(new IngestJobWorker(),dep, onWorkerDeploy);
+            vertx.deployVerticle(new IngestJobWorker(), dep, onWorkerDeploy);
             futures.add(onWorkerDeploy.future());
-            if(ExplorerConfig.getInstance().skipIndexOfTrashedFolders){
+            if (ExplorerConfig.getInstance().skipIndexOfTrashedFolders) {
                 this.taskManager = Optional.of(new ExplorerTaskManager().start(vertx, config, postgresClient));
             }
+        }
+        try {
+            final JsonObject migrateCron = config.getJsonObject("migrate-task", new JsonObject());
+            final String cron = migrateCron.getString("cron");
+            final boolean enabled = migrateCron.getBoolean("enabled", false);
+            if (enabled && cron != null) {
+                log.info("Migrate task is enabled using cron: "+ cron);
+                final boolean dropBefore = migrateCron.getBoolean("drop-before-migrate", true);
+                final boolean migrateOldFolder = migrateCron.getBoolean("migrate-old-folder", true);
+                final boolean migrateNewFolder = migrateCron.getBoolean("migrate-new-folder", true);
+                new CronTrigger(vertx, cron).schedule(new MigrateCronTask(vertx, resourceService, apps, dropBefore, migrateOldFolder, migrateNewFolder));
+            }else {
+                log.info("Migrate task is disabled");
+            }
+        } catch (ParseException e) {
+            log.error("Failed to start migrate cron.");
         }
         //call start promise
         CompositeFuture.all(futures).onComplete(e -> {
             log.info("Explorer application started -> " + e.succeeded());
-            if(e.failed()){
+            if (e.failed()) {
                 log.error("Explorer application failed to start", e.cause());
             }
         });

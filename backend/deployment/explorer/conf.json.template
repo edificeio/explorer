@@ -25,6 +25,13 @@
             "batch-size": 100,
             "max-delay-ms": 45000
         },
+        "migrate-task":{
+            "enabled": false,
+            "cron": "0 30 5 * * ? *",
+            "drop-before-migrate": true,
+            "migrate-old-folder": true,
+            "migrate-new-folder": true
+        },
 	"projects" : [],
         "publicConf": {
           <% if ("true".equals(xitiSwitch)) { %>

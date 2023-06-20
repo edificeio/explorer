@@ -35,6 +35,13 @@
             "max-delay-ms": 2000,
             "messageTransformers": [{"id": "htmlAnalyse", "minLength": 0}]
         },
+        "migrate-task":{
+            "enabled": {{ explorerMigrateTaskEnabled | default('false') }},
+            "cron": "{{ explorerMigrateTaskCron | default('0 30 5 * * ? *') }}",
+            "drop-before-migrate": {{ explorerMigrateTaskDrop | default('true') }},
+            "migrate-old-folder": {{ explorerMigrateTaskOldFolder | default('true') }},
+            "migrate-new-folder": {{ explorerMigrateTaskNewFolder | default('true') }}
+        },
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {

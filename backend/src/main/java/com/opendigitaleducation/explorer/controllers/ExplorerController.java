@@ -10,6 +10,7 @@ import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.tasks.MigrateCronTask;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -527,36 +528,52 @@ public class ExplorerController extends BaseController {
         final String app = request.params().get("application");
         final String type = request.params().get("type");
         final String drop = request.params().get("drop");
-        final IExplorerPluginClient client =  IExplorerPluginClient.withBus(vertx, app, type);
-        UserUtils.getUserInfos(eb, request, user -> {
-            if (user == null) {
-                unauthorized(request);
-                return;
-            }
-            final SimpleDateFormat format = new SimpleDateFormat("HHmm-ddMMyyyy");
-            final Optional<String> from = Optional.ofNullable(request.params().get("from"));
-            final Optional<String> to = Optional.ofNullable(request.params().get("to"));
-            final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
-            try {
-                final Future<Void> dropFuture = "true".equals(drop)? resourceService.dropMapping(app).compose(e->{
-                    return resourceService.initMapping(app);
-                }) :  Future.succeededFuture();
-                final Optional<Date>  fromDate = from.isPresent()? Optional.of(format.parse(from.get())):Optional.empty();
-                final Optional<Date>  toDate =to.isPresent()?Optional.of(format.parse(to.get())):Optional.empty();
-                final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
-                    return client.getForIndexation(user, fromDate, toDate, new HashSet(), includeFolder);
-                });
-                future.onComplete(res->{
-                   if(res.succeeded()){
-                       renderJson(request, res.result().toJson());
-                   }else{
-                       renderError(request, new JsonObject().put("error", res.cause().getMessage()));
-                   }
-                });
-            } catch (ParseException e) {
-                badRequest(request, e.getMessage());
-            }
-        });
+        final String oldFolders = request.params().get("include_old_folders");
+        final String newFolders = request.params().get("include_new_folders");
+        if("all".equals(app)){
+            final Set<String> apps = config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet());
+            final boolean dropBefore= "true".equals(drop) || drop == null;
+            final boolean oldFolder = "true".equals(oldFolders) || oldFolders == null;
+            final boolean newFolder = "true".equals(newFolders) || newFolders == null;
+            new MigrateCronTask(this.vertx, this.resourceService, apps ,dropBefore, oldFolder, newFolder).run().onComplete(onFinish -> {
+                if (onFinish.succeeded()) {
+                    renderJson(request,onFinish.result());
+                } else {
+                    renderError(request, new JsonObject().put("error", onFinish.cause().getMessage()));
+                }
+            });
+        }else {
+            final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, app, type);
+            UserUtils.getUserInfos(eb, request, user -> {
+                if (user == null) {
+                    unauthorized(request);
+                    return;
+                }
+                final SimpleDateFormat format = new SimpleDateFormat("HHmm-ddMMyyyy");
+                final Optional<String> from = Optional.ofNullable(request.params().get("from"));
+                final Optional<String> to = Optional.ofNullable(request.params().get("to"));
+                final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
+                try {
+                    final Future<Void> dropFuture = "true".equals(drop) ? resourceService.dropMapping(app).compose(e -> {
+                        return resourceService.initMapping(app);
+                    }) : Future.succeededFuture();
+                    final Optional<Date> fromDate = from.isPresent() ? Optional.of(format.parse(from.get())) : Optional.empty();
+                    final Optional<Date> toDate = to.isPresent() ? Optional.of(format.parse(to.get())) : Optional.empty();
+                    final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
+                        return client.getForIndexation(user, fromDate, toDate, new HashSet(), includeFolder);
+                    });
+                    future.onComplete(res -> {
+                        if (res.succeeded()) {
+                            renderJson(request, res.result().toJson());
+                        } else {
+                            renderError(request, new JsonObject().put("error", res.cause().getMessage()));
+                        }
+                    });
+                } catch (ParseException e) {
+                    badRequest(request, e.getMessage());
+                }
+            });
+        }
     }
 
     //TODO on batch delete / update / return list of succeed and list of failed
