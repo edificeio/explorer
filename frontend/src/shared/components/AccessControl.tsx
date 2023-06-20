@@ -11,17 +11,17 @@ import useAccessControl, {
 interface AccessControlProps {
   roleExpected: RightRole | RightRole[];
   resourceRights: string | string[] | IObjectWithRights | IObjectWithRights[];
+  actionId: string | undefined;
   children: ReactNode;
   renderWhenForbidden?: () => ReactElement;
-  actionId: string | undefined;
 }
 
 export function AccessControl({
   resourceRights,
   roleExpected,
+  actionId,
   children,
   renderWhenForbidden,
-  actionId,
 }: AccessControlProps): ReactElement {
   const { visible } = useAccessControl({
     roles: roleExpected,

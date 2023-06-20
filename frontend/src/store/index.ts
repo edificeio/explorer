@@ -246,6 +246,11 @@ export const useStoreContext = create<State>()((set, get) => ({
 
       const folder = findNodeById(folderId, treeData);
 
+      set((state) => ({
+        ...state,
+        selectedResources: [],
+      }));
+
       openFolder({
         folder: folder as IFolder,
         folderId,
@@ -273,6 +278,7 @@ export const useStoreContext = create<State>()((set, get) => ({
       set((state) => ({
         ...state,
         selectedNodesIds: [],
+        selectedResources: [],
         resourceIds: [],
         folderIds: [],
         searchParams: {

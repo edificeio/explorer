@@ -71,7 +71,8 @@ export default function useAccessControl({
     if (
       isTrashFolder &&
       (rights as IResource[])[0]?.trashedBy?.includes(user?.userId) &&
-      action === "restore"
+      action === "restore" &&
+      !(rights as IResource[])[0]?.trashed
     ) {
       setVisible(true);
       return;
