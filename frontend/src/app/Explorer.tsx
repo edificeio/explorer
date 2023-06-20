@@ -11,6 +11,7 @@ import { type IWebApp, type IAction } from "ode-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
 import { AppHeader } from "~/features/Explorer/components";
+import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
 import { useActions } from "~/services/queries";
@@ -52,6 +53,8 @@ export default function Explorer(): JSX.Element | null {
     (action: IAction) => action.id === "publish",
   );
 
+  const { libraryUrl } = useLibraryUrl();
+
   const isActionAvailable = (value: string) => {
     const found = actions?.filter(
       (action: IAction) => action.id === value && action.available,
@@ -84,9 +87,9 @@ export default function Explorer(): JSX.Element | null {
           as="aside"
         >
           <TreeViewContainer />
-          {canPublish?.available && (
+          {canPublish?.available && libraryUrl && (
             <Suspense fallback={<LoadingScreen />}>
-              <Library />
+              <Library url={libraryUrl} />
             </Suspense>
           )}
         </Grid.Col>
