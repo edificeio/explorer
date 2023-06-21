@@ -74,7 +74,7 @@ export default function ActionBarContainer() {
                           key={action.id}
                           resourceRights={selectedElement}
                           roleExpected={action.right!}
-                          actionId={action.id}
+                          action={action}
                         >
                           <Button
                             id={action.id}

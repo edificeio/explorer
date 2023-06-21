@@ -13,9 +13,11 @@ import ActionBarContainer from "~/features/Actionbar/components/ActionBarContain
 import { AppHeader } from "~/features/Explorer/components";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
+import ActionResourceDisableModal from "~/features/Explorer/components/ResourcesList/ActionResourceDisableModal";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
 import { useActions } from "~/services/queries";
 import { Breadcrumb } from "~/shared/components/Breadcrumb";
+import { useActionDisableModal } from "~/shared/hooks/useActionDisableModal";
 import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
 import { useTrashModal } from "~/shared/hooks/useTrashedModal";
 
@@ -46,6 +48,8 @@ export default function Explorer(): JSX.Element | null {
     useOnboardingModal();
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
+  const { isActionDisableModalOpen, onActionDisableCancel } =
+    useActionDisableModal();
 
   useXitiTrackPageLoad();
 
@@ -113,6 +117,14 @@ export default function Explorer(): JSX.Element | null {
             <TrashedResourceModal
               isOpen={isTrashedModalOpen}
               onCancel={onTrashedCancel}
+            />
+          </Suspense>
+        )}
+        {isActionDisableModalOpen && (
+          <Suspense fallback={<LoadingScreen />}>
+            <ActionResourceDisableModal
+              isOpen={isActionDisableModalOpen}
+              onCancel={onActionDisableCancel}
             />
           </Suspense>
         )}

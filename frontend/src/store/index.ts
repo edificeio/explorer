@@ -43,6 +43,7 @@ interface State {
   folderIds: ID[];
   resourceIds: ID[];
   resourceIsTrash: boolean;
+  resourceActionDisable: boolean;
   updaters: {
     setTreeData: (treeData: TreeNode) => void;
     setSearchParams: (searchParams: ISearchParameters) => void;
@@ -52,6 +53,7 @@ interface State {
     setFolderIds: (folderIds: ID[]) => void;
     setResourceIds: (resourceIds: ID[]) => void;
     setResourceIsTrash: (resourceIsTrash: boolean) => void;
+    setResourceActionDisable: (resourceActionDisable: boolean) => void;
     clearSelectedItems: () => void;
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
@@ -111,6 +113,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   folderIds: [],
   resourceIds: [],
   resourceIsTrash: false,
+  resourceActionDisable: false,
   updaters: {
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
     setSearchParams: (searchParams: ISearchParameters) =>
@@ -123,6 +126,8 @@ export const useStoreContext = create<State>()((set, get) => ({
     setResourceIds: (resourceIds: ID[]) => set(() => ({ resourceIds })),
     setResourceIsTrash: (resourceIsTrash: boolean) =>
       set(() => ({ resourceIsTrash })),
+    setResourceActionDisable: (resourceActionDisable: boolean) =>
+      set(() => ({ resourceActionDisable })),
     setCurrentFolder: (currentFolder: Partial<IFolder>) =>
       set(() => ({ currentFolder })),
     clearSelectedItems: () =>
@@ -326,6 +331,10 @@ export const useIsTrash = () => {
 
 export const useResourceIsTrash = () => {
   return useStoreContext((state) => state.resourceIsTrash);
+};
+
+export const useResourceActionDisable = () => {
+  return useStoreContext((state) => state.resourceActionDisable);
 };
 
 export const useIsRoot = () => {
