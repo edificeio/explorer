@@ -151,7 +151,7 @@ export default function EditResourceModal({
 
           <FormControl id="slug" status={correctSlug ? "invalid" : undefined}>
             <div className="d-flex flex-wrap align-items-center gap-4">
-              <div>{window.location.origin}/</div>
+              <div>{window.location.origin}{window.location.pathname}/pub/</div>
 
               <div className="flex-fill">
                 <Input

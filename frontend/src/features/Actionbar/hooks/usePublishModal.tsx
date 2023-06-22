@@ -122,18 +122,14 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
       if (result.success) {
         hotToast.success(<PublishModalSuccess result={result} />, {
-          duration: Infinity,
+          duration: 10000,
         });
       } else {
-        hotToast.error(<PublishModalError />, {
-          duration: Infinity,
-        });
+        hotToast.error(<PublishModalError />);
       }
       onSuccess?.();
     } catch (e) {
-      hotToast.error(<PublishModalError />, {
-        duration: Infinity,
-      });
+      hotToast.error(<PublishModalError />);
     }
   };
 

@@ -18,7 +18,18 @@ export default function useShareResourceModalFooterBlog() {
     trashed,
     slug,
     "publish-type": publishType,
-  } = selectedResources[0] as BlogResource;
+  } = selectedResources.length > 0
+    ? (selectedResources[0] as BlogResource)
+    : {
+        "publish-type": "",
+        assetId: "",
+        description: "",
+        name: "",
+        public: false,
+        slug: "",
+        thumbnail: "",
+        trashed: false,
+      };
 
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<PublicationType>(publishType || "IMMEDIATE");
