@@ -124,7 +124,9 @@ export default function useEditResourceModal({
   };
 
   function onCopyToClipBoard() {
-    navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
+    navigator.clipboard.writeText(
+      `${window.location.origin}${window.location.pathname}/pub/${slug}`,
+    );
     hotToast.success(i18n("explorer.copy.clipboard"));
   }
 
