@@ -179,12 +179,12 @@ export default function useShareResourceModal({
   const { hotToast } = useHotToast(Alert);
   const handleShare = async () => {
     try {
-      await shareResource.mutate({
+      await updateResource.mutateAsync(payloadUpdatePublishType);
+      await shareResource.mutateAsync({
         entId: selectedResources[0]?.assetId,
         shares: shareRights.rights,
       });
 
-      await updateResource.mutate(payloadUpdatePublishType);
       // TODO i18n
       hotToast.success(i18n("explorer.shared.status.saved"));
       onSuccess?.();
