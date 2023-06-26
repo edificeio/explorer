@@ -126,6 +126,7 @@ export default function PublishModal({
                     title={i18n("bpr.form.publication.type")}
                     size="md"
                     grow={true}
+                    badgeContent={selectedActivities?.length}
                   />
                 }
                 content={
@@ -146,6 +147,7 @@ export default function PublishModal({
                     title={i18n("bpr.form.publication.discipline")}
                     size="md"
                     grow={true}
+                    badgeContent={selectedSubjectAreas?.length}
                   />
                 }
                 content={
