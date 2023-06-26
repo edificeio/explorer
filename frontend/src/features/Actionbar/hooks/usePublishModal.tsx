@@ -40,6 +40,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     image: "",
   });
 
+  const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
+
   const { hotToast } = useHotToast(Alert);
 
   // * https://github.com/pmndrs/zustand#fetching-everything
@@ -77,6 +79,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
     try {
+      setLoaderPublish(true);
       let coverBlob = new Blob();
       if (cover.image) {
         coverBlob = await http.get(cover.image, { responseType: "blob" });
@@ -130,6 +133,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       onSuccess?.();
     } catch (e) {
       hotToast.error(<PublishModalError />);
+    } finally {
+      setLoaderPublish(false);
     }
   };
 
@@ -145,5 +150,6 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     setSelectedActivities,
     selectedSubjectAreas,
     setSelectedSubjectAreas,
+    loaderPublish,
   };
 }

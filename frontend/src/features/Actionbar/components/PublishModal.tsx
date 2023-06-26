@@ -44,6 +44,7 @@ export default function PublishModal({
     selectedSubjectAreas,
     setSelectedSubjectAreas,
     handleDeleteImage,
+    loaderPublish,
   } = usePublishModal({ onSuccess });
 
   const selectedResources = useSelectedResources();
@@ -269,7 +270,9 @@ export default function PublishModal({
           type="submit"
           color="primary"
           variant="filled"
+          isLoading={loaderPublish}
           disabled={
+            loaderPublish ||
             !isDirty ||
             !isValid ||
             selectedActivities?.length === 0 ||
