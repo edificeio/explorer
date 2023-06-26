@@ -52,7 +52,8 @@ export default function useMoveModal({ onSuccess }: ModalProps) {
     for (const selectedResource of selectedResources) {
       if (
         destination ===
-        (selectedResource?.folderIds && selectedResource.folderIds[0])
+          (selectedResource?.folderIds && selectedResource.folderIds[0]) ||
+        (selectedResource?.folderIds?.length === 0 && destination === "default")
       ) {
         return false;
       }
