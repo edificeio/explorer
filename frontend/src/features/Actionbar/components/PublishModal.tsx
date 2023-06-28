@@ -16,7 +16,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
 
-import usePublishModal from "../hooks/usePublishModal";
+import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
 import { useSelectedResources } from "~/store";
 
@@ -45,6 +45,7 @@ export default function PublishModal({
     setSelectedSubjectAreas,
     handleDeleteImage,
     loaderPublish,
+    cover,
   } = usePublishModal({ onSuccess });
 
   const selectedResources = useSelectedResources();
@@ -272,6 +273,7 @@ export default function PublishModal({
           variant="filled"
           isLoading={loaderPublish}
           disabled={
+            cover.image === "" ||
             loaderPublish ||
             !isDirty ||
             !isValid ||
@@ -317,8 +319,12 @@ export function PublishModalSuccess({ result }: { result: PublishResult }) {
   );
 }
 
-export function PublishModalError() {
+export function PublishModalError({ formData }: { formData: InputProps }) {
   const { i18n } = useOdeClient();
+
+  const regexInput = (value: string) => {
+    return value.match(/^\s/);
+  };
 
   return (
     <>
@@ -328,6 +334,20 @@ export function PublishModalError() {
       <p className="pt-24 pb-24">
         <strong>{i18n("bpr.form.publication.response.error.content")}</strong>
       </p>
+      <ul>
+        {regexInput(formData.title) && (
+          <li className="pt-2 pb-2">
+            <strong>{i18n("bpr.form.publication.response.empty.title")}</strong>
+          </li>
+        )}
+        {regexInput(formData.description) && (
+          <li className="pt-2 pb-2">
+            <strong>
+              {i18n("bpr.form.publication.response.empty.description")}
+            </strong>
+          </li>
+        )}
+      </ul>
     </>
   );
 }

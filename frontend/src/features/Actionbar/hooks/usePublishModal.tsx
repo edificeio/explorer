@@ -21,7 +21,7 @@ interface ModalProps {
   onSuccess?: () => void;
 }
 
-interface InputProps {
+export interface InputProps {
   title: string;
   description: string;
   activityType: string;
@@ -35,9 +35,11 @@ interface InputProps {
 export default function usePublishModal({ onSuccess }: ModalProps) {
   const { user, currentApp } = useOdeClient();
 
+  const selectedResources = useSelectedResources();
+
   const [cover, setCover] = useState<Record<string, string>>({
     name: "",
-    image: "",
+    image: selectedResources[0].thumbnail,
   });
 
   const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
@@ -46,7 +48,6 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const selectedResources = useSelectedResources();
   const resourceIds = useResourceIds();
   const { publishApi } = useStoreActions();
 
@@ -128,11 +129,11 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
           duration: 10000,
         });
       } else {
-        hotToast.error(<PublishModalError />);
+        hotToast.error(<PublishModalError formData={formData} />);
       }
       onSuccess?.();
     } catch (e) {
-      hotToast.error(<PublishModalError />);
+      hotToast.error(<PublishModalError formData={formData} />);
     } finally {
       setLoaderPublish(false);
     }
@@ -151,5 +152,6 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     selectedSubjectAreas,
     setSelectedSubjectAreas,
     loaderPublish,
+    cover,
   };
 }
