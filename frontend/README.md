@@ -9,7 +9,7 @@ Explorer App
 Without Docker, you need to generate a `package.json`
 
 ```bash
-node scripts/package.js
+node scripts/package.cjs
 ```
 
 Install all dependencies.
