@@ -88,12 +88,17 @@ export default function PublishModal({
                 onDeleteImage={handleDeleteImage}
                 className="align-self-center"
               />
+              {!cover.image && (
+                <p className="form-text is-invalid">
+                  <em>
+                    {i18n("bpr.form.publication.cover.upload.required.image")}
+                  </em>
+                </p>
+              )}
             </div>
             <div className="flex-fill">
               <FormControl id="title" className="mb-16" isRequired>
-                <Label requiredText="">
-                  {i18n("bpr.form.publication.title")}
-                </Label>
+                <Label>{i18n("bpr.form.publication.title")}</Label>
                 <Input
                   type="text"
                   defaultValue={selectedResources[0]?.name}
@@ -105,9 +110,7 @@ export default function PublishModal({
               </FormControl>
 
               <FormControl id="description" isRequired>
-                <Label requiredText="">
-                  {i18n("bpr.form.publication.description")}
-                </Label>
+                <Label>{i18n("bpr.form.publication.description")}</Label>
                 <Input
                   type="text"
                   {...register("description", { required: true })}
@@ -280,7 +283,7 @@ export default function PublishModal({
           variant="filled"
           isLoading={loaderPublish}
           disabled={
-            cover.image === "" ||
+            !cover.image ||
             loaderPublish ||
             !isDirty ||
             !isValid ||

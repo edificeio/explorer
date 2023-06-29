@@ -7,7 +7,6 @@ import clsx from "clsx";
 import { type ID, type IResource } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
-import LoadMore from "~/shared/components/LoadMore";
 import { dayjs } from "~/shared/config";
 import { isResourceShared } from "~/shared/utils/isResourceShared";
 import {
