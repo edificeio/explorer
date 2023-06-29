@@ -87,7 +87,8 @@ export default function Explorer(): JSX.Element | null {
       <Grid className="flex-grow-1">
         <Grid.Col
           sm="3"
-          className="border-end pt-16 pe-16 d-none d-lg-block"
+          lg="2"
+          className="border-end pt-16 pe-16 d-none d-lg-block g-col-xl-3"
           as="aside"
         >
           <TreeViewContainer />
@@ -97,7 +98,7 @@ export default function Explorer(): JSX.Element | null {
             </Suspense>
           )}
         </Grid.Col>
-        <Grid.Col sm="4" md="8" lg="9">
+        <Grid.Col sm="4" md="8" lg="6" className="g-col-xl-9">
           <Breadcrumb />
           <List />
         </Grid.Col>

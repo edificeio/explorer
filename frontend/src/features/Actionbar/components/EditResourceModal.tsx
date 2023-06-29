@@ -187,7 +187,7 @@ export default function EditResourceModal({
                 color="primary"
                 disabled={disableSlug}
                 onClick={() => {
-                  onCopyToClipBoard(resource.slug!);
+                  onCopyToClipBoard();
                 }}
                 type="button"
                 leftIcon={<Copy />}
