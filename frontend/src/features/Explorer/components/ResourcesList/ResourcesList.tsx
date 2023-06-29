@@ -44,7 +44,20 @@ const ResourcesList = (): JSX.Element | null => {
   const currentMaxIdx =
     searchParams.pagination.startIdx + searchParams.pagination.pageSize - 1;
   const hasMoreResources =
+    searchParams.pagination.pageSize === searchParams.pagination.maxIdx ||
     currentMaxIdx < (searchParams.pagination.maxIdx || 0);
+
+  /* const hasMoreResources =
+    searchParams.pagination.pageSize !== searchParams.pagination.maxIdx; */
+
+  /* console.log(
+    searchParams.pagination.startIdx,
+    { hasMoreResources },
+    searchParams.pagination.pageSize,
+    searchParams.pagination.maxIdx,
+  ); */
+
+  console.log(searchParams.pagination.maxIdx);
 
   const handleNextPage = useCallback(() => {
     fetchNextPage();

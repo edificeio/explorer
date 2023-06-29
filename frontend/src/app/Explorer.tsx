@@ -98,7 +98,8 @@ export default function Explorer(): JSX.Element | null {
             </Suspense>
           )}
         </Grid.Col>
-        <Grid.Col sm="4" md="8" lg="6" className="g-col-xl-9">
+        {/* <Grid.Col sm="4" md="8" lg="6" className="g-col-xl-9"> */}
+        <Grid.Col sm="4" md="8" lg="9">
           <Breadcrumb />
           <List />
         </Grid.Col>

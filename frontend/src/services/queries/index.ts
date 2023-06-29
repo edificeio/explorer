@@ -14,6 +14,7 @@ import {
   type ShareRight,
   type UpdateParameters,
   FOLDER,
+  IActionResult,
 } from "ode-ts-client";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
@@ -135,7 +136,7 @@ export const useSearchContext = () => {
 
 /**
  * useTrash query
- * Optimistic UI when resource or folder is deleted
+ * Optimistic UI when resource or folder is trashed
  */
 export const useTrash = () => {
   const queryClient = useQueryClient();
@@ -157,7 +158,7 @@ export const useTrash = () => {
   return useMutation({
     mutationFn: async () =>
       await trashAll({ searchParams, folderIds, resourceIds }),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -174,6 +175,10 @@ export const useTrash = () => {
                   folders: page.folders.filter(
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
+                  pagination: {
+                    ...page.pagination,
+                    maxIdx: page?.pagination?.maxIdx - data.resources.length,
+                  },
                   resources: page.resources.filter(
                     (resource: IResource) => !resourceIds.includes(resource.id),
                   ),
@@ -186,7 +191,6 @@ export const useTrash = () => {
             });
 
             setTreeData(update);
-
             return newData;
           }
           return undefined;
@@ -266,7 +270,7 @@ export const useRestore = () => {
 
 /**
  * useDelete query
- * Optimistic UI when resource is restored
+ * Optimistic UI when resource is deleted
  */
 export const useDelete = () => {
   const queryClient = useQueryClient();
@@ -358,6 +362,8 @@ export const useMoveItem = () => {
 
             setTreeData(update);
 
+            console.log({ data });
+
             return {
               ...prev,
               pages: prev?.pages.map((page) => {
@@ -366,6 +372,10 @@ export const useMoveItem = () => {
                   folders: page.folders.filter(
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
+                  pagination: {
+                    ...page.pagination,
+                    maxIdx: page.pagination?.maxIdx - data.resources.length,
+                  },
                   resources: page.resources.filter(
                     (resource: IResource) => !resourceIds.includes(resource.id),
                   ),

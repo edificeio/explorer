@@ -71,48 +71,55 @@ export default function PublishModal({
         </Heading>
 
         <form id="libraryModalForm" onSubmit={handleSubmit(publish)}>
-          <FormControl id="title" className="mb-16" isRequired>
-            <Label requiredText="">{i18n("bpr.form.publication.title")}</Label>
-            <Input
-              type="text"
-              defaultValue={selectedResources[0]?.name}
-              {...register("title", { required: true })}
-              placeholder={i18n("bpr.form.publication.title.placeholder")}
-              size="md"
-              aria-required={true}
-            />
-          </FormControl>
-
-          <div className="mb-24">
-            <div className="form-label">
-              {i18n("bpr.form.publication.cover.title")}
+          <div className="d-flex mb-24 gap-24">
+            <div style={{ maxWidth: "160px" }}>
+              <div className="form-label">
+                {i18n("bpr.form.publication.cover.title")}
+              </div>
+              <ImagePicker
+                app={currentApp}
+                src={selectedResources[0]?.thumbnail}
+                label={i18n("bpr.form.publication.cover.upload.label")}
+                addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}
+                deleteButtonLabel={i18n(
+                  "bpr.form.publication.cover.upload.remove",
+                )}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
+                className="align-self-center"
+              />
             </div>
-            <ImagePicker
-              app={currentApp}
-              src={selectedResources[0]?.thumbnail}
-              label={i18n("bpr.form.publication.cover.upload.label")}
-              addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}
-              deleteButtonLabel={i18n(
-                "bpr.form.publication.cover.upload.remove",
-              )}
-              onUploadImage={handleUploadImage}
-              onDeleteImage={handleDeleteImage}
-              className="align-self-center"
-            />
-          </div>
+            <div className="flex-fill">
+              <FormControl id="title" className="mb-16" isRequired>
+                <Label requiredText="">
+                  {i18n("bpr.form.publication.title")}
+                </Label>
+                <Input
+                  type="text"
+                  defaultValue={selectedResources[0]?.name}
+                  {...register("title", { required: true })}
+                  placeholder={i18n("bpr.form.publication.title.placeholder")}
+                  size="md"
+                  aria-required={true}
+                />
+              </FormControl>
 
-          <FormControl id="description" isRequired>
-            <Label requiredText="">
-              {i18n("bpr.form.publication.description")}
-            </Label>
-            <Input
-              type="text"
-              {...register("description", { required: true })}
-              placeholder={i18n("bpr.form.publication.description.placeholder")}
-              size="md"
-              aria-required={true}
-            />
-          </FormControl>
+              <FormControl id="description" isRequired>
+                <Label requiredText="">
+                  {i18n("bpr.form.publication.description")}
+                </Label>
+                <Input
+                  type="text"
+                  {...register("description", { required: true })}
+                  placeholder={i18n(
+                    "bpr.form.publication.description.placeholder",
+                  )}
+                  size="md"
+                  aria-required={true}
+                />
+              </FormControl>
+            </div>
+          </div>
 
           <hr />
 
