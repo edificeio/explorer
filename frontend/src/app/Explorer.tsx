@@ -20,6 +20,7 @@ import { Breadcrumb } from "~/shared/components/Breadcrumb";
 import { useActionDisableModal } from "~/shared/hooks/useActionDisableModal";
 import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
 import { useTrashModal } from "~/shared/hooks/useTrashedModal";
+import { isActionAvailable } from "~/shared/utils/isActionAvailable";
 
 const OnboardingTrash = lazy(
   async () => await import("~/shared/components/OnboardingTrash"),
@@ -59,13 +60,6 @@ export default function Explorer(): JSX.Element | null {
 
   const { libraryUrl } = useLibraryUrl();
 
-  const isActionAvailable = (value: string) => {
-    const found = actions?.filter(
-      (action: IAction) => action.id === value && action.available,
-    );
-    return found && found.length > 0;
-  };
-
   return (
     <>
       <AppHeader>
@@ -78,7 +72,7 @@ export default function Explorer(): JSX.Element | null {
           <AppIcon app={currentApp} size="40" />
           <AppCard.Name />
         </AppCard>
-        {isActionAvailable("create") && (
+        {isActionAvailable({ workflow: "create", actions }) && (
           <Suspense fallback={<LoadingScreen />}>
             <AppAction />
           </Suspense>
@@ -88,7 +82,8 @@ export default function Explorer(): JSX.Element | null {
         <Grid.Col
           sm="3"
           lg="2"
-          className="border-end pt-16 pe-16 d-none d-lg-block g-col-xl-3"
+          xl="3"
+          className="border-end pt-16 pe-16 d-none d-lg-block"
           as="aside"
         >
           <TreeViewContainer />
@@ -98,8 +93,7 @@ export default function Explorer(): JSX.Element | null {
             </Suspense>
           )}
         </Grid.Col>
-        {/* <Grid.Col sm="4" md="8" lg="6" className="g-col-xl-9"> */}
-        <Grid.Col sm="4" md="8" lg="9">
+        <Grid.Col sm="4" md="8" lg="6" xl="9">
           <Breadcrumb />
           <List />
         </Grid.Col>

@@ -15,6 +15,7 @@ import {
   type UpdateParameters,
   FOLDER,
   IActionResult,
+  IAction,
 } from "ode-ts-client";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
@@ -53,19 +54,19 @@ const { actions } = getAppParams();
  * @returns actions data
  */
 export const useActions = () => {
-  return useQuery({
+  return useQuery<Record<string, boolean>, Error, IAction[]>({
     queryKey: ["actions"],
     queryFn: async () => {
       const actionRights = actions.map((action) => action.workflow);
       const availableRights = await sessionHasWorkflowRights(actionRights);
-
       return availableRights;
     },
-    select: (data) =>
-      actions.map((action) => ({
+    select: (data) => {
+      return actions.map((action) => ({
         ...action,
         available: data[action.workflow],
-      })),
+      }));
+    },
   });
 };
 

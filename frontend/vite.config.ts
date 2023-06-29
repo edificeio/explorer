@@ -38,7 +38,10 @@ export default ({ mode }: { mode: string }) => {
     "/applications-list": proxyObj,
     "/conf/public": proxyObj,
     "^/(?=help-1d|help-2d)": proxyObj,
-    "^/(?=assets)": proxyObj,
+    "^/(?=assets)": {
+      target: envs.VITE_LOCALHOST || "http://localhost:8090",
+      changeOrigin: false,
+    },
     "^/(?=theme|locale|i18n|skin)": proxyObj,
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,

@@ -2,8 +2,7 @@ import { type ReactNode, type ReactElement } from "react";
 
 import { Button } from "@ode-react-ui/components";
 import { useI18n } from "@ode-react-ui/core";
-import { IAction } from "ode-ts-client";
-import { type RightRole } from "ode-ts-client/dist/services";
+import { IAction, RightRole } from "ode-ts-client";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
 import useAccessControl, {

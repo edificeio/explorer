@@ -239,6 +239,8 @@ export default function useShareResourceModal({
   };
 
   const search = async (searchInputValue: string) => {
+    console.log({ searchInputValue });
+
     setSearchPending(true);
     // start search from 1 caracter length for non Adml but start from 3 for Adml
     if (
@@ -252,6 +254,7 @@ export default function useShareResourceModal({
           selectedResources[0]?.assetId,
           searchInputValue,
         );
+      console.log({ resSearchShareSubjects });
       setSearchAPIResults(resSearchShareSubjects);
 
       const adaptedResults = resSearchShareSubjects
