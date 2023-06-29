@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { type ID, type IResource } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
+import LoadMore from "~/shared/components/LoadMore";
 import { dayjs } from "~/shared/config";
 import { isResourceShared } from "~/shared/utils/isResourceShared";
 import {
@@ -42,22 +43,9 @@ const ResourcesList = (): JSX.Element | null => {
   });
 
   const currentMaxIdx =
-    searchParams.pagination.startIdx + searchParams.pagination.pageSize - 1;
+    searchParams.pagination.startIdx + searchParams.pagination.pageSize;
   const hasMoreResources =
-    searchParams.pagination.pageSize === searchParams.pagination.maxIdx ||
     currentMaxIdx < (searchParams.pagination.maxIdx || 0);
-
-  /* const hasMoreResources =
-    searchParams.pagination.pageSize !== searchParams.pagination.maxIdx; */
-
-  /* console.log(
-    searchParams.pagination.startIdx,
-    { hasMoreResources },
-    searchParams.pagination.pageSize,
-    searchParams.pagination.maxIdx,
-  ); */
-
-  console.log(searchParams.pagination.maxIdx);
 
   const handleNextPage = useCallback(() => {
     fetchNextPage();
@@ -152,6 +140,7 @@ const ResourcesList = (): JSX.Element | null => {
           </Button>
         </div>
       )}
+      {/* {hasMoreResources && <LoadMore />} */}
     </React.Fragment>
   );
 };

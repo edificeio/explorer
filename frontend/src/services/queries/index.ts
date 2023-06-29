@@ -144,7 +144,7 @@ export const useTrash = () => {
   const treeData = useTreeData();
   const folderIds = useFolderIds();
   const resourceIds = useResourceIds();
-  const { clearSelectedItems, clearSelectedIds, setTreeData } =
+  const { clearSelectedItems, clearSelectedIds, setTreeData, setSearchParams } =
     useStoreActions();
 
   const queryKey = [
@@ -191,6 +191,15 @@ export const useTrash = () => {
             });
 
             setTreeData(update);
+
+            setSearchParams({
+              ...searchParams,
+              pagination: {
+                ...searchParams.pagination,
+                maxIdx: searchParams.pagination?.maxIdx - data.resources.length,
+              },
+            });
+
             return newData;
           }
           return undefined;
@@ -333,7 +342,7 @@ export const useMoveItem = () => {
   const treeData = useTreeData();
   const folderIds = useFolderIds();
   const resourceIds = useResourceIds();
-  const { clearSelectedIds, clearSelectedItems, setTreeData } =
+  const { clearSelectedIds, clearSelectedItems, setTreeData, setSearchParams } =
     useStoreActions();
 
   const queryKey = [
@@ -360,11 +369,7 @@ export const useMoveItem = () => {
               folders: folderIds,
             });
 
-            setTreeData(update);
-
-            console.log({ data });
-
-            return {
+            const newData = {
               ...prev,
               pages: prev?.pages.map((page) => {
                 return {
@@ -382,6 +387,18 @@ export const useMoveItem = () => {
                 };
               }),
             };
+
+            setTreeData(update);
+
+            setSearchParams({
+              ...searchParams,
+              pagination: {
+                ...searchParams.pagination,
+                maxIdx: searchParams.pagination?.maxIdx - data.resources.length,
+              },
+            });
+
+            return newData;
           }
           return undefined;
         });
