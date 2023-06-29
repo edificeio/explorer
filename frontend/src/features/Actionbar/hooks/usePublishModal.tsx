@@ -15,6 +15,7 @@ import {
   PublishModalError,
 } from "../components/PublishModal";
 import { http } from "~/shared/constants";
+import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
 import { useStoreActions, useResourceIds, useSelectedResources } from "~/store";
 
 interface ModalProps {
@@ -100,10 +101,15 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         { responseType: "json" } as any,
       );
 
+      let appName = "";
+      if (currentApp?.displayName) {
+        appName = capitalizeFirstLetter(currentApp?.displayName);
+      }
+
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application: currentApp?.displayName || "",
+        application: capitalizeFirstLetter(appName),
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,
