@@ -359,10 +359,6 @@ public class FolderServiceElastic implements FolderService {
                             }
                             //add
                             sources.add(plugin.setIdForModel(source.copy(), key.toString()));
-                            //update children of oldParent
-                            if (parentOpt.isPresent()) {
-                                sources.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
-                            }
                         }
                         plugin.setVersion(sources, now);
                         Future<Void> futureUpsertFolder = plugin.notifyUpsert(creator, sources);
