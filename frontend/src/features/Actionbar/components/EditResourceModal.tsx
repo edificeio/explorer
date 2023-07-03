@@ -99,7 +99,13 @@ export default function EditResourceModal({
                 <Input
                   type="text"
                   defaultValue={edit ? resource?.name : ""}
-                  {...register("title", { required: true })}
+                  {...register("title", {
+                    required: true,
+                    pattern: {
+                      value: /^\S/,
+                      message: "invalid title",
+                    },
+                  })}
                   placeholder={i18n(
                     "explorer.resource.editModal.title.placeholder",
                   )}

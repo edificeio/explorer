@@ -59,7 +59,13 @@ export default function EditFolderModal({
             <Label>{i18n("explorer.create.folder.name")}</Label>
             <Input
               type="text"
-              {...register("name", { required: true })}
+              {...register("name", {
+                required: true,
+                pattern: {
+                  value: /^\S/,
+                  message: "invalid title",
+                },
+              })}
               placeholder={i18n("explorer.create.folder.name")}
               size="md"
               aria-required={true}
