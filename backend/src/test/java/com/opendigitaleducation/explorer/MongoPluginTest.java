@@ -11,6 +11,7 @@ import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -21,6 +22,8 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.singletonList;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerPluginMetricsFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
@@ -28,6 +31,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IExplorerPluginMetricsRecorder;
 import org.entcore.common.explorer.impl.ExplorerPluginClient;
 import org.entcore.common.explorer.impl.ExplorerPluginCommunicationPostgres;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.postgres.PostgresClient;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
@@ -46,11 +50,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.opendigitaleducation.explorer.FullExplorerStackTest.resource;
-import static com.opendigitaleducation.explorer.tests.ExplorerTestHelper.createScript;
-import static java.lang.System.currentTimeMillis;
-import static java.util.Collections.singletonList;
 
 @RunWith(VertxUnitRunner.class)
 public class MongoPluginTest {
@@ -156,7 +155,7 @@ public class MongoPluginTest {
             job.execute(true).onComplete(context.asyncAssertSuccess(r0 -> {
                 resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch0 -> {
                     context.assertEquals(0, fetch0.size());
-                    pluginClient.getForIndexation(user, Optional.empty(), Optional.empty()).onComplete(context.asyncAssertSuccess(r2 -> {
+                    pluginClient.reindex(user, new ExplorerReindexResourcesRequest()).onComplete(context.asyncAssertSuccess(r2 -> {
                         plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r3 -> {
                             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
                                 job.waitPending().onComplete(context.asyncAssertSuccess(r5 -> {
@@ -188,7 +187,7 @@ public class MongoPluginTest {
                 return test.directory().attachUserToGroup("user_share_test2", "user_share_test2");
             }).compose(eee -> p1.future());
         }).onComplete(context.asyncAssertSuccess(e -> {
-            pluginClient.getForIndexation(user, Optional.empty(), Optional.empty()).onComplete(context.asyncAssertSuccess(r -> {
+            pluginClient.reindex(user, new ExplorerReindexResourcesRequest()).onComplete(context.asyncAssertSuccess(r -> {
                 plugin.getCommunication().waitPending().onComplete(context.asyncAssertSuccess(r00 -> {
                     job.execute(true).onComplete(context.asyncAssertSuccess(r4a -> {
                         resourceService.fetch(user, application, new ResourceSearchOperation()).onComplete(context.asyncAssertSuccess(fetch -> {
