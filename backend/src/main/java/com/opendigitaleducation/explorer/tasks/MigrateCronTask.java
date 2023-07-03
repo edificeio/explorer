@@ -28,9 +28,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static java.util.Collections.emptySet;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MigrateCronTask implements Handler<Long> {
@@ -44,7 +48,8 @@ public class MigrateCronTask implements Handler<Long> {
     private final Vertx vertx;
     private int migrationCounter = 0;
 
-    public MigrateCronTask(final Vertx vertx, final ResourceService resourceService, final Set<String> applications, final boolean dropBefore, final boolean migrateOldFolder, final boolean migrateNewFolder) {
+    public MigrateCronTask(final Vertx vertx, final ResourceService resourceService, final Set<String> applications,
+                           final boolean dropBefore, final boolean migrateOldFolder, final boolean migrateNewFolder) {
         this.vertx = vertx;
         this.resourceService = resourceService;
         this.applications = applications;
@@ -64,7 +69,7 @@ public class MigrateCronTask implements Handler<Long> {
             }) : Future.succeededFuture();
             final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
                 final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, application);
-                return client.getForIndexation(Optional.empty(), Optional.empty(), new HashSet(), this.migrateOldFolder);
+                return client.reindex(null, new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet()));
             });
             futures.add(future);
             future.onComplete(res -> {
@@ -82,7 +87,10 @@ public class MigrateCronTask implements Handler<Long> {
             }) : Future.succeededFuture();
             final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
                 final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, application);
-                return client.getForIndexation(Optional.empty(), Optional.empty(), new HashSet(), this.migrateOldFolder);
+                return client.reindex(
+                        null,
+                        new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet())
+                );
             });
             futures.add(future);
             future.onComplete(res -> {
