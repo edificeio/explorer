@@ -107,9 +107,9 @@ export default function useEditResourceModal({
         <>
           <strong>{t("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
-          <p>Description: {formData.description}</p>
+          {/* <p>Description: {formData.description}</p> */}
           <p>
-            Public:{" "}
+            Public:
             {formData.enablePublic
               ? t("explorer.enable.public.yes")
               : t("explorer.enable.public.no")}
