@@ -79,7 +79,7 @@ pnpm lighthouse
 
 ### Pre-commit
 
-When committing your work, `pre-commit` will start `yarn lint-staged`:
+When committing your work, `pre-commit` will start `pnpm lint-staged`:
 
 > lint-staged starts lint + prettier
 
