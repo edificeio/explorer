@@ -1,9 +1,9 @@
 import { lazy, Suspense } from "react";
 
 import { Button, ActionBar, LoadingScreen } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { useTransition, animated } from "@react-spring/web";
 import { type IAction } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
 import { AccessControl } from "~/shared/components/AccessControl";
@@ -18,7 +18,7 @@ const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
 const PublishModal = lazy(async () => await import("./PublishModal"));
 
 export default function ActionBarContainer() {
-  const { i18n } = useI18n();
+  const { t } = useTranslation();
   const {
     actions,
     selectedElement,
@@ -86,7 +86,7 @@ export default function ActionBarContainer() {
                               handleClick(action);
                             }}
                           >
-                            {i18n(overrideLabel(action))}
+                            {t(overrideLabel(action))}
                           </Button>
                         </AccessControl>
                       )

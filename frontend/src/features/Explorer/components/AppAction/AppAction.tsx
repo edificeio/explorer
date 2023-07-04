@@ -1,11 +1,13 @@
 import { Button } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { Plus } from "@ode-react-ui/icons";
+import { useTranslation } from "react-i18next";
 
 import { useStoreActions } from "~/store";
 
 export default function AppAction() {
-  const { i18n } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation(appCode);
   const { createResource } = useStoreActions();
 
   return (
@@ -17,7 +19,7 @@ export default function AppAction() {
       className="ms-auto"
       onClick={createResource}
     >
-      {i18n("explorer.create.title")}
+      {t("explorer.create.title")}
     </Button>
   );
 }

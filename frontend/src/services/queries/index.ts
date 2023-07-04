@@ -14,9 +14,9 @@ import {
   type ShareRight,
   type UpdateParameters,
   FOLDER,
-  IActionResult,
   IAction,
 } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 import {
@@ -76,7 +76,8 @@ export const useActions = () => {
  * @returns infinite query to load resources
  */
 export const useSearchContext = () => {
-  const { i18n } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
@@ -112,7 +113,7 @@ export const useSearchContext = () => {
           children: folders.map(
             (folder: IFolder) => new TreeNodeFolderWrapper(folder),
           ),
-          name: i18n("explorer.filters.mine"),
+          name: t("explorer.filters.mine", { ns: appCode }),
         });
       } else {
         setTreeData(
@@ -178,6 +179,7 @@ export const useTrash = () => {
                   ),
                   pagination: {
                     ...page.pagination,
+                    // @ts-ignore
                     maxIdx: page?.pagination?.maxIdx - data.resources.length,
                   },
                   resources: page.resources.filter(
@@ -197,6 +199,7 @@ export const useTrash = () => {
               ...searchParams,
               pagination: {
                 ...searchParams.pagination,
+                // @ts-ignore
                 maxIdx: searchParams.pagination?.maxIdx - data.resources.length,
               },
             });
@@ -380,6 +383,7 @@ export const useMoveItem = () => {
                   ),
                   pagination: {
                     ...page.pagination,
+                    // @ts-ignore
                     maxIdx: page.pagination?.maxIdx - data.resources.length,
                   },
                   resources: page.resources.filter(
@@ -395,6 +399,7 @@ export const useMoveItem = () => {
               ...searchParams,
               pagination: {
                 ...searchParams.pagination,
+                // @ts-ignore
                 maxIdx: searchParams.pagination?.maxIdx - data.resources.length,
               },
             });
@@ -571,7 +576,7 @@ export const useShareResource = () => {
       entId: string;
       shares: ShareRight[];
     }) => await shareResource({ searchParams, entId, shares }),
-    onSuccess: async (data, variables) => {
+    onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -638,7 +643,7 @@ export const useUpdateResource = () => {
   return useMutation({
     mutationFn: async (params: UpdateParameters) =>
       await updateResource({ searchParams, params }),
-    onSuccess: async (data, variables) => {
+    onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 

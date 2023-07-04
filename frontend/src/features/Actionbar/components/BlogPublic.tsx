@@ -6,8 +6,8 @@ import {
   FormText,
   Button,
 } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
 import { Copy } from "@ode-react-ui/icons";
+import { useTranslation } from "react-i18next";
 
 export const BlogPublic = ({
   appCode,
@@ -22,18 +22,16 @@ export const BlogPublic = ({
   slug,
   onCopyToClipBoard,
 }: any) => {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
 
   return (
     <>
       <Heading headingStyle="h4" level="h3" className="mb-16">
-        {i18n("explorer.resource.editModal.heading.access")}
+        {t("explorer.resource.editModal.heading.access")}
         {appCode}
       </Heading>
 
-      <Alert type="info">
-        {i18n("explorer.resource.editModal.access.alert")}
-      </Alert>
+      <Alert type="info">{t("explorer.resource.editModal.access.alert")}</Alert>
 
       <FormControl
         id="flexSwitchCheckDefault"
@@ -52,9 +50,7 @@ export const BlogPublic = ({
           size="md"
         />
         <FormControl.Label className="form-check-label mb-0">
-          {i18n(
-            "explorer.resource.editModal.access.flexSwitchCheckDefault.label",
-          )}
+          {t("explorer.resource.editModal.access.flexSwitchCheckDefault.label")}
         </FormControl.Label>
       </FormControl>
 
@@ -73,7 +69,7 @@ export const BlogPublic = ({
                 validate: {
                   required: (value: any) => {
                     if (!value && !disableSlug)
-                      return i18n("explorer.slug.name.mandatory");
+                      return t("explorer.slug.name.mandatory");
                     return true;
                   },
                 },
@@ -83,13 +79,13 @@ export const BlogPublic = ({
                   onSlugChange(e.target.value),
               })}
               size="md"
-              placeholder={i18n(
+              placeholder={t(
                 "explorer.resource.editModal.access.url.extension",
               )}
             />
             {correctSlug && (
               <div className="position-absolute">
-                <FormText>{i18n("explorer.slug.name.error")}</FormText>
+                <FormText>{t("explorer.slug.name.error")}</FormText>
               </div>
             )}
           </div>
@@ -104,7 +100,7 @@ export const BlogPublic = ({
             variant="ghost"
             className="text-nowrap"
           >
-            {i18n("explorer.resource.editModal.access.url.button")}
+            {t("explorer.resource.editModal.access.url.button")}
           </Button>
         </div>
       </FormControl>

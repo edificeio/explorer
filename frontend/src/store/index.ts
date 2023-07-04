@@ -169,7 +169,7 @@ export const useStoreContext = create<State>()((set, get) => ({
       }
     },
     publishApi: async (
-      resourceType: ResourceType,
+      _resourceType: ResourceType,
       params: PublishParameters,
     ): Promise<IActionResult | undefined> => {
       const { searchParams } = get();

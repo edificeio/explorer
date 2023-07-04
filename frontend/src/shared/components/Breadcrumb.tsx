@@ -1,6 +1,7 @@
 import { IconButton } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { ArrowLeft } from "@ode-react-ui/icons";
+import { useTranslation } from "react-i18next";
 
 import {
   useStoreActions,
@@ -10,14 +11,15 @@ import {
 } from "~/store";
 
 export function Breadcrumb() {
-  const { i18n } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation();
   const selectedNodesIds = useSelectedNodesIds();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
   const { gotoPreviousFolder } = useStoreActions();
 
-  const trashName: string = i18n("explorer.tree.trash");
-  const rootName: string = i18n("explorer.filters.mine");
+  const trashName: string = t("explorer.tree.trash");
+  const rootName: string = t("explorer.filters.mine", { ns: appCode });
   const previousName: string = currentFolder?.name || rootName;
 
   return (
@@ -28,7 +30,7 @@ export function Breadcrumb() {
             icon={<ArrowLeft />}
             variant="ghost"
             color="tertiary"
-            aria-label={i18n("back")}
+            aria-label={t("back")}
             className="ms-n16"
             onClick={gotoPreviousFolder}
           />

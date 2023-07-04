@@ -43,8 +43,8 @@
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
-      "pnpm run format",
-      "pnpm run fix"
+      "pnpm format",
+      "pnpm fix"
     ]
   },
   "dependencies": {
@@ -55,12 +55,15 @@
     "@react-spring/web": "9.7.2",
     "@tanstack/react-query": "4.29.12",
     "dayjs": "1.11.8",
+    "i18next": "23.2.6",
+    "i18next-http-backend": "2.2.1",
     "ode-ts-client": "%odeTsClientVersion%",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.9",
     "react-hook-form": "7.44.3",
     "react-hot-toast": "2.4.1",
+    "react-i18next": "13.0.1",
     "react-intersection-observer": "9.4.4",
     "swiper": "9.3.2",
     "zustand": "4.3.8"
@@ -71,9 +74,9 @@
     "@types/node": "20.2.5",
     "@types/react": "18.2.8",
     "@types/react-dom": "18.2.4",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
-    "@vitejs/plugin-react": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "5.60.1",
+    "@typescript-eslint/parser": "5.60.1",
+    "@vitejs/plugin-react": "4.0.1",
     "clsx": "1.2.1",
     "concurrently": "8.1.0",
     "csstype": "3.1.2",
@@ -90,8 +93,8 @@
     "vite": "4.3.9",
     "vite-tsconfig-paths": "4.2.0"
   },
-  "packageManager": "pnpm@7.21.0",
+  "packageManager": "pnpm@8.5.0",
   "engines": {
-    "node": ">=16.0.0"
+    "node": "16.x"
   }
 }

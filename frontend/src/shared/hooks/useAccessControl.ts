@@ -70,7 +70,7 @@ export default function useAccessControl({
 
     if (
       isTrashFolder &&
-      (rights as IResource[])[0]?.trashedBy?.includes(user?.userId) &&
+      (rights as IResource[])[0]?.trashedBy?.includes(user?.userId as string) &&
       action === "restore" &&
       !(rights as IResource[])[0]?.trashed
     ) {

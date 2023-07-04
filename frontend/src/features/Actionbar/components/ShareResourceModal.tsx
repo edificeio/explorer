@@ -14,7 +14,6 @@ import {
   Tooltip,
   VisuallyHidden,
 } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
 import {
   Bookmark,
   Close,
@@ -24,6 +23,7 @@ import {
 } from "@ode-react-ui/icons";
 import { ShareRight } from "ode-ts-client";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import ShareResourceModalFooter from "./ShareResourceModalFooter";
 import useShareResourceModal from "../hooks/useShareResourceModal";
@@ -40,7 +40,6 @@ export default function ShareResourceModal({
   onSuccess,
   onCancel,
 }: ShareResourceModalProps) {
-  // const { payloadUpdatePublishType } = useShareResourceModalFooterBlog();
   const {
     payloadUpdatePublishType,
     radioPublicationValue,
@@ -74,14 +73,14 @@ export default function ShareResourceModal({
     showShareRightLine,
   } = useShareResourceModal({ payloadUpdatePublishType, onSuccess, onCancel });
 
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
   const refBookmark = useRef<HTMLInputElement>(null);
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
-      <Modal.Header onModalClose={onCancel}>{i18n("share.title")}</Modal.Header>
+      <Modal.Header onModalClose={onCancel}>{t("share.title")}</Modal.Header>
       <Modal.Body>
         <Heading headingStyle="h4" level="h3" className="mb-16">
-          {i18n("explorer.modal.share.usersWithAccess")}
+          {t("explorer.modal.share.usersWithAccess")}
         </Heading>
 
         <div className="table-responsive">
@@ -90,12 +89,12 @@ export default function ShareResourceModal({
               <tr>
                 <th scope="col" className="w-32">
                   <VisuallyHidden>
-                    {i18n("explorer.modal.share.avatar.shared.alt")}
+                    {t("explorer.modal.share.avatar.shared.alt")}
                   </VisuallyHidden>
                 </th>
                 <th scope="col">
                   <VisuallyHidden>
-                    {i18n("explorer.modal.share.search.placeholder")}
+                    {t("explorer.modal.share.search.placeholder")}
                   </VisuallyHidden>
                 </th>
                 {shareRightActions.map((shareRightAction) => (
@@ -104,11 +103,11 @@ export default function ShareResourceModal({
                     scope="col"
                     className="text-center"
                   >
-                    {i18n(shareRightAction.displayName)}
+                    {t(shareRightAction.displayName)}
                   </th>
                 ))}
                 <th scope="col">
-                  <VisuallyHidden>{i18n("close")}</VisuallyHidden>
+                  <VisuallyHidden>{t("close")}</VisuallyHidden>
                 </th>
               </tr>
             </thead>
@@ -117,13 +116,13 @@ export default function ShareResourceModal({
                 <tr>
                   <th scope="row">
                     <Avatar
-                      alt={i18n("explorer.modal.share.avatar.me.alt")}
+                      alt={t("explorer.modal.share.avatar.me.alt")}
                       size="xs"
                       src={myAvatar}
                       variant="circle"
                     />
                   </th>
-                  <td>{i18n("share.me")}</td>
+                  <td>{t("share.me")}</td>
                   {shareRightActions.map((shareRightAction) => (
                     <td
                       key={shareRightAction.displayName}
@@ -146,7 +145,7 @@ export default function ShareResourceModal({
                       <td>
                         {shareRight.type !== "sharebookmark" && (
                           <Avatar
-                            alt={i18n("explorer.modal.share.avatar.shared.alt")}
+                            alt={t("explorer.modal.share.avatar.shared.alt")}
                             size="xs"
                             src={shareRight.avatarUrl}
                             variant="circle"
@@ -241,7 +240,7 @@ export default function ShareResourceModal({
             className="fw-normal"
             onClick={() => toggleBookmarkInput(!showBookmarkInput)}
           >
-            {i18n("share.save.sharebookmark")}
+            {t("share.save.sharebookmark")}
           </Button>
           {showBookmarkInput && (
             <div className="mt-16">
@@ -256,7 +255,7 @@ export default function ShareResourceModal({
                     onChange={() => {
                       setBookmarkName(() => refBookmark.current?.value || "");
                     }}
-                    placeholder={i18n(
+                    placeholder={t(
                       "explorer.modal.share.sharebookmark.placeholder",
                     )}
                     size="sm"
@@ -274,7 +273,7 @@ export default function ShareResourceModal({
                   }}
                   className="text-nowrap"
                 >
-                  {i18n("explorer.modal.share.sharebookmark.save")}
+                  {t("explorer.modal.share.sharebookmark.save")}
                 </Button>
               </FormControl>
             </div>
@@ -288,7 +287,7 @@ export default function ShareResourceModal({
           level="h3"
           className="mb-16 d-flex align-items-center"
         >
-          <div className="me-8">{i18n("explorer.modal.share.search")}</div>
+          <div className="me-8">{t("explorer.modal.share.search")}</div>
           <Tooltip
             message={
               "Vos favoris de partage s’affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l’annuaire."
@@ -305,8 +304,8 @@ export default function ShareResourceModal({
             noValidationIcon
             placeholder={
               showSearchAdmlHint()
-                ? i18n("explorer.search.adml.hint")
-                : i18n("explorer.modal.share.search.placeholder")
+                ? t("explorer.search.adml.hint")
+                : t("explorer.modal.share.search.placeholder")
             }
             size="md"
             type="search"
@@ -315,11 +314,11 @@ export default function ShareResourceModal({
           {showSearchLoading() && (
             <div className="d-flex align-items-center p-4">
               <Loading isLoading={searchPending} />
-              <span className="ps-4">{i18n("explorer.search.pending")}</span>
+              <span className="ps-4">{t("explorer.search.pending")}</span>
             </div>
           )}
           {showSearchNoResults() && (
-            <div className="p-4">{i18n("portal.no.result")}</div>
+            <div className="p-4">{t("portal.no.result")}</div>
           )}
         </FormControl>
         {searchResults?.length > 0 && (
@@ -344,7 +343,7 @@ export default function ShareResourceModal({
           variant="ghost"
           onClick={onCancel}
         >
-          {i18n("explorer.cancel")}
+          {t("explorer.cancel")}
         </Button>
 
         <Button
@@ -354,7 +353,7 @@ export default function ShareResourceModal({
           onClick={handleShare}
           disabled={!canSave()}
         >
-          {i18n("share")}
+          {t("share")}
         </Button>
       </Modal.Footer>
     </Modal>,

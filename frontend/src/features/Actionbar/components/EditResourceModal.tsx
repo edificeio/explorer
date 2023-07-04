@@ -1,8 +1,6 @@
 import {
-  Alert,
   Button,
   FormControl,
-  FormText,
   Heading,
   ImagePicker,
   Input,
@@ -10,8 +8,8 @@ import {
   Modal,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
-import { Copy } from "@ode-react-ui/icons";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import { BlogPublic } from "./BlogPublic";
 import useEditResourceModal from "../hooks/useEditResourceModal";
@@ -32,7 +30,7 @@ export default function EditResourceModal({
   onSuccess,
   onCancel,
 }: EditResourceModalProps) {
-  const { i18n, appCode, currentApp } = useOdeClient();
+  const { appCode, currentApp } = useOdeClient();
 
   const selectedResources = useSelectedResources();
   const resource = selectedResources[0];
@@ -60,6 +58,8 @@ export default function EditResourceModal({
 
   const { data: actions } = useActions();
 
+  const { t } = useTranslation();
+
   return createPortal(
     <Modal
       id="resource_edit_modal"
@@ -68,7 +68,7 @@ export default function EditResourceModal({
       onModalClose={onCancel}
     >
       <Modal.Header onModalClose={onCancel}>
-        {i18n(
+        {t(
           edit
             ? "explorer.resource.editModal.header.edit"
             : "explorer.resource.editModal.header.create",
@@ -77,7 +77,7 @@ export default function EditResourceModal({
 
       <Modal.Body>
         <Heading headingStyle="h4" level="h3" className="mb-16">
-          {i18n("explorer.resource.editModal.heading.general")}
+          {t("explorer.resource.editModal.heading.general")}
         </Heading>
 
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
@@ -85,9 +85,9 @@ export default function EditResourceModal({
             <ImagePicker
               app={currentApp}
               src={resource?.thumbnail}
-              label={i18n("explorer.imagepicker.label")}
-              addButtonLabel={i18n("explorer.imagepicker.button.add")}
-              deleteButtonLabel={i18n("explorer.imagepicker.button.delete")}
+              label={t("explorer.imagepicker.label")}
+              addButtonLabel={t("explorer.imagepicker.button.add")}
+              deleteButtonLabel={t("explorer.imagepicker.button.delete")}
               onUploadImage={handleUploadImage}
               onDeleteImage={handleDeleteImage}
               className="align-self-center"
@@ -95,7 +95,7 @@ export default function EditResourceModal({
 
             <div className="col">
               <FormControl id="title" className="mb-16" isRequired>
-                <Label>{i18n("title")}</Label>
+                <Label>{t("title")}</Label>
                 <Input
                   type="text"
                   defaultValue={edit ? resource?.name : ""}
@@ -106,25 +106,27 @@ export default function EditResourceModal({
                       message: "invalid title",
                     },
                   })}
-                  placeholder={i18n(
+                  placeholder={t(
                     "explorer.resource.editModal.title.placeholder",
                   )}
                   size="md"
                   aria-required={true}
                 />
               </FormControl>
-              <FormControl id="description" isOptional>
-                <Label>{i18n("description")}</Label>
-                <Input
-                  type="text"
-                  defaultValue={edit ? resource?.description : ""}
-                  {...register("description")}
-                  placeholder={i18n(
-                    "explorer.resource.editModal.description.placeholder",
-                  )}
-                  size="md"
-                />
-              </FormControl>
+              {appCode !== "blog" ? (
+                <FormControl id="description" isOptional>
+                  <Label>{t("description")}</Label>
+                  <Input
+                    type="text"
+                    defaultValue={edit ? resource?.description : ""}
+                    {...register("description")}
+                    placeholder={t(
+                      "explorer.resource.editModal.description.placeholder",
+                    )}
+                    size="md"
+                  />
+                </FormControl>
+              ) : null}
             </div>
           </div>
 
@@ -152,7 +154,7 @@ export default function EditResourceModal({
           type="button"
           variant="ghost"
         >
-          {i18n("explorer.cancel")}
+          {t("explorer.cancel")}
         </Button>
         <Button
           form={formId}
@@ -161,7 +163,7 @@ export default function EditResourceModal({
           variant="filled"
           disabled={!isValid || isSubmitting}
         >
-          {i18n(edit ? "save" : "explorer.create")}
+          {t(edit ? "save" : "explorer.create")}
         </Button>
       </Modal.Footer>
     </Modal>,

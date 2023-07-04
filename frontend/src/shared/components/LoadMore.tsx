@@ -1,10 +1,10 @@
 import { forwardRef, type Ref } from "react";
 
 import { Button } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { useTranslation } from "react-i18next";
 
-const LoadMore = forwardRef((props, ref: Ref<HTMLButtonElement>) => {
-  const { i18n } = useOdeClient();
+const LoadMore = forwardRef((_props, ref: Ref<HTMLButtonElement>) => {
+  const { t } = useTranslation();
   return (
     <div className="d-grid gap-2 col-4 mx-auto">
       <Button
@@ -14,7 +14,7 @@ const LoadMore = forwardRef((props, ref: Ref<HTMLButtonElement>) => {
         variant="filled"
         // style={{ visibility: "hidden" }}
       >
-        {i18n("explorer.see.more")}
+        {t("explorer.see.more")}
       </Button>
     </div>
   );

@@ -1,6 +1,6 @@
 import { Modal, Button, TreeView } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import useMoveModal from "../hooks/useMoveModal";
 import { useTreeData } from "~/store";
@@ -16,7 +16,7 @@ export default function MoveModal({
   onSuccess,
   onCancel,
 }: MoveModalProps) {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
   const {
     handleTreeItemFold,
     handleTreeItemSelect,
@@ -30,9 +30,9 @@ export default function MoveModal({
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
       <Modal.Header onModalClose={onCancel}>
-        {i18n("explorer.move.title")}
+        {t("explorer.move.title")}
       </Modal.Header>
-      <Modal.Subtitle>{i18n("explorer.move.subtitle")}</Modal.Subtitle>
+      <Modal.Subtitle>{t("explorer.move.subtitle")}</Modal.Subtitle>
       <Modal.Body>
         <TreeView
           data={treeData}
@@ -48,7 +48,7 @@ export default function MoveModal({
           type="button"
           variant="ghost"
         >
-          {i18n("explorer.cancel")}
+          {t("explorer.cancel")}
         </Button>
         <Button
           color="primary"
@@ -57,7 +57,7 @@ export default function MoveModal({
           variant="filled"
           disabled={disableSubmit}
         >
-          {i18n("explorer.move")}
+          {t("explorer.move")}
         </Button>
       </Modal.Footer>
     </Modal>,

@@ -15,6 +15,7 @@ import {
 import { useOdeClient } from "@ode-react-ui/core";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
@@ -31,7 +32,8 @@ export default function PublishModal({
   onSuccess,
   onCancel,
 }: PublishModalProps) {
-  const { i18n, currentApp } = useOdeClient();
+  const { currentApp, appCode } = useOdeClient();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -57,31 +59,31 @@ export default function PublishModal({
     ageOptions,
   } = usePublishLibraryModalOptions();
 
-  const defaultSelectLanguageOption = i18n("bpr.form.publication.language");
-  const defaultSelectAgeMinOption = i18n("bpr.form.publication.age.min");
-  const defaultSelectAgeMaxOption = i18n("bpr.form.publication.age.max");
+  const defaultSelectLanguageOption = t("bpr.form.publication.language");
+  const defaultSelectAgeMinOption = t("bpr.form.publication.age.min");
+  const defaultSelectAgeMaxOption = t("bpr.form.publication.age.max");
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="libraryModal" size="lg">
-      <Modal.Header onModalClose={onCancel}>{i18n("bpr.publish")}</Modal.Header>
-      <Modal.Subtitle>{i18n("bpr.form.tip")}</Modal.Subtitle>
+      <Modal.Header onModalClose={onCancel}>{t("bpr.publish")}</Modal.Header>
+      <Modal.Subtitle>{t("bpr.form.tip")}</Modal.Subtitle>
       <Modal.Body>
         <Heading headingStyle="h4" level="h3" className="mb-16">
-          {i18n("bpr.form.publication.heading.general")}
+          {t("bpr.form.publication.heading.general")}
         </Heading>
 
         <form id="libraryModalForm" onSubmit={handleSubmit(publish)}>
           <div className="d-flex mb-24 gap-24">
             <div style={{ maxWidth: "160px" }}>
               <div className="form-label">
-                {i18n("bpr.form.publication.cover.title")}
+                {t("bpr.form.publication.cover.title")}
               </div>
               <ImagePicker
                 app={currentApp}
                 src={selectedResources[0]?.thumbnail}
-                label={i18n("bpr.form.publication.cover.upload.label")}
-                addButtonLabel={i18n("bpr.form.publication.cover.upload.add")}
-                deleteButtonLabel={i18n(
+                label={t("bpr.form.publication.cover.upload.label")}
+                addButtonLabel={t("bpr.form.publication.cover.upload.add")}
+                deleteButtonLabel={t(
                   "bpr.form.publication.cover.upload.remove",
                 )}
                 onUploadImage={handleUploadImage}
@@ -91,30 +93,32 @@ export default function PublishModal({
               {!cover.image && (
                 <p className="form-text is-invalid">
                   <em>
-                    {i18n("bpr.form.publication.cover.upload.required.image")}
+                    {t("bpr.form.publication.cover.upload.required.image", {
+                      ns: appCode,
+                    })}
                   </em>
                 </p>
               )}
             </div>
             <div className="flex-fill">
               <FormControl id="title" className="mb-16" isRequired>
-                <Label>{i18n("bpr.form.publication.title")}</Label>
+                <Label>{t("bpr.form.publication.title")}</Label>
                 <Input
                   type="text"
                   defaultValue={selectedResources[0]?.name}
                   {...register("title", { required: true })}
-                  placeholder={i18n("bpr.form.publication.title.placeholder")}
+                  placeholder={t("bpr.form.publication.title.placeholder")}
                   size="md"
                   aria-required={true}
                 />
               </FormControl>
 
               <FormControl id="description" isRequired>
-                <Label>{i18n("bpr.form.publication.description")}</Label>
+                <Label>{t("bpr.form.publication.description")}</Label>
                 <Input
                   type="text"
                   {...register("description", { required: true })}
-                  placeholder={i18n(
+                  placeholder={t(
                     "bpr.form.publication.description.placeholder",
                   )}
                   size="md"
@@ -127,7 +131,7 @@ export default function PublishModal({
           <hr />
 
           <Heading headingStyle="h4" level="h3" className="mb-16">
-            {i18n("bpr.form.publication.heading.infos")}
+            {t("bpr.form.publication.heading.infos")}
           </Heading>
 
           <div className="d-flex flex-column flex-md-row gap-16 row mb-24">
@@ -135,7 +139,7 @@ export default function PublishModal({
               <Dropdown
                 trigger={
                   <DropdownTrigger
-                    title={i18n("bpr.form.publication.type")}
+                    title={t("bpr.form.publication.type")}
                     size="md"
                     grow={true}
                     badgeContent={selectedActivities?.length}
@@ -156,7 +160,7 @@ export default function PublishModal({
               <Dropdown
                 trigger={
                   <DropdownTrigger
-                    title={i18n("bpr.form.publication.discipline")}
+                    title={t("bpr.form.publication.discipline")}
                     size="md"
                     grow={true}
                     badgeContent={selectedSubjectAreas?.length}
@@ -191,7 +195,7 @@ export default function PublishModal({
 
           <div className="mb-24">
             <label htmlFor="" className="form-label">
-              {i18n("bpr.form.publication.age")}
+              {t("bpr.form.publication.age")}
             </label>
             <div className="d-flex">
               <div className="me-16">
@@ -229,12 +233,12 @@ export default function PublishModal({
 
           <div className="mb-24">
             <FormControl id="keywords" isOptional>
-              <Label>{i18n("bpr.form.publication.keywords")}</Label>
+              <Label>{t("bpr.form.publication.keywords")}</Label>
               <Input
                 type="text"
                 {...register("keyWords")}
                 size="md"
-                placeholder={i18n("bpr.form.publication.keywords.placeholder")}
+                placeholder={t("bpr.form.publication.keywords.placeholder")}
               />
             </FormControl>
           </div>
@@ -242,12 +246,12 @@ export default function PublishModal({
           <hr />
 
           <Heading headingStyle="h4" level="h3" className="mb-16">
-            {i18n("bpr.form.publication.licence.text")}
+            {t("bpr.form.publication.licence.text")}
           </Heading>
 
           <ul className="mb-12">
             <li>
-              {i18n("bpr.form.publication.licence.text.1")}
+              {t("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
                 src="/assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
@@ -255,15 +259,15 @@ export default function PublishModal({
                   Commons"
               />
             </li>
-            <li>{i18n("bpr.form.publication.licence.text.2")}</li>
+            <li>{t("bpr.form.publication.licence.text.2")}</li>
           </ul>
 
           <Alert type="info" className="mb-12">
-            {i18n("bpr.form.publication.licence.text.3")}
+            {t("bpr.form.publication.licence.text.3")}
           </Alert>
 
           <Alert type="warning">
-            {i18n("bpr.form.publication.licence.text.4")}
+            {t("bpr.form.publication.licence.text.4")}
           </Alert>
         </form>
       </Modal.Body>
@@ -274,7 +278,7 @@ export default function PublishModal({
           type="button"
           variant="ghost"
         >
-          {i18n("cancel")}
+          {t("cancel")}
         </Button>
         <Button
           form="libraryModalForm"
@@ -291,7 +295,7 @@ export default function PublishModal({
             selectedSubjectAreas?.length === 0
           }
         >
-          {i18n("bpr.form.submit")}
+          {t("bpr.form.submit")}
         </Button>
       </Modal.Footer>
     </Modal>,
@@ -300,18 +304,18 @@ export default function PublishModal({
 }
 
 export function PublishModalSuccess({ result }: { result: PublishResult }) {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
 
   return (
     <>
       <h3 className="pt-24">
-        {i18n("bpr.form.publication.response.success.title")}
+        {t("bpr.form.publication.response.success.title")}
       </h3>
       <p className="pt-24">
-        {i18n("bpr.form.publication.response.success.content.1")}
+        {t("bpr.form.publication.response.success.content.1")}
       </p>
       <p className="pt-24">
-        {i18n("bpr.form.publication.response.success.content.2")}
+        {t("bpr.form.publication.response.success.content.2")}
       </p>
       {result.details.front_url && (
         <p className="pt-24 pb-24">
@@ -321,7 +325,7 @@ export function PublishModalSuccess({ result }: { result: PublishResult }) {
             target="_blank"
             rel="noreferrer"
           >
-            {i18n("bpr.form.publication.response.success.button")}
+            {t("bpr.form.publication.response.success.button")}
           </a>
         </p>
       )}
@@ -330,7 +334,7 @@ export function PublishModalSuccess({ result }: { result: PublishResult }) {
 }
 
 export function PublishModalError({ formData }: { formData: InputProps }) {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
 
   const regexInput = (value: string) => {
     return value.match(/^\s/);
@@ -339,21 +343,21 @@ export function PublishModalError({ formData }: { formData: InputProps }) {
   return (
     <>
       <h3 className="pt-24">
-        {i18n("bpr.form.publication.response.error.title")}
+        {t("bpr.form.publication.response.error.title")}
       </h3>
       <p className="pt-24 pb-24">
-        <strong>{i18n("bpr.form.publication.response.error.content")}</strong>
+        <strong>{t("bpr.form.publication.response.error.content")}</strong>
       </p>
       <ul>
         {regexInput(formData.title) && (
           <li className="pt-2 pb-2">
-            <strong>{i18n("bpr.form.publication.response.empty.title")}</strong>
+            <strong>{t("bpr.form.publication.response.empty.title")}</strong>
           </li>
         )}
         {regexInput(formData.description) && (
           <li className="pt-2 pb-2">
             <strong>
-              {i18n("bpr.form.publication.response.empty.description")}
+              {t("bpr.form.publication.response.empty.description")}
             </strong>
           </li>
         )}

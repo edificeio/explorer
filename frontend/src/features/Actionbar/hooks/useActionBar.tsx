@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
 import { Alert } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { type IAction, ACTION } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";
 import { getAppParams } from "~/shared/utils/getAppParams";
@@ -34,7 +34,7 @@ export default function useActionBar() {
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
   const [clickedAction, setClickedAction] = useState<IAction>();
 
-  const { i18n } = useI18n();
+  const { t } = useTranslation();
   const { hotToast } = useHotToast(Alert);
 
   const currentFolder = useCurrentFolder();
@@ -149,7 +149,7 @@ export default function useActionBar() {
     try {
       if (isTrashFolder) {
         await restoreItem.mutate();
-        hotToast.success(i18n("explorer.trash.toast"));
+        hotToast.success(t("explorer.trash.toast"));
       } else {
         throw new Error("Cannot restore untrashed resources");
       }

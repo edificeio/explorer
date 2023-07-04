@@ -1,5 +1,6 @@
 import React, { StrictMode } from "react";
 
+import "./i18n";
 import { OdeClientProvider } from "@ode-react-ui/core";
 import {
   QueryCache,
@@ -42,6 +43,5 @@ createRoot(root!).render(
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-    ,
   </StrictMode>,
 );

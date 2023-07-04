@@ -1,8 +1,8 @@
 import { type ReactNode, type ReactElement } from "react";
 
 import { Button } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { IAction, RightRole } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
 import useAccessControl, {
@@ -27,7 +27,7 @@ export function AccessControl({
   children,
   renderWhenForbidden,
 }: AccessControlProps): ReactElement {
-  const { i18n } = useI18n();
+  const { t } = useTranslation();
   const { overrideLabel } = useActionBar();
   const { visible } = useAccessControl({
     roles: roleExpected,
@@ -50,7 +50,7 @@ export function AccessControl({
           setResourceActionDisable(true);
         }}
       >
-        {i18n(overrideLabel(action))}
+        {t(overrideLabel(action))}
       </Button>
     );
   } else {

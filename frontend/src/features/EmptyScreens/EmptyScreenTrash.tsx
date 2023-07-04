@@ -1,15 +1,18 @@
 import { EmptyScreen } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
+import { useTranslation } from "react-i18next";
 
 export default function EmptyScreenTrash(): JSX.Element {
-  const { i18n, theme } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { theme } = useOdeClient();
+  const { t } = useTranslation();
 
   return (
     <EmptyScreen
       imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-trash.svg`}
-      imageAlt={i18n("explorer.emptyScreen.trash.alt")}
-      title={i18n("explorer.emptyScreen.trash.title")}
-      text={i18n("explorer.emptyScreen.trash.empty")}
+      imageAlt={t("explorer.emptyScreen.trash.alt")}
+      title={t("explorer.emptyScreen.trash.title")}
+      text={t("explorer.emptyScreen.trash.empty", { ns: appCode })}
     />
   );
 }

@@ -19,6 +19,7 @@ import {
   type ShareRightActionDisplayName,
   type BlogUpdate,
 } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
@@ -33,7 +34,8 @@ export default function useShareResourceModal({
   onSuccess,
   payloadUpdatePublishType,
 }: useShareResourceModalProps) {
-  const { appCode, i18n } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation();
   const { user, avatar } = useUser();
   const [idBookmark, setIdBookmark] = useState<string>(useId());
   const [shareRights, setShareRights] = useState<ShareRightWithVisibles>({
@@ -59,8 +61,10 @@ export default function useShareResourceModal({
   const { isAdml } = useIsAdml();
 
   const selectedResources = useSelectedResources();
-
   const updateResource = useUpdateResource();
+  const shareResource = useShareResource();
+
+  const { hotToast } = useHotToast(Alert);
 
   useEffect(() => {
     initShareRightsAndActions();
@@ -174,9 +178,6 @@ export default function useShareResourceModal({
     });
   };
 
-  const shareResource = useShareResource();
-
-  const { hotToast } = useHotToast(Alert);
   const handleShare = async () => {
     try {
       await updateResource.mutateAsync(payloadUpdatePublishType);
@@ -185,13 +186,11 @@ export default function useShareResourceModal({
         shares: shareRights.rights,
       });
 
-      // TODO i18n
-      hotToast.success(i18n("explorer.shared.status.saved"));
+      hotToast.success(t("explorer.shared.status.saved"));
       onSuccess?.();
     } catch (e) {
       console.error("Failed to save share", e);
-      // TODO i18N
-      hotToast.error(i18n("explorer.shared.status.error"));
+      hotToast.error(t("explorer.shared.status.error"));
     }
   };
 
@@ -239,8 +238,6 @@ export default function useShareResourceModal({
   };
 
   const search = async (searchInputValue: string) => {
-    console.log({ searchInputValue });
-
     setSearchPending(true);
     // start search from 1 caracter length for non Adml but start from 3 for Adml
     if (
@@ -254,7 +251,6 @@ export default function useShareResourceModal({
           selectedResources[0]?.assetId,
           searchInputValue,
         );
-      console.log({ resSearchShareSubjects });
       setSearchAPIResults(resSearchShareSubjects);
 
       const adaptedResults = resSearchShareSubjects
@@ -425,7 +421,7 @@ export default function useShareResourceModal({
           .filter((right: { type: string }) => right.type === "sharebookmark")
           .map((u: { id: any }) => u.id),
       });
-      hotToast.success(i18n("explorer.bookmarked.status.saved"));
+      hotToast.success(t("explorer.bookmarked.status.saved"));
       setShareRights((state) => {
         return {
           ...state,
@@ -442,7 +438,7 @@ export default function useShareResourceModal({
       toggleBookmarkInput(false);
     } catch (e) {
       console.error("Failed to save bookmark", e);
-      hotToast.error(i18n("explorer.bookmarked.status.error"));
+      hotToast.error(t("explorer.bookmarked.status.error"));
     }
   };
 

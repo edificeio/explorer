@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Modal, Button, Image } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
-import { Pagination } from "swiper";
+import { useTranslation } from "react-i18next";
+import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import "swiper/css";
@@ -18,7 +19,8 @@ export default function OnboardingTrash({
   setIsOpen: (bool: boolean) => void;
   handleSavePreference: () => void;
 }): JSX.Element | null {
-  const { i18n, theme } = useOdeClient();
+  const { theme } = useOdeClient();
+  const { t } = useTranslation();
   const [swiperInstance, setSwiperInstance] = useState<any>();
   const [swiperProgress, setSwiperprogress] = useState<number>(0);
 
@@ -32,7 +34,7 @@ export default function OnboardingTrash({
           focusId="nextButtonId"
         >
           <Modal.Header onModalClose={() => setIsOpen(false)}>
-            {i18n("explorer.modal.onboarding.trash.title")}
+            {t("explorer.modal.onboarding.trash.title")}
           </Modal.Header>
           <Modal.Body>
             <Swiper
@@ -53,10 +55,10 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto my-12"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-menu.svg`}
-                  alt={i18n("explorer.modal.onboarding.trash.screen1.alt")}
+                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-menu.svg`}
+                  alt={t("explorer.modal.onboarding.trash.screen1.alt")}
                 />
-                <p>{i18n("explorer.modal.onboarding.trash.screen1.title")}</p>
+                <p>{t("explorer.modal.onboarding.trash.screen1.title")}</p>
               </SwiperSlide>
               <SwiperSlide>
                 <Image
@@ -64,10 +66,10 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-notif.svg`}
-                  alt={i18n("explorer.modal.onboarding.trash.screen2.alt")}
+                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-notif.svg`}
+                  alt={t("explorer.modal.onboarding.trash.screen2.alt")}
                 />
-                <p>{i18n("explorer.modal.onboarding.trash.screen2.title")}</p>
+                <p>{t("explorer.modal.onboarding.trash.screen2.title")}</p>
               </SwiperSlide>
               <SwiperSlide>
                 <Image
@@ -75,10 +77,10 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/corbeille-delete.svg`}
-                  alt={i18n("explorer.modal.onboarding.trash.screen3.alt")}
+                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-delete.svg`}
+                  alt={t("explorer.modal.onboarding.trash.screen3.alt")}
                 />
-                <p>{i18n("explorer.modal.onboarding.trash.screen3.title")}</p>
+                <p>{t("explorer.modal.onboarding.trash.screen3.title")}</p>
               </SwiperSlide>
             </Swiper>
           </Modal.Body>
@@ -89,7 +91,7 @@ export default function OnboardingTrash({
               variant="ghost"
               onClick={() => setIsOpen(false)}
             >
-              {i18n("explorer.modal.onboarding.trash.later")}
+              {t("explorer.modal.onboarding.trash.later")}
             </Button>
 
             {swiperProgress > 0 && (
@@ -99,7 +101,7 @@ export default function OnboardingTrash({
                 variant="outline"
                 onClick={() => swiperInstance.slidePrev()}
               >
-                {i18n("explorer.modal.onboarding.trash.prev")}
+                {t("explorer.modal.onboarding.trash.prev")}
               </Button>
             )}
             {swiperProgress < 1 && (
@@ -110,7 +112,7 @@ export default function OnboardingTrash({
                 variant="filled"
                 onClick={() => swiperInstance.slideNext()}
               >
-                {i18n("explorer.modal.onboarding.trash.next")}
+                {t("explorer.modal.onboarding.trash.next")}
               </Button>
             )}
             {swiperProgress === 1 && (
@@ -120,7 +122,7 @@ export default function OnboardingTrash({
                 variant="filled"
                 onClick={handleSavePreference}
               >
-                {i18n("explorer.modal.onboarding.trash.close")}
+                {t("explorer.modal.onboarding.trash.close")}
               </Button>
             )}
           </Modal.Footer>

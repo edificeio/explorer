@@ -1,6 +1,6 @@
 import { Modal, Button } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 export default function TrashedResourceModal({
   isOpen,
@@ -9,15 +9,15 @@ export default function TrashedResourceModal({
   isOpen: boolean;
   onCancel?: () => void;
 }) {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="trash_resource">
       <Modal.Header onModalClose={() => onCancel()}>
-        {i18n("explorer.trash.modal.title")}
+        {t("explorer.trash.modal.title")}
       </Modal.Header>
       <Modal.Body>
-        <p className="body">{i18n("explorer.trash.modal.text")}</p>
+        <p className="body">{t("explorer.trash.modal.text")}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -26,7 +26,7 @@ export default function TrashedResourceModal({
           type="button"
           variant="outline"
         >
-          {i18n("close")}
+          {t("close")}
         </Button>
       </Modal.Footer>
     </Modal>,

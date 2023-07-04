@@ -1,6 +1,6 @@
 import { Alert } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
+import { useTranslation } from "react-i18next";
 
 import { useDelete, useTrash } from "~/services/queries";
 import { useIsTrash } from "~/store";
@@ -10,7 +10,7 @@ interface ModalProps {
 }
 
 export default function useDeleteModal({ onSuccess }: ModalProps) {
-  const { i18n } = useI18n();
+  const { t } = useTranslation();
   const deleteItem = useDelete();
   const trashItem = useTrash();
 
@@ -25,16 +25,13 @@ export default function useDeleteModal({ onSuccess }: ModalProps) {
     try {
       if (isTrashFolder) {
         await deleteItem.mutate();
-        // TODO i18n
-        hotToast.success(i18n("explorer.removed.from.trash"));
+        hotToast.success(t("explorer.removed.from.trash"));
       } else {
         await trashItem.mutate();
-        // TODO i18n
-        hotToast.success(i18n("explorer.trash.title"));
+        hotToast.success(t("explorer.trash.title"));
       }
       onSuccess?.();
     } catch (e) {
-      // TODO display an alert?
       console.error(e);
     }
   }

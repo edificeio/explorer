@@ -5,6 +5,7 @@ import { useOdeClient } from "@ode-react-ui/core";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
 import { type ID, type IResource } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import { useSearchContext } from "~/services/queries";
 import { dayjs } from "~/shared/config";
@@ -18,7 +19,8 @@ import {
 } from "~/store";
 
 const ResourcesList = (): JSX.Element | null => {
-  const { currentApp, currentLanguage, i18n } = useOdeClient();
+  const { currentApp, currentLanguage, appCode } = useOdeClient();
+  const { t } = useTranslation();
 
   const { data, isFetching, fetchNextPage } = useSearchContext();
 
@@ -112,8 +114,8 @@ const ResourcesList = (): JSX.Element | null => {
                     isSelected={resourceIds.includes(resource.id)}
                     isLoading={isFetching}
                     isShared={isShared}
-                    messagePublic={i18n("tooltip.public")}
-                    messageShared={i18n("tooltip.shared")}
+                    messagePublic={t("tooltip.public", { ns: appCode })}
+                    messageShared={t("tooltip.shared", { ns: appCode })}
                     name={name}
                     onOpen={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
@@ -135,7 +137,7 @@ const ResourcesList = (): JSX.Element | null => {
             variant="filled"
             onClick={handleNextPage}
           >
-            {i18n("explorer.see.more")}
+            {t("explorer.see.more")}
           </Button>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { Modal, Button } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import useDeleteModal from "../hooks/useDeleteModal";
 
@@ -15,18 +15,18 @@ export default function DeleteModal({
   onSuccess = () => ({}),
   onCancel = () => ({}),
 }: ModalProps) {
-  const { i18n } = useOdeClient();
+  const { t } = useTranslation();
   const { isTrashFolder, onDelete } = useDeleteModal({
     onSuccess,
   });
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="deleteModal">
       <Modal.Header onModalClose={onCancel}>
-        {i18n(isTrashFolder ? "explorer.delete.title" : "explorer.trash.title")}
+        {t(isTrashFolder ? "explorer.delete.title" : "explorer.trash.title")}
       </Modal.Header>
       <Modal.Body>
         <p className="body">
-          {i18n(
+          {t(
             isTrashFolder
               ? "explorer.delete.subtitle"
               : "explorer.trash.subtitle",
@@ -40,7 +40,7 @@ export default function DeleteModal({
           type="button"
           variant="ghost"
         >
-          {i18n("explorer.cancel")}
+          {t("explorer.cancel")}
         </Button>
         <Button
           color="primary"
@@ -48,7 +48,7 @@ export default function DeleteModal({
           type="button"
           variant="filled"
         >
-          {i18n(isTrashFolder ? "explorer.delete" : "explorer.trash")}
+          {t(isTrashFolder ? "explorer.delete" : "explorer.trash")}
         </Button>
       </Modal.Footer>
     </Modal>,

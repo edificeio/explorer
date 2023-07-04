@@ -4,7 +4,7 @@ import { type BlogResource, type BlogUpdate } from "ode-ts-client";
 
 import { useSelectedResources } from "~/store";
 
-export type PublicationType = "RESTRAINT" | "IMMEDIATE";
+export type PublicationType = "RESTRAINT" | "IMMEDIATE" | undefined;
 
 export default function useShareResourceModalFooterBlog() {
   const selectedResources = useSelectedResources();
@@ -32,7 +32,7 @@ export default function useShareResourceModalFooterBlog() {
       };
 
   const [radioPublicationValue, setRadioPublicationValue] =
-    useState<PublicationType>(publishType || "IMMEDIATE");
+    useState<PublicationType>((publishType as PublicationType) || "RESTRAINT");
 
   const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
     description,
@@ -43,7 +43,7 @@ export default function useShareResourceModalFooterBlog() {
     thumbnail,
     trashed,
     "publish-type": publishType,
-  } satisfies BlogUpdate);
+  } as BlogUpdate);
 
   useEffect(() => {
     if (radioPublicationValue) {

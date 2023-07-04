@@ -67,11 +67,11 @@ doInit () {
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
 
-  echo "[init] Generate deployment file from conf.deployment..."
-  mkdir -p deployment/$MVN_MOD_NAME
-  cp conf.deployment deployment/$MVN_MOD_NAME/conf.json.template
-  sed -i "s/%MODNAME%/${MVN_MOD_NAME}/" deployment/$MVN_MOD_NAME/conf.json.template
-  sed -i "s/%VERSION%/${MVN_MOD_VERSION}/" deployment/$MVN_MOD_NAME/conf.json.template
+  # echo "[init] Generate deployment file from conf.deployment..."
+  # mkdir -p deployment/$MVN_MOD_NAME
+  # cp conf.deployment deployment/$MVN_MOD_NAME/conf.json.template
+  # sed -i "s/%MODNAME%/${MVN_MOD_NAME}/" deployment/$MVN_MOD_NAME/conf.json.template
+  # sed -i "s/%VERSION%/${MVN_MOD_VERSION}/" deployment/$MVN_MOD_NAME/conf.json.template
 
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`

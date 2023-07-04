@@ -1,11 +1,11 @@
 import { lazy, Suspense } from "react";
 
 import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { useToggle } from "@ode-react-ui/hooks";
 import { Plus } from "@ode-react-ui/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import TrashButton from "~/features/TreeView/components/TrashButton";
 import {
@@ -21,8 +21,8 @@ const CreateModal = lazy(
 
 export const TreeViewContainer = () => {
   const queryclient = useQueryClient();
+  const { t } = useTranslation();
 
-  const { i18n } = useI18n();
   const [isCreateFolderModalOpen, toggle] = useToggle();
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -59,7 +59,7 @@ export const TreeViewContainer = () => {
           leftIcon={<Plus />}
           onClick={toggle}
         >
-          {i18n("explorer.folder.new")}
+          {t("explorer.folder.new")}
         </Button>
       </div>
       <Suspense fallback={<LoadingScreen />}>

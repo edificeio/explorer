@@ -1,14 +1,16 @@
 import { EmptyScreen } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
+import { useTranslation } from "react-i18next";
 
 export default function EmptyScreenNoContentInFolder(): JSX.Element | null {
-  const { i18n, theme } = useOdeClient();
+  const { theme } = useOdeClient();
+  const { t } = useTranslation();
 
   return (
     <EmptyScreen
-      imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-noContentInFolder.svg`}
-      imageAlt={i18n("explorer.emptyScreen.folder.empty.alt")}
-      text={i18n("explorer.emptyScreen.label")}
+      imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-no-content-in-folder.svg`}
+      imageAlt={t("explorer.emptyScreen.folder.empty.alt")}
+      text={t("explorer.emptyScreen.label")}
     />
   );
 }

@@ -1,10 +1,10 @@
 import { useId, useState } from "react";
 
 import { Alert } from "@ode-react-ui/components";
-import { useI18n } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
@@ -27,7 +27,7 @@ export default function useEditResourceModal({
   onSuccess,
   onCancel,
 }: useEditResourceModalProps) {
-  const { i18n } = useI18n();
+  const { t } = useTranslation();
   const updateResource = useUpdateResource();
   const selectedResources = useSelectedResources();
   const {
@@ -105,14 +105,14 @@ export default function useEditResourceModal({
       setCorrectSlug(false);
       hotToast.success(
         <>
-          <strong>{i18n("explorer.resource.updated")}</strong>
+          <strong>{t("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
           <p>
             Public:{" "}
             {formData.enablePublic
-              ? i18n("explorer.enable.public.yes")
-              : i18n("explorer.enable.public.no")}
+              ? t("explorer.enable.public.yes")
+              : t("explorer.enable.public.no")}
           </p>
         </>,
       );
@@ -127,7 +127,7 @@ export default function useEditResourceModal({
     navigator.clipboard.writeText(
       `${window.location.origin}${window.location.pathname}/pub/${slug}`,
     );
-    hotToast.success(i18n("explorer.copy.clipboard"));
+    hotToast.success(t("explorer.copy.clipboard"));
   }
 
   function onFormCancel() {
