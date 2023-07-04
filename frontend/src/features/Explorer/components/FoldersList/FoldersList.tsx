@@ -4,6 +4,7 @@ import { useSpring, animated } from "@react-spring/web";
 import { type ID, type IFolder } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
+import { useRefScrollTo } from "~/shared/utils/scrollToTop";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = (): JSX.Element | null => {
@@ -38,6 +39,8 @@ const FoldersList = (): JSX.Element | null => {
     to: { opacity: 1 },
   });
 
+  const scrollToTop = useRefScrollTo();
+
   return data?.pages[0]?.folders.length ? (
     <animated.ul className="grid ps-0 list-unstyled mb-24">
       {data?.pages[0]?.folders.map((folder: IFolder) => {
@@ -56,7 +59,10 @@ const FoldersList = (): JSX.Element | null => {
               isFolder
               isLoading={isFetching}
               isSelected={folderIds.includes(folder.id)}
-              onOpen={() => openFolder({ folder, folderId: folder.id })}
+              onOpen={() => {
+                scrollToTop();
+                openFolder({ folder, folderId: folder.id });
+              }}
               onSelect={() => toggleSelect(folder)}
             />
           </animated.li>
