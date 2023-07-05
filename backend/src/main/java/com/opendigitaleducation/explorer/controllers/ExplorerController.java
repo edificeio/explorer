@@ -562,7 +562,7 @@ public class ExplorerController extends BaseController {
                     }) : Future.succeededFuture();
                     final Date fromDate = getDateParam("from", request).orElse(null);
                     final Date toDate = getDateParam("to", request).orElse(null);
-                    final Set<String> ids = getParamAsSet("ids");
+                    final Set<String> ids = getParamAsSet("ids", request);
                     final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
                         final ExplorerReindexResourcesRequest reindexRequest =
                                 new ExplorerReindexResourcesRequest(fromDate, toDate, emptySet(), includeFolder, ids);
