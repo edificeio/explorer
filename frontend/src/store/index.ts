@@ -27,6 +27,7 @@ import { findNodeById } from "~/shared/utils/findNodeById";
 import { getAncestors } from "~/shared/utils/getAncestors";
 import { getAppParams } from "~/shared/utils/getAppParams";
 import { hasChildren } from "~/shared/utils/hasChildren";
+import { refScrollTo } from "~/shared/utils/scrollToTop";
 import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
 
 const { app, types, filters, orders } = getAppParams();
@@ -250,6 +251,9 @@ export const useStoreContext = create<State>()((set, get) => ({
       const { openFolder } = get().updaters;
 
       const folder = findNodeById(folderId, treeData);
+      const scrollToTop = refScrollTo();
+
+      scrollToTop();
 
       set((state) => ({
         ...state,

@@ -1,4 +1,4 @@
-export const useRefScrollTo = () => {
+export const refScrollTo = () => {
   const refToTop = document.querySelector("html");
 
   const scrollToTop = () => {

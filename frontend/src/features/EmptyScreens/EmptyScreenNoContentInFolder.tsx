@@ -10,7 +10,7 @@ export default function EmptyScreenNoContentInFolder(): JSX.Element | null {
     <EmptyScreen
       imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-no-content-in-folder.svg`}
       imageAlt={t("explorer.emptyScreen.folder.empty.alt")}
-      text={t("explorer.emptyScreen.label")}
+      text={t("explorer.emptyScreen.folder.title")}
     />
   );
 }

@@ -4,7 +4,7 @@ import { useSpring, animated } from "@react-spring/web";
 import { type ID, type IFolder } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
-import { useRefScrollTo } from "~/shared/utils/scrollToTop";
+import { refScrollTo } from "~/shared/utils/scrollToTop";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = (): JSX.Element | null => {
@@ -39,7 +39,7 @@ const FoldersList = (): JSX.Element | null => {
     to: { opacity: 1 },
   });
 
-  const scrollToTop = useRefScrollTo();
+  const scrollToTop = refScrollTo();
 
   return data?.pages[0]?.folders.length ? (
     <animated.ul className="grid ps-0 list-unstyled mb-24">
