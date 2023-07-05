@@ -19,6 +19,8 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import static fr.wseduc.webutils.request.RequestUtils.getDateParam;
+import static fr.wseduc.webutils.request.RequestUtils.getParamAsSet;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -27,10 +29,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import static java.util.Collections.emptySet;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.IExplorerPluginClient;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.explorer.to.TrashRequest;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -39,9 +43,11 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.HttpUtils;
 import org.entcore.common.utils.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExplorerController extends BaseController {
@@ -549,18 +555,18 @@ public class ExplorerController extends BaseController {
                     unauthorized(request);
                     return;
                 }
-                final SimpleDateFormat format = new SimpleDateFormat("HHmm-ddMMyyyy");
-                final Optional<String> from = Optional.ofNullable(request.params().get("from"));
-                final Optional<String> to = Optional.ofNullable(request.params().get("to"));
                 final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
                 try {
                     final Future<Void> dropFuture = "true".equals(drop) ? resourceService.dropMapping(app).compose(e -> {
                         return resourceService.initMapping(app);
                     }) : Future.succeededFuture();
-                    final Optional<Date> fromDate = from.isPresent() ? Optional.of(format.parse(from.get())) : Optional.empty();
-                    final Optional<Date> toDate = to.isPresent() ? Optional.of(format.parse(to.get())) : Optional.empty();
+                    final Date fromDate = getDateParam("from", request).orElse(null);
+                    final Date toDate = getDateParam("to", request).orElse(null);
+                    final Set<String> ids = getParamAsSet("ids", request);
                     final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
-                        return client.getForIndexation(user, fromDate, toDate, new HashSet(), includeFolder);
+                        final ExplorerReindexResourcesRequest reindexRequest =
+                                new ExplorerReindexResourcesRequest(fromDate, toDate, emptySet(), includeFolder, ids);
+                        return client.reindex(user, reindexRequest);
                     });
                     future.onComplete(res -> {
                         if (res.succeeded()) {
@@ -569,7 +575,7 @@ public class ExplorerController extends BaseController {
                             renderError(request, new JsonObject().put("error", res.cause().getMessage()));
                         }
                     });
-                } catch (ParseException e) {
+                } catch (IllegalArgumentException e) {
                     badRequest(request, e.getMessage());
                 }
             });
