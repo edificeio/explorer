@@ -102,7 +102,7 @@ export default function EditResourceModal({
                   {...register("title", {
                     required: true,
                     pattern: {
-                      value: /^\S/,
+                      value: /[^ ]/,
                       message: "invalid title",
                     },
                   })}

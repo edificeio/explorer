@@ -62,7 +62,7 @@ export default function EditFolderModal({
               {...register("name", {
                 required: true,
                 pattern: {
-                  value: /^\S/,
+                  value: /[^ ]/,
                   message: "invalid title",
                 },
               })}
