@@ -113,20 +113,18 @@ export default function EditResourceModal({
                   aria-required={true}
                 />
               </FormControl>
-              {appCode !== "blog" ? (
-                <FormControl id="description" isOptional>
-                  <Label>{t("description")}</Label>
-                  <Input
-                    type="text"
-                    defaultValue={edit ? resource?.description : ""}
-                    {...register("description")}
-                    placeholder={t(
-                      "explorer.resource.editModal.description.placeholder",
-                    )}
-                    size="md"
-                  />
-                </FormControl>
-              ) : null}
+              <FormControl id="description" isOptional>
+                <Label>{t("description")}</Label>
+                <Input
+                  type="text"
+                  defaultValue={edit ? resource?.description : ""}
+                  {...register("description")}
+                  placeholder={t(
+                    "explorer.resource.editModal.description.placeholder",
+                  )}
+                  size="md"
+                />
+              </FormControl>
             </div>
           </div>
 
