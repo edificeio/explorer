@@ -1,10 +1,10 @@
 import { Card } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
+import { useScrollToTop } from "@ode-react-ui/hooks";
 import { useSpring, animated } from "@react-spring/web";
 import { type ID, type IFolder } from "ode-ts-client";
 
 import { useSearchContext } from "~/services/queries";
-import { refScrollTo } from "~/shared/utils/scrollToTop";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = (): JSX.Element | null => {
@@ -39,7 +39,7 @@ const FoldersList = (): JSX.Element | null => {
     to: { opacity: 1 },
   });
 
-  const scrollToTop = refScrollTo();
+  const scrollToTop = useScrollToTop();
 
   return data?.pages[0]?.folders.length ? (
     <animated.ul className="grid ps-0 list-unstyled mb-24">
