@@ -12,14 +12,16 @@ import {
 
 export function Breadcrumb() {
   const { appCode } = useOdeClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation(["common", appCode]);
   const selectedNodesIds = useSelectedNodesIds();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
   const { gotoPreviousFolder } = useStoreActions();
 
   const trashName: string = t("explorer.tree.trash");
-  const rootName: string = t("explorer.filters.mine", { ns: appCode });
+  const rootName: string = t("explorer.filters.mine", {
+    ns: appCode,
+  });
   const previousName: string = currentFolder?.name || rootName;
 
   return (

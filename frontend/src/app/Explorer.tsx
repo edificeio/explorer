@@ -8,6 +8,7 @@ import {
 } from "@ode-react-ui/components";
 import { useOdeClient, useXitiTrackPageLoad } from "@ode-react-ui/core";
 import { type IWebApp, type IAction } from "ode-ts-client";
+import { useTranslation } from "react-i18next";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
 import { AppHeader } from "~/features/Explorer/components";
@@ -43,7 +44,8 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { currentApp } = useOdeClient();
+  const { currentApp, appCode } = useOdeClient();
+  const { t } = useTranslation();
 
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
@@ -59,6 +61,8 @@ export default function Explorer(): JSX.Element | null {
   );
 
   const { libraryUrl } = useLibraryUrl();
+
+  console.log({ appCode });
 
   return (
     <>
@@ -78,6 +82,7 @@ export default function Explorer(): JSX.Element | null {
           </Suspense>
         )}
       </AppHeader>
+
       <Grid className="flex-grow-1">
         <Grid.Col
           sm="3"
