@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Options
+NO_DOCKER=""
+for i in "$@"
+do
+case $i in
+  --no-docker*)
+  NO_DOCKER="true"
+  shift
+  ;;
+  *)
+  ;;
+esac
+done
+
 if [ "$#" -lt 1 ]; then
   echo "Usage: $0 <clean|init|localDep|build|install|watch>"
   echo "Example: $0 clean"
@@ -49,14 +63,8 @@ esac
 done
 
 clean () {
-  rm -rf node_modules 
-  rm -rf dist 
-  rm -rf build 
-  rm -rf .gradle 
-  rm -rf package.json 
-  rm -rf deployment 
-  rm -rf .pnpm-store
-  rm -f pnpm-lock.yaml
+  rm -rf node_modules dist build .gradle .pnpm-store
+  rm -f package.json pnpm-lock.yaml
 }
 
 doInit () {
@@ -86,7 +94,11 @@ doInit () {
     sed -i "s/%odeTsClientVersion%/${BRANCH_NAME}/" package.json
   fi
 
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install"
+  if [ "$NO_DOCKER" = "true" ] ; then
+    pnpm install
+  else
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install"
+  fi
 }
 
 init() {
@@ -110,7 +122,11 @@ localDep () {
 }
 
 build () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm build"
+  if [ "$NO_DOCKER" = "true" ] ; then
+    pnpm build
+  else
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm build"
+  fi
   status=$?
   if [ $status != 0 ];
   then
@@ -123,7 +139,11 @@ build () {
 
 publishNPM () {
   LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish --tag $LOCAL_BRANCH"
+  if [ "$NO_DOCKER" = "true" ] ; then
+    npm publish --tag $LOCAL_BRANCH
+  else
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish --tag $LOCAL_BRANCH"
+  fi
 }
 
 publishMavenLocal (){
