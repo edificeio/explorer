@@ -115,7 +115,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         keyWords: formData.keyWords,
         language: formData.language,
         licence: "CC-BY",
-        resourceId: resourceIds[0],
+        resourceId: selectedResources[0].assetId,
         resourceEntId: selectedResources[0].assetId,
         subjectArea: selectedSubjectAreas as string[],
         teacherAvatar,
