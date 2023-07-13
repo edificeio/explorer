@@ -93,9 +93,7 @@ export default function PublishModal({
               {!cover.image && (
                 <p className="form-text is-invalid">
                   <em>
-                    {t("bpr.form.publication.cover.upload.required.image", {
-                      ns: appCode,
-                    })}
+                    {t("bpr.form.publication.cover.upload.required.image")}
                   </em>
                 </p>
               )}
