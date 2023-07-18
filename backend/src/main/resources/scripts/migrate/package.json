@@ -1,0 +1,18 @@
+{
+  "name": "migrate",
+  "main": "./index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "build": "ncc build -o build/lib index.js && pkg --out-path=bin ./build/lib/index.js"
+  },
+  "dependencies": {
+    "@opensearch-project/opensearch": "^2.3.0",
+    "inquirer": "^9.2.8",
+    "node-fetch": "^3.3.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.36.1",
+    "pkg": "^5.8.1"
+  }
+}
