@@ -42,32 +42,6 @@
             }
           <% } %>
         },
-        "applications": {
-            "blog": {
-                "filters": [
-                    {"id":"owner",  "defaultValue": true},
-                    {"id":"public", "defaultValue": false},
-                    {"id":"shared", "defaultValue": true}
-                ],
-                "orders": [
-                    {"id":"name", "defaultValue": "asc", "i18n": "explorer.sorts.name"},
-                    {"id":"updatedat", "i18n": "explorer.sorts.updatedat"}
-                ],
-                "actions": [
-                     {"id": "open","workflow":"org.entcore.blog.controllers.BlogController|blog"},
-                     {"id": "create","workflow":"org.entcore.blog.controllers.BlogController|create"},
-                     {"id": "createPublic","workflow":"org.entcore.blog.controllers.BlogController|createPublicBlog"},
-                     {"id": "move","workflow":"org.entcore.blog.controllers.BlogController|create"},
-                     {"id": "delete","workflow":"org.entcore.blog.controllers.BlogController|create"},
-                     {"id": "publish","workflow":"org.entcore.blog.controllers.BlogController|publish"},
-                     {"id": "print","workflow":"org.entcore.blog.controllers.BlogController|print"}
-                ],
-                "rights":{
-                     "read": "org.entcore.blog.controllers.BlogController|get",
-                     "contrib": "org-entcore-blog-controllers-BlogController|update",
-                     "manage": "org.entcore.blog.controllers.BlogController|delete"
-                }
-            }
-        }
+        "applications": ["blog", "exercizer"]
       }
     }
