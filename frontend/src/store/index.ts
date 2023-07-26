@@ -1,6 +1,7 @@
 import { type TreeNode } from "@ode-react-ui/components";
 import { useScrollToTop as scrollToTop } from "@ode-react-ui/hooks";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import {
   FOLDER,
   type ISearchParameters,
@@ -101,7 +102,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   },
   treeData: {
     id: FOLDER.DEFAULT,
-    name: "Mes blogs",
+    name: t("explorer.filters.mine"),
     section: true,
     children: [],
   },

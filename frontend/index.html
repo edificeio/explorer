@@ -15,17 +15,19 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
+      var WORFLOW_ACCESS =
+        "net.atos.entng.mindmap.controllers.MindmapController|view";
       var WORKFLOW_CREATE =
-        "org.entcore.blog.controllers.BlogController|create";
-      var WORKFLOW_CREATE_PUBLIC =
-        "org.entcore.blog.controllers.BlogController|createPublicBlog";
-      var WORKFLOW_PUBLISH =
-        "org.entcore.blog.controllers.BlogController|publish";
-      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
+        "net.atos.entng.mindmap.controllers.FolderController|createFolder";
+      var WORKFLOW_PRINT =
+        "net.atos.entng.mindmap.controllers.MindmapController|printView";
+      var WORKFLOW_EXPORT_PNG =
+        "net.atos.entng.mindmap.controllers.MindmapController|exportPngMindmap";
+      var WORKFLOW_EXPORT_SVG =
+        "net.atos.entng.mindmap.controllers.MindmapController|exportSvgMindmap";
       var odeConfig = {
-        app: "blog",
-        types: ["blog"],
+        app: "mindmap",
+        types: ["mindmap"],
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -60,21 +62,10 @@
             target: "tree",
           },
           {
-            id: "createPublic",
-            workflow: WORKFLOW_CREATE_PUBLIC,
-            target: "tree",
-          },
-          {
             id: "move",
             workflow: WORFLOW_ACCESS,
             target: "actionbar",
             right: "read",
-          },
-          {
-            id: "publish",
-            workflow: WORKFLOW_PUBLISH,
-            target: "actionbar",
-            right: "creator",
           },
           {
             id: "print",

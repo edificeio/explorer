@@ -1,17 +1,16 @@
 import { Suspense, lazy } from "react";
 
 import {
-  AppCard,
   Grid,
-  AppIcon,
   LoadingScreen,
+  Breadcrumb as AppHeader,
 } from "@ode-react-ui/components";
 import { useOdeClient, useXitiTrackPageLoad } from "@ode-react-ui/core";
-import { type IWebApp, type IAction } from "ode-ts-client";
-import { useTranslation } from "react-i18next";
+import { type IAction } from "ode-ts-client";
+import { IWebApp } from "ode-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
-import { AppHeader } from "~/features/Explorer/components";
+import { AppAction } from "~/features/Explorer/components";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
 import ActionResourceDisableModal from "~/features/Explorer/components/ResourcesList/ActionResourceDisableModal";
@@ -27,10 +26,10 @@ const OnboardingTrash = lazy(
   async () => await import("~/shared/components/OnboardingTrash"),
 );
 
-const AppAction = lazy(
+/* const AppAction = lazy(
   async () =>
     await import("~/features/Explorer/components/AppAction/AppAction"),
-);
+); */
 
 const Library = lazy(
   async () => await import("~/features/Explorer/components/Library/Library"),
@@ -44,8 +43,7 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { currentApp, appCode } = useOdeClient();
-  const { t } = useTranslation();
+  const { currentApp } = useOdeClient();
 
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
@@ -62,26 +60,16 @@ export default function Explorer(): JSX.Element | null {
 
   const { libraryUrl } = useLibraryUrl();
 
-  console.log({ appCode });
-
   return (
     <>
-      <AppHeader>
-        <AppCard
-          app={currentApp as IWebApp}
-          isHeading
-          headingStyle="h3"
-          level="h1"
-        >
-          <AppIcon app={currentApp} size="40" />
-          <AppCard.Name />
-        </AppCard>
-        {isActionAvailable({ workflow: "create", actions }) && (
-          <Suspense fallback={<LoadingScreen />}>
+      <AppHeader
+        app={currentApp as IWebApp}
+        render={() =>
+          isActionAvailable({ workflow: "create", actions }) ? (
             <AppAction />
-          </Suspense>
-        )}
-      </AppHeader>
+          ) : null
+        }
+      />
 
       <Grid className="flex-grow-1">
         <Grid.Col

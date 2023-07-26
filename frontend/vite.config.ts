@@ -44,6 +44,7 @@ export default ({ mode }: { mode: string }) => {
     "/xiti": proxyObj,
     "/analyticsConf": proxyObj,
     "/blog": proxyObj,
+    "/mindmap": proxyObj,
     "/explorer": proxyObj,
   };
 
@@ -56,6 +57,23 @@ export default ({ mode }: { mode: string }) => {
           entryFileNames: `[name].js`,
           chunkFileNames: `[name].js`,
           assetFileNames: `[name].[ext]`,
+          /* manualChunks: {
+            react: [
+              "react",
+              "react-intersection-observer",
+              "react-dom",
+              "react-error-boundary",
+              "react-hook-form",
+              "react-hot-toast",
+            ],
+            "ode-react-ui": [
+              "@ode-react-ui/components",
+              "@ode-react-ui/core",
+              "@ode-react-ui/hooks",
+              "@ode-react-ui/icons",
+            ],
+            "ode-ts-client": ["ode-ts-client"],
+          }, */
         },
       },
     },

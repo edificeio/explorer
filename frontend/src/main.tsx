@@ -1,7 +1,7 @@
 import React, { StrictMode } from "react";
 
 import "./i18n";
-import { OdeClientProvider } from "@ode-react-ui/core";
+import { OdeClientProvider, ThemeProvider } from "@ode-react-ui/core";
 import {
   QueryCache,
   QueryClient,
@@ -39,7 +39,9 @@ createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <OdeClientProvider params={getAppParams()}>
+        {/* <ThemeProvider> */}
         <Root />
+        {/* </ThemeProvider> */}
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
