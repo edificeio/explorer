@@ -53,7 +53,12 @@ export default ({ mode }: { mode: string }) => {
       assetsDir: "assets/js/ode-explorer/",
       cssCodeSplit: false,
       rollupOptions: {
+        external: ["ode-ts-client"],
         output: {
+          inlineDynamicImports: true,
+          paths: {
+            "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js"
+          },
           entryFileNames: `[name].js`,
           chunkFileNames: `[name].js`,
           assetFileNames: `[name].[ext]`,
