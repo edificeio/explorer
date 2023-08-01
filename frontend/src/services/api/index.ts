@@ -11,6 +11,7 @@ import {
   type UpdateParameters,
   type IFolder,
   type PublishParameters,
+  CreateParameters,
 } from "ode-ts-client";
 
 /**
@@ -234,11 +235,11 @@ export const goToResource = ({
 
 export const createResource = ({
   searchParams,
-  safeFolderId,
+  params,
 }: {
   searchParams: ISearchParameters;
-  safeFolderId: ID | undefined;
-}) => odeServices.resource(searchParams.app).gotoForm(safeFolderId);
+  params: CreateParameters;
+}) => odeServices.resource(searchParams.app).create(params);
 
 export const printResource = ({
   searchParams,

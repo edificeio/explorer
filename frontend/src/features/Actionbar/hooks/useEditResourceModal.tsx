@@ -1,16 +1,18 @@
 import { useId, useState } from "react";
 
 import { Alert } from "@ode-react-ui/components";
+import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
 import { type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { useUpdateResource } from "~/services/queries";
-import { useSelectedResources } from "~/store";
+import { useCreateResource, useUpdateResource } from "~/services/queries";
+import { useCurrentFolder, useSelectedResources } from "~/store";
 
 interface useEditResourceModalProps {
   resource: IResource;
+  edit: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -24,11 +26,14 @@ interface FormInputs {
 
 export default function useEditResourceModal({
   resource,
+  edit,
   onSuccess,
   onCancel,
 }: useEditResourceModalProps) {
+  const { appCode } = useOdeClient();
   const { t } = useTranslation();
   const updateResource = useUpdateResource();
+  const createResource = useCreateResource();
   const selectedResources = useSelectedResources();
   const {
     reset,
@@ -41,14 +46,16 @@ export default function useEditResourceModal({
   });
   const id = useId();
 
+  const currentFolder = useCurrentFolder();
+
   const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
-  const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
-  const [slug, setSlug] = useState<string>(resource.slug || "");
+  const [disableSlug, setDisableSlug] = useState<boolean>(!resource?.public);
+  const [slug, setSlug] = useState<string>(resource?.slug || "");
   const [correctSlug, setCorrectSlug] = useState<boolean>(false);
   const { hotToast } = useHotToast(Alert);
   const [cover, setCover] = useState<{ name: string; image: string }>({
     name: "",
-    image: selectedResources[0].thumbnail,
+    image: selectedResources[0]?.thumbnail,
   });
 
   const handleUploadImage = (preview: Record<string, string>) => {
@@ -93,27 +100,46 @@ export default function useEditResourceModal({
   ) {
     try {
       // call API
-      await updateResource.mutateAsync({
-        description: formData.description,
-        entId: selectedResources[0].assetId,
-        name: formData.title,
-        public: formData.enablePublic,
-        slug: formData.safeSlug,
-        trashed: selectedResources[0].trashed,
-        thumbnail: cover.image,
-      });
-      setCorrectSlug(false);
+      if (edit) {
+        await updateResource.mutateAsync({
+          description: formData.description,
+          entId: selectedResources[0]?.assetId,
+          name: formData.title,
+          public: formData.enablePublic,
+          slug: formData.safeSlug,
+          trashed: selectedResources[0]?.trashed,
+          thumbnail: cover.image,
+        });
+      } else {
+        await createResource.mutateAsync({
+          name: formData.title,
+          description: formData.description,
+          thumbnail: cover.image,
+          folder:
+            currentFolder?.id === "default"
+              ? undefined
+              : parseInt(currentFolder?.id || ""),
+          public: formData.enablePublic,
+          slug: formData.safeSlug,
+          app: appCode,
+        });
+      }
+      if (edit) {
+        setCorrectSlug(false);
+      }
       hotToast.success(
         <>
           <strong>{t("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
-          <p>
-            Public:{" "}
-            {formData.enablePublic
-              ? t("explorer.enable.public.yes")
-              : t("explorer.enable.public.no")}
-          </p>
+          {edit && (
+            <p>
+              Public:{" "}
+              {formData.enablePublic
+                ? t("explorer.enable.public.yes")
+                : t("explorer.enable.public.no")}
+            </p>
+          )}
         </>,
       );
       onSuccess?.();

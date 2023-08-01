@@ -59,7 +59,6 @@ interface State {
     clearSelectedItems: () => void;
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
-    createResource: () => void;
     printSelectedResource: () => void;
     publishApi: (
       type: ResourceType,
@@ -141,19 +140,6 @@ export const useStoreContext = create<State>()((set, get) => ({
         goToResource({ searchParams, assetId: resource.assetId });
       } catch (error) {
         console.error("explorer open failed: ", error);
-      }
-    },
-    createResource: () => {
-      try {
-        const { searchParams, currentFolder } = get();
-        const folderId = parseInt(currentFolder?.id || "default");
-        const safeFolderId = isNaN(folderId) ? undefined : folderId;
-        createResource({
-          searchParams,
-          safeFolderId: safeFolderId as string | undefined,
-        });
-      } catch (error) {
-        console.error("explorer create failed: ", error);
       }
     },
     printSelectedResource: () => {

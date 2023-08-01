@@ -15,12 +15,14 @@ import {
   type UpdateParameters,
   FOLDER,
   IAction,
+  CreateParameters,
 } from "ode-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 import {
   createFolder,
+  createResource,
   deleteAll,
   moveToFolder,
   restoreAll,
@@ -46,7 +48,7 @@ import {
   useTreeData,
 } from "~/store";
 
-const { actions } = getAppParams();
+const { actions, app } = getAppParams();
 
 /**
  * useActions query
@@ -688,5 +690,64 @@ export const useUpdateResource = () => {
         });
       }
     },
+  });
+};
+
+export const useCreateResource = () => {
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+
+  const queryKey = [
+    "context",
+    {
+      folderId: searchParams.filters.folder,
+      trashed: searchParams.trashed,
+    },
+  ];
+
+  return useMutation({
+    mutationFn: async (params: CreateParameters) =>
+      await createResource({ searchParams, params }),
+    onSuccess: async (_data, createParametes) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
+
+      if (previousData) {
+        return queryClient.setQueryData<
+          InfiniteData<ISearchResults> | undefined
+        >(queryKey, (prev) => {
+          if (prev) {
+            return {
+              ...prev,
+              pages: prev?.pages.map((page) => {
+                const newResource: IResource = {
+                  ...createParametes,
+                  thumbnail: createParametes.thumbnail as string,
+                  application: app,
+                  assetId: _data.entId,
+                  id: _data._id || "",
+                  creatorId: _data.author?.userId || "",
+                  creatorName: _data.author?.username || "",
+                  createdAt: _data.created?.$date || "",
+                  modifiedAt: _data.modified?.$date || "",
+                  modifierId: _data.author?.userId || "",
+                  modifierName: _data.author?.username || "",
+                  updatedAt: _data.modified?.$date || "",
+                  trashed: false,
+                  rights: [],
+                };
+
+                return {
+                  ...page,
+                  resources: [...page.resources, newResource],
+                };
+              }),
+            };
+          }
+          return undefined;
+        });
+      }
+    },
+    onSettled: async () => await queryClient.cancelQueries({ queryKey }),
   });
 };
