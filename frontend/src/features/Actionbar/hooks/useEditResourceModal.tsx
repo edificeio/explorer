@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import { Alert } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
 import { useHotToast } from "@ode-react-ui/hooks";
-import { type IResource } from "ode-ts-client";
+import { APP, type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -132,7 +132,7 @@ export default function useEditResourceModal({
           <strong>{t("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
-          {edit && (
+          {edit && appCode === APP.BLOG && (
             <p>
               Public:{" "}
               {formData.enablePublic
