@@ -8,6 +8,7 @@ import {
   Modal,
 } from "@ode-react-ui/components";
 import { useOdeClient } from "@ode-react-ui/core";
+import { APP } from "ode-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
@@ -52,6 +53,7 @@ export default function EditResourceModal({
     onPublicChange,
   } = useEditResourceModal({
     resource,
+    edit,
     onSuccess,
     onCancel,
   });
@@ -128,20 +130,21 @@ export default function EditResourceModal({
             </div>
           </div>
 
-          {isActionAvailable({ workflow: "createPublic", actions }) && (
-            <BlogPublic
-              appCode={appCode}
-              correctSlug={correctSlug}
-              disableSlug={disableSlug}
-              onCopyToClipBoard={onCopyToClipBoard}
-              onPublicChange={onPublicChange}
-              onSlugChange={onSlugChange}
-              resource={resource}
-              slug={slug}
-              versionSlug={versionSlug}
-              register={register}
-            />
-          )}
+          {appCode === APP.BLOG &&
+            isActionAvailable({ workflow: "createPublic", actions }) && (
+              <BlogPublic
+                appCode={appCode}
+                correctSlug={correctSlug}
+                disableSlug={disableSlug}
+                onCopyToClipBoard={onCopyToClipBoard}
+                onPublicChange={onPublicChange}
+                onSlugChange={onSlugChange}
+                resource={resource}
+                slug={slug}
+                versionSlug={versionSlug}
+                register={register}
+              />
+            )}
         </form>
       </Modal.Body>
 
