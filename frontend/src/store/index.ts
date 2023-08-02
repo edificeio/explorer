@@ -18,7 +18,6 @@ import {
 import { create } from "zustand";
 
 import {
-  createResource,
   goToResource,
   printResource,
   publishResource,

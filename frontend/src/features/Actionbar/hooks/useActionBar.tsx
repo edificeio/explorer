@@ -46,7 +46,6 @@ export default function useActionBar() {
   const isTrashResource = useResourceIsTrash();
   const {
     openResource,
-    createResource,
     printSelectedResource,
     openFolder,
     clearSelectedItems,
@@ -85,8 +84,6 @@ export default function useActionBar() {
             folderId: selectedFolders[0].id,
           });
         }
-      case ACTION.CREATE:
-        return createResource();
       case ACTION.MOVE:
         return setOpenedModalName("move");
       case ACTION.PRINT:
