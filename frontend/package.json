@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "tsc && vite build",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -33,8 +33,7 @@
     "lint": "eslint .",
     "pre-commit": "lint-staged",
     "prepare": "cd .. && husky install frontend/.husky",
-    "preview": "vite preview",
-    "tsc": "tsc"
+    "preview": "vite preview"
   },
   "husky": {
     "hooks": {
@@ -48,16 +47,13 @@
     ]
   },
   "dependencies": {
-    "@ode-react-ui/components": "dev",
-    "@ode-react-ui/core": "dev",
-    "@ode-react-ui/hooks": "dev",
-    "@ode-react-ui/icons": "dev",
+    "@edifice-ui/icons": "develop-pedago",
+    "@edifice-ui/react": "develop-pedago",
     "@react-spring/web": "9.7.2",
     "@tanstack/react-query": "4.29.12",
     "dayjs": "1.11.8",
     "i18next": "23.2.6",
     "i18next-http-backend": "2.2.1",
-    "ode-ts-client": "develop-pedago",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.9",
@@ -70,6 +66,8 @@
   },
   "devDependencies": {
     "@axe-core/react": "4.7.2",
+    "@edifice-ui/icons": "develop-pedago",
+    "@edifice-ui/react": "develop-pedago",
     "@tanstack/react-query-devtools": "4.29.12",
     "@types/node": "20.2.5",
     "@types/react": "18.2.8",
@@ -88,12 +86,13 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.2",
+    "ode-ts-client": "develop-pedago",
     "prettier": "2.8.8",
     "typescript": "5.0.2",
     "vite": "4.3.9",
     "vite-tsconfig-paths": "4.2.0"
   },
-  "packageManager": "pnpm@8.5.0",
+  "packageManager": "pnpm@8.6.6",
   "engines": {
     "node": "16 || 18"
   }

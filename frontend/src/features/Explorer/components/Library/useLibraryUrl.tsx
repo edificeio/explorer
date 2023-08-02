@@ -1,4 +1,4 @@
-import { useOdeClient } from "@ode-react-ui/core";
+import { useOdeClient } from "@edifice-ui/react";
 import { IUserInfo } from "ode-ts-client";
 
 import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";

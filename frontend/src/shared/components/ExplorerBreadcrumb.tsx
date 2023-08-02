@@ -1,6 +1,5 @@
-import { IconButton } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { ArrowLeft } from "@ode-react-ui/icons";
+import { ArrowLeft } from "@edifice-ui/icons";
+import { IconButton, useOdeClient } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -10,7 +9,7 @@ import {
   useSelectedNodesIds,
 } from "~/store";
 
-export function Breadcrumb() {
+export function ExplorerBreadcrumb() {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
   const selectedNodesIds = useSelectedNodesIds();

@@ -11,8 +11,9 @@ import {
   Dropdown,
   DropdownTrigger,
   SelectList,
-} from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+  useOdeClient,
+  usePaths,
+} from "@edifice-ui/react";
 import { type PublishResult } from "ode-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -32,7 +33,8 @@ export default function PublishModal({
   onSuccess,
   onCancel,
 }: PublishModalProps) {
-  const { currentApp, appCode } = useOdeClient();
+  const { currentApp } = useOdeClient();
+  const [imagePath] = usePaths();
   const { t } = useTranslation();
 
   const {
@@ -252,7 +254,7 @@ export default function PublishModal({
               {t("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
-                src="/assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
+                src={`${imagePath}image-cc-by-nc-sa.svg`}
                 alt="Icone licence Creative
                   Commons"
               />

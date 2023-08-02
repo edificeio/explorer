@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Alert, useHotToast } from "@edifice-ui/react";
 import { type IAction, ACTION } from "ode-ts-client";
 import { useTranslation } from "react-i18next";
 

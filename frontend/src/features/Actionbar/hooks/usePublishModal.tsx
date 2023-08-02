@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Alert, useOdeClient, useHotToast } from "@edifice-ui/react";
 import {
   RESOURCE,
   type PublishParameters,
@@ -16,7 +14,7 @@ import {
 } from "../components/PublishModal";
 import { http } from "~/shared/constants";
 import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
-import { useStoreActions, useResourceIds, useSelectedResources } from "~/store";
+import { useStoreActions, useSelectedResources } from "~/store";
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -49,7 +47,6 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const resourceIds = useResourceIds();
   const { publishApi } = useStoreActions();
 
   const {

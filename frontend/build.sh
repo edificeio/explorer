@@ -89,9 +89,9 @@ doInit () {
 
   if [ "$1" == "Dev" ]
   then
-    sed -i "s/%odeTsClientVersion%/link:..\/ode-ts-client\//" package.json
+    sed -i "s/%packageVersion%/link:..\/ode-ts-client\//" package.json
   else
-    sed -i "s/%odeTsClientVersion%/${BRANCH_NAME}/" package.json
+    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
   fi
 
   if [ "$NO_DOCKER" = "true" ] ; then

@@ -1,7 +1,7 @@
 import React, { StrictMode } from "react";
 
 import "./i18n";
-import { OdeClientProvider, ThemeProvider } from "@ode-react-ui/core";
+import { OdeClientProvider, ThemeProvider } from "@edifice-ui/react";
 import {
   QueryCache,
   QueryClient,
@@ -10,7 +10,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
-import Root from "~/app/Root";
+import Root from "~/app/root/root";
 import { getAppParams } from "~/shared/utils/getAppParams";
 
 const root = document.getElementById("root");
@@ -39,9 +39,9 @@ createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <OdeClientProvider params={getAppParams()}>
-        {/* <ThemeProvider> */}
-        <Root />
-        {/* </ThemeProvider> */}
+        <ThemeProvider>
+          <Root />
+        </ThemeProvider>
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

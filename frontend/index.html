@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Exploration des ressources</title>
     <link rel="icon" id="favicon" href="" />
-    <link id="theme" rel="stylesheet" href="" />
+    <link rel="stylesheet" href="./assets/themes/edifice-bootstrap/index.css" />
   </head>
 
   <body class="app-react" data-ode-app>
@@ -15,19 +15,17 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS =
-        "net.atos.entng.mindmap.controllers.MindmapController|view";
+      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
       var WORKFLOW_CREATE =
-        "net.atos.entng.mindmap.controllers.FolderController|createFolder";
-      var WORKFLOW_PRINT =
-        "net.atos.entng.mindmap.controllers.MindmapController|printView";
-      var WORKFLOW_EXPORT_PNG =
-        "net.atos.entng.mindmap.controllers.MindmapController|exportPngMindmap";
-      var WORKFLOW_EXPORT_SVG =
-        "net.atos.entng.mindmap.controllers.MindmapController|exportSvgMindmap";
+        "org.entcore.blog.controllers.BlogController|create";
+      var WORKFLOW_CREATE_PUBLIC =
+        "org.entcore.blog.controllers.BlogController|createPublicBlog";
+      var WORKFLOW_PUBLISH =
+        "org.entcore.blog.controllers.BlogController|publish";
+      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
       var odeConfig = {
-        app: "mindmap",
-        types: ["mindmap"],
+        app: "blog",
+        types: ["blog"],
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -62,10 +60,21 @@
             target: "tree",
           },
           {
+            id: "createPublic",
+            workflow: WORKFLOW_CREATE_PUBLIC,
+            target: "tree",
+          },
+          {
             id: "move",
             workflow: WORFLOW_ACCESS,
             target: "actionbar",
             right: "read",
+          },
+          {
+            id: "publish",
+            workflow: WORKFLOW_PUBLISH,
+            target: "actionbar",
+            right: "creator",
           },
           {
             id: "print",

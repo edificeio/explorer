@@ -1,22 +1,23 @@
 import { Suspense, lazy } from "react";
 
 import {
+  useOdeClient,
+  useXitiTrackPageLoad,
   Grid,
   LoadingScreen,
-  Breadcrumb as AppHeader,
-} from "@ode-react-ui/components";
-import { useOdeClient, useXitiTrackPageLoad } from "@ode-react-ui/core";
+  Breadcrumb,
+  AppHeader,
+} from "@edifice-ui/react";
 import { type IAction } from "ode-ts-client";
 import { IWebApp } from "ode-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
-import { AppAction } from "~/features/Explorer/components";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
 import ActionResourceDisableModal from "~/features/Explorer/components/ResourcesList/ActionResourceDisableModal";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
 import { useActions } from "~/services/queries";
-import { Breadcrumb } from "~/shared/components/Breadcrumb";
+import { ExplorerBreadcrumb } from "~/shared/components/ExplorerBreadcrumb";
 import { useActionDisableModal } from "~/shared/hooks/useActionDisableModal";
 import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
 import { useTrashModal } from "~/shared/hooks/useTrashedModal";
@@ -26,10 +27,10 @@ const OnboardingTrash = lazy(
   async () => await import("~/shared/components/OnboardingTrash"),
 );
 
-/* const AppAction = lazy(
+const AppAction = lazy(
   async () =>
     await import("~/features/Explorer/components/AppAction/AppAction"),
-); */
+);
 
 const Library = lazy(
   async () => await import("~/features/Explorer/components/Library/Library"),
@@ -63,13 +64,16 @@ export default function Explorer(): JSX.Element | null {
   return (
     <>
       <AppHeader
-        app={currentApp as IWebApp}
         render={() =>
           isActionAvailable({ workflow: "create", actions }) ? (
-            <AppAction />
+            <Suspense fallback={<LoadingScreen />}>
+              <AppAction />
+            </Suspense>
           ) : null
         }
-      />
+      >
+        <Breadcrumb app={currentApp as IWebApp} />
+      </AppHeader>
 
       <Grid className="flex-grow-1">
         <Grid.Col
@@ -87,7 +91,7 @@ export default function Explorer(): JSX.Element | null {
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="6" xl="9">
-          <Breadcrumb />
+          <ExplorerBreadcrumb />
           <List />
         </Grid.Col>
         <ActionBarContainer />

@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { Modal, Button, Image } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { Modal, Button, Image, usePaths } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Pagination } from "swiper/modules";
@@ -19,7 +18,7 @@ export default function OnboardingTrash({
   setIsOpen: (bool: boolean) => void;
   handleSavePreference: () => void;
 }): JSX.Element | null {
-  const { theme } = useOdeClient();
+  const [imagePath] = usePaths();
   const { t } = useTranslation();
   const [swiperInstance, setSwiperInstance] = useState<any>();
   const [swiperProgress, setSwiperprogress] = useState<number>(0);
@@ -55,7 +54,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto my-12"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-menu.svg`}
+                  src={`${imagePath}/onboarding/illu-trash-menu.svg`}
                   alt={t("explorer.modal.onboarding.trash.screen1.alt")}
                 />
                 <p>{t("explorer.modal.onboarding.trash.screen1.title")}</p>
@@ -66,7 +65,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-notif.svg`}
+                  src={`${imagePath}/onboarding/illu-trash-notif.svg`}
                   alt={t("explorer.modal.onboarding.trash.screen2.alt")}
                 />
                 <p>{t("explorer.modal.onboarding.trash.screen2.title")}</p>
@@ -77,7 +76,7 @@ export default function OnboardingTrash({
                   height="140"
                   className="mx-auto"
                   loading="lazy"
-                  src={`${theme?.bootstrapPath}/images/onboarding/illu-trash-delete.svg`}
+                  src={`${imagePath}/onboarding/illu-trash-delete.svg`}
                   alt={t("explorer.modal.onboarding.trash.screen3.alt")}
                 />
                 <p>{t("explorer.modal.onboarding.trash.screen3.title")}</p>
