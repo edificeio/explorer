@@ -1,4 +1,4 @@
-import { type TreeNode } from "@ode-react-ui/components";
+import { type TreeNode } from "@edifice-ui/react";
 
 export function modifyNode(
   data: TreeNode,

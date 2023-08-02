@@ -1,4 +1,4 @@
-import { Modal, Button } from "@ode-react-ui/components";
+import { Modal, Button } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 

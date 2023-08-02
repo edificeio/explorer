@@ -1,8 +1,6 @@
 import { useId, useState } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
 import { APP, type IResource } from "ode-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

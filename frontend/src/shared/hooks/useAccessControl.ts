@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useUser } from "@ode-react-ui/core";
+import { useUser } from "@edifice-ui/react";
 import { type RightRole, odeServices, IResource } from "ode-ts-client";
 
 import { useIsTrash } from "~/store";

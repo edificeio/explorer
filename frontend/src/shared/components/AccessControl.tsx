@@ -1,6 +1,6 @@
 import { type ReactNode, type ReactElement } from "react";
 
-import { Button } from "@ode-react-ui/components";
+import { Button } from "@edifice-ui/react";
 import { IAction, RightRole } from "ode-ts-client";
 import { useTranslation } from "react-i18next";
 

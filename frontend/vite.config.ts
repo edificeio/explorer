@@ -41,10 +41,9 @@ export default ({ mode }: { mode: string }) => {
     "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,
+    "^/(?=blog|mindmap)": proxyObj,
     "/xiti": proxyObj,
     "/analyticsConf": proxyObj,
-    "/blog": proxyObj,
-    "/mindmap": proxyObj,
     "/explorer": proxyObj,
   };
 
@@ -53,32 +52,19 @@ export default ({ mode }: { mode: string }) => {
       assetsDir: "assets/js/ode-explorer/",
       cssCodeSplit: false,
       rollupOptions: {
-        external: ["ode-ts-client"],
+        external: [
+          "ode-ts-client" /* "@edifice-ui/react", "@edifice-ui/icons" */,
+        ],
         output: {
-          inlineDynamicImports: true,
+          // inlineDynamicImports: true,
           paths: {
-            "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js"
+            "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js",
+            // "@edifice-ui/react": "/assets/js/@edifice-ui/react/index.js",
+            // "@edifice-ui/icons": "/assets/js/@edifice-ui/icons/index.js",
           },
           entryFileNames: `[name].js`,
           chunkFileNames: `[name].js`,
           assetFileNames: `[name].[ext]`,
-          /* manualChunks: {
-            react: [
-              "react",
-              "react-intersection-observer",
-              "react-dom",
-              "react-error-boundary",
-              "react-hook-form",
-              "react-hot-toast",
-            ],
-            "ode-react-ui": [
-              "@ode-react-ui/components",
-              "@ode-react-ui/core",
-              "@ode-react-ui/hooks",
-              "@ode-react-ui/icons",
-            ],
-            "ode-ts-client": ["ode-ts-client"],
-          }, */
         },
       },
     },

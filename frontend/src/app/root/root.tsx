@@ -1,7 +1,6 @@
-import { LoadingScreen, Layout } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { Layout, useOdeClient, LoadingScreen } from "@edifice-ui/react";
 
-import Explorer from "~/app/Explorer";
+import Explorer from "~/app/explorer";
 
 function Root() {
   const { init } = useOdeClient();

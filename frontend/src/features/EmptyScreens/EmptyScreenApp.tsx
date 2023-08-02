@@ -1,12 +1,18 @@
-import { EmptyScreen } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import {
+  EmptyScreen,
+  useOdeClient,
+  useOdeTheme,
+  usePaths,
+} from "@edifice-ui/react";
 import { type IAction } from "ode-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions } from "~/services/queries";
 
 export default function EmptyScreenApp(): JSX.Element {
-  const { appCode, theme } = useOdeClient();
+  const { appCode } = useOdeClient();
+  const { theme } = useOdeTheme();
+  const [imagePath] = usePaths();
   const { t } = useTranslation();
 
   const { data: actions } = useActions();
@@ -27,7 +33,7 @@ export default function EmptyScreenApp(): JSX.Element {
 
   return (
     <EmptyScreen
-      imageSrc={`${theme?.bootstrapPath}/images/emptyscreen/illu-${appCode}.svg`}
+      imageSrc={`${imagePath}/emptyscreen/illu-${appCode}.svg`}
       imageAlt={t("explorer.emptyScreen.app.alt")}
       title={`${
         canCreate?.available

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 
-import { Button, ActionBar, LoadingScreen } from "@ode-react-ui/components";
+import { Button, ActionBar, LoadingScreen } from "@edifice-ui/react";
 import { useTransition, animated } from "@react-spring/web";
 import { type IAction } from "ode-ts-client";
 import { useTranslation } from "react-i18next";

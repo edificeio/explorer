@@ -1,3 +1,4 @@
+import { Copy } from "@edifice-ui/icons";
 import {
   Heading,
   Alert,
@@ -5,8 +6,7 @@ import {
   Input,
   FormText,
   Button,
-} from "@ode-react-ui/components";
-import { Copy } from "@ode-react-ui/icons";
+} from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 export const BlogPublic = ({

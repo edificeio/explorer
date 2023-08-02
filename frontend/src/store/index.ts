@@ -1,5 +1,5 @@
-import { type TreeNode } from "@ode-react-ui/components";
-import { useScrollToTop as scrollToTop } from "@ode-react-ui/hooks";
+import { useScrollToTop as scrollToTop } from "@edifice-ui/react";
+import { type TreeNode } from "@edifice-ui/react";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { t } from "i18next";
 import {

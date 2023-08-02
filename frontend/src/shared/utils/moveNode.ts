@@ -1,4 +1,4 @@
-import { type TreeNode } from "@ode-react-ui/components";
+import { type TreeNode } from "@edifice-ui/react";
 
 import { arrayUnique } from "./arrayUnique";
 import { findNodeById } from "./findNodeById";

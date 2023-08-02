@@ -1,8 +1,7 @@
 import { lazy, Suspense } from "react";
 
-import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
-import { useToggle } from "@ode-react-ui/hooks";
-import { Plus } from "@ode-react-ui/icons";
+import { Plus } from "@edifice-ui/icons";
+import { Button, LoadingScreen, TreeView, useToggle } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "ode-ts-client";
 import { useTranslation } from "react-i18next";

@@ -1,6 +1,4 @@
-import { Card } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useScrollToTop } from "@ode-react-ui/hooks";
+import { useScrollToTop, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import { type ID, type IFolder } from "ode-ts-client";
 

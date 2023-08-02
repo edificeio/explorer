@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 
-import { Button, Card } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { Button, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
 import { type ID, type IResource } from "ode-ts-client";

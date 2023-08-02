@@ -6,10 +6,16 @@ import {
   useState,
 } from "react";
 
-import { Alert, type OptionListItemType } from "@ode-react-ui/components";
-import { useIsAdml, useOdeClient, useUser } from "@ode-react-ui/core";
-import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
-import { Bookmark } from "@ode-react-ui/icons";
+import { Bookmark } from "@edifice-ui/icons";
+import {
+  Alert,
+  type OptionListItemType,
+  useIsAdml,
+  useDebounce,
+  useHotToast,
+  useOdeClient,
+  useUser,
+} from "@edifice-ui/react";
 import {
   odeServices,
   type ShareRightAction,

@@ -1,9 +1,12 @@
 import { Suspense, lazy } from "react";
 
-import { Button, LoadingScreen } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useToggle } from "@ode-react-ui/hooks";
-import { Plus } from "@ode-react-ui/icons";
+import { Plus } from "@edifice-ui/icons";
+import {
+  useOdeClient,
+  Button,
+  useToggle,
+  LoadingScreen,
+} from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 const CreateModal = lazy(

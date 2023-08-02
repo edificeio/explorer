@@ -1,6 +1,13 @@
 import { useRef } from "react";
 
 import {
+  Bookmark,
+  Close,
+  InfoCircle,
+  RafterDown,
+  Save,
+} from "@edifice-ui/icons";
+import {
   Avatar,
   Button,
   Checkbox,
@@ -13,14 +20,7 @@ import {
   Loading,
   Tooltip,
   VisuallyHidden,
-} from "@ode-react-ui/components";
-import {
-  Bookmark,
-  Close,
-  InfoCircle,
-  RafterDown,
-  Save,
-} from "@ode-react-ui/icons";
+} from "@edifice-ui/react";
 import { ShareRight } from "ode-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -85,7 +85,7 @@ export default function ShareResourceModal({
 
         <div className="table-responsive">
           <table className="table border align-middle mb-0">
-            <thead className="bg-secondary text-white">
+            <thead className="bg-secondary">
               <tr>
                 <th scope="col" className="w-32">
                   <VisuallyHidden>
@@ -101,7 +101,7 @@ export default function ShareResourceModal({
                   <th
                     key={shareRightAction.displayName}
                     scope="col"
-                    className="text-center"
+                    className="text-center text-white"
                   >
                     {t(shareRightAction.displayName)}
                   </th>
@@ -127,7 +127,7 @@ export default function ShareResourceModal({
                     <td
                       key={shareRightAction.displayName}
                       style={{ width: "80px" }}
-                      className="text-center"
+                      className="text-center text-white"
                     >
                       <Checkbox checked={true} disabled />
                     </td>
@@ -187,7 +187,7 @@ export default function ShareResourceModal({
                         <td
                           key={shareRightAction.displayName}
                           style={{ width: "80px" }}
-                          className="text-center"
+                          className="text-center text-white"
                         >
                           <Checkbox
                             checked={hasRight(shareRight, shareRightAction)}

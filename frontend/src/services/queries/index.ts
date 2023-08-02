@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useOdeClient } from "@ode-react-ui/core";
+import { useOdeClient } from "@edifice-ui/react";
 import {
   useInfiniteQuery,
   type InfiniteData,

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { Delete } from "@ode-react-ui/icons";
+import { Delete } from "@edifice-ui/icons";
 import { useTranslation } from "react-i18next";
 
 export interface TrashButtonProps {

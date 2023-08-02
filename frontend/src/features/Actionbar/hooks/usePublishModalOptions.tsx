@@ -1,4 +1,4 @@
-import { type OptionsType } from "@ode-react-ui/components";
+import { type OptionsType } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 export default function usePublishLibraryModalOptions() {
