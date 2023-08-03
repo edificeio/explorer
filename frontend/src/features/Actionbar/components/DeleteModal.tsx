@@ -43,7 +43,7 @@ export default function DeleteModal({
           {t("explorer.cancel")}
         </Button>
         <Button
-          color="primary"
+          color="danger"
           onClick={onDelete}
           type="button"
           variant="filled"
