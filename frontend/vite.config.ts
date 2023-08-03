@@ -10,10 +10,7 @@ export default ({ mode }: { mode: string }) => {
   const hasEnvFile = Object.keys(envFile).length;
 
   // Proxy variables
-  const headers = {
-    cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
-  };
-  const resHeaders = hasEnvFile
+  const headers = hasEnvFile
     ? {
         "set-cookie": [
           `oneSessionId=${envs.VITE_ONE_SESSION_ID}`,
@@ -27,7 +24,9 @@ export default ({ mode }: { mode: string }) => {
     ? {
         target: envs.VITE_RECETTE,
         changeOrigin: true,
-        headers,
+        headers: {
+          cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
+        },
       }
     : {
         target: envs.VITE_LOCALHOST || "http://localhost:8090",
@@ -47,34 +46,35 @@ export default ({ mode }: { mode: string }) => {
     "/explorer": proxyObj,
   };
 
-  return defineConfig({
-    build: {
-      assetsDir: "assets/js/ode-explorer/",
-      cssCodeSplit: false,
-      rollupOptions: {
-        external: [
-          "ode-ts-client" /* "@edifice-ui/react", "@edifice-ui/icons" */,
-        ],
-        output: {
-          // inlineDynamicImports: true,
-          paths: {
-            "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js",
-            // "@edifice-ui/react": "/assets/js/@edifice-ui/react/index.js",
-            // "@edifice-ui/icons": "/assets/js/@edifice-ui/icons/index.js",
-          },
-          entryFileNames: `[name].js`,
-          chunkFileNames: `[name].js`,
-          assetFileNames: `[name].[ext]`,
+  const build = {
+    assetsDir: "assets/js/ode-explorer/",
+    cssCodeSplit: false,
+    rollupOptions: {
+      external: ["ode-ts-client"],
+      output: {
+        paths: {
+          "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js",
         },
+        entryFileNames: `[name].js`,
+        chunkFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`,
       },
     },
-    plugins: [react(), tsconfigPaths()],
-    server: {
-      proxy,
-      host: "0.0.0.0",
-      port: 3000,
-      headers: resHeaders,
-      open: true,
-    },
+  };
+
+  const plugins = [react(), tsconfigPaths()];
+
+  const server = {
+    proxy,
+    host: "0.0.0.0",
+    port: 3000,
+    headers,
+    open: true,
+  };
+
+  return defineConfig({
+    build,
+    plugins,
+    server,
   });
 };
