@@ -739,7 +739,7 @@ export const useCreateResource = () => {
 
                 return {
                   ...page,
-                  resources: [...page.resources, newResource],
+                  resources: [newResource, ...page.resources],
                 };
               }),
             };
