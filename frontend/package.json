@@ -66,8 +66,6 @@
   },
   "devDependencies": {
     "@axe-core/react": "4.7.2",
-    "@edifice-ui/icons": "develop-pedago",
-    "@edifice-ui/react": "develop-pedago",
     "@tanstack/react-query-devtools": "4.29.12",
     "@types/node": "20.2.5",
     "@types/react": "18.2.8",

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useOdeClient } from "@edifice-ui/react";
+import { useOdeClient, useUser } from "@edifice-ui/react";
 import {
   useInfiniteQuery,
   type InfiniteData,
@@ -696,6 +696,7 @@ export const useUpdateResource = () => {
 export const useCreateResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { user } = useUser();
 
   const queryKey = [
     "context",
@@ -708,7 +709,7 @@ export const useCreateResource = () => {
   return useMutation({
     mutationFn: async (params: CreateParameters) =>
       await createResource({ searchParams, params }),
-    onSuccess: async (_data, createParametes) => {
+    onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -721,18 +722,18 @@ export const useCreateResource = () => {
               ...prev,
               pages: prev?.pages.map((page) => {
                 const newResource: IResource = {
-                  ...createParametes,
-                  thumbnail: createParametes.thumbnail as string,
+                  ...variables,
+                  thumbnail: variables.thumbnail as string,
                   application: app,
-                  assetId: _data.entId,
-                  id: _data._id || "",
-                  creatorId: _data.author?.userId || "",
-                  creatorName: _data.author?.username || "",
-                  createdAt: _data.created?.$date || "",
-                  modifiedAt: _data.modified?.$date || "",
-                  modifierId: _data.author?.userId || "",
-                  modifierName: _data.author?.username || "",
-                  updatedAt: _data.modified?.$date || "",
+                  assetId: data.entId,
+                  id: data._id || "",
+                  creatorId: user?.userId as string,
+                  creatorName: user?.username as string,
+                  createdAt: Date.now() as unknown as string,
+                  modifiedAt: data.modified?.$date || "",
+                  modifierId: data.author?.userId || "",
+                  modifierName: data.author?.username || "",
+                  updatedAt: Date.now() as unknown as string,
                   trashed: false,
                   rights: [],
                 };
