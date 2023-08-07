@@ -4,6 +4,7 @@ import {
   Heading,
   ImagePicker,
   Input,
+  TextArea,
   Label,
   Modal,
   useOdeClient,
@@ -117,8 +118,7 @@ export default function EditResourceModal({
               </FormControl>
               <FormControl id="description" isOptional>
                 <Label>{t("description")}</Label>
-                <Input
-                  type="text"
+                <TextArea
                   defaultValue={edit ? resource?.description : ""}
                   {...register("description")}
                   placeholder={t(
