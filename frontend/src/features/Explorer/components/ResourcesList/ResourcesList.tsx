@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import { Button, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import clsx from "clsx";
-import { type ID, type IResource } from "ode-ts-client";
+import { type ID, type IResource } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useSearchContext } from "~/services/queries";

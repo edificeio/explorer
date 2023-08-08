@@ -1,4 +1,4 @@
-import { IAction } from "ode-ts-client";
+import { IAction } from "edifice-ts-client";
 
 export const isActionAvailable = ({
   workflow,

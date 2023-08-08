@@ -8,8 +8,8 @@ import {
   Breadcrumb,
   AppHeader,
 } from "@edifice-ui/react";
-import { type IAction } from "ode-ts-client";
-import { IWebApp } from "ode-ts-client";
+import { type IAction } from "edifice-ts-client";
+import { IWebApp } from "edifice-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";

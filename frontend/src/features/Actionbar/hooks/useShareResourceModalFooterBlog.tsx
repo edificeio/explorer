@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { type BlogResource, type BlogUpdate } from "ode-ts-client";
+import { type BlogResource, type BlogUpdate } from "edifice-ts-client";
 
 import { useSelectedResources } from "~/store";
 

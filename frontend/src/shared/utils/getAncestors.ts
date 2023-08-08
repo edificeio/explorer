@@ -1,5 +1,5 @@
 import { type TreeNode } from "@edifice-ui/react";
-import { FOLDER } from "ode-ts-client";
+import { FOLDER } from "edifice-ts-client";
 
 import { findNodeById } from "./findNodeById";
 

@@ -1,5 +1,5 @@
 import { type TreeNode } from "@edifice-ui/react";
-import { type IFolder } from "ode-ts-client";
+import { type IFolder } from "edifice-ts-client";
 
 import { arrayUnique } from "./arrayUnique";
 import { modifyNode } from "./modifyNode";

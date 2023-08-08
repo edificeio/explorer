@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 import { Plus } from "@edifice-ui/icons";
 import { Button, LoadingScreen, TreeView, useToggle } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { FOLDER, type ID } from "ode-ts-client";
+import { FOLDER, type ID } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import TrashButton from "~/features/TreeView/components/TrashButton";

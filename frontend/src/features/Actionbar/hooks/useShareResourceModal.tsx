@@ -24,7 +24,7 @@ import {
   type ShareRight,
   type ShareRightActionDisplayName,
   type BlogUpdate,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useShareResource, useUpdateResource } from "~/services/queries";
@@ -121,8 +121,8 @@ export default function useShareResourceModal({
         let updatedActions = newShareRights[index].actions.filter(
           (action) => action.id !== actionName,
         );
-        const requiredActions = shareRightActions.filter((action) =>
-          action.requires?.includes(actionName),
+        const requiredActions = shareRightActions.filter(
+          (action) => action.requires?.includes(actionName),
         );
         updatedActions = updatedActions.filter(
           (action) =>

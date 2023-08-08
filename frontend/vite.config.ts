@@ -50,10 +50,10 @@ export default ({ mode }: { mode: string }) => {
     assetsDir: "assets/js/ode-explorer/",
     cssCodeSplit: false,
     rollupOptions: {
-      external: ["ode-ts-client"],
+      external: ["edifice-ts-client"],
       output: {
         paths: {
-          "ode-ts-client": "/assets/js/ode-ts-client/ode-ts-client.esm.js",
+          "edifice-ts-client": "/assets/js/edifice-ts-client/index.js",
         },
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,

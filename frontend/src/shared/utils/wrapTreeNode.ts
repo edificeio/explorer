@@ -1,5 +1,5 @@
 import { type TreeNode } from "@edifice-ui/react";
-import { type IFolder } from "ode-ts-client";
+import { type IFolder } from "edifice-ts-client";
 
 import { modifyNode } from "./modifyNode";
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";

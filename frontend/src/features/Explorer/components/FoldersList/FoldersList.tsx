@@ -1,6 +1,6 @@
 import { useScrollToTop, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
-import { type ID, type IFolder } from "ode-ts-client";
+import { type ID, type IFolder } from "edifice-ts-client";
 
 import { useSearchContext } from "~/services/queries";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";

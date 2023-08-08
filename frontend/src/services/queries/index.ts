@@ -16,7 +16,7 @@ import {
   FOLDER,
   IAction,
   CreateParameters,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";

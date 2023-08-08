@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Alert, useHotToast } from "@edifice-ui/react";
-import { type IAction, ACTION } from "ode-ts-client";
+import { type IAction, ACTION } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";

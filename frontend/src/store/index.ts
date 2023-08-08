@@ -1,7 +1,6 @@
 import { useScrollToTop as scrollToTop } from "@edifice-ui/react";
 import { type TreeNode } from "@edifice-ui/react";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import { t } from "i18next";
 import {
   FOLDER,
   type ISearchParameters,
@@ -14,7 +13,8 @@ import {
   type IFilter,
   type IOrder,
   type ISearchResults,
-} from "ode-ts-client";
+} from "edifice-ts-client";
+import { t } from "i18next";
 import { create } from "zustand";
 
 import {

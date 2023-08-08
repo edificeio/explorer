@@ -8,7 +8,7 @@ import {
   Modal,
   useOdeClient,
 } from "@edifice-ui/react";
-import { APP } from "ode-ts-client";
+import { APP } from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 

@@ -21,7 +21,7 @@ import {
   Tooltip,
   VisuallyHidden,
 } from "@edifice-ui/react";
-import { ShareRight } from "ode-ts-client";
+import { ShareRight } from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 

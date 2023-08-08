@@ -14,7 +14,7 @@ import {
   useOdeClient,
   usePaths,
 } from "@edifice-ui/react";
-import { type PublishResult } from "ode-ts-client";
+import { type PublishResult } from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 

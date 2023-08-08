@@ -1,7 +1,7 @@
 import { type ReactNode, type ReactElement } from "react";
 
 import { Button } from "@edifice-ui/react";
-import { IAction, RightRole } from "ode-ts-client";
+import { IAction, RightRole } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";

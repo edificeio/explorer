@@ -1,5 +1,5 @@
 import { useOdeClient } from "@edifice-ui/react";
-import { IUserInfo } from "ode-ts-client";
+import { IUserInfo } from "edifice-ts-client";
 
 import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
 import { getAppParams } from "~/shared/utils/getAppParams";

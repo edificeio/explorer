@@ -4,7 +4,7 @@ import {
   useOdeTheme,
   usePaths,
 } from "@edifice-ui/react";
-import { type IAction } from "ode-ts-client";
+import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions } from "~/services/queries";

@@ -12,7 +12,7 @@ import {
   type IFolder,
   type PublishParameters,
   CreateParameters,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 
 /**
  * searchContext API

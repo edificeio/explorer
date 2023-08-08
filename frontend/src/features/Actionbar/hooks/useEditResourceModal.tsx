@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 
 import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
-import { APP, type IResource } from "ode-ts-client";
+import { APP, type IResource } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 

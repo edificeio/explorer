@@ -5,7 +5,7 @@ import {
   RESOURCE,
   type PublishParameters,
   type PublishResult,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
