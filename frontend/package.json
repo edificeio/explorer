@@ -48,10 +48,10 @@
     ]
   },
   "dependencies": {
-    "@ode-react-ui/components": "dev",
-    "@ode-react-ui/core": "dev",
-    "@ode-react-ui/hooks": "dev",
-    "@ode-react-ui/icons": "dev",
+    "@ode-react-ui/components": "2.1.1",
+    "@ode-react-ui/core": "2.1.1",
+    "@ode-react-ui/hooks": "2.1.1",
+    "@ode-react-ui/icons": "2.1.1",
     "@react-spring/web": "9.7.2",
     "@tanstack/react-query": "4.29.12",
     "dayjs": "1.11.8",
