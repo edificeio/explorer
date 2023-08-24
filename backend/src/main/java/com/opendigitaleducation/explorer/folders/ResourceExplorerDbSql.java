@@ -238,7 +238,7 @@ public class ResourceExplorerDbSql {
                 final ResouceSql res = new ResouceSql(entId, id, resourceUniqueId, creatorId, application, resource_type, version);
                 if(rights != null) {
                     if (rights instanceof JsonArray) {
-                        res.rights.addAll((JsonArray) rights);
+                        res.mergeRights((JsonArray) rights);
                     }
                 }
                 resources.add(res);
@@ -434,7 +434,7 @@ public class ResourceExplorerDbSql {
         }
         if(rights != null){
             if(rights instanceof JsonArray){
-                resource.rights.addAll((JsonArray) rights);
+                resource.mergeRights((JsonArray) rights);
             }
         }
         return resource;
@@ -594,6 +594,17 @@ public class ResourceExplorerDbSql {
 
         public String getEntId() {
             return entId;
+        }
+
+        public ResouceSql mergeRights(final JsonArray newRights){
+            // merge current rights with new rights
+            final Set<Object> unique = new HashSet<>();
+            unique.addAll(this.rights.getList());
+            unique.addAll(newRights.getList());
+            // update field
+            this.rights.clear();
+            this.rights.addAll(newRights);
+            return this;
         }
     }
     public static class FolderSql{
