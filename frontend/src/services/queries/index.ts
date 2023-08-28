@@ -735,7 +735,7 @@ export const useCreateResource = () => {
                   modifierName: data.author?.username || "",
                   updatedAt: Date.now() as unknown as string,
                   trashed: false,
-                  rights: [],
+                  rights: [`creator:${user?.userId}`],
                 };
 
                 return {
