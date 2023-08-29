@@ -21,24 +21,24 @@ export default function EmptyScreenApp(): JSX.Element {
   const labelEmptyScreenApp = () => {
     if (canCreate?.available && theme?.is1d) {
       // TODO should not have specific app i18n
-      return t("explorer.emptyScreen.blog.txt1d.create");
+      return t("explorer.emptyScreen.txt1d.create", { ns: appCode });
     } else if (canCreate?.available && !theme?.is1d) {
-      return t("explorer.emptyScreen.blog.txt2d.create");
+      return t("explorer.emptyScreen.txt2d.create", { ns: appCode });
     } else if (!canCreate?.available && theme?.is1d) {
-      return t("explorer.emptyScreen.blog.txt1d.consultation");
+      return t("explorer.emptyScreen.txt1d.consultation", { ns: appCode });
     } else {
-      return t("explorer.emptyScreen.blog.txt2d.consultation");
+      return t("explorer.emptyScreen.txt2d.consultation", { ns: appCode });
     }
   };
 
   return (
     <EmptyScreen
       imageSrc={`${imagePath}/emptyscreen/illu-${appCode}.svg`}
-      imageAlt={t("explorer.emptyScreen.app.alt")}
+      imageAlt={t("explorer.emptyScreen.app.alt", { ns: appCode })}
       title={`${
         canCreate?.available
-          ? t("explorer.emptyScreen.blog.title.create")
-          : t("explorer.emptyScreen.blog.title.consultation")
+          ? t("explorer.emptyScreen.title.create", { ns: appCode })
+          : t("explorer.emptyScreen.title.consultation")
       }`}
       text={labelEmptyScreenApp()}
     />
