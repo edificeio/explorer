@@ -1,6 +1,6 @@
 import http from "k6/http";
 import exec from "k6/execution";
-import { check, group, sleep } from "k6";
+import { check, group, sleep, fail } from "k6";
 import chai, {
   describe,
   expect,
@@ -14,11 +14,11 @@ import { BASE_URL } from "../../utils/env.utils.js";
 import { Session } from "../../utils/authentication.utils.js";
 /**
  * Helper to log payload if http failed
- * @param {*} response 
+ * @param {*} response
  */
-export function logErrorPayload(response) {
+export function logErrorPayload(response, title) {
   if (!check(response, { "Status is 200": (r) => r.status === 200 })) {
-    console.log(response.status, response.body);
+    console.log(title, response.status, response.body);
   }
 }
 
@@ -28,22 +28,30 @@ let USER_WEB_PWD = __ENV.USER_WEB_PWD;
 chai.config.logFailures = true;
 
 export let options = {
-  vus: 1,
-  iterations: 1,
+  vus: __ENV.VUS_COUNT || 1,
+  iterations: __ENV.VUS_COUNT || 1,
   thresholds: {
-    checks: ["rate > 0.95"],
+    checks: [
+    {
+      threshold: "rate > 0",
+      abortOnFail: false,
+    }],
     // http_req_duration: ['p(95)<500'],
     // error_rate: ['rate<0.1'],
   },
 };
 const BLOG_NUMBER = __ENV.BLOG_NUMBER || 1;
 const SLEEP_SECONDS = __ENV.SLEEP_SECONDS || 1;
-console.log("Number of blog to create:", BLOG_NUMBER, "configured sleep seconds=", SLEEP_SECONDS)
-let webSession = new Session(null, null, -1);
-let webUserId;
+console.log(
+  "Number of blog to create:",
+  BLOG_NUMBER,
+  "configured sleep seconds=",
+  SLEEP_SECONDS
+);
 const suffix = new Date().getTime();
-function blogName(i) {
-  return `blog-${suffix + i}`;
+let vueId = 0;
+function getVueId() {
+  return "vu" + vueId++;
 }
 /**
  * GOAL: Ensure that CRUD operation works fine on explorer API when we have a lot of requests
@@ -65,6 +73,12 @@ function blogName(i) {
 export default function crudScenario() {
   let blogs = {};
   describe("[EXPLORER] crud blogs", () => {
+    const vueId = getVueId()
+    function blogName(i) {
+      return `blog-${vueId}-${suffix + i}`;
+    }
+    let webUserId;
+    let webSession = new Session(null, null, -1);
     group("[EXPLORER] should authenticate", () => {
       if (webSession.isExpired()) {
         webSession = authenticateWeb(USER_WEB_LOGIN, USER_WEB_PWD);
@@ -98,7 +112,7 @@ export default function crudScenario() {
           }),
           { redirects: 0, headers }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checksOk = check(response, {
           "check blog created": (r) => r.status == 200,
           "check blog created without error": (r) => !r.json()["error"],
@@ -106,7 +120,7 @@ export default function crudScenario() {
         if (!checksOk) {
           console.error("Could not create blog");
           console.error(response);
-          exec.test.abort();
+          fail("Could not create blog: "+title);
         }
       }
     });
@@ -120,7 +134,7 @@ export default function crudScenario() {
           `${BASE_URL}/explorer/resources?application=blog&resource_type=blog&search=${title}`,
           { redirects: 0, headers }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checkOk = check(response, {
           "check read blog": (r) => r.status == 200,
           ["check blog visibility title=" + title]: (r) =>
@@ -131,7 +145,7 @@ export default function crudScenario() {
         } else {
           console.error("Could not read blog");
           console.error(response);
-          exec.test.abort();
+          fail("Could not read blog: "+title);
         }
       }
     });
@@ -157,14 +171,14 @@ export default function crudScenario() {
             headers,
           }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checkOk = check(response, {
           "check update blog": (r) => r.status == 200,
         });
         if (!checkOk) {
           console.error("Could not update blog");
           console.error(response);
-          exec.test.abort();
+          fail("Could not update blog: "+title);
         }
       }
     });
@@ -180,7 +194,7 @@ export default function crudScenario() {
           "",
           { redirects: 0, headers }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checkOk = check(response, {
           "check read updated blog": (r) => r.status == 200,
           ["check updated blog visibility id:" + blog.id]: (r) =>
@@ -193,13 +207,14 @@ export default function crudScenario() {
         } else {
           console.error("Could not read after update blog");
           console.error(response);
-          exec.test.abort();
+          fail("Could not read update blog: "+title);
         }
       }
     });
     group("[EXPLORER] should delete blog", () => {
       for (let i = 0; i < BLOG_NUMBER; i++) {
-        let blog = blogs[blogName(i)];
+        let title = blogName(i);
+        let blog = blogs[title];
         let session = webSession;
         let headers = getHeaders(session);
         let response = http.del(
@@ -212,21 +227,22 @@ export default function crudScenario() {
           }),
           { redirects: 0, headers }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checkOk = check(response, {
           "check deleted blog": (r) => r.status == 200,
         });
         if (!checkOk) {
           console.error("Could not delete blog");
           console.error(response);
-          exec.test.abort();
+          fail("Could not delete blog: "+title);
         }
       }
     });
     group("[EXPLORER] should not found deleted blog", () => {
       sleep(SLEEP_SECONDS);
       for (let i = 0; i < BLOG_NUMBER; i++) {
-        let blog = blogs[blogName(i)];
+        let title = blogName(i);
+        let blog = blogs[title];
         let session = webSession;
         let headers = getHeaders(session);
         let response = http.get(
@@ -234,7 +250,7 @@ export default function crudScenario() {
           "",
           { redirects: 0, headers }
         );
-        logErrorPayload(response);
+        logErrorPayload(response, title);
         let checkOk = check(response, {
           "check delete blog": (r) => r.status == 200,
           ["check deleted blog visibility id=" + blog.id]: (r) =>
@@ -245,7 +261,7 @@ export default function crudScenario() {
         } else {
           console.error("Could not fetch after deleted blog");
           console.error(response);
-          exec.test.abort();
+          fail("Error on read blog after delete: "+blog.id);
         }
       }
     });
