@@ -13,6 +13,7 @@ import {
   SelectList,
   useOdeClient,
   usePaths,
+  TextArea,
 } from "@edifice-ui/react";
 import { type PublishResult } from "edifice-ts-client";
 import { createPortal } from "react-dom";
@@ -115,14 +116,12 @@ export default function PublishModal({
 
               <FormControl id="description" isRequired>
                 <Label>{t("bpr.form.publication.description")}</Label>
-                <Input
-                  type="text"
+                <TextArea
                   {...register("description", { required: true })}
                   placeholder={t(
                     "bpr.form.publication.description.placeholder",
                   )}
                   size="md"
-                  aria-required={true}
                 />
               </FormControl>
             </div>

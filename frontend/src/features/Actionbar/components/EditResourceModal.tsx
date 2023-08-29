@@ -84,17 +84,19 @@ export default function EditResourceModal({
         </Heading>
 
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <div className="d-flex flex-column flex-md-row gap-16 mb-24">
-            <ImagePicker
-              app={currentApp}
-              src={resource?.thumbnail}
-              label={t("explorer.imagepicker.label")}
-              addButtonLabel={t("explorer.imagepicker.button.add")}
-              deleteButtonLabel={t("explorer.imagepicker.button.delete")}
-              onUploadImage={handleUploadImage}
-              onDeleteImage={handleDeleteImage}
-              className="align-self-center"
-            />
+          <div className="d-flex gap-16 mb-24">
+            <div>
+              <ImagePicker
+                app={currentApp}
+                src={resource?.thumbnail}
+                label={t("explorer.imagepicker.label")}
+                addButtonLabel={t("explorer.imagepicker.button.add")}
+                deleteButtonLabel={t("explorer.imagepicker.button.delete")}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
+                className="align-self-center mt-8"
+              />
+            </div>
 
             <div className="col">
               <FormControl id="title" className="mb-16" isRequired>
