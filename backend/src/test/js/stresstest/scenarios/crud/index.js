@@ -68,7 +68,6 @@ function getVueId() {
  * - Sleep ${SLEEP_SECONDS}s
  * - Check if ${BLOG_NUMBER} blogs are not visible anymore through API Get /explorer/resources?id=
  *
- * We expect less than 5% errors
  */
 export default function crudScenario() {
   let blogs = {};
