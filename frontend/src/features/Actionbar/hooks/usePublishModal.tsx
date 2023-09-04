@@ -14,6 +14,7 @@ import {
 } from "../components/PublishModal";
 import { http } from "~/shared/constants";
 import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
+import { getAppParams } from "~/shared/utils/getAppParams";
 import { useStoreActions, useSelectedResources } from "~/store";
 
 interface ModalProps {
@@ -106,7 +107,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application: capitalizeFirstLetter(appName),
+        application:
+          getAppParams().libraryAppFilter ?? capitalizeFirstLetter(appName),
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,
