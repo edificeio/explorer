@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
+import { getAppParams } from "~/shared/utils/getAppParams";
 import { useSelectedResources } from "~/store";
 
 interface PublishModalProps {
@@ -82,7 +83,7 @@ export default function PublishModal({
                 {t("bpr.form.publication.cover.title")}
               </div>
               <ImagePicker
-                app={currentApp}
+                app={getAppParams().libraryAppFilter ?? currentApp}
                 src={selectedResources[0]?.thumbnail}
                 label={t("bpr.form.publication.cover.upload.label")}
                 addButtonLabel={t("bpr.form.publication.cover.upload.add")}

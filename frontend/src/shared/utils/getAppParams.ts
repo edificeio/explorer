@@ -5,6 +5,7 @@ import {
   type IAction,
   type IFilter,
   type IOrder,
+  type IWebApp,
 } from "edifice-ts-client";
 
 const rootElement = document.querySelector<HTMLElement>("[data-ode-app]");
@@ -50,4 +51,5 @@ export interface AppParams {
   orders: IOrder[];
   actions: IAction[];
   trashActions: IAction[];
+  libraryAppFilter?: IWebApp;
 }
