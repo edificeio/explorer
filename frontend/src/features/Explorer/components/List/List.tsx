@@ -28,7 +28,7 @@ export const List = () => {
   const isRoot = useIsRoot();
   const isTrashFolder = useIsTrash();
   const hasSelectedNodes = useHasSelectedNodes();
-  const { data, isLoading } = useSearchContext();
+  const { data, isLoading, isFetching, fetchNextPage } = useSearchContext();
 
   const hasNoFolders = data?.pages[0].folders.length === 0;
   const hasNoResources = data?.pages[0].resources.length === 0;
@@ -39,8 +39,12 @@ export const List = () => {
     <Suspense fallback={<LoadingScreen />}>
       {!hasNoData && !isLoading && (
         <Suspense fallback={<LoadingScreen />}>
-          <FoldersList />
-          <ResourcesList />
+          <FoldersList data={data} isFetching={isFetching} />
+          <ResourcesList
+            data={data}
+            isFetching={isFetching}
+            fetchNextPage={fetchNextPage}
+          />
         </Suspense>
       )}
 

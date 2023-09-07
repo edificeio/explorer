@@ -132,7 +132,6 @@ export const useSearchContext = () => {
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
       });
     },
-    // refetchOnMount: false,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined,
   });
@@ -480,7 +479,6 @@ export const useCreateFolder = () => {
         });
       }
     },
-    onSettled: async () => await queryClient.cancelQueries({ queryKey }),
   });
 };
 
@@ -713,6 +711,23 @@ export const useCreateResource = () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
+      const newResource: IResource = {
+        ...variables,
+        thumbnail: variables.thumbnail as string,
+        application: app,
+        assetId: data.entId,
+        id: data._id || "",
+        creatorId: user?.userId as string,
+        creatorName: user?.username as string,
+        createdAt: Date.now() as unknown as string,
+        modifiedAt: data.modified?.$date || "",
+        modifierId: data.author?.userId || "",
+        modifierName: data.author?.username || "",
+        updatedAt: Date.now() as unknown as string,
+        trashed: false,
+        rights: [`creator:${user?.userId}`],
+      };
+
       if (previousData) {
         return queryClient.setQueryData<
           InfiniteData<ISearchResults> | undefined
@@ -721,23 +736,6 @@ export const useCreateResource = () => {
             return {
               ...prev,
               pages: prev?.pages.map((page) => {
-                const newResource: IResource = {
-                  ...variables,
-                  thumbnail: variables.thumbnail as string,
-                  application: app,
-                  assetId: data.entId,
-                  id: data._id || "",
-                  creatorId: user?.userId as string,
-                  creatorName: user?.username as string,
-                  createdAt: Date.now() as unknown as string,
-                  modifiedAt: data.modified?.$date || "",
-                  modifierId: data.author?.userId || "",
-                  modifierName: data.author?.username || "",
-                  updatedAt: Date.now() as unknown as string,
-                  trashed: false,
-                  rights: [`creator:${user?.userId}`],
-                };
-
                 return {
                   ...page,
                   resources: [newResource, ...page.resources],
@@ -749,6 +747,5 @@ export const useCreateResource = () => {
         });
       }
     },
-    onSettled: async () => await queryClient.cancelQueries({ queryKey }),
   });
 };

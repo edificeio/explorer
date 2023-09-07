@@ -1,14 +1,18 @@
 import { useScrollToTop, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
-import { type ID, type IFolder } from "edifice-ts-client";
+import { InfiniteData } from "@tanstack/react-query";
+import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
 
-import { useSearchContext } from "~/services/queries";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
-const FoldersList = (): JSX.Element | null => {
+const FoldersList = ({
+  data,
+  isFetching,
+}: {
+  data: InfiniteData<ISearchResults> | undefined;
+  isFetching: boolean;
+}): JSX.Element | null => {
   const { currentApp } = useOdeClient();
-
-  const { data, isFetching } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913

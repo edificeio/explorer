@@ -2,11 +2,11 @@ import React, { useCallback } from "react";
 
 import { Button, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
+import { InfiniteData } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ID, type IResource } from "edifice-ts-client";
+import { type ID, type IResource, ISearchResults } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { useSearchContext } from "~/services/queries";
 import { dayjs } from "~/shared/config";
 import { isResourceShared } from "~/shared/utils/isResourceShared";
 import {
@@ -17,11 +17,17 @@ import {
   useIsTrash,
 } from "~/store";
 
-const ResourcesList = (): JSX.Element | null => {
+const ResourcesList = ({
+  data,
+  isFetching,
+  fetchNextPage,
+}: {
+  data: InfiniteData<ISearchResults> | undefined;
+  isFetching: boolean;
+  fetchNextPage: () => void;
+}): JSX.Element | null => {
   const { currentApp, currentLanguage, appCode } = useOdeClient();
   const { t } = useTranslation();
-
-  const { data, isFetching, fetchNextPage } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -61,7 +67,7 @@ const ResourcesList = (): JSX.Element | null => {
     }
   };
 
-  function toggleSelect(resource: IResource) {
+  async function toggleSelect(resource: IResource) {
     if (resourceIds.includes(resource.id)) {
       setResourceIds(
         resourceIds.filter(
@@ -73,10 +79,10 @@ const ResourcesList = (): JSX.Element | null => {
           (selectedResource) => selectedResource.id !== resource.id,
         ),
       );
-    } else {
-      setResourceIds([...resourceIds, resource.id]);
-      setSelectedResources([...selectedResources, resource]);
+      return;
     }
+    setResourceIds([...resourceIds, resource.id]);
+    setSelectedResources([...selectedResources, resource]);
   }
 
   const classes = clsx("grid ps-0 list-unstyled");

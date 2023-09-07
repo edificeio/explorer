@@ -1,12 +1,17 @@
 import { useId, useState } from "react";
 
 import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { APP, type IResource } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { useCreateResource, useUpdateResource } from "~/services/queries";
-import { useCurrentFolder, useSelectedResources } from "~/store";
+import {
+  useCurrentFolder,
+  useSearchParams,
+  useSelectedResources,
+} from "~/store";
 
 interface useEditResourceModalProps {
   resource: IResource;
@@ -33,6 +38,7 @@ export default function useEditResourceModal({
   const updateResource = useUpdateResource();
   const createResource = useCreateResource();
   const selectedResources = useSelectedResources();
+  const searchParams = useSearchParams();
   const {
     reset,
     register,
@@ -93,6 +99,16 @@ export default function useEditResourceModal({
     setSlug(res);
   }
 
+  const queryclient = useQueryClient();
+
+  const queryKey = [
+    "context",
+    {
+      folderId: searchParams.filters.folder,
+      trashed: searchParams.trashed,
+    },
+  ];
+
   const onSubmit: SubmitHandler<FormInputs> = async function (
     formData: FormInputs,
   ) {
@@ -108,8 +124,10 @@ export default function useEditResourceModal({
           trashed: selectedResources[0]?.trashed,
           thumbnail: cover.image,
         });
+        setCorrectSlug(false);
       } else {
-        await createResource.mutateAsync({
+        queryclient.invalidateQueries(queryKey);
+        createResource.mutate({
           name: formData.title,
           description: formData.description,
           thumbnail: cover.image,
@@ -121,9 +139,6 @@ export default function useEditResourceModal({
           slug: formData.safeSlug,
           app: appCode,
         });
-      }
-      if (edit) {
-        setCorrectSlug(false);
       }
       hotToast.success(
         <>
