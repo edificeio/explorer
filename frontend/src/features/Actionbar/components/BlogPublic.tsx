@@ -42,7 +42,7 @@ export const BlogPublic = ({
           role="switch"
           key={refPublic}
           {...register("enablePublic", {
-            value: resource.public!,
+            value: resource && resource.public,
             onChange: (e: { target: { checked: any } }) =>
               onPublicChange(e.target.checked),
           })}
