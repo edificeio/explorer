@@ -116,7 +116,7 @@ export default function useEditResourceModal({
       // call API
       if (edit) {
         await updateResource.mutateAsync({
-          description: formData.description,
+          description: formData.description || "",
           entId: selectedResources[0]?.assetId,
           name: formData.title,
           public: formData.enablePublic,
@@ -129,7 +129,7 @@ export default function useEditResourceModal({
         queryclient.invalidateQueries(queryKey);
         createResource.mutate({
           name: formData.title,
-          description: formData.description,
+          description: formData.description || "",
           thumbnail: cover.image,
           folder:
             currentFolder?.id === "default"
