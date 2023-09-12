@@ -711,12 +711,14 @@ export const useCreateResource = () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
+      console.log({ data, variables });
+
       const newResource: IResource = {
         ...variables,
         thumbnail: variables.thumbnail as string,
         application: app,
-        assetId: data.entId,
-        id: data._id || "",
+        assetId: data._id || data.entId || "",
+        id: data._id || data.entId || "",
         creatorId: user?.userId as string,
         creatorName: user?.username as string,
         createdAt: Date.now() as unknown as string,

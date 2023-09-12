@@ -239,7 +239,11 @@ export const createResource = ({
 }: {
   searchParams: ISearchParameters;
   params: CreateParameters;
-}) => odeServices.resource(searchParams.app).create(params);
+}) => {
+  const result = odeServices.resource(searchParams.app).create(params);
+  console.log({ result });
+  return result;
+};
 
 export const printResource = ({
   searchParams,
@@ -247,7 +251,11 @@ export const printResource = ({
 }: {
   searchParams: ISearchParameters;
   assetId: ID;
-}) => odeServices.resource(searchParams.app).gotoPrint(assetId);
+}) => {
+  const result = odeServices.resource(searchParams.app).gotoPrint(assetId);
+  console.log({ result });
+  return result;
+};
 
 export const publishResource = async ({
   searchParams,
