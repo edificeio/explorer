@@ -309,6 +309,9 @@ export const useFolderIds = () => useStoreContext((state) => state.folderIds);
 export const useResourceIds = () =>
   useStoreContext((state) => state.resourceIds);
 
+export const useResourceAssetIds = () =>
+  useStoreContext((state) => state.selectedResources.map((r) => r.assetId));
+
 export const useCurrentFolder = () =>
   useStoreContext((state) => state.currentFolder);
 

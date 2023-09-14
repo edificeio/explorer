@@ -90,17 +90,17 @@ export const updateFolder = async ({
  */
 export const trashAll = async ({
   searchParams,
-  resourceIds,
+  resourceAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: Array<{ assetId: string; id: number }>;
+  resourceAssetIds: ID[];
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceIds.map((r) => r.assetId),
+    resourceIds: resourceAssetIds,
     folderIds,
   };
   return await odeServices
@@ -115,17 +115,17 @@ export const trashAll = async ({
  */
 export const deleteAll = async ({
   searchParams,
-  resourceIds,
+  resourceAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: Array<{ assetId: string; id: number }>;
+  resourceAssetIds: ID[];
   folderIds: ID[];
 }) => {
   const deleteParameters: DeleteParameters = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceIds.map((r) => r.assetId),
+    resourceIds: resourceAssetIds,
     folderIds,
   };
   return await odeServices
@@ -140,17 +140,17 @@ export const deleteAll = async ({
  */
 export const restoreAll = async ({
   searchParams,
-  resourceIds,
+  resourceAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: Array<{ assetId: string; id: number }>;
+  resourceAssetIds: ID[];
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceIds.map((r) => r.assetId),
+    resourceIds: resourceAssetIds,
     folderIds,
   };
   return await odeServices
@@ -165,19 +165,19 @@ export const restoreAll = async ({
  */
 export const moveToFolder = async ({
   searchParams,
-  resourceIds,
+  resourceAssetIds,
   folderId,
   folderIds,
 }: {
   searchParams: ISearchParameters;
   folderId: ID;
-  resourceIds: Array<{ assetId: string; id: number }>;
+  resourceAssetIds: ID[];
   folderIds: ID[];
 }) => {
   const moveParameters: MoveParameters = {
     application: searchParams.app,
     folderId,
-    resourceIds: resourceIds.map((r) => r.assetId),
+    resourceIds: resourceAssetIds,
     folderIds,
   };
 

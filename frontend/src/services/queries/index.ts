@@ -43,9 +43,9 @@ import {
   useStoreActions,
   useSearchParams,
   useFolderIds,
-  useResourceIds,
   useCurrentFolder,
   useTreeData,
+  useResourceAssetIds,
 } from "~/store";
 
 const { actions, app } = getAppParams();
@@ -146,7 +146,7 @@ export const useTrash = () => {
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const resourceAssetIds = useResourceAssetIds();
   const { clearSelectedItems, clearSelectedIds, setTreeData, setSearchParams } =
     useStoreActions();
 
@@ -160,7 +160,7 @@ export const useTrash = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await trashAll({ searchParams, folderIds, resourceIds }),
+      await trashAll({ searchParams, folderIds, resourceAssetIds }),
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -184,7 +184,8 @@ export const useTrash = () => {
                     maxIdx: page?.pagination?.maxIdx - data.resources.length,
                   },
                   resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
+                    (resource: IResource) =>
+                      !resourceAssetIds.includes(resource.assetId),
                   ),
                 };
               }),
@@ -226,7 +227,7 @@ export const useRestore = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const resourceAssetIds = useResourceAssetIds();
   const {
     setFolderIds,
     setResourceIds,
@@ -244,7 +245,7 @@ export const useRestore = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await restoreAll({ searchParams, folderIds, resourceIds }),
+      await restoreAll({ searchParams, folderIds, resourceAssetIds }),
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -263,7 +264,8 @@ export const useRestore = () => {
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
                   resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
+                    (resource: IResource) =>
+                      !resourceAssetIds.includes(resource.assetId),
                   ),
                 };
               }),
@@ -290,7 +292,7 @@ export const useDelete = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const resourceAssetIds = useResourceAssetIds();
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
 
   const queryKey = [
@@ -303,7 +305,7 @@ export const useDelete = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await deleteAll({ searchParams, folderIds, resourceIds }),
+      await deleteAll({ searchParams, folderIds, resourceAssetIds }),
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -322,7 +324,8 @@ export const useDelete = () => {
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
                   resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
+                    (resource: IResource) =>
+                      !resourceAssetIds.includes(resource.assetId),
                   ),
                 };
               }),
@@ -346,7 +349,7 @@ export const useMoveItem = () => {
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const resourceAssetIds = useResourceAssetIds();
   const { clearSelectedIds, clearSelectedItems, setTreeData, setSearchParams } =
     useStoreActions();
 
@@ -360,7 +363,12 @@ export const useMoveItem = () => {
 
   return useMutation({
     mutationFn: async (folderId: string) =>
-      await moveToFolder({ searchParams, folderId, folderIds, resourceIds }),
+      await moveToFolder({
+        searchParams,
+        folderId,
+        folderIds,
+        resourceAssetIds,
+      }),
     onSuccess: async (data, variables) => {
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -388,7 +396,8 @@ export const useMoveItem = () => {
                     maxIdx: page.pagination?.maxIdx - data.resources.length,
                   },
                   resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
+                    (resource: IResource) =>
+                      !resourceAssetIds.includes(resource.assetId),
                   ),
                 };
               }),
