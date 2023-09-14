@@ -94,16 +94,18 @@ export const trashAll = async ({
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: ID[];
+  resourceIds: Array<{ assetId: string; id: number }>;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds,
+    resourceIds: resourceIds.map((r) => r.assetId),
     folderIds,
   };
-  return await odeServices.resource(searchParams.app).trashAll(trashParameters);
+  return await odeServices
+    .resource(searchParams.app)
+    .trashAll(trashParameters, true);
 };
 
 /**
@@ -117,18 +119,18 @@ export const deleteAll = async ({
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: ID[];
+  resourceIds: Array<{ assetId: string; id: number }>;
   folderIds: ID[];
 }) => {
   const deleteParameters: DeleteParameters = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds,
+    resourceIds: resourceIds.map((r) => r.assetId),
     folderIds,
   };
   return await odeServices
     .resource(searchParams.app)
-    .deleteAll(deleteParameters);
+    .deleteAll(deleteParameters, true);
 };
 
 /**
@@ -142,18 +144,18 @@ export const restoreAll = async ({
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceIds: ID[];
+  resourceIds: Array<{ assetId: string; id: number }>;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds,
+    resourceIds: resourceIds.map((r) => r.assetId),
     folderIds,
   };
   return await odeServices
     .resource(searchParams.app)
-    .restoreAll(trashParameters);
+    .restoreAll(trashParameters, true);
 };
 
 /**
@@ -169,19 +171,19 @@ export const moveToFolder = async ({
 }: {
   searchParams: ISearchParameters;
   folderId: ID;
-  resourceIds: ID[];
+  resourceIds: Array<{ assetId: string; id: number }>;
   folderIds: ID[];
 }) => {
   const moveParameters: MoveParameters = {
     application: searchParams.app,
     folderId,
-    resourceIds,
+    resourceIds: resourceIds.map((r) => r.assetId),
     folderIds,
   };
 
   return await odeServices
     .resource(searchParams.app)
-    .moveToFolder(moveParameters);
+    .moveToFolder(moveParameters, true);
 };
 
 /**
