@@ -90,22 +90,24 @@ export const updateFolder = async ({
  */
 export const trashAll = async ({
   searchParams,
-  resourceAssetIds,
+  resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceAssetIds: ID[];
+  resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceAssetIds,
+    resourceIds,
     folderIds,
   };
   return await odeServices
     .resource(searchParams.app)
-    .trashAll(trashParameters, true);
+    .trashAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -115,22 +117,24 @@ export const trashAll = async ({
  */
 export const deleteAll = async ({
   searchParams,
-  resourceAssetIds,
+  resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
-  resourceAssetIds: ID[];
+  resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const deleteParameters: DeleteParameters = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceAssetIds,
+    resourceIds,
     folderIds,
   };
   return await odeServices
     .resource(searchParams.app)
-    .deleteAll(deleteParameters, true);
+    .deleteAll(deleteParameters, useAssetIds);
 };
 
 /**
@@ -140,22 +144,24 @@ export const deleteAll = async ({
  */
 export const restoreAll = async ({
   searchParams,
-  resourceAssetIds,
+  resourceIds,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
-  resourceAssetIds: ID[];
+  resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
     application: searchParams.app,
     resourceType: searchParams.types[0],
-    resourceIds: resourceAssetIds,
+    resourceIds,
     folderIds,
   };
   return await odeServices
     .resource(searchParams.app)
-    .restoreAll(trashParameters, true);
+    .restoreAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -165,25 +171,27 @@ export const restoreAll = async ({
  */
 export const moveToFolder = async ({
   searchParams,
-  resourceAssetIds,
+  resourceIds,
   folderId,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
   folderId: ID;
-  resourceAssetIds: ID[];
+  resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const moveParameters: MoveParameters = {
     application: searchParams.app,
     folderId,
-    resourceIds: resourceAssetIds,
+    resourceIds,
     folderIds,
   };
 
   return await odeServices
     .resource(searchParams.app)
-    .moveToFolder(moveParameters, true);
+    .moveToFolder(moveParameters, useAssetIds);
 };
 
 /**

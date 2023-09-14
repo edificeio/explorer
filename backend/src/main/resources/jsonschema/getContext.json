@@ -29,8 +29,8 @@
     "folder_start_idx": { "type": "number" },
     "folder_page_size": { "type": "number" },
     "search_after": { "type": "string" },
-    "asset_id": {
-      "type": ["string", "array"],
+    "asset_id[]": {
+      "type": ["array", "string"],
       "items": {
         "type": "string"
       }

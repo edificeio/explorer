@@ -312,6 +312,11 @@ export const useResourceIds = () =>
 export const useResourceAssetIds = () =>
   useStoreContext((state) => state.selectedResources.map((r) => r.assetId));
 
+export const useResourceWithoutIds = () =>
+  useStoreContext((state) =>
+    state.selectedResources.filter((r) => r.assetId === r.id),
+  );
+
 export const useCurrentFolder = () =>
   useStoreContext((state) => state.currentFolder);
 

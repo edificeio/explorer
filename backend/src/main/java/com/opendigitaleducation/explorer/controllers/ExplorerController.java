@@ -591,7 +591,7 @@ public class ExplorerController extends BaseController {
         final ResourceSearchOperation op = new ResourceSearchOperation();
         op.setResourceType(queryParams.getString("resource_type"));
         op.setId(queryParams.getValue("id"));
-        op.setAssetId(queryParams.getValue("asset_id"));
+        op.setAssetId(queryParams.getValue("asset_id[]"));
         op.setOrder(orderField, orderAsc);
         op.setOwner(queryParams.getBoolean("owner"));
         op.setPub(queryParams.getBoolean("public"));
