@@ -25,7 +25,7 @@
     "clean:package": "rm -f pnpm-lock.yaml && rm -f package.json",
     "dev": "vite",
     "fix": "eslint --fix .",
-    "format": "pnpm format:check && pnpm format:write",
+    "format": "pnpm format:write && pnpm format:check",
     "format:check": "npx prettier --check .",
     "format:write": "npx prettier --write .",
     "preinstall": "npx only-allow pnpm",
