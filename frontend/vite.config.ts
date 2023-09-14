@@ -20,7 +20,7 @@ export default ({ mode }: { mode: string }) => {
       }
     : {};
 
-  const proxyObj = hasEnvFile
+  const proxyObj = envs.VITE_RECETTE
     ? {
         target: envs.VITE_RECETTE,
         changeOrigin: true,
@@ -41,7 +41,7 @@ export default ({ mode }: { mode: string }) => {
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,
     "^/(?=blog|mindmap)": proxyObj,
-    "/xiti": proxyObj,
+    //"/xiti": proxyObj,
     "/analyticsConf": proxyObj,
     "/explorer": proxyObj,
   };
