@@ -15,6 +15,7 @@ import ActionBarContainer from "~/features/Actionbar/components/ActionBarContain
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
 import ActionResourceDisableModal from "~/features/Explorer/components/ResourcesList/ActionResourceDisableModal";
+import { SearchForm } from "~/features/Explorer/components/SearchForm/SearchForm";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
 import { useActions } from "~/services/queries";
 import { ExplorerBreadcrumb } from "~/shared/components/ExplorerBreadcrumb";
@@ -91,6 +92,13 @@ export default function Explorer(): JSX.Element | null {
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="6" xl="9">
+          <SearchForm
+            options={[
+              { icon: function io() {}, label: "Item choice", value: 1 },
+              { icon: function io() {}, label: "Item choice 2", value: 2 },
+              { icon: function io() {}, label: "Item choice 3", value: 3 },
+            ]}
+          />
           <ExplorerBreadcrumb />
           <List />
         </Grid.Col>
