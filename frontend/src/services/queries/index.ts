@@ -85,12 +85,14 @@ export const useSearchContext = () => {
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
   const { setTreeData, setSearchParams } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -107,7 +109,7 @@ export const useSearchContext = () => {
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const folders = data?.pages[0]?.folders;
-
+      console.log(data);
       if (currentFolder?.id === "default") {
         setTreeData({
           id: FOLDER.DEFAULT,
@@ -149,12 +151,14 @@ export const useTrash = () => {
   const resourceIds = useResourceIds();
   const { clearSelectedItems, clearSelectedIds, setTreeData, setSearchParams } =
     useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -233,12 +237,14 @@ export const useRestore = () => {
     setSelectedResources,
     setSelectedFolders,
   } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -292,12 +298,14 @@ export const useDelete = () => {
   const folderIds = useFolderIds();
   const resourceIds = useResourceIds();
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -349,12 +357,14 @@ export const useMoveItem = () => {
   const resourceIds = useResourceIds();
   const { clearSelectedIds, clearSelectedItems, setTreeData, setSearchParams } =
     useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -423,12 +433,14 @@ export const useCreateFolder = () => {
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const { setTreeData } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -487,12 +499,14 @@ export const useUpdatefolder = () => {
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const { setFolderIds, setSelectedFolders, setTreeData } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -559,12 +573,14 @@ export const useShareResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { setResourceIds, setSelectedResources } = useStoreActions();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
@@ -631,12 +647,14 @@ export const useShareResource = () => {
 export const useUpdateResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 

@@ -8,7 +8,7 @@ import {
   Breadcrumb,
   AppHeader,
 } from "@edifice-ui/react";
-import { type IAction } from "edifice-ts-client";
+import { APP, type IAction } from "edifice-ts-client";
 import { IWebApp } from "edifice-ts-client";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
@@ -62,6 +62,26 @@ export default function Explorer(): JSX.Element | null {
 
   const { libraryUrl } = useLibraryUrl();
 
+  const searchFormOptions = [
+    { label: "Mes ressources", value: 1 },
+    { label: "Ressources partagées avec moi", value: 2 },
+    ...(currentApp?.displayName == APP.EXERCIZER
+      ? [{ label: "Exercices interactifs", value: 3 }]
+      : []),
+    ...(currentApp?.displayName == APP.EXERCIZER
+      ? [{ label: "Exercices à rendre", value: 4 }]
+      : []),
+    ...(currentApp?.displayName == "pages"
+      ? [{ label: "Projets publics", value: 5 }]
+      : []),
+    ...(currentApp?.displayName == "pages"
+      ? [{ label: "Projets internes", value: 6 }]
+      : []),
+    ...(currentApp?.displayName == APP.BLOG
+      ? [{ label: "Blogs publics", value: 7 }]
+      : []),
+  ];
+
   return (
     <>
       <AppHeader
@@ -92,13 +112,7 @@ export default function Explorer(): JSX.Element | null {
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="6" xl="9">
-          <SearchForm
-            options={[
-              { icon: function io() {}, label: "Item choice", value: 1 },
-              { icon: function io() {}, label: "Item choice 2", value: 2 },
-              { icon: function io() {}, label: "Item choice 3", value: 3 },
-            ]}
-          />
+          <SearchForm options={searchFormOptions} />
           <ExplorerBreadcrumb />
           <List />
         </Grid.Col>

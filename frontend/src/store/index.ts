@@ -89,6 +89,9 @@ export const useStoreContext = create<State>()((set, get) => ({
     types,
     filters: {
       folder: "default",
+      owner: undefined,
+      shared: undefined,
+      public: undefined,
     },
     orders: { updatedAt: "desc" },
     pagination: {
