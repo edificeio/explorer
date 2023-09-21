@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.services;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.share.ShareRoles;
 
 import java.util.Collection;
@@ -27,6 +28,8 @@ public class ResourceSearchOperation {
     private Set<String> ids = new HashSet<>();
     private Set<Long> folderIds = new HashSet<>();
     private Optional<String> searchAfter = Optional.empty();
+    private Optional<String> assetId = Optional.empty();
+    private Set<String> assetIds = new HashSet<>();
     private boolean searchEverywhere = false;
     private boolean waitFor = false;
 
@@ -150,8 +153,25 @@ public class ResourceSearchOperation {
         return this;
     }
 
+    public ResourceSearchOperation setAssetId(final Object id) {
+        if(id instanceof JsonArray){
+            this.assetIds = ((JsonArray) id).stream().map(e -> e.toString()).collect(Collectors.toSet());
+        }else{
+            this.assetId = Optional.ofNullable(id).map(e->e.toString());
+        }
+        return this;
+    }
+
     public Optional<String> getId() {
         return id;
+    }
+
+    public Optional<String> getAssetId() {
+        return assetId;
+    }
+
+    public Set<String> getAssetIds() {
+        return assetIds;
     }
 
     public boolean isSearchEverywhere() {

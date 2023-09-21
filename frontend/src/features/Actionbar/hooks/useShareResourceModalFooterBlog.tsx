@@ -35,7 +35,7 @@ export default function useShareResourceModalFooterBlog() {
     useState<PublicationType>((publishType as PublicationType) || "RESTRAINT");
 
   const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
-    description,
+    description: description || "",
     entId: assetId,
     name,
     public: !!pub,

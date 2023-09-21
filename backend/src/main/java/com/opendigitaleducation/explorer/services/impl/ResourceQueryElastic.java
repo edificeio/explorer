@@ -30,6 +30,7 @@ public class ResourceQueryElastic {
     private Optional<String> text = Optional.empty();
     private Optional<String> userRightType = Optional.empty();
     private List<String> selectFields = new ArrayList<>();
+    private List<String> assetId = new ArrayList<>();
 
     public ResourceQueryElastic(final UserInfos u) {
         this.user = Optional.ofNullable(u);
@@ -149,6 +150,16 @@ public class ResourceQueryElastic {
         return this;
     }
 
+    public ResourceQueryElastic withAssetId(final String id) {
+        this.assetId.add(id);
+        return this;
+    }
+
+    public ResourceQueryElastic withAssetId(final Collection<String> id) {
+        this.assetId.addAll(id);
+        return this;
+    }
+
     public ResourceQueryElastic withLimitedFieldNames(final Collection<String> names) {
         this.selectFields.addAll(names);
         return this;
@@ -193,6 +204,12 @@ public class ResourceQueryElastic {
         }
         if(!operation.getIds().isEmpty()){
             this.withId(operation.getIds());
+        }
+        if(operation.getAssetId().isPresent()){
+            this.withAssetId(operation.getAssetId().get());
+        }
+        if(!operation.getAssetIds().isEmpty()){
+            this.withAssetId(operation.getAssetIds());
         }
         if (operation.getParentId().isPresent() && !ExplorerConfig.ROOT_FOLDER_ID.equalsIgnoreCase(operation.getParentId().get())) {
             this.withFolderId(operation.getParentId().get());
@@ -311,6 +328,11 @@ public class ResourceQueryElastic {
         final Optional<JsonObject> idTerm = createTerm("_id", id);
         if (idTerm.isPresent()) {
             filter.add(idTerm.get());
+        }
+        //by asset id
+        final Optional<JsonObject> assetIdTerm = createTerm("assetId", assetId);
+        if (assetIdTerm.isPresent()) {
+            filter.add(assetIdTerm.get());
         }
         //resourceType
         final Optional<JsonObject> resourceTypeTerm = createTerm("resourceType", resourceType);

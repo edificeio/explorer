@@ -91,10 +91,12 @@ export const updateFolder = async ({
 export const trashAll = async ({
   searchParams,
   resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
@@ -103,7 +105,9 @@ export const trashAll = async ({
     resourceIds,
     folderIds,
   };
-  return await odeServices.resource(searchParams.app).trashAll(trashParameters);
+  return await odeServices
+    .resource(searchParams.app)
+    .trashAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -114,10 +118,12 @@ export const trashAll = async ({
 export const deleteAll = async ({
   searchParams,
   resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const deleteParameters: DeleteParameters = {
@@ -128,7 +134,7 @@ export const deleteAll = async ({
   };
   return await odeServices
     .resource(searchParams.app)
-    .deleteAll(deleteParameters);
+    .deleteAll(deleteParameters, useAssetIds);
 };
 
 /**
@@ -140,9 +146,11 @@ export const restoreAll = async ({
   searchParams,
   resourceIds,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
@@ -153,7 +161,7 @@ export const restoreAll = async ({
   };
   return await odeServices
     .resource(searchParams.app)
-    .restoreAll(trashParameters);
+    .restoreAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -166,10 +174,12 @@ export const moveToFolder = async ({
   resourceIds,
   folderId,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
   folderId: ID;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const moveParameters: MoveParameters = {
@@ -181,7 +191,7 @@ export const moveToFolder = async ({
 
   return await odeServices
     .resource(searchParams.app)
-    .moveToFolder(moveParameters);
+    .moveToFolder(moveParameters, useAssetIds);
 };
 
 /**

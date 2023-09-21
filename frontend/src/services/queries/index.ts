@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useOdeClient, useUser } from "@edifice-ui/react";
+import { Alert, useHotToast, useOdeClient, useUser } from "@edifice-ui/react";
 import {
   useInfiniteQuery,
   type InfiniteData,
@@ -17,6 +17,7 @@ import {
   IAction,
   CreateParameters,
 } from "edifice-ts-client";
+import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
@@ -43,9 +44,11 @@ import {
   useStoreActions,
   useSearchParams,
   useFolderIds,
-  useResourceIds,
   useCurrentFolder,
   useTreeData,
+  useResourceAssetIds,
+  useResourceIds,
+  useResourceWithoutIds,
 } from "~/store";
 
 const { actions, app } = getAppParams();
@@ -78,6 +81,7 @@ export const useActions = () => {
  * @returns infinite query to load resources
  */
 export const useSearchContext = () => {
+  const { hotToast } = useHotToast(Alert);
   const { appCode } = useOdeClient();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -106,6 +110,9 @@ export const useSearchContext = () => {
           startIdx: pageParam,
         },
       }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const folders = data?.pages[0]?.folders;
@@ -144,11 +151,15 @@ export const useSearchContext = () => {
  * Optimistic UI when resource or folder is trashed
  */
 export const useTrash = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const assetIds = useResourceAssetIds();
+  const resourceRealIds = useResourceIds();
+  const useAssetIds = useResourceWithoutIds().length > 0;
+  const resourceIds = useAssetIds ? assetIds : resourceRealIds;
   const { clearSelectedItems, clearSelectedIds, setTreeData, setSearchParams } =
     useStoreActions();
   const { filters, trashed } = searchParams;
@@ -164,7 +175,10 @@ export const useTrash = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await trashAll({ searchParams, folderIds, resourceIds }),
+      await trashAll({ searchParams, folderIds, resourceIds, useAssetIds }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -187,9 +201,13 @@ export const useTrash = () => {
                     // @ts-ignore
                     maxIdx: page?.pagination?.maxIdx - data.resources.length,
                   },
-                  resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
-                  ),
+                  resources: page.resources.filter((resource: IResource) => {
+                    if (useAssetIds) {
+                      return !assetIds.includes(resource.assetId);
+                    } else {
+                      return !resourceIds.includes(resource.id);
+                    }
+                  }),
                 };
               }),
             };
@@ -227,10 +245,14 @@ export const useTrash = () => {
  * Optimistic UI when resource is restored
  */
 export const useRestore = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const assetIds = useResourceAssetIds();
+  const resourceRealIds = useResourceIds();
+  const useAssetIds = useResourceWithoutIds().length > 0;
+  const resourceIds = useAssetIds ? assetIds : resourceRealIds;
   const {
     setFolderIds,
     setResourceIds,
@@ -250,7 +272,10 @@ export const useRestore = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await restoreAll({ searchParams, folderIds, resourceIds }),
+      await restoreAll({ searchParams, folderIds, resourceIds, useAssetIds }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -268,9 +293,13 @@ export const useRestore = () => {
                   folders: page.folders.filter(
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
-                  resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
-                  ),
+                  resources: page.resources.filter((resource: IResource) => {
+                    if (useAssetIds) {
+                      return !assetIds.includes(resource.assetId);
+                    } else {
+                      return !resourceIds.includes(resource.id);
+                    }
+                  }),
                 };
               }),
             };
@@ -293,10 +322,14 @@ export const useRestore = () => {
  * Optimistic UI when resource is deleted
  */
 export const useDelete = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const assetIds = useResourceAssetIds();
+  const resourceRealIds = useResourceIds();
+  const useAssetIds = useResourceWithoutIds().length > 0;
+  const resourceIds = useAssetIds ? assetIds : resourceRealIds;
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
   const { filters, trashed } = searchParams;
 
@@ -311,7 +344,10 @@ export const useDelete = () => {
 
   return useMutation({
     mutationFn: async () =>
-      await deleteAll({ searchParams, folderIds, resourceIds }),
+      await deleteAll({ searchParams, folderIds, resourceIds, useAssetIds }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -329,9 +365,13 @@ export const useDelete = () => {
                   folders: page.folders.filter(
                     (folder: IFolder) => !folderIds.includes(folder.id),
                   ),
-                  resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
-                  ),
+                  resources: page.resources.filter((resource: IResource) => {
+                    if (useAssetIds) {
+                      return !assetIds.includes(resource.assetId);
+                    } else {
+                      return !resourceIds.includes(resource.id);
+                    }
+                  }),
                 };
               }),
             };
@@ -350,11 +390,15 @@ export const useDelete = () => {
 };
 
 export const useMoveItem = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const treeData = useTreeData();
   const folderIds = useFolderIds();
-  const resourceIds = useResourceIds();
+  const assetIds = useResourceAssetIds();
+  const resourceRealIds = useResourceIds();
+  const useAssetIds = useResourceWithoutIds().length > 0;
+  const resourceIds = useAssetIds ? assetIds : resourceRealIds;
   const { clearSelectedIds, clearSelectedItems, setTreeData, setSearchParams } =
     useStoreActions();
   const { filters, trashed } = searchParams;
@@ -370,7 +414,16 @@ export const useMoveItem = () => {
 
   return useMutation({
     mutationFn: async (folderId: string) =>
-      await moveToFolder({ searchParams, folderId, folderIds, resourceIds }),
+      await moveToFolder({
+        searchParams,
+        folderId,
+        folderIds,
+        resourceIds,
+        useAssetIds,
+      }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data, variables) => {
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -397,9 +450,13 @@ export const useMoveItem = () => {
                     // @ts-ignore
                     maxIdx: page.pagination?.maxIdx - data.resources.length,
                   },
-                  resources: page.resources.filter(
-                    (resource: IResource) => !resourceIds.includes(resource.id),
-                  ),
+                  resources: page.resources.filter((resource: IResource) => {
+                    if (useAssetIds) {
+                      return !assetIds.includes(resource.assetId);
+                    } else {
+                      return !resourceIds.includes(resource.id);
+                    }
+                  }),
                 };
               }),
             };
@@ -429,6 +486,7 @@ export const useMoveItem = () => {
 };
 
 export const useCreateFolder = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const treeData = useTreeData();
@@ -452,6 +510,9 @@ export const useCreateFolder = () => {
       name: string;
       parentId: string;
     }) => await createFolder({ searchParams, name, parentId }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -495,6 +556,7 @@ export const useCreateFolder = () => {
 };
 
 export const useUpdatefolder = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const treeData = useTreeData();
@@ -520,6 +582,9 @@ export const useUpdatefolder = () => {
       name: string;
       parentId: string;
     }) => await updateFolder({ searchParams, folderId, parentId, name }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -570,6 +635,7 @@ export const useUpdatefolder = () => {
 };
 
 export const useShareResource = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { setResourceIds, setSelectedResources } = useStoreActions();
@@ -592,6 +658,9 @@ export const useShareResource = () => {
       entId: string;
       shares: ShareRight[];
     }) => await shareResource({ searchParams, entId, shares }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -645,6 +714,7 @@ export const useShareResource = () => {
 };
 
 export const useUpdateResource = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { filters, trashed } = searchParams;
@@ -661,6 +731,9 @@ export const useUpdateResource = () => {
   return useMutation({
     mutationFn: async (params: UpdateParameters) =>
       await updateResource({ searchParams, params }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -710,6 +783,7 @@ export const useUpdateResource = () => {
 };
 
 export const useCreateResource = () => {
+  const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { user } = useUser();
@@ -725,6 +799,9 @@ export const useCreateResource = () => {
   return useMutation({
     mutationFn: async (params: CreateParameters) =>
       await createResource({ searchParams, params }),
+    onError(error) {
+      if (typeof error === "string") hotToast.error(t(error));
+    },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
