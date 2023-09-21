@@ -101,11 +101,14 @@ export default function useEditResourceModal({
 
   const queryclient = useQueryClient();
 
+  const { filters, trashed } = searchParams;
+
   const queryKey = [
     "context",
     {
-      folderId: searchParams.filters.folder,
-      trashed: searchParams.trashed,
+      folderId: filters.folder,
+      filters,
+      trashed,
     },
   ];
 
