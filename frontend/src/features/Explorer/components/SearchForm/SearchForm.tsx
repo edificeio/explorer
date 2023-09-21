@@ -51,10 +51,6 @@ export const SearchForm = ({ options }: SearchFormProps) => {
         folder: currentFolder ? currentFolder.id : "default",
       },
     });
-    if (selectedFilters) {
-      console.log(selectedFilters);
-      selectedFilters.includes(2);
-    }
   }, [selectedFilters]);
 
   return (
