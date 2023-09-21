@@ -36,6 +36,7 @@ import {
 } from "~/services/api";
 import { addNode } from "~/shared/utils/addNode";
 import { deleteNode } from "~/shared/utils/deleteNode";
+import { fullTextSearch } from "~/shared/utils/fullTextSearch";
 import { getAppParams } from "~/shared/utils/getAppParams";
 import { moveNode } from "~/shared/utils/moveNode";
 import { updateNode } from "~/shared/utils/updateNode";
@@ -89,7 +90,7 @@ export const useSearchContext = () => {
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
   const { setTreeData, setSearchParams } = useStoreActions();
-  const { filters, trashed } = searchParams;
+  const { filters, trashed, search } = searchParams;
 
   const queryKey = [
     "context",
@@ -97,6 +98,7 @@ export const useSearchContext = () => {
       folderId: filters.folder,
       filters,
       trashed,
+      search,
     },
   ];
 
@@ -115,8 +117,19 @@ export const useSearchContext = () => {
     },
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
-      const folders = data?.pages[0]?.folders;
-      console.log(data);
+      // copy folders
+      const folders: IFolder[] = [...(data?.pages[0]?.folders ?? [])];
+      // filter according search (all folders are returned by backend)
+      if (data?.pages[0]?.folders) {
+        data.pages[0].folders = data.pages[0].folders.filter((folder) => {
+          if (searchParams.search) {
+            return fullTextSearch(folder.name, searchParams.search.toString());
+          } else {
+            return true;
+          }
+        });
+      }
+      // set tree data
       if (currentFolder?.id === "default") {
         setTreeData({
           id: FOLDER.DEFAULT,

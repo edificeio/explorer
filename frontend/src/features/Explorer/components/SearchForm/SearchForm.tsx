@@ -1,4 +1,11 @@
-import { useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  MouseEvent,
+  useDeferredValue,
+  useEffect,
+  useState,
+} from "react";
 
 import { Filter } from "@edifice-ui/icons";
 import {
@@ -10,10 +17,11 @@ import {
   SelectList,
   useOdeClient,
   type OptionListItemType,
+  useDebounce,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { useCurrentFolder, useSearchParams, useStoreActions } from "~/store";
+import { useCurrentFolder, useStoreActions } from "~/store";
 
 interface SearchFormProps {
   options: OptionListItemType[];
@@ -23,27 +31,52 @@ export const SearchForm = ({ options }: SearchFormProps) => {
   const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
     [],
   );
+  const [inputSearch, setInputSearch] = useState<string>("");
+  const deferredInputSearch = useDeferredValue(inputSearch);
+  const debounceInputSearch = useDebounce<string>(inputSearch, 500);
   const { t } = useTranslation();
   const { appCode } = useOdeClient();
   const currentFolder = useCurrentFolder();
-  const searchParams = useSearchParams();
   const { setSearchParams } = useStoreActions();
 
-  const isOwnerSelected = (): boolean | undefined => {
-    return selectedFilters.includes(1) ? true : undefined;
+  const handleInputSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newText = event.target.value;
+    setInputSearch(newText);
   };
-
-  const isSharedSelected = (): boolean | undefined => {
-    return selectedFilters.includes(2) ? true : undefined;
+  const handleKeyPress = (event: KeyboardEvent): void => {
+    if (event.key === "Enter" || event.key === "Return") {
+      setSearchParams({
+        search: debounceInputSearch ? debounceInputSearch : undefined,
+      });
+      event.preventDefault();
+    }
   };
-
-  const isPublicSelected = (): boolean | undefined => {
-    return selectedFilters.includes(7) ? true : undefined;
-  };
-
-  useEffect(() => {
+  const handleSearchSubmit = (e: MouseEvent): void => {
     setSearchParams({
-      ...searchParams,
+      search: debounceInputSearch ? debounceInputSearch : undefined,
+    });
+    e.preventDefault();
+  };
+  useEffect(() => {
+    const isOwnerSelected = (): boolean | undefined => {
+      return selectedFilters.includes(1) ? true : undefined;
+    };
+
+    const isSharedSelected = (): boolean | undefined => {
+      return selectedFilters.includes(2) ? true : undefined;
+    };
+
+    const isPublicSelected = (): boolean | undefined => {
+      return selectedFilters.includes(7) ? true : undefined;
+    };
+    // auto update search only if searchbar is empty or have at least 3 caracters => else need manual action (enter or click button)
+    const shouldUpdateSearch =
+      debounceInputSearch.length == 0 || debounceInputSearch.length >= 3;
+    const searchPartial = shouldUpdateSearch
+      ? { search: debounceInputSearch ? debounceInputSearch : undefined }
+      : {};
+    setSearchParams({
+      ...searchPartial,
       filters: {
         owner: isOwnerSelected(),
         public: isPublicSelected(),
@@ -51,7 +84,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
         folder: currentFolder ? currentFolder.id : "default",
       },
     });
-  }, [selectedFilters]);
+  }, [debounceInputSearch, selectedFilters, currentFolder, setSearchParams]);
 
   return (
     <form
@@ -64,10 +97,14 @@ export const SearchForm = ({ options }: SearchFormProps) => {
           placeholder={t("explorer.label.search", { ns: appCode })}
           size="lg"
           noValidationIcon
+          value={deferredInputSearch}
+          onChange={handleInputSearchChange}
+          onKeyDown={handleKeyPress}
         />
         <SearchButton
           type="submit"
           aria-label={t("explorer.label.search", { ns: appCode })}
+          onClick={handleSearchSubmit}
         />
       </FormControl>
       <Dropdown

@@ -47,7 +47,7 @@ interface State {
   resourceActionDisable: boolean;
   updaters: {
     setTreeData: (treeData: TreeNode) => void;
-    setSearchParams: (searchParams: ISearchParameters) => void;
+    setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
@@ -119,8 +119,10 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceActionDisable: false,
   updaters: {
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
-    setSearchParams: (searchParams: ISearchParameters) =>
-      set(() => ({ searchParams })),
+    setSearchParams: (searchParams: Partial<ISearchParameters>) =>
+      set(({ searchParams: originalSearchParams }) => ({
+        searchParams: { ...originalSearchParams, ...searchParams },
+      })),
     setSelectedFolders: (selectedFolders: IFolder[]) =>
       set(() => ({ selectedFolders })),
     setSelectedResources: (selectedResources: IResource[]) =>
