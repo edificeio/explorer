@@ -8,8 +8,9 @@ import {
   Breadcrumb,
   AppHeader,
 } from "@edifice-ui/react";
-import { type IAction } from "edifice-ts-client";
+import { APP, type IAction } from "edifice-ts-client";
 import { IWebApp } from "edifice-ts-client";
+import { useTranslation } from "react-i18next";
 
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
@@ -45,7 +46,7 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { currentApp } = useOdeClient();
+  const { currentApp, appCode } = useOdeClient();
 
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
@@ -61,6 +62,28 @@ export default function Explorer(): JSX.Element | null {
   );
 
   const { libraryUrl } = useLibraryUrl();
+
+  const { t } = useTranslation();
+
+  const searchFormOptions = [
+    { label: t("explorer.filter.owner", { ns: appCode }), value: 1 },
+    { label: t("explorer.filter.shared", { ns: appCode }), value: 2 },
+    ...(currentApp?.displayName == APP.EXERCIZER
+      ? [{ label: "Exercices interactifs", value: 3 }]
+      : []),
+    ...(currentApp?.displayName == APP.EXERCIZER
+      ? [{ label: "Exercices à rendre", value: 4 }]
+      : []),
+    ...(currentApp?.displayName == "pages"
+      ? [{ label: "Projets publics", value: 5 }]
+      : []),
+    ...(currentApp?.displayName == "pages"
+      ? [{ label: "Projets internes", value: 6 }]
+      : []),
+    ...(currentApp?.displayName == APP.BLOG
+      ? [{ label: t("explorer.filter.public", { ns: appCode }), value: 7 }]
+      : []),
+  ];
 
   return (
     <>
@@ -92,13 +115,7 @@ export default function Explorer(): JSX.Element | null {
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="6" xl="9">
-          <SearchForm
-            options={[
-              { icon: function io() {}, label: "Item choice", value: 1 },
-              { icon: function io() {}, label: "Item choice 2", value: 2 },
-              { icon: function io() {}, label: "Item choice 3", value: 3 },
-            ]}
-          />
+          <SearchForm options={searchFormOptions} />
           <ExplorerBreadcrumb />
           <List />
         </Grid.Col>

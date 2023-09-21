@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { Filter } from "@edifice-ui/icons";
 import {
   FormControl,
@@ -11,13 +13,45 @@ import {
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
+import { useCurrentFolder, useSearchParams, useStoreActions } from "~/store";
+
 interface SearchFormProps {
   options: OptionListItemType[];
 }
 
 export const SearchForm = ({ options }: SearchFormProps) => {
+  const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
+    [],
+  );
   const { t } = useTranslation();
   const { appCode } = useOdeClient();
+  const currentFolder = useCurrentFolder();
+  const searchParams = useSearchParams();
+  const { setSearchParams } = useStoreActions();
+
+  const isOwnerSelected = (): boolean | undefined => {
+    return selectedFilters.includes(1) ? true : undefined;
+  };
+
+  const isSharedSelected = (): boolean | undefined => {
+    return selectedFilters.includes(2) ? true : undefined;
+  };
+
+  const isPublicSelected = (): boolean | undefined => {
+    return selectedFilters.includes(7) ? true : undefined;
+  };
+
+  useEffect(() => {
+    setSearchParams({
+      ...searchParams,
+      filters: {
+        owner: isOwnerSelected(),
+        public: isPublicSelected(),
+        shared: isSharedSelected(),
+        folder: currentFolder ? currentFolder.id : "default",
+      },
+    });
+  }, [selectedFilters]);
 
   return (
     <form
@@ -39,9 +73,10 @@ export const SearchForm = ({ options }: SearchFormProps) => {
       <Dropdown
         content={
           <SelectList
-            model={[]}
-            onChange={() => {
-              console.log("works");
+            isMonoSelection
+            model={selectedFilters}
+            onChange={(filter) => {
+              setSelectedFilters(filter);
             }}
             options={options}
           />
@@ -49,7 +84,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
         trigger={
           <DropdownTrigger
             icon={<Filter width={20} />}
-            title={t("Filtres")}
+            title={t("Filtres ")}
             variant="ghost"
           />
         }
