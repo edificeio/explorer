@@ -142,11 +142,11 @@ public class ResourceServiceTest {
     public void shouldSearchResourceWithSubresources(TestContext context) {
         final UserInfos user = test.directory().generateUser("usernested");
         final ExplorerMessage f1 = ExplorerMessage.upsert(new IdAndVersion("id1", 1L), user, false, plugin.getApplication(), plugin.getResourceType(), plugin.getResourceType()).withCreator(user);
-        f1.withSubResourceContent("id1_1", "content1_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_1", "<h1>html1_1</h1>", ExplorerMessage.ExplorerContentType.Html);
-        f1.withSubResourceContent("id1_2", "content1_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id1_2", "<h1>html1_2</h1>", ExplorerMessage.ExplorerContentType.Html);
+        f1.withSubResourceContent("id1_1", "content1_1", ExplorerMessage.ExplorerContentType.Text, 0L).withSubResourceContent("id1_1", "<h1>html1_1</h1>", ExplorerMessage.ExplorerContentType.Html, 0L);
+        f1.withSubResourceContent("id1_2", "content1_2", ExplorerMessage.ExplorerContentType.Text, 0L).withSubResourceContent("id1_2", "<h1>html1_2</h1>", ExplorerMessage.ExplorerContentType.Html, 0L);
         final ExplorerMessage f2 = ExplorerMessage.upsert(new IdAndVersion("id2", 1L), user, false, plugin.getApplication(), plugin.getResourceType(), plugin.getResourceType()).withCreator(user);
-        f2.withSubResourceContent("id2_1", "content2_1", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_1", "<h1>html2_1</h1>", ExplorerMessage.ExplorerContentType.Html);
-        f2.withSubResourceContent("id2_2", "content2_2", ExplorerMessage.ExplorerContentType.Text).withSubResourceContent("id2_2", "<h1>html2_2</h1>", ExplorerMessage.ExplorerContentType.Html);
+        f2.withSubResourceContent("id2_1", "content2_1", ExplorerMessage.ExplorerContentType.Text, 0L).withSubResourceContent("id2_1", "<h1>html2_1</h1>", ExplorerMessage.ExplorerContentType.Html, 0L);
+        f2.withSubResourceContent("id2_2", "content2_2", ExplorerMessage.ExplorerContentType.Text, 0L).withSubResourceContent("id2_2", "<h1>html2_2</h1>", ExplorerMessage.ExplorerContentType.Html, 0L);
         final Async async = context.async(3);
         plugin.notifyUpsert(Arrays.asList(f1, f2)).onComplete(context.asyncAssertSuccess(r -> {
             job.execute(true).onComplete(context.asyncAssertSuccess(r4 -> {
