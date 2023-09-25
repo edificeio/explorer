@@ -8,6 +8,9 @@ import { useIsRoot, useIsTrash, useHasSelectedNodes } from "~/store";
 const EmptyScreenApp = lazy(
   async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
 );
+const EmptyScreenError = lazy(
+  async () => await import("~/components/EmptyScreens/EmptyScreenError"),
+);
 const EmptyScreenNoContentInFolder = lazy(
   async () =>
     await import("~/components/EmptyScreens/EmptyScreenNoContentInFolder"),
@@ -28,12 +31,21 @@ export const List = () => {
   const isRoot = useIsRoot();
   const isTrashFolder = useIsTrash();
   const hasSelectedNodes = useHasSelectedNodes();
-  const { data, isLoading, isFetching, fetchNextPage } = useSearchContext();
+  const { data, isError, isLoading, isFetching, fetchNextPage } =
+    useSearchContext();
 
   const hasNoFolders = data?.pages[0].folders.length === 0;
   const hasNoResources = data?.pages[0].resources.length === 0;
 
   const hasNoData = hasNoFolders && hasNoResources;
+
+  if (isError) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenError />
+      </Suspense>
+    );
+  }
 
   return (
     <Suspense fallback={<LoadingScreen />}>

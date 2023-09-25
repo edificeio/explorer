@@ -154,6 +154,7 @@ export const useSearchContext = () => {
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
       });
     },
+    retry: false,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined,
   });
