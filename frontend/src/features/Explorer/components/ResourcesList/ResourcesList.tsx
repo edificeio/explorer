@@ -7,8 +7,7 @@ import clsx from "clsx";
 import { type ID, type IResource, ISearchResults } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { dayjs } from "~/shared/config";
-import { isResourceShared } from "~/shared/utils/isResourceShared";
+import { dayjs } from "~/config";
 import {
   useStoreActions,
   useResourceIds,
@@ -16,6 +15,7 @@ import {
   useSearchParams,
   useIsTrash,
 } from "~/store";
+import { isResourceShared } from "~/utils/isResourceShared";
 
 const ResourcesList = ({
   data,

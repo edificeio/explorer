@@ -21,8 +21,8 @@ import { useTranslation } from "react-i18next";
 
 import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
-import { getAppParams } from "~/shared/utils/getAppParams";
 import { useSelectedResources } from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface PublishModalProps {
   isOpen: boolean;

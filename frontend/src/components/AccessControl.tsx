@@ -5,9 +5,7 @@ import { IAction, RightRole } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
-import useAccessControl, {
-  type IObjectWithRights,
-} from "~/shared/hooks/useAccessControl";
+import useAccessControl, { IObjectWithRights } from "~/hooks/useAccessControl";
 import { useIsTrash, useStoreActions } from "~/store";
 
 // TODO move it to ode-react-ui with useAccessControl

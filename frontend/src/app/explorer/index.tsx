@@ -12,21 +12,21 @@ import { APP, type IAction } from "edifice-ts-client";
 import { IWebApp } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { ExplorerBreadcrumb } from "~/components/ExplorerBreadcrumb";
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
 import { useLibraryUrl } from "~/features/Explorer/components/Library/useLibraryUrl";
 import { List } from "~/features/Explorer/components/List/List";
 import ActionResourceDisableModal from "~/features/Explorer/components/ResourcesList/ActionResourceDisableModal";
 import { SearchForm } from "~/features/Explorer/components/SearchForm/SearchForm";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
+import { useActionDisableModal } from "~/hooks/useActionDisableModal";
+import { useOnboardingModal } from "~/hooks/useOnboardingModal";
+import { useTrashModal } from "~/hooks/useTrashedModal";
 import { useActions } from "~/services/queries";
-import { ExplorerBreadcrumb } from "~/shared/components/ExplorerBreadcrumb";
-import { useActionDisableModal } from "~/shared/hooks/useActionDisableModal";
-import { useOnboardingModal } from "~/shared/hooks/useOnboardingModal";
-import { useTrashModal } from "~/shared/hooks/useTrashedModal";
-import { isActionAvailable } from "~/shared/utils/isActionAvailable";
+import { isActionAvailable } from "~/utils/isActionAvailable";
 
 const OnboardingTrash = lazy(
-  async () => await import("~/shared/components/OnboardingTrash"),
+  async () => await import("~/components/OnboardingTrash"),
 );
 
 const AppAction = lazy(

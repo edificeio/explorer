@@ -1,8 +1,8 @@
 import { useOdeClient } from "@edifice-ui/react";
 import { IUserInfo } from "edifice-ts-client";
 
-import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
-import { getAppParams } from "~/shared/utils/getAppParams";
+import { capitalizeFirstLetter } from "~/utils/capitalizeFirstLetter";
+import { getAppParams } from "~/utils/getAppParams";
 
 export const useLibraryUrl = () => {
   const { user } = useOdeClient();

@@ -5,7 +5,6 @@ import { type IAction, ACTION } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";
-import { getAppParams } from "~/shared/utils/getAppParams";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -16,6 +15,7 @@ import {
   useSelectedResources,
   useResourceIsTrash,
 } from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 type ModalName =
   | "move"

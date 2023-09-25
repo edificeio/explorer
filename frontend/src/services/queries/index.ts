@@ -34,13 +34,6 @@ import {
   updateFolder,
   updateResource,
 } from "~/services/api";
-import { addNode } from "~/shared/utils/addNode";
-import { deleteNode } from "~/shared/utils/deleteNode";
-import { fullTextSearch } from "~/shared/utils/fullTextSearch";
-import { getAppParams } from "~/shared/utils/getAppParams";
-import { moveNode } from "~/shared/utils/moveNode";
-import { updateNode } from "~/shared/utils/updateNode";
-import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
 import {
   useStoreActions,
   useSearchParams,
@@ -51,6 +44,13 @@ import {
   useResourceIds,
   useResourceWithoutIds,
 } from "~/store";
+import { addNode } from "~/utils/addNode";
+import { deleteNode } from "~/utils/deleteNode";
+import { fullTextSearch } from "~/utils/fullTextSearch";
+import { getAppParams } from "~/utils/getAppParams";
+import { moveNode } from "~/utils/moveNode";
+import { updateNode } from "~/utils/updateNode";
+import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const { actions, app } = getAppParams();
 

@@ -6,14 +6,14 @@ import { useSearchContext } from "~/services/queries";
 import { useIsRoot, useIsTrash, useHasSelectedNodes } from "~/store";
 
 const EmptyScreenApp = lazy(
-  async () => await import("~/features/EmptyScreens/EmptyScreenApp"),
+  async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
 );
 const EmptyScreenNoContentInFolder = lazy(
   async () =>
-    await import("~/features/EmptyScreens/EmptyScreenNoContentInFolder"),
+    await import("~/components/EmptyScreens/EmptyScreenNoContentInFolder"),
 );
 const EmptyScreenTrash = lazy(
-  async () => await import("~/features/EmptyScreens/EmptyScreenTrash"),
+  async () => await import("~/components/EmptyScreens/EmptyScreenTrash"),
 );
 const FoldersList = lazy(
   async () =>

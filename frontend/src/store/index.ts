@@ -23,12 +23,12 @@ import {
   publishResource,
   searchContext,
 } from "~/services/api";
-import { arrayUnique } from "~/shared/utils/arrayUnique";
-import { findNodeById } from "~/shared/utils/findNodeById";
-import { getAncestors } from "~/shared/utils/getAncestors";
-import { getAppParams } from "~/shared/utils/getAppParams";
-import { hasChildren } from "~/shared/utils/hasChildren";
-import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
+import { arrayUnique } from "~/utils/arrayUnique";
+import { findNodeById } from "~/utils/findNodeById";
+import { getAncestors } from "~/utils/getAncestors";
+import { getAppParams } from "~/utils/getAppParams";
+import { hasChildren } from "~/utils/hasChildren";
+import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const { app, types, filters, orders } = getAppParams();
 

@@ -12,10 +12,10 @@ import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
-import { http } from "~/shared/constants";
-import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
-import { getAppParams } from "~/shared/utils/getAppParams";
+import { http } from "~/constants";
 import { useStoreActions, useSelectedResources } from "~/store";
+import { capitalizeFirstLetter } from "~/utils/capitalizeFirstLetter";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface ModalProps {
   onSuccess?: () => void;

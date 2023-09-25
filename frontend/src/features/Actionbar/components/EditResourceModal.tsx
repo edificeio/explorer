@@ -16,8 +16,8 @@ import { useTranslation } from "react-i18next";
 import { BlogPublic } from "./BlogPublic";
 import useEditResourceModal from "../hooks/useEditResourceModal";
 import { useActions } from "~/services/queries";
-import { isActionAvailable } from "~/shared/utils/isActionAvailable";
 import { useSelectedResources } from "~/store";
+import { isActionAvailable } from "~/utils/isActionAvailable";
 
 interface EditResourceModalProps {
   isOpen: boolean;
