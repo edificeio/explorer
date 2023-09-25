@@ -103,6 +103,11 @@ const ResourcesList = ({
                 .locale(currentLanguage as string)
                 .fromNow();
 
+              const tooltips = {
+                messagePublic: t("tooltip.public", { ns: appCode }),
+                messageShared: t("tooltip.shared", { ns: appCode }),
+              };
+
               return (
                 <animated.li
                   className="g-col-4"
@@ -112,21 +117,23 @@ const ResourcesList = ({
                   }}
                 >
                   <Card
-                    app={currentApp}
+                    app={currentApp!}
                     className="c-pointer"
-                    creatorName={creatorName}
-                    isPublic={resource.public}
+                    tooltips={tooltips}
+                    options={{
+                      type: "resource",
+                      name,
+                      creatorName,
+                      userSrc: `/userbook/avatar/${creatorId}`,
+                      updatedAt: time,
+                      isPublic: resource.public,
+                      isShared,
+                      imageSrc: thumbnail,
+                    }}
                     isSelected={resourceIds.includes(resource.id)}
                     isLoading={isFetching}
-                    isShared={isShared}
-                    messagePublic={t("tooltip.public", { ns: appCode })}
-                    messageShared={t("tooltip.shared", { ns: appCode })}
-                    name={name}
                     onOpen={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
-                    resourceSrc={thumbnail}
-                    updatedAt={time}
-                    userSrc={`/userbook/avatar/${creatorId}`}
                   />
                 </animated.li>
               );

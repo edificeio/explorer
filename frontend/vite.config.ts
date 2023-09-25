@@ -41,7 +41,7 @@ export default ({ mode }: { mode: string }) => {
     "^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,
     "^/(?=blog|mindmap)": proxyObj,
-    //"/xiti": proxyObj,
+    "/xiti": proxyObj,
     "/analyticsConf": proxyObj,
     "/explorer": proxyObj,
   };
