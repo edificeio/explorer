@@ -106,11 +106,8 @@ public class ResourceServiceTest {
         return json;
     }
 
-    //TODO test failed case (ingest failed, ingest too many error, ingest too big payload, message read failed, message update status failed...)
     //TODO tester audience
     //TODO test pdf
-    //TODO adaptative maxbatch size (according to max payload size, previous error?...)
-    //TODO better redis stream ID? "application-date"
     @Test
     public void shouldSearchResourceWithHtml(TestContext context) {
         final UserInfos user = test.directory().generateUser("userhtml");
