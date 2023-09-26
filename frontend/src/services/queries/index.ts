@@ -820,8 +820,6 @@ export const useCreateResource = () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
-      console.log({ data, variables });
-
       const newResource: IResource = {
         ...variables,
         thumbnail: variables.thumbnail as string,

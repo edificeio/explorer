@@ -3,10 +3,18 @@ import { Suspense, lazy } from "react";
 import { LoadingScreen } from "@edifice-ui/react";
 
 import { useSearchContext } from "~/services/queries";
-import { useIsRoot, useIsTrash, useHasSelectedNodes } from "~/store";
+import {
+  useIsRoot,
+  useIsTrash,
+  useHasSelectedNodes,
+  useSearchParams,
+} from "~/store";
 
 const EmptyScreenApp = lazy(
   async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
+);
+const EmptyScreenSearch = lazy(
+  async () => await import("~/components/EmptyScreens/EmptyScreenSearch"),
 );
 const EmptyScreenError = lazy(
   async () => await import("~/components/EmptyScreens/EmptyScreenError"),
@@ -31,6 +39,7 @@ export const List = () => {
   const isRoot = useIsRoot();
   const isTrashFolder = useIsTrash();
   const hasSelectedNodes = useHasSelectedNodes();
+  const searchParams = useSearchParams();
   const { data, isError, isLoading, isFetching, fetchNextPage } =
     useSearchContext();
 
@@ -47,36 +56,50 @@ export const List = () => {
     );
   }
 
-  return (
-    <Suspense fallback={<LoadingScreen />}>
-      {!hasNoData && !isLoading && (
-        <Suspense fallback={<LoadingScreen />}>
-          <FoldersList data={data} isFetching={isFetching} />
-          <ResourcesList
-            data={data}
-            isFetching={isFetching}
-            fetchNextPage={fetchNextPage}
-          />
-        </Suspense>
-      )}
+  if (searchParams.search && hasNoData) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenSearch />
+      </Suspense>
+    );
+  }
 
-      {isRoot && hasNoData && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenApp />
-        </Suspense>
-      )}
+  if (!hasNoData && !isLoading) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <FoldersList data={data} isFetching={isFetching} />
+        <ResourcesList
+          data={data}
+          isFetching={isFetching}
+          fetchNextPage={fetchNextPage}
+        />
+      </Suspense>
+    );
+  }
 
-      {hasSelectedNodes && hasNoData && !isTrashFolder && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenNoContentInFolder />
-        </Suspense>
-      )}
+  if (isRoot && hasNoData) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenApp />
+      </Suspense>
+    );
+  }
 
-      {isTrashFolder && data?.pages[0].resources.length === 0 && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenTrash />
-        </Suspense>
-      )}
-    </Suspense>
-  );
+  if (hasSelectedNodes && hasNoData && !isTrashFolder) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenNoContentInFolder />
+      </Suspense>
+    );
+  }
+
+  if (isTrashFolder && data?.pages[0].resources.length === 0) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenTrash />
+      </Suspense>
+    );
+  }
+
+  return null;
 };
