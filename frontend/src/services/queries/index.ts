@@ -806,6 +806,7 @@ export const useCreateResource = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
+      filters: searchParams.filters,
       trashed: searchParams.trashed,
     },
   ];

@@ -130,7 +130,7 @@ export default function useEditResourceModal({
         setCorrectSlug(false);
       } else {
         queryclient.invalidateQueries(queryKey);
-        createResource.mutate({
+        createResource.mutateAsync({
           name: formData.title,
           description: formData.description || "",
           thumbnail: cover.image,
