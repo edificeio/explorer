@@ -1,16 +1,21 @@
 import { useId, useState } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useHotToast } from "@ode-react-ui/hooks";
-import { type IResource } from "ode-ts-client";
+import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { APP, type IResource } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { useUpdateResource } from "~/services/queries";
-import { useSelectedResources } from "~/store";
+import { useCreateResource, useUpdateResource } from "~/services/queries";
+import {
+  useCurrentFolder,
+  useSearchParams,
+  useSelectedResources,
+} from "~/store";
 
 interface useEditResourceModalProps {
   resource: IResource;
+  edit: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -24,12 +29,16 @@ interface FormInputs {
 
 export default function useEditResourceModal({
   resource,
+  edit,
   onSuccess,
   onCancel,
 }: useEditResourceModalProps) {
+  const { appCode } = useOdeClient();
   const { t } = useTranslation();
   const updateResource = useUpdateResource();
+  const createResource = useCreateResource();
   const selectedResources = useSelectedResources();
+  const searchParams = useSearchParams();
   const {
     reset,
     register,
@@ -41,14 +50,16 @@ export default function useEditResourceModal({
   });
   const id = useId();
 
+  const currentFolder = useCurrentFolder();
+
   const [versionSlug, setVersionSlug] = useState<number>(new Date().getTime());
-  const [disableSlug, setDisableSlug] = useState<boolean>(!resource.public);
-  const [slug, setSlug] = useState<string>(resource.slug || "");
+  const [disableSlug, setDisableSlug] = useState<boolean>(!resource?.public);
+  const [slug, setSlug] = useState<string>(resource?.slug || "");
   const [correctSlug, setCorrectSlug] = useState<boolean>(false);
   const { hotToast } = useHotToast(Alert);
   const [cover, setCover] = useState<{ name: string; image: string }>({
     name: "",
-    image: selectedResources[0].thumbnail,
+    image: selectedResources[0]?.thumbnail,
   });
 
   const handleUploadImage = (preview: Record<string, string>) => {
@@ -88,32 +99,63 @@ export default function useEditResourceModal({
     setSlug(res);
   }
 
+  const queryclient = useQueryClient();
+
+  const { filters, trashed } = searchParams;
+
+  const queryKey = [
+    "context",
+    {
+      folderId: filters.folder,
+      filters,
+      trashed,
+    },
+  ];
+
   const onSubmit: SubmitHandler<FormInputs> = async function (
     formData: FormInputs,
   ) {
     try {
       // call API
-      await updateResource.mutateAsync({
-        description: formData.description,
-        entId: selectedResources[0].assetId,
-        name: formData.title,
-        public: formData.enablePublic,
-        slug: formData.safeSlug,
-        trashed: selectedResources[0].trashed,
-        thumbnail: cover.image,
-      });
-      setCorrectSlug(false);
+      if (edit) {
+        await updateResource.mutateAsync({
+          description: formData.description || "",
+          entId: selectedResources[0]?.assetId,
+          name: formData.title,
+          public: formData.enablePublic,
+          slug: formData.safeSlug,
+          trashed: selectedResources[0]?.trashed,
+          thumbnail: cover.image,
+        });
+        setCorrectSlug(false);
+      } else {
+        queryclient.invalidateQueries(queryKey);
+        createResource.mutateAsync({
+          name: formData.title,
+          description: formData.description || "",
+          thumbnail: cover.image,
+          folder:
+            currentFolder?.id === "default"
+              ? undefined
+              : parseInt(currentFolder?.id || ""),
+          public: formData.enablePublic,
+          slug: formData.safeSlug,
+          app: appCode,
+        });
+      }
       hotToast.success(
         <>
           <strong>{t("explorer.resource.updated")}</strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
-          <p>
-            Public:{" "}
-            {formData.enablePublic
-              ? t("explorer.enable.public.yes")
-              : t("explorer.enable.public.no")}
-          </p>
+          {edit && appCode === APP.BLOG && (
+            <p>
+              Public:{" "}
+              {formData.enablePublic
+                ? t("explorer.enable.public.yes")
+                : t("explorer.enable.public.no")}
+            </p>
+          )}
         </>,
       );
       onSuccess?.();

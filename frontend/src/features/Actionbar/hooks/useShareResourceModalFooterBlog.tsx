@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { type BlogResource, type BlogUpdate } from "ode-ts-client";
+import { type BlogResource, type BlogUpdate } from "edifice-ts-client";
 
 import { useSelectedResources } from "~/store";
 
@@ -35,7 +35,7 @@ export default function useShareResourceModalFooterBlog() {
     useState<PublicationType>((publishType as PublicationType) || "RESTRAINT");
 
   const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
-    description,
+    description: description || "",
     entId: assetId,
     name,
     public: !!pub,

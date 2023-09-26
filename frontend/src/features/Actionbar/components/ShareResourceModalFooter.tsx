@@ -1,4 +1,4 @@
-import { APP } from "ode-ts-client";
+import { APP } from "edifice-ts-client";
 
 import ShareResourceModalFooterBlog from "./ShareResourceModalFooterBlog";
 import { useSearchParams } from "~/store";

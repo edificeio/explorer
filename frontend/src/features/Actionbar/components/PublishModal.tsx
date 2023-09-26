@@ -11,15 +11,18 @@ import {
   Dropdown,
   DropdownTrigger,
   SelectList,
-} from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { type PublishResult } from "ode-ts-client";
+  useOdeClient,
+  usePaths,
+  TextArea,
+} from "@edifice-ui/react";
+import { type PublishResult } from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
 import { useSelectedResources } from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface PublishModalProps {
   isOpen: boolean;
@@ -32,7 +35,8 @@ export default function PublishModal({
   onSuccess,
   onCancel,
 }: PublishModalProps) {
-  const { currentApp, appCode } = useOdeClient();
+  const { currentApp } = useOdeClient();
+  const [imagePath] = usePaths();
   const { t } = useTranslation();
 
   const {
@@ -79,7 +83,7 @@ export default function PublishModal({
                 {t("bpr.form.publication.cover.title")}
               </div>
               <ImagePicker
-                app={currentApp}
+                app={getAppParams().libraryAppFilter ?? currentApp}
                 src={selectedResources[0]?.thumbnail}
                 label={t("bpr.form.publication.cover.upload.label")}
                 addButtonLabel={t("bpr.form.publication.cover.upload.add")}
@@ -113,14 +117,12 @@ export default function PublishModal({
 
               <FormControl id="description" isRequired>
                 <Label>{t("bpr.form.publication.description")}</Label>
-                <Input
-                  type="text"
+                <TextArea
                   {...register("description", { required: true })}
                   placeholder={t(
                     "bpr.form.publication.description.placeholder",
                   )}
                   size="md"
-                  aria-required={true}
                 />
               </FormControl>
             </div>
@@ -252,7 +254,7 @@ export default function PublishModal({
               {t("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
-                src="/assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
+                src={`${imagePath}image-cc-by-nc-sa.svg`}
                 alt="Icone licence Creative
                   Commons"
               />

@@ -144,6 +144,7 @@ public class ExplorerController extends BaseController {
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
+                json.put("searchConfig", config.getJsonObject("search-config", new JsonObject()));
                 final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
@@ -591,6 +592,7 @@ public class ExplorerController extends BaseController {
         final ResourceSearchOperation op = new ResourceSearchOperation();
         op.setResourceType(queryParams.getString("resource_type"));
         op.setId(queryParams.getValue("id"));
+        op.setAssetId(queryParams.getValue("asset_id[]"));
         op.setOrder(orderField, orderAsc);
         op.setOwner(queryParams.getBoolean("owner"));
         op.setPub(queryParams.getBoolean("public"));

@@ -1,16 +1,18 @@
-import { Card } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useScrollToTop } from "@ode-react-ui/hooks";
+import { useScrollToTop, Card, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
-import { type ID, type IFolder } from "ode-ts-client";
+import { InfiniteData } from "@tanstack/react-query";
+import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
 
-import { useSearchContext } from "~/services/queries";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
-const FoldersList = (): JSX.Element | null => {
+const FoldersList = ({
+  data,
+  isFetching,
+}: {
+  data: InfiniteData<ISearchResults> | undefined;
+  isFetching: boolean;
+}): JSX.Element | null => {
   const { currentApp } = useOdeClient();
-
-  const { data, isFetching } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -25,7 +27,7 @@ const FoldersList = (): JSX.Element | null => {
       );
       setSelectedFolders(
         selectedFolders.filter(
-          (selectedFolder) => selectedFolder.id !== folder.id,
+          (selectedFolder: { id: string }) => selectedFolder.id !== folder.id,
         ),
       );
     } else {
@@ -54,9 +56,11 @@ const FoldersList = (): JSX.Element | null => {
             }}
           >
             <Card
-              app={currentApp}
-              name={name}
-              isFolder
+              app={currentApp!}
+              options={{
+                type: "folder",
+                name,
+              }}
               isLoading={isFetching}
               isSelected={folderIds.includes(folder.id)}
               onOpen={() => {

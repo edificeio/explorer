@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { FOLDER } from "ode-ts-client";
+import { FOLDER } from "edifice-ts-client";
 
 export default function useTreeView() {
   const [isOpenedModal, setOpenedModal] = useState<boolean>(false);

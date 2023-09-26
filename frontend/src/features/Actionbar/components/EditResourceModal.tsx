@@ -4,18 +4,20 @@ import {
   Heading,
   ImagePicker,
   Input,
+  TextArea,
   Label,
   Modal,
-} from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+  useOdeClient,
+} from "@edifice-ui/react";
+import { APP } from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 import { BlogPublic } from "./BlogPublic";
 import useEditResourceModal from "../hooks/useEditResourceModal";
 import { useActions } from "~/services/queries";
-import { isActionAvailable } from "~/shared/utils/isActionAvailable";
 import { useSelectedResources } from "~/store";
+import { isActionAvailable } from "~/utils/isActionAvailable";
 
 interface EditResourceModalProps {
   isOpen: boolean;
@@ -52,6 +54,7 @@ export default function EditResourceModal({
     onPublicChange,
   } = useEditResourceModal({
     resource,
+    edit,
     onSuccess,
     onCancel,
   });
@@ -81,17 +84,19 @@ export default function EditResourceModal({
         </Heading>
 
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <div className="d-flex flex-column flex-md-row gap-16 mb-24">
-            <ImagePicker
-              app={currentApp}
-              src={resource?.thumbnail}
-              label={t("explorer.imagepicker.label")}
-              addButtonLabel={t("explorer.imagepicker.button.add")}
-              deleteButtonLabel={t("explorer.imagepicker.button.delete")}
-              onUploadImage={handleUploadImage}
-              onDeleteImage={handleDeleteImage}
-              className="align-self-center"
-            />
+          <div className="d-flex gap-16 mb-24">
+            <div>
+              <ImagePicker
+                app={currentApp}
+                src={resource?.thumbnail}
+                label={t("explorer.imagepicker.label")}
+                addButtonLabel={t("explorer.imagepicker.button.add")}
+                deleteButtonLabel={t("explorer.imagepicker.button.delete")}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
+                className="align-self-center mt-8"
+              />
+            </div>
 
             <div className="col">
               <FormControl id="title" className="mb-16" isRequired>
@@ -115,8 +120,7 @@ export default function EditResourceModal({
               </FormControl>
               <FormControl id="description" isOptional>
                 <Label>{t("description")}</Label>
-                <Input
-                  type="text"
+                <TextArea
                   defaultValue={edit ? resource?.description : ""}
                   {...register("description")}
                   placeholder={t(
@@ -128,20 +132,21 @@ export default function EditResourceModal({
             </div>
           </div>
 
-          {isActionAvailable({ workflow: "createPublic", actions }) && (
-            <BlogPublic
-              appCode={appCode}
-              correctSlug={correctSlug}
-              disableSlug={disableSlug}
-              onCopyToClipBoard={onCopyToClipBoard}
-              onPublicChange={onPublicChange}
-              onSlugChange={onSlugChange}
-              resource={resource}
-              slug={slug}
-              versionSlug={versionSlug}
-              register={register}
-            />
-          )}
+          {appCode === APP.BLOG &&
+            isActionAvailable({ workflow: "createPublic", actions }) && (
+              <BlogPublic
+                appCode={appCode}
+                correctSlug={correctSlug}
+                disableSlug={disableSlug}
+                onCopyToClipBoard={onCopyToClipBoard}
+                onPublicChange={onPublicChange}
+                onSlugChange={onSlugChange}
+                resource={resource}
+                slug={slug}
+                versionSlug={versionSlug}
+                register={register}
+              />
+            )}
         </form>
       </Modal.Body>
 

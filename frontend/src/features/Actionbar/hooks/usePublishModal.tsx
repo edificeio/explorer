@@ -1,22 +1,21 @@
 import { useState } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Alert, useOdeClient, useHotToast } from "@edifice-ui/react";
 import {
   RESOURCE,
   type PublishParameters,
   type PublishResult,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
-import { http } from "~/shared/constants";
-import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
-import { useStoreActions, useResourceIds, useSelectedResources } from "~/store";
+import { http } from "~/constants";
+import { useStoreActions, useSelectedResources } from "~/store";
+import { capitalizeFirstLetter } from "~/utils/capitalizeFirstLetter";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -49,7 +48,6 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const resourceIds = useResourceIds();
   const { publishApi } = useStoreActions();
 
   const {
@@ -109,7 +107,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application: capitalizeFirstLetter(appName),
+        application:
+          getAppParams().libraryAppFilter ?? capitalizeFirstLetter(appName),
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,

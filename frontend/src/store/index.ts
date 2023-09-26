@@ -1,5 +1,5 @@
-import { type TreeNode } from "@ode-react-ui/components";
-import { useScrollToTop as scrollToTop } from "@ode-react-ui/hooks";
+import { useScrollToTop as scrollToTop } from "@edifice-ui/react";
+import { type TreeNode } from "@edifice-ui/react";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import {
   FOLDER,
@@ -13,22 +13,22 @@ import {
   type IFilter,
   type IOrder,
   type ISearchResults,
-} from "ode-ts-client";
+} from "edifice-ts-client";
+import { t } from "i18next";
 import { create } from "zustand";
 
 import {
-  createResource,
   goToResource,
   printResource,
   publishResource,
   searchContext,
 } from "~/services/api";
-import { arrayUnique } from "~/shared/utils/arrayUnique";
-import { findNodeById } from "~/shared/utils/findNodeById";
-import { getAncestors } from "~/shared/utils/getAncestors";
-import { getAppParams } from "~/shared/utils/getAppParams";
-import { hasChildren } from "~/shared/utils/hasChildren";
-import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
+import { arrayUnique } from "~/utils/arrayUnique";
+import { findNodeById } from "~/utils/findNodeById";
+import { getAncestors } from "~/utils/getAncestors";
+import { getAppParams } from "~/utils/getAppParams";
+import { hasChildren } from "~/utils/hasChildren";
+import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const { app, types, filters, orders } = getAppParams();
 
@@ -45,9 +45,11 @@ interface State {
   resourceIds: ID[];
   resourceIsTrash: boolean;
   resourceActionDisable: boolean;
+  searchConfig: { minLength: number };
   updaters: {
+    setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
-    setSearchParams: (searchParams: ISearchParameters) => void;
+    setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
@@ -58,7 +60,6 @@ interface State {
     clearSelectedItems: () => void;
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
-    createResource: () => void;
     printSelectedResource: () => void;
     publishApi: (
       type: ResourceType,
@@ -85,11 +86,15 @@ interface State {
 export const useStoreContext = create<State>()((set, get) => ({
   filters,
   orders,
+  searchConfig: { minLength: 1 },
   searchParams: {
     app,
     types,
     filters: {
       folder: "default",
+      owner: undefined,
+      shared: undefined,
+      public: undefined,
     },
     orders: { updatedAt: "desc" },
     pagination: {
@@ -101,7 +106,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   },
   treeData: {
     id: FOLDER.DEFAULT,
-    name: "Mes blogs",
+    name: t("explorer.filters.mine"),
     section: true,
     children: [],
   },
@@ -116,9 +121,15 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIsTrash: false,
   resourceActionDisable: false,
   updaters: {
+    setSearchConfig: (searchConfig: { minLength: number }) =>
+      set((state) => ({
+        searchConfig: { ...state.searchConfig, ...searchConfig },
+      })),
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
-    setSearchParams: (searchParams: ISearchParameters) =>
-      set(() => ({ searchParams })),
+    setSearchParams: (searchParams: Partial<ISearchParameters>) =>
+      set(({ searchParams: originalSearchParams }) => ({
+        searchParams: { ...originalSearchParams, ...searchParams },
+      })),
     setSelectedFolders: (selectedFolders: IFolder[]) =>
       set(() => ({ selectedFolders })),
     setSelectedResources: (selectedResources: IResource[]) =>
@@ -140,19 +151,6 @@ export const useStoreContext = create<State>()((set, get) => ({
         goToResource({ searchParams, assetId: resource.assetId });
       } catch (error) {
         console.error("explorer open failed: ", error);
-      }
-    },
-    createResource: () => {
-      try {
-        const { searchParams, currentFolder } = get();
-        const folderId = parseInt(currentFolder?.id || "default");
-        const safeFolderId = isNaN(folderId) ? undefined : folderId;
-        createResource({
-          searchParams,
-          safeFolderId: safeFolderId as string | undefined,
-        });
-      } catch (error) {
-        console.error("explorer create failed: ", error);
       }
     },
     printSelectedResource: () => {
@@ -318,10 +316,21 @@ export const useSelectedFolders = () =>
 export const useSelectedResources = () =>
   useStoreContext((state) => state.selectedResources);
 
+export const useSearchConfig = () =>
+  useStoreContext((state) => state.searchConfig);
+
 export const useFolderIds = () => useStoreContext((state) => state.folderIds);
 
 export const useResourceIds = () =>
   useStoreContext((state) => state.resourceIds);
+
+export const useResourceAssetIds = () =>
+  useStoreContext((state) => state.selectedResources.map((r) => r.assetId));
+
+export const useResourceWithoutIds = () =>
+  useStoreContext((state) =>
+    state.selectedResources.filter((r) => r.assetId === r.id),
+  );
 
 export const useCurrentFolder = () =>
   useStoreContext((state) => state.currentFolder);

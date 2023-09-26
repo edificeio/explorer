@@ -11,7 +11,8 @@ import {
   type UpdateParameters,
   type IFolder,
   type PublishParameters,
-} from "ode-ts-client";
+  CreateParameters,
+} from "edifice-ts-client";
 
 /**
  * searchContext API
@@ -90,10 +91,12 @@ export const updateFolder = async ({
 export const trashAll = async ({
   searchParams,
   resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
@@ -102,7 +105,9 @@ export const trashAll = async ({
     resourceIds,
     folderIds,
   };
-  return await odeServices.resource(searchParams.app).trashAll(trashParameters);
+  return await odeServices
+    .resource(searchParams.app)
+    .trashAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -113,10 +118,12 @@ export const trashAll = async ({
 export const deleteAll = async ({
   searchParams,
   resourceIds,
+  useAssetIds,
   folderIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const deleteParameters: DeleteParameters = {
@@ -127,7 +134,7 @@ export const deleteAll = async ({
   };
   return await odeServices
     .resource(searchParams.app)
-    .deleteAll(deleteParameters);
+    .deleteAll(deleteParameters, useAssetIds);
 };
 
 /**
@@ -139,9 +146,11 @@ export const restoreAll = async ({
   searchParams,
   resourceIds,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const trashParameters: Omit<TrashParameters, "trash"> = {
@@ -152,7 +161,7 @@ export const restoreAll = async ({
   };
   return await odeServices
     .resource(searchParams.app)
-    .restoreAll(trashParameters);
+    .restoreAll(trashParameters, useAssetIds);
 };
 
 /**
@@ -165,10 +174,12 @@ export const moveToFolder = async ({
   resourceIds,
   folderId,
   folderIds,
+  useAssetIds,
 }: {
   searchParams: ISearchParameters;
   folderId: ID;
   resourceIds: ID[];
+  useAssetIds: boolean;
   folderIds: ID[];
 }) => {
   const moveParameters: MoveParameters = {
@@ -180,7 +191,7 @@ export const moveToFolder = async ({
 
   return await odeServices
     .resource(searchParams.app)
-    .moveToFolder(moveParameters);
+    .moveToFolder(moveParameters, useAssetIds);
 };
 
 /**
@@ -234,11 +245,14 @@ export const goToResource = ({
 
 export const createResource = ({
   searchParams,
-  safeFolderId,
+  params,
 }: {
   searchParams: ISearchParameters;
-  safeFolderId: ID | undefined;
-}) => odeServices.resource(searchParams.app).gotoForm(safeFolderId);
+  params: CreateParameters;
+}) => {
+  const result = odeServices.resource(searchParams.app).create(params);
+  return result;
+};
 
 export const printResource = ({
   searchParams,
@@ -246,7 +260,10 @@ export const printResource = ({
 }: {
   searchParams: ISearchParameters;
   assetId: ID;
-}) => odeServices.resource(searchParams.app).gotoPrint(assetId);
+}) => {
+  const result = odeServices.resource(searchParams.app).gotoPrint(assetId);
+  return result;
+};
 
 export const publishResource = async ({
   searchParams,

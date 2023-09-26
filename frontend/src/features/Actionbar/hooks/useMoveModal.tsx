@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { type ID } from "ode-ts-client";
+import { type ID } from "edifice-ts-client";
 
 import { useMoveItem } from "~/services/queries";
 import {
