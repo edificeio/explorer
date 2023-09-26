@@ -10,7 +10,7 @@ dependencies:
     version: 1.0.0-develop-pedago.8(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
     specifier: develop-pedago
-    version: 1.0.0-develop-pedago.17(@edifice-ui/icons@1.0.0-develop-pedago.8)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
+    version: 1.0.0-develop-pedago.18(@edifice-ui/icons@1.0.0-develop-pedago.8)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -382,8 +382,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.0.0-develop-pedago.17(@edifice-ui/icons@1.0.0-develop-pedago.8)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
-    resolution: {integrity: sha512-sbzSrcYH3ilRwIMnyI/hJeMtxktV8XQC8R6wmbXNZBFt28RuxAH0uyRbQVbQk3S5GvbzVt762rcCTcePdmVrlQ==}
+  /@edifice-ui/react@1.0.0-develop-pedago.18(@edifice-ui/icons@1.0.0-develop-pedago.8)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
+    resolution: {integrity: sha512-EPQw2duAW7SdMAlYZoEbGbiG9MuxIOOz2ZvPi+tQdr/XUZmv8uh3dnNJhPORQKWxrQF9B+3rw9/i8YCrULozNg==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.2
@@ -617,8 +617,8 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@eslint-community/regexpp@4.8.1:
-    resolution: {integrity: sha512-PWiOzLIUAjN/w5K17PoF4n6sKBw0gqLHPhywmYHP4t1VFQQVYeb1yWsJwnMVEMl3tUHME7X/SJPZLmtG7XBDxQ==}
+  /@eslint-community/regexpp@4.8.2:
+    resolution: {integrity: sha512-0MGxAVt1m/ZK+LTJp/j0qF7Hz97D9O/FH9Ms3ltnyIdDD57cbb1ACIQTkbHvNXtWDv5TPq7w5Kq56+cNukbo7g==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
     dev: true
 
@@ -834,14 +834,14 @@ packages:
     resolution: {integrity: sha512-e2S8wmY1ePfM517PqCG80CcE48Xs5k0pwJzuDZsfE8IZRRBfOMCF+XqnFxu6mWtyivum1MQm4aco+WIt6Coimw==}
     dependencies:
       '@types/prop-types': 15.7.7
-      '@types/scheduler': 0.16.3
+      '@types/scheduler': 0.16.4
       csstype: 3.1.2
 
-  /@types/scheduler@0.16.3:
-    resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
+  /@types/scheduler@0.16.4:
+    resolution: {integrity: sha512-2L9ifAGl7wmXwP4v3pN4p2FLhD0O1qsJpvKmNin5VA8+UvNVb447UDaAEV6UdrkA+m/Xs58U1RFps44x6TFsVQ==}
 
-  /@types/semver@7.5.2:
-    resolution: {integrity: sha512-7aqorHYgdNO4DM36stTiGO3DvKoex9TQRwsJU6vMaFGyqpBA1MNZkz+PG3gaNUPpTAOYhT1WR7M1JyA3fbS9Cw==}
+  /@types/semver@7.5.3:
+    resolution: {integrity: sha512-OxepLK9EuNEIPxWNME+C6WwbRAOOI2o2BaQEGzz5Lu2e4Z5eDnEo+/aVEDMIXywoJitJ7xWd641wrGLZdtwRyw==}
     dev: true
 
   /@typescript-eslint/eslint-plugin@6.3.0(@typescript-eslint/parser@6.3.0)(eslint@8.46.0)(typescript@5.1.6):
@@ -855,7 +855,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@eslint-community/regexpp': 4.8.1
+      '@eslint-community/regexpp': 4.8.2
       '@typescript-eslint/parser': 6.3.0(eslint@8.46.0)(typescript@5.1.6)
       '@typescript-eslint/scope-manager': 6.3.0
       '@typescript-eslint/type-utils': 6.3.0(eslint@8.46.0)(typescript@5.1.6)
@@ -957,7 +957,7 @@ packages:
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.46.0)
       '@types/json-schema': 7.0.13
-      '@types/semver': 7.5.2
+      '@types/semver': 7.5.3
       '@typescript-eslint/scope-manager': 6.3.0
       '@typescript-eslint/types': 6.3.0
       '@typescript-eslint/typescript-estree': 6.3.0(typescript@5.1.6)
@@ -1208,7 +1208,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001539
-      electron-to-chromium: 1.4.528
+      electron-to-chromium: 1.4.529
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.21.11)
     dev: true
@@ -1518,8 +1518,8 @@ packages:
       - debug
     dev: true
 
-  /electron-to-chromium@1.4.528:
-    resolution: {integrity: sha512-UdREXMXzLkREF4jA8t89FQjA8WHI6ssP38PMY4/4KhXFQbtImnghh4GkCgrtiZwLKUKVD2iTVXvDVQjfomEQuA==}
+  /electron-to-chromium@1.4.529:
+    resolution: {integrity: sha512-6uyPyXTo8lkv8SWAmjKFbG42U073TXlzD4R8rW3EzuznhFS2olCIAfjjQtV2dV2ar/vRF55KUd3zQYnCB0dd3A==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -1810,7 +1810,7 @@ packages:
     hasBin: true
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.46.0)
-      '@eslint-community/regexpp': 4.8.1
+      '@eslint-community/regexpp': 4.8.2
       '@eslint/eslintrc': 2.1.2
       '@eslint/js': 8.50.0
       '@humanwhocodes/config-array': 0.11.11
