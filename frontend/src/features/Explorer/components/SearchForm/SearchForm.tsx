@@ -110,7 +110,6 @@ export const SearchForm = ({ options }: SearchFormProps) => {
       <Dropdown
         content={
           <SelectList
-            isMonoSelection
             model={selectedFilters}
             onChange={(filter) => {
               setSelectedFilters(filter);
