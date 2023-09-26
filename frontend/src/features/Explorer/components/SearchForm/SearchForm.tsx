@@ -122,6 +122,9 @@ export const SearchForm = ({ options }: SearchFormProps) => {
             icon={<Filter width={20} />}
             title={t("Filtres ")}
             variant="ghost"
+            badgeContent={
+              selectedFilters.length > 0 ? selectedFilters.length : undefined
+            }
           />
         }
       />
