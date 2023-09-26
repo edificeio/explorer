@@ -45,7 +45,9 @@ interface State {
   resourceIds: ID[];
   resourceIsTrash: boolean;
   resourceActionDisable: boolean;
+  searchConfig: { minLength: number };
   updaters: {
+    setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
     setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
@@ -84,6 +86,7 @@ interface State {
 export const useStoreContext = create<State>()((set, get) => ({
   filters,
   orders,
+  searchConfig: { minLength: 1 },
   searchParams: {
     app,
     types,
@@ -118,6 +121,10 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIsTrash: false,
   resourceActionDisable: false,
   updaters: {
+    setSearchConfig: (searchConfig: { minLength: number }) =>
+      set((state) => ({
+        searchConfig: { ...state.searchConfig, ...searchConfig },
+      })),
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
     setSearchParams: (searchParams: Partial<ISearchParameters>) =>
       set(({ searchParams: originalSearchParams }) => ({
@@ -308,6 +315,9 @@ export const useSelectedFolders = () =>
 
 export const useSelectedResources = () =>
   useStoreContext((state) => state.selectedResources);
+
+export const useSearchConfig = () =>
+  useStoreContext((state) => state.searchConfig);
 
 export const useFolderIds = () => useStoreContext((state) => state.folderIds);
 

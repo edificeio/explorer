@@ -21,7 +21,7 @@ import {
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { useCurrentFolder, useStoreActions } from "~/store";
+import { useCurrentFolder, useSearchConfig, useStoreActions } from "~/store";
 
 interface SearchFormProps {
   options: OptionListItemType[];
@@ -38,6 +38,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
   const { appCode } = useOdeClient();
   const currentFolder = useCurrentFolder();
   const { setSearchParams } = useStoreActions();
+  const searchConfig = useSearchConfig()
 
   const handleInputSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newText = event.target.value;
@@ -69,9 +70,9 @@ export const SearchForm = ({ options }: SearchFormProps) => {
     const isPublicSelected = (): boolean | undefined => {
       return selectedFilters.includes(7) ? true : undefined;
     };
-    // auto update search only if searchbar is empty or have at least 3 caracters => else need manual action (enter or click button)
+    // auto update search only if searchbar is empty or have at least X caracters => else need manual action (enter or click button)
     const shouldUpdateSearch =
-      debounceInputSearch.length == 0 || debounceInputSearch.length >= 3;
+      debounceInputSearch.length == 0 || debounceInputSearch.length >= searchConfig.minLength;
     const searchPartial = shouldUpdateSearch
       ? { search: debounceInputSearch ? debounceInputSearch : undefined }
       : {};

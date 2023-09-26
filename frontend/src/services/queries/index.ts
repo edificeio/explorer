@@ -89,7 +89,7 @@ export const useSearchContext = () => {
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
-  const { setTreeData, setSearchParams } = useStoreActions();
+  const { setTreeData, setSearchParams, setSearchConfig } = useStoreActions();
   const { filters, trashed, search } = searchParams;
 
   const queryKey = [
@@ -128,6 +128,9 @@ export const useSearchContext = () => {
             return true;
           }
         });
+      }
+      if(data?.pages[0]?.searchConfig){
+        setSearchConfig(data.pages[0].searchConfig)
       }
       // set tree data
       if (currentFolder?.id === "default") {

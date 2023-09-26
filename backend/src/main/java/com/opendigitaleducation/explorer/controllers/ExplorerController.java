@@ -144,6 +144,7 @@ public class ExplorerController extends BaseController {
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
+                json.put("searchConfig", config.getJsonObject("search-config", new JsonObject()));
                 final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });

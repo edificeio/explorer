@@ -346,8 +346,7 @@ public class ResourceQueryElastic {
         }
         //search text
         if (text.isPresent()) {
-            final JsonArray fields = new JsonArray().add("application").add("contentAll");
-            must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text.get()).put("fields", fields)));
+            must.add(new JsonObject().put("prefix", new JsonObject().put("contentAll", text.get())));
         }
         if (trashed.isPresent()) {
             if(trashed.get()){
