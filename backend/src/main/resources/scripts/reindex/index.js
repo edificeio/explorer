@@ -55,7 +55,9 @@ async function createMapping(client, url, indexName) {
  * @param {{indexName:string, aliasName:string, client:Client}} param0
  */
 async function createAlias({ indexName, aliasName, client }) {
-  console.log(`[createAlias] Création du nouvel alias ${aliasName} vers ${indexName}...`);
+  console.log(
+    `[createAlias] Création du nouvel alias ${aliasName} vers ${indexName}...`
+  );
   await client.indices.updateAliases({
     body: {
       actions: [
@@ -68,7 +70,9 @@ async function createAlias({ indexName, aliasName, client }) {
       ],
     },
   });
-  console.log(`[createAlias] Alias "${aliasName}" créé pour l'index "${indexName}".`);
+  console.log(
+    `[createAlias] Alias "${aliasName}" créé pour l'index "${indexName}".`
+  );
   return undefined;
 }
 /**
@@ -80,7 +84,9 @@ async function updateAlias({ indexName, aliasName, client }) {
     const { body } = await client.indices.getAlias({ name: aliasName });
     const indices = Object.keys(body);
     if (indices.length === 0) {
-      console.log(`[updateAlias] Création du nouvel alias ${aliasName} vers ${indexName}...`);
+      console.log(
+        `[updateAlias] Création du nouvel alias ${aliasName} vers ${indexName}...`
+      );
       await createAlias({ indexName, aliasName, client });
       return undefined;
     } else {
@@ -112,7 +118,9 @@ async function updateAlias({ indexName, aliasName, client }) {
           ],
         },
       });
-      console.log(`[updateAlias] Alias "${aliasName}" créé pour l'index "${indexName}".`);
+      console.log(
+        `[updateAlias] Alias "${aliasName}" créé pour l'index "${indexName}".`
+      );
       return oldIndexName;
     }
   } catch (e) {
@@ -130,26 +138,33 @@ async function updateAlias({ indexName, aliasName, client }) {
 async function deleteIndex({ client, indexName }) {
   console.log(`[deleteIndex] Suppression de l'index ${indexName}`);
   const response = await client.indices.delete({ index: indexName });
-  console.log(`[deleteIndex] Index "${indexName}" supprimé avec succès.`, response.body);
+  console.log(
+    `[deleteIndex] Index "${indexName}" supprimé avec succès.`,
+    response.body
+  );
 }
 /**
  *
- * @param {{client:Client; aliasName: string; newIndexName:string }} param0
+ * @param {{client:Client; aliasName: string; newIndexName:string; oldIndexName: string|undefined }} param0
  */
-async function reindexData({ client, aliasName, newIndexName }) {
-  const { body } = await client.indices.getAlias({ name: aliasName });
-  const indices = Object.keys(body);
-  if (indices.length === 0) {
-    console.error(`Aucun index associé à l'alias '${aliasName}'.`);
-    return;
+async function reindexData({ client, aliasName, newIndexName, oldIndexName }) {
+  if (oldIndexName === undefined) {
+    const { body } = await client.indices.getAlias({ name: aliasName });
+    const indices = Object.keys(body);
+    if (indices.length === 0) {
+      console.error(`Aucun index associé à l'alias '${aliasName}'.`);
+      return;
+    }
+    oldIndexName = indices[0];
   }
-  const sourceIndex = indices[0];
-  console.log(`[reindexData] Reindexation en cours de ${sourceIndex} vers ${newIndexName}`);
+  console.log(
+    `[reindexData] Reindexation en cours de ${oldIndexName} vers ${newIndexName}`
+  );
   const res = await client.reindex({
     waitForCompletion: true,
     body: {
       source: {
-        index: sourceIndex,
+        index: oldIndexName,
       },
       dest: {
         index: newIndexName,
@@ -157,18 +172,18 @@ async function reindexData({ client, aliasName, newIndexName }) {
     },
   });
   console.log(
-    `[reindexData] Reindexation terminé de ${sourceIndex} vers ${newIndexName} en ${res.body.took}ms (nb docs=${res.body.total})`
+    `[reindexData] Reindexation terminé de ${oldIndexName} vers ${newIndexName} en ${res.body.took}ms (nb docs=${res.body.total})`
   );
 }
 /**
  *
- * @param {{listApps: string[]; gitBranch :string; confPath: string; aliasPrefix: string; deleteOld: boolean}}
+ * @param {{listApps: string[]; gitBranch :string; confPath: string; initAlias: boolean; deleteOld: boolean}}
  */
 async function reindexAll({
   listApps,
   gitBranch,
   confPath,
-  aliasPrefix,
+  initAlias,
   deleteOld,
 }) {
   const conf = getConfig(confPath);
@@ -190,7 +205,7 @@ async function reindexAll({
         continue;
       }
       const newIndexName = `${mappingPrefix}${app}-${suffix}`;
-      const aliasName = `${aliasPrefix}-${mappingPrefix}${app}`;
+      const aliasName = `${mappingPrefix}${app}`;
       if (app === FOLDER_APP) {
         const mappingUrl = `https://raw.githubusercontent.com/opendigitaleducation/explorer/${gitBranch}/backend/src/main/resources/es/mappingFolder.json`;
         await createMapping(client, mappingUrl, newIndexName);
@@ -198,18 +213,35 @@ async function reindexAll({
         const mappingUrl = `https://raw.githubusercontent.com/opendigitaleducation/explorer/${gitBranch}/backend/src/main/resources/es/mappingResource.json`;
         await createMapping(client, mappingUrl, newIndexName);
       }
-      await reindexData({ aliasName, client, newIndexName });
-      const oldIndexName = await updateAlias({
-        aliasName,
-        client,
-        indexName: newIndexName,
-      });
-      if (oldIndexName && deleteOld) {
-        await deleteIndex({ client, indexName: oldIndexName });
+      if (initAlias) {
+        // reindex from oldIndex (that has aliasName as name)
+        const oldIndexName = aliasName;
+        await reindexData({ aliasName, client, newIndexName, oldIndexName });
+        // first time: delete index then create alias
+        if (deleteOld) {
+          await deleteIndex({ client, indexName: oldIndexName });
+        }
+        await updateAlias({
+          aliasName,
+          client,
+          indexName: newIndexName,
+        });
+      } else {
+        // reindex from alias
+        await reindexData({ aliasName, client, newIndexName });
+        // update alias before deleting old index
+        const oldIndexName = await updateAlias({
+          aliasName,
+          client,
+          indexName: newIndexName,
+        });
+        if (oldIndexName && deleteOld) {
+          await deleteIndex({ client, indexName: oldIndexName });
+        }
       }
     } catch (e) {
       console.error(
-        `La réindexation a échoué pour l'application ${app}`,
+        `Le processus a échoué pour l'application ${app}`,
         e,
         JSON.stringify(e.meta)
       );
@@ -235,15 +267,15 @@ async function main() {
       type: "string",
       default: DEFAULT_PATH,
     })
-    .option("alias-prefix", {
-      alias: "ap",
-      type: "string",
-      default: "latest",
-    })
     .option("delete-old", {
       alias: "do",
       type: "boolean",
       default: true,
+    })
+    .option("init-alias", {
+      alias: "ia",
+      type: "boolean",
+      default: false,
     })
     .help()
     .alias("help", "h").argv;
@@ -253,7 +285,7 @@ async function main() {
       listApps: argv["list-apps"],
       gitBranch: argv["git-branch"],
       confPath: argv["conf-path"],
-      aliasPrefix: argv["alias-prefix"],
+      initAlias: argv["init-alias"],
       deleteOld: argv["delete-old"],
     });
   } else {
@@ -276,11 +308,11 @@ async function main() {
       name: "gitBranch",
       default: "master",
     });
-    const { prefix } = await inquirer.prompt({
-      message: "Veuillez indiquer le prefix à utiliser pour l'alias",
-      type: "input",
-      name: "prefix",
-      default: "latest",
+    const { initAlias } = await inquirer.prompt({
+      message: "Faut il initialiser les alias?",
+      type: "confirm",
+      name: "initAlias",
+      default: false,
     });
     const { deleteOld } = await inquirer.prompt([
       {
@@ -294,12 +326,15 @@ async function main() {
       listApps: [listApps],
       gitBranch: gitBranch,
       confPath: pathConfig,
-      aliasPrefix: prefix,
+      initAlias: initAlias,
       deleteOld: deleteOld,
     });
   }
 }
-
+/**
+ * first time: ./reindex --list-apps=all --git-branch=master --delete-old=true --init-alias=true
+ * next time: ./reindex --list-apps=all --git-branch=master --delete-old=true --init-alias=false
+ */
 main();
 
 function formatDateToyyyyMMddhhmmss() {
