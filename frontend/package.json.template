@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.2",
+  "version": "1.0.2-%branch%.%generateVersion%",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
