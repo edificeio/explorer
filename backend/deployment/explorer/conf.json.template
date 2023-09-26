@@ -33,7 +33,7 @@
             "migrate-new-folder": true
         },
 	      "projects" : [],
-        "search-config": {minLength: 1},
+        "search-config": {"minLength": 1},
         "publicConf": {
           <% if ("true".equals(xitiSwitch)) { %>
             "xiti": {
