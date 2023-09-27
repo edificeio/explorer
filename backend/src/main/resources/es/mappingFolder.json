@@ -1,7 +1,30 @@
 {
   "settings": {
     "number_of_shards": 1,
-    "number_of_replicas": 1
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "html_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "html_strip"
+          ]
+        },
+        "custom_lowercase_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "my_ascii_folding"
+          ]
+        }
+      },
+      "filter": {
+        "my_ascii_folding": {
+          "type": "asciifolding",
+          "preserve_original": true
+        }
+      }
+    }
   },
   "mappings": {
     "_routing": {
@@ -47,6 +70,11 @@
       },
       "version": {
         "type": "long"
+      },
+      "contentAll": {
+        "type": "text",
+        "store": true,
+        "analyzer": "custom_lowercase_analyzer"
       }
     }
   }

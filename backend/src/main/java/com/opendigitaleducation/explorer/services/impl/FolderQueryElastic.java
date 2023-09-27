@@ -19,6 +19,12 @@ public class FolderQueryElastic {
     private Optional<Integer> size = Optional.empty();
     private Optional<Boolean> trashed = Optional.empty();
     private Optional<String> application = Optional.empty();
+    private Optional<String> text = Optional.empty();
+
+    public FolderQueryElastic withTextSearch(String text) {
+        this.text = Optional.ofNullable(text);
+        return this;
+    }
 
     public FolderQueryElastic withOnlyRoot(boolean onlyRoot) {
         this.parentId.clear();
@@ -90,6 +96,9 @@ public class FolderQueryElastic {
         }
         if (search.getPageSize().isPresent()) {
             this.withSize(search.getPageSize().get().intValue());
+        }
+        if (search.getSearch().isPresent()) {
+            this.withTextSearch(search.getSearch().get());
         }
         return this;
     }
@@ -177,6 +186,12 @@ public class FolderQueryElastic {
             if (appTerm.isPresent()) {
                 filter.add(appTerm.get());
             }
+        }
+        //search text
+        if (text.isPresent()) {
+            final JsonObject prefix = new JsonObject();
+            prefix.put("query", text.get());
+            filter.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
         }
         //trashed
         if (trashed.isPresent()) {

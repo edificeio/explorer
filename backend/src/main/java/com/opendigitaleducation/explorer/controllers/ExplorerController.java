@@ -613,6 +613,7 @@ public class ExplorerController extends BaseController {
         op.setStartIndex(queryParams.getLong("folder_start_idx", 0l));
         op.setParentId(queryParams.getValue("folder"));
         op.setTrashed(queryParams.getBoolean("trashed"));
+        op.setSearch(queryParams.getValue("search"));
         return op;
     }
 
