@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 
 import { useOdeClient } from "@edifice-ui/react";
 import { APP } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { useCurrentFolder, useStoreActions } from "~/store";
+import { useCurrentFolder, useSearchParams, useStoreActions } from "~/store";
 
 export const useSelectedFilters = () => {
   const { appCode, currentApp } = useOdeClient();
@@ -15,6 +16,7 @@ export const useSelectedFilters = () => {
   ]);
 
   const currentFolder = useCurrentFolder();
+  const searchParams = useSearchParams();
   const { setSearchParams } = useStoreActions();
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export const useSelectedFilters = () => {
     };
 
     setSearchParams({
+      ...searchParams,
       filters: {
         owner: isOwnerSelected(),
         public: isPublicSelected(),

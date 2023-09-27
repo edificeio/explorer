@@ -23,7 +23,7 @@ export const useSearchForm = () => {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const newText = event.target.value;
-    setInputSearch(newText);
+    setInputSearch(newText.toString());
   };
 
   const handleKeyPress = (event: React.KeyboardEvent): void => {
@@ -61,9 +61,6 @@ export const useSearchForm = () => {
   useEffect(() => {
     if (status === "select") setInputSearch("");
   }, [status]);
-  useEffect(() => {
-    setInputSearch(() => searchParams.search?.toString() ?? "");
-  }, [searchParams.search]);
 
   return {
     inputSearch,
