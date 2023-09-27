@@ -62,6 +62,10 @@ export const useSearchForm = () => {
     if (status === "select") setInputSearch("");
   }, [status]);
 
+  useEffect(() => {
+    setInputSearch(() => searchParams.search?.toString() ?? "");
+  }, [searchParams]);
+
   return {
     inputSearch,
     handleInputSearchChange,
