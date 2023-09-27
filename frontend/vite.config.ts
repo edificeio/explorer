@@ -73,6 +73,9 @@ export default ({ mode }: { mode: string }) => {
   };
 
   return defineConfig({
+    esbuild: {
+      drop: ["console", "debugger"],
+    },
     build,
     plugins,
     server,
