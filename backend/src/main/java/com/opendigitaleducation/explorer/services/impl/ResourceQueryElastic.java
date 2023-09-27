@@ -347,9 +347,8 @@ public class ResourceQueryElastic {
         //search text
         if (text.isPresent()) {
             final JsonObject prefix = new JsonObject();
-            prefix.put("case_insensitive", true);
-            prefix.put("value", text.get());
-            must.add(new JsonObject().put("prefix", new JsonObject().put("contentAll", prefix)));
+            prefix.put("query", text.get());
+            must.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
         }
         if (trashed.isPresent()) {
             if(trashed.get()){
