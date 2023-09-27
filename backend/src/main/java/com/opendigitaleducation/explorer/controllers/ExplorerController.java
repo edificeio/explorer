@@ -599,7 +599,7 @@ public class ExplorerController extends BaseController {
         op.setShared(queryParams.getBoolean("shared"));
         op.setFavorite(queryParams.getBoolean("favorite"));
         op.setParentId(queryParams.getValue("folder"));
-        op.setSearch(queryParams.getString("search"));
+        op.setSearch(queryParams.getValue("search"));
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
