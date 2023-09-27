@@ -49,9 +49,10 @@ const FoldersList = ({
         const { id, name } = folder;
         return (
           <animated.li
-            className="g-col-4"
+            className="g-col-4 z-1"
             key={id}
             style={{
+              position: "relative",
               ...springs,
             }}
           >
