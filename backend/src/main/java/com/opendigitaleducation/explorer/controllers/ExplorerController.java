@@ -614,6 +614,8 @@ public class ExplorerController extends BaseController {
         op.setParentId(queryParams.getValue("folder"));
         op.setTrashed(queryParams.getBoolean("trashed"));
         op.setSearch(queryParams.getValue("search"));
+        // in case of search search everywhere
+        op.setSearchEverywhere(op.getSearch().isPresent());
         return op;
     }
 

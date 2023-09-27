@@ -157,9 +157,11 @@ public class FolderQueryElastic {
         final JsonObject query = new JsonObject();
         final JsonObject bool = new JsonObject();
         final JsonArray filter = new JsonArray();
+        final JsonArray must = new JsonArray();
         payload.put("query", query);
         query.put("bool", bool);
         bool.put("filter", filter);
+        bool.put("must", must);
         //by creator
         final Optional<JsonObject> creatorTerm = createTerm("creatorId", creatorId);
         if (creatorTerm.isPresent()) {
@@ -191,7 +193,7 @@ public class FolderQueryElastic {
         if (text.isPresent()) {
             final JsonObject prefix = new JsonObject();
             prefix.put("query", text.get());
-            filter.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
+            must.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
         }
         //trashed
         if (trashed.isPresent()) {
