@@ -8,9 +8,8 @@ import {
   Breadcrumb,
   AppHeader,
 } from "@edifice-ui/react";
-import { APP, type IAction } from "edifice-ts-client";
+import { type IAction } from "edifice-ts-client";
 import { IWebApp } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
 
 import { ExplorerBreadcrumb } from "~/components/ExplorerBreadcrumb";
 import ActionBarContainer from "~/features/Actionbar/components/ActionBarContainer";
@@ -46,7 +45,7 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { currentApp, appCode } = useOdeClient();
+  const { currentApp } = useOdeClient();
 
   const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
     useOnboardingModal();
@@ -62,28 +61,6 @@ export default function Explorer(): JSX.Element | null {
   );
 
   const { libraryUrl } = useLibraryUrl();
-
-  const { t } = useTranslation();
-
-  const searchFormOptions = [
-    { label: t("explorer.filter.owner", { ns: appCode }), value: 1 },
-    { label: t("explorer.filter.shared", { ns: appCode }), value: 2 },
-    ...(currentApp?.displayName == APP.EXERCIZER
-      ? [{ label: "Exercices interactifs", value: 3 }]
-      : []),
-    ...(currentApp?.displayName == APP.EXERCIZER
-      ? [{ label: "Exercices à rendre", value: 4 }]
-      : []),
-    ...(currentApp?.displayName == "pages"
-      ? [{ label: "Projets publics", value: 5 }]
-      : []),
-    ...(currentApp?.displayName == "pages"
-      ? [{ label: "Projets internes", value: 6 }]
-      : []),
-    ...(currentApp?.displayName == APP.BLOG
-      ? [{ label: t("explorer.filter.public", { ns: appCode }), value: 7 }]
-      : []),
-  ];
 
   return (
     <>
@@ -115,7 +92,7 @@ export default function Explorer(): JSX.Element | null {
           )}
         </Grid.Col>
         <Grid.Col sm="4" md="8" lg="6" xl="9">
-          <SearchForm options={searchFormOptions} />
+          <SearchForm />
           <ExplorerBreadcrumb />
           <List />
         </Grid.Col>

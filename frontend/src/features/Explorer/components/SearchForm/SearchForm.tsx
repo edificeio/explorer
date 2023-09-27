@@ -7,22 +7,17 @@ import {
   DropdownTrigger,
   SelectList,
   useOdeClient,
-  type OptionListItemType,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 import { useSearchForm } from "../../hooks/useSearchForm";
 import { useSelectedFilters } from "../../hooks/useSelectedFilters";
 
-interface SearchFormProps {
-  options: OptionListItemType[];
-}
-
-export const SearchForm = ({ options }: SearchFormProps) => {
+export const SearchForm = () => {
   const { appCode } = useOdeClient();
   const { t } = useTranslation();
 
-  const [selectedFilters, setSelectedFilters] = useSelectedFilters();
+  const { selectedFilters, options, setSelectedFilters } = useSelectedFilters();
 
   const {
     inputSearch,
@@ -55,6 +50,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
       <Dropdown
         content={
           <SelectList
+            isMonoSelection
             model={selectedFilters}
             onChange={(filter) => setSelectedFilters(filter)}
             options={options}
