@@ -129,8 +129,8 @@ export const useSearchContext = () => {
           }
         });
       }
-      if(data?.pages[0]?.searchConfig){
-        setSearchConfig(data.pages[0].searchConfig)
+      if (data?.pages[0]?.searchConfig) {
+        setSearchConfig(data.pages[0].searchConfig);
       }
       // set tree data
       if (currentFolder?.id === "default") {

@@ -1,12 +1,3 @@
-import {
-  ChangeEvent,
-  KeyboardEvent,
-  MouseEvent,
-  useDeferredValue,
-  useEffect,
-  useState,
-} from "react";
-
 import { Filter } from "@edifice-ui/icons";
 import {
   FormControl,
@@ -17,75 +8,28 @@ import {
   SelectList,
   useOdeClient,
   type OptionListItemType,
-  useDebounce,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { useCurrentFolder, useSearchConfig, useStoreActions } from "~/store";
+import { useSearchForm } from "../../hooks/useSearchForm";
+import { useSelectedFilters } from "../../hooks/useSelectedFilters";
 
 interface SearchFormProps {
   options: OptionListItemType[];
 }
 
 export const SearchForm = ({ options }: SearchFormProps) => {
-  const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
-    [],
-  );
-  const [inputSearch, setInputSearch] = useState<string>("");
-  const deferredInputSearch = useDeferredValue(inputSearch);
-  const debounceInputSearch = useDebounce<string>(inputSearch, 500);
-  const { t } = useTranslation();
   const { appCode } = useOdeClient();
-  const currentFolder = useCurrentFolder();
-  const { setSearchParams } = useStoreActions();
-  const searchConfig = useSearchConfig()
+  const { t } = useTranslation();
 
-  const handleInputSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newText = event.target.value;
-    setInputSearch(newText);
-  };
-  const handleKeyPress = (event: KeyboardEvent): void => {
-    if (event.key === "Enter" || event.key === "Return") {
-      setSearchParams({
-        search: debounceInputSearch ? debounceInputSearch : undefined,
-      });
-      event.preventDefault();
-    }
-  };
-  const handleSearchSubmit = (e: MouseEvent): void => {
-    setSearchParams({
-      search: debounceInputSearch ? debounceInputSearch : undefined,
-    });
-    e.preventDefault();
-  };
-  useEffect(() => {
-    const isOwnerSelected = (): boolean | undefined => {
-      return selectedFilters.includes(1) ? true : undefined;
-    };
+  const [selectedFilters, setSelectedFilters] = useSelectedFilters();
 
-    const isSharedSelected = (): boolean | undefined => {
-      return selectedFilters.includes(2) ? true : undefined;
-    };
-
-    const isPublicSelected = (): boolean | undefined => {
-      return selectedFilters.includes(7) ? true : undefined;
-    };
-    // auto update search only if searchbar is empty or have at least X caracters => else need manual action (enter or click button)
-    const shouldUpdateSearch =
-      debounceInputSearch.length == 0 || debounceInputSearch.length >= searchConfig.minLength;
-    const searchPartial = shouldUpdateSearch
-      ? { search: debounceInputSearch ? debounceInputSearch : undefined }
-      : {};
-    setSearchParams({
-      ...searchPartial,
-      filters: {
-        owner: isOwnerSelected(),
-        public: isPublicSelected(),
-        shared: isSharedSelected(),
-        folder: currentFolder ? currentFolder.id : "default",
-      },
-    });
-  }, [debounceInputSearch, selectedFilters, currentFolder, setSearchParams]);
+  const {
+    deferredInputSearch,
+    handleInputSearchChange,
+    handleKeyPress,
+    handleSearchSubmit,
+  } = useSearchForm();
 
   return (
     <form

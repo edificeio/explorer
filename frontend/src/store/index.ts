@@ -46,6 +46,7 @@ interface State {
   resourceIsTrash: boolean;
   resourceActionDisable: boolean;
   searchConfig: { minLength: number };
+  status: string | undefined;
   updaters: {
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
@@ -120,6 +121,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIds: [],
   resourceIsTrash: false,
   resourceActionDisable: false,
+  status: undefined,
   updaters: {
     setSearchConfig: (searchConfig: { minLength: number }) =>
       set((state) => ({
@@ -255,6 +257,11 @@ export const useStoreContext = create<State>()((set, get) => ({
 
       set((state) => ({
         ...state,
+        searchParams: {
+          ...state.searchParams,
+          search: undefined,
+        },
+        status: "select",
         selectedResources: [],
       }));
 
@@ -359,3 +366,5 @@ export const useHasSelectedNodes = () => {
   const selectedNodesIds = useSelectedNodesIds();
   return selectedNodesIds.length > 1;
 };
+
+export const useTreeStatus = () => useStoreContext((state) => state.status);
