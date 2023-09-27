@@ -25,7 +25,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
   const [selectedFilters, setSelectedFilters] = useSelectedFilters();
 
   const {
-    deferredInputSearch,
+    inputSearch,
     handleInputSearchChange,
     handleKeyPress,
     handleSearchSubmit,
@@ -42,7 +42,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
           placeholder={t("explorer.label.search", { ns: appCode })}
           size="lg"
           noValidationIcon
-          value={deferredInputSearch}
+          value={inputSearch}
           onChange={handleInputSearchChange}
           onKeyDown={handleKeyPress}
         />
@@ -56,9 +56,7 @@ export const SearchForm = ({ options }: SearchFormProps) => {
         content={
           <SelectList
             model={selectedFilters}
-            onChange={(filter) => {
-              setSelectedFilters(filter);
-            }}
+            onChange={(filter) => setSelectedFilters(filter)}
             options={options}
           />
         }

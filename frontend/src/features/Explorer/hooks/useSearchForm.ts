@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useDeferredValue, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { useDebounce } from "@edifice-ui/react";
 
@@ -12,7 +12,6 @@ import {
 
 export const useSearchForm = () => {
   const [inputSearch, setInputSearch] = useState<string>("");
-  const deferredInputSearch = useDeferredValue(inputSearch);
   const debounceInputSearch = useDebounce<string>(inputSearch, 500);
   const searchConfig = useSearchConfig();
   const status = useTreeStatus();
@@ -35,6 +34,7 @@ export const useSearchForm = () => {
       event.preventDefault();
     }
   };
+
   const handleSearchSubmit = (e: React.MouseEvent): void => {
     setSearchParams({
       search: debounceInputSearch ? debounceInputSearch : undefined,
@@ -63,15 +63,11 @@ export const useSearchForm = () => {
   }, [debounceInputSearch, searchConfig.minLength]);
 
   useEffect(() => {
-    if (status === "select") {
-      setInputSearch("");
-    }
+    if (status === "select") setInputSearch("");
   }, [status]);
 
-  console.log({ searchParams });
-
   return {
-    deferredInputSearch,
+    inputSearch,
     handleInputSearchChange,
     handleKeyPress,
     handleSearchSubmit,
