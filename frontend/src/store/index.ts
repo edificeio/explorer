@@ -128,10 +128,47 @@ export const useStoreContext = create<State>()((set, get) => ({
         searchConfig: { ...state.searchConfig, ...searchConfig },
       })),
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
-    setSearchParams: (searchParams: Partial<ISearchParameters>) =>
-      set(({ searchParams: originalSearchParams }) => ({
-        searchParams: { ...originalSearchParams, ...searchParams },
-      })),
+    setSearchParams: (searchParams: Partial<ISearchParameters>) => {
+      set(({ searchParams: originalSearchParams }) => {
+        if (originalSearchParams.search != searchParams.search) {
+          if (searchParams.search) {
+            // reset selection and folder if we are searching
+            return {
+              selectedFolders: [],
+              selectedNodesIds: [],
+              selectedResources: [],
+              currentFolder: undefined,
+              searchParams: {
+                ...originalSearchParams,
+                ...searchParams,
+                filters: {
+                  ...originalSearchParams.filters,
+                  folder: undefined,
+                },
+              },
+            };
+          } else {
+            // reset selection if we are not searching
+            return {
+              selectedFolders: [],
+              selectedNodesIds: [],
+              selectedResources: [],
+              searchParams: {
+                ...originalSearchParams,
+                ...searchParams,
+                filters: {
+                  ...originalSearchParams.filters,
+                },
+              },
+            };
+          }
+        } else {
+          return {
+            searchParams: { ...originalSearchParams, ...searchParams },
+          };
+        }
+      });
+    },
     setSelectedFolders: (selectedFolders: IFolder[]) =>
       set(() => ({ selectedFolders })),
     setSelectedResources: (selectedResources: IResource[]) =>
@@ -197,6 +234,7 @@ export const useStoreContext = create<State>()((set, get) => ({
           },
           searchParams: {
             ...searchParams,
+            search: undefined,
             filters: {
               ...searchParams.filters,
               folder: folderId,

@@ -11,11 +11,11 @@ import {
 } from "~/store";
 
 export const useSearchForm = () => {
+  const searchParams = useSearchParams();
   const [inputSearch, setInputSearch] = useState<string>("");
   const debounceInputSearch = useDebounce<string>(inputSearch, 500);
   const searchConfig = useSearchConfig();
   const status = useTreeStatus();
-  const searchParams = useSearchParams();
 
   const { setSearchParams } = useStoreActions();
 
@@ -55,16 +55,15 @@ export const useSearchForm = () => {
     setSearchParams({
       ...searchParams,
       ...searchPartial,
-      filters: {
-        ...searchParams.filters,
-        folder: undefined,
-      },
     });
   }, [debounceInputSearch, searchConfig.minLength]);
 
   useEffect(() => {
     if (status === "select") setInputSearch("");
   }, [status]);
+  useEffect(() => {
+    setInputSearch(() => searchParams.search?.toString() ?? "");
+  }, [searchParams.search]);
 
   return {
     inputSearch,

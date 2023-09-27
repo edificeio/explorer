@@ -46,7 +46,6 @@ import {
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";
-import { fullTextSearch } from "~/utils/fullTextSearch";
 import { getAppParams } from "~/utils/getAppParams";
 import { moveNode } from "~/utils/moveNode";
 import { updateNode } from "~/utils/updateNode";
@@ -119,39 +118,30 @@ export const useSearchContext = () => {
       await queryClient.cancelQueries({ queryKey });
       // copy folders
       const folders: IFolder[] = [...(data?.pages[0]?.folders ?? [])];
-      // filter according search (all folders are returned by backend)
-      if (data?.pages[0]?.folders) {
-        data.pages[0].folders = data.pages[0].folders.filter((folder) => {
-          if (searchParams.search) {
-            return fullTextSearch(folder.name, searchParams.search.toString());
-          } else {
-            return true;
-          }
-        });
-      }
       if (data?.pages[0]?.searchConfig) {
         setSearchConfig(data.pages[0].searchConfig);
       }
-      // set tree data
-      if (currentFolder?.id === "default") {
-        setTreeData({
-          id: FOLDER.DEFAULT,
-          section: true,
-          children: folders.map(
-            (folder: IFolder) => new TreeNodeFolderWrapper(folder),
-          ),
-          name: t("explorer.filters.mine", { ns: appCode }),
-        });
-      } else {
-        setTreeData(
-          wrapTreeNode(
-            treeData,
-            folders,
-            searchParams.filters.folder || FOLDER.DEFAULT,
-          ),
-        );
+      if (!searchParams.search) {
+        // set tree data only if we are not searching
+        if (currentFolder?.id === "default") {
+          setTreeData({
+            id: FOLDER.DEFAULT,
+            section: true,
+            children: folders.map(
+              (folder: IFolder) => new TreeNodeFolderWrapper(folder),
+            ),
+            name: t("explorer.filters.mine", { ns: appCode }),
+          });
+        } else {
+          setTreeData(
+            wrapTreeNode(
+              treeData,
+              folders,
+              searchParams.filters.folder || FOLDER.DEFAULT,
+            ),
+          );
+        }
       }
-
       setSearchParams({
         ...searchParams,
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
