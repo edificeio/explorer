@@ -604,6 +604,8 @@ public class ExplorerController extends BaseController {
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
         op.setTrashed(queryParams.getBoolean("trashed"));
+        // in case of search search everywhere
+        op.setSearchEverywhere(op.getSearch().isPresent());
         return op;
     }
 
