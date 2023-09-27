@@ -254,9 +254,8 @@ export default function PublishModal({
               {t("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
-                src={`${imagePath}image-cc-by-nc-sa.svg`}
-                alt="Icone licence Creative
-                  Commons"
+                src={`${imagePath}/common/image-creative-commons.png`}
+                alt="licence creative commons"
               />
             </li>
             <li>{t("bpr.form.publication.licence.text.2")}</li>
