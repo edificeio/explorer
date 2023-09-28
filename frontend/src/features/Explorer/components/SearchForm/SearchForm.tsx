@@ -59,7 +59,7 @@ export const SearchForm = () => {
         trigger={
           <DropdownTrigger
             icon={<Filter width={20} />}
-            title={t("Filtres ")}
+            title={t("explorer.filters")}
             variant="ghost"
             badgeContent={
               selectedFilters.length > 0 ? selectedFilters.length : undefined
