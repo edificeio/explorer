@@ -1,9 +1,9 @@
-import { EmptyScreen, usePaths } from "@edifice-ui/react";
+import { EmptyScreen, useOdeClient, usePaths } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 export default function EmptyScreenNoContentInFolder(): JSX.Element | null {
   const [imagePath] = usePaths();
-  const { appCode } = useTranslation();
+  const { appCode } = useOdeClient();
   const { t } = useTranslation();
 
   return (
