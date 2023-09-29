@@ -162,6 +162,7 @@ async function reindexData({ client, aliasName, newIndexName, oldIndexName }) {
   );
   const res = await client.reindex({
     waitForCompletion: true,
+    timeout: '2m',
     body: {
       source: {
         index: oldIndexName,
@@ -195,6 +196,7 @@ async function reindexAll({
       username: conf.es.user,
       password: conf.es.password,
     },
+    requestTimeout: 120000,
   });
   const safeListApps = new Set(
     listApps.includes(ALL_APPS) ? [FOLDER_APP, ...conf.apps] : listApps
