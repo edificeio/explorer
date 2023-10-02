@@ -11,9 +11,15 @@ export const useSelectedFilters = () => {
   const { appCode, currentApp } = useOdeClient();
   const { t } = useTranslation();
 
-  const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>([
-    0,
-  ]);
+  const [selectedFilters, setSelectedFilters] = useState<string>("");
+
+  const handleOnSelectFilter = (value: string) => {
+    if (value === "0") {
+      setSelectedFilters("");
+      return;
+    }
+    setSelectedFilters(value);
+  };
 
   const currentFolder = useCurrentFolder();
   const searchParams = useSearchParams();
@@ -21,15 +27,15 @@ export const useSelectedFilters = () => {
 
   useEffect(() => {
     const isOwnerSelected = (): boolean | undefined => {
-      return selectedFilters.includes(1) ? true : undefined;
+      return selectedFilters.includes("1") ? true : undefined;
     };
 
     const isSharedSelected = (): boolean | undefined => {
-      return selectedFilters.includes(2) ? true : undefined;
+      return selectedFilters.includes("2") ? true : undefined;
     };
 
     const isPublicSelected = (): boolean | undefined => {
-      return selectedFilters.includes(7) ? true : undefined;
+      return selectedFilters.includes("7") ? true : undefined;
     };
 
     setSearchParams({
@@ -44,25 +50,25 @@ export const useSelectedFilters = () => {
   }, [currentFolder, setSearchParams, selectedFilters]);
 
   const options = [
-    { label: t("explorer.filter.all", { ns: appCode }), value: 0 },
-    { label: t("explorer.filter.owner", { ns: appCode }), value: 1 },
-    { label: t("explorer.filter.shared", { ns: appCode }), value: 2 },
+    { label: t("explorer.filter.all", { ns: appCode }), value: "0" },
+    { label: t("explorer.filter.owner", { ns: appCode }), value: "1" },
+    { label: t("explorer.filter.shared", { ns: appCode }), value: "2" },
     ...(currentApp?.displayName == APP.EXERCIZER
-      ? [{ label: "Exercices interactifs", value: 3 }]
+      ? [{ label: "Exercices interactifs", value: "3" }]
       : []),
     ...(currentApp?.displayName == APP.EXERCIZER
-      ? [{ label: "Exercices à rendre", value: 4 }]
+      ? [{ label: "Exercices à rendre", value: "4" }]
       : []),
     ...(currentApp?.displayName == "pages"
-      ? [{ label: "Projets publics", value: 5 }]
+      ? [{ label: "Projets publics", value: "5" }]
       : []),
     ...(currentApp?.displayName == "pages"
-      ? [{ label: "Projets internes", value: 6 }]
+      ? [{ label: "Projets internes", value: "6" }]
       : []),
     ...(currentApp?.displayName == APP.BLOG
-      ? [{ label: t("explorer.filter.public", { ns: appCode }), value: 7 }]
+      ? [{ label: t("explorer.filter.public", { ns: appCode }), value: "7" }]
       : []),
   ];
 
-  return { selectedFilters, options, setSelectedFilters };
+  return { selectedFilters, options, handleOnSelectFilter };
 };

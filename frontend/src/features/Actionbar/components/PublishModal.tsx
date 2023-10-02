@@ -9,8 +9,6 @@ import {
   ImagePicker,
   Select,
   Dropdown,
-  DropdownTrigger,
-  SelectList,
   useOdeClient,
   usePaths,
   TextArea,
@@ -46,9 +44,9 @@ export default function PublishModal({
     formState: { isDirty, isValid },
     handleUploadImage,
     selectedActivities,
-    setSelectedActivities,
+    selectActivities,
     selectedSubjectAreas,
-    setSelectedSubjectAreas,
+    selectSubjects,
     handleDeleteImage,
     loaderPublish,
     cover,
@@ -136,46 +134,46 @@ export default function PublishModal({
 
           <div className="d-flex flex-column flex-md-row gap-16 row mb-24">
             <div className="col d-flex">
-              <Dropdown
-                trigger={
-                  <DropdownTrigger
-                    title={t("bpr.form.publication.type")}
-                    size="md"
-                    grow={true}
-                    badgeContent={selectedActivities?.length}
-                  />
-                }
-                content={
-                  <SelectList
-                    options={activityTypeOptions}
-                    model={selectedActivities}
-                    onChange={(activities: Array<string | number>) =>
-                      setSelectedActivities(activities)
-                    }
-                  />
-                }
-              />
+              <Dropdown block>
+                <Dropdown.Trigger
+                  size="md"
+                  label={t("bpr.form.publication.type")}
+                  badgeContent={selectedActivities?.length}
+                />
+                <Dropdown.Menu>
+                  {activityTypeOptions.map((option, index) => (
+                    <Dropdown.CheckboxItem
+                      key={index}
+                      value={option.value}
+                      model={selectedActivities}
+                      onChange={() => selectActivities(option.value)}
+                    >
+                      {option.label}
+                    </Dropdown.CheckboxItem>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
             <div className="col d-flex">
-              <Dropdown
-                trigger={
-                  <DropdownTrigger
-                    title={t("bpr.form.publication.discipline")}
-                    size="md"
-                    grow={true}
-                    badgeContent={selectedSubjectAreas?.length}
-                  />
-                }
-                content={
-                  <SelectList
-                    options={subjectAreaOptions}
-                    model={selectedSubjectAreas}
-                    onChange={(subjectAreas: Array<string | number>) =>
-                      setSelectedSubjectAreas(subjectAreas)
-                    }
-                  />
-                }
-              />
+              <Dropdown block>
+                <Dropdown.Trigger
+                  size="md"
+                  label={t("bpr.form.publication.discipline")}
+                  badgeContent={selectedSubjectAreas?.length}
+                />
+                <Dropdown.Menu>
+                  {subjectAreaOptions.map((option, index) => (
+                    <Dropdown.CheckboxItem
+                      key={index}
+                      value={option.value}
+                      model={selectedSubjectAreas}
+                      onChange={() => selectSubjects(option.value)}
+                    >
+                      {option.label}
+                    </Dropdown.CheckboxItem>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
             <div className="col">
               <FormControl id="language" isRequired>

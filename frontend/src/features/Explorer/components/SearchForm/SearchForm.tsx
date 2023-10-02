@@ -1,11 +1,11 @@
+import { Fragment } from "react";
+
 import { Filter } from "@edifice-ui/icons";
 import {
   FormControl,
   Input,
   SearchButton,
   Dropdown,
-  DropdownTrigger,
-  SelectList,
   useOdeClient,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,8 @@ export const SearchForm = () => {
   const { appCode } = useOdeClient();
   const { t } = useTranslation();
 
-  const { selectedFilters, options, setSelectedFilters } = useSelectedFilters();
+  const { selectedFilters, options, handleOnSelectFilter } =
+    useSelectedFilters();
 
   const {
     inputSearch,
@@ -25,6 +26,8 @@ export const SearchForm = () => {
     handleKeyPress,
     handleSearchSubmit,
   } = useSearchForm();
+
+  const count = selectedFilters.length > 0 ? selectedFilters.length : undefined;
 
   return (
     <form
@@ -47,26 +50,43 @@ export const SearchForm = () => {
           onClick={handleSearchSubmit}
         />
       </FormControl>
-      <Dropdown
-        content={
-          <SelectList
-            isMonoSelection
-            model={selectedFilters}
-            onChange={(filter) => setSelectedFilters(filter)}
-            options={options}
-          />
-        }
-        trigger={
-          <DropdownTrigger
-            icon={<Filter width={20} />}
-            title={t("explorer.filters")}
-            variant="ghost"
-            badgeContent={
-              selectedFilters.length > 0 ? selectedFilters.length : undefined
+      <Dropdown placement="bottom-end">
+        <Dropdown.Trigger
+          label={t("explorer.filters")}
+          icon={<Filter width={20} />}
+          variant="ghost"
+          badgeContent={count}
+        />
+        <Dropdown.Menu>
+          {options.map((option) => {
+            if (option.value === "0") {
+              return (
+                <Fragment key="0">
+                  <Dropdown.RadioItem
+                    value={option.value}
+                    model={selectedFilters}
+                    onChange={() => handleOnSelectFilter(option.value)}
+                  >
+                    {option.label}
+                  </Dropdown.RadioItem>
+                  <Dropdown.Separator />
+                </Fragment>
+              );
             }
-          />
-        }
-      />
+
+            return (
+              <Dropdown.RadioItem
+                key={option.value}
+                value={option.value}
+                model={selectedFilters}
+                onChange={() => handleOnSelectFilter(option.value)}
+              >
+                {option.label}
+              </Dropdown.RadioItem>
+            );
+          })}
+        </Dropdown.Menu>
+      </Dropdown>
     </form>
   );
 };

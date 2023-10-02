@@ -52,6 +52,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
 
   const {
     register,
+    watch,
+    setValue,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<InputProps>({ mode: "onChange" });
@@ -63,6 +65,40 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   const [selectedSubjectAreas, setSelectedSubjectAreas] = useState<
     Array<string | number>
   >([]);
+
+  const selectActivities = (value: string | number) => {
+    let checked = [...selectedActivities];
+    const findIndex = checked.findIndex(
+      (item: string | number): boolean => item === value,
+    );
+
+    if (!selectedActivities.includes(value)) {
+      checked = [...selectedActivities, value];
+    } else {
+      checked = selectedActivities.filter(
+        (_, index: number) => index !== findIndex,
+      );
+    }
+
+    setSelectedActivities(checked);
+  };
+
+  const selectSubjects = (value: string | number) => {
+    let checked = [...selectedSubjectAreas];
+    const findIndex = checked.findIndex(
+      (item: string | number): boolean => item === value,
+    );
+
+    if (!selectedSubjectAreas.includes(value)) {
+      checked = [...selectedSubjectAreas, value];
+    } else {
+      checked = selectedSubjectAreas.filter(
+        (_, index: number) => index !== findIndex,
+      );
+    }
+
+    setSelectedSubjectAreas(checked);
+  };
 
   function handleUploadImage(preview: Record<string, string>) {
     setCover(preview);
@@ -145,6 +181,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   };
 
   return {
+    watch,
+    setValue,
     selectedResources,
     register,
     handleSubmit,
@@ -153,9 +191,9 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     handleDeleteImage,
     handleUploadImage,
     selectedActivities,
-    setSelectedActivities,
+    selectActivities,
     selectedSubjectAreas,
-    setSelectedSubjectAreas,
+    selectSubjects,
     loaderPublish,
     cover,
   };

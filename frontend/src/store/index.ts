@@ -130,7 +130,6 @@ export const useStoreContext = create<State>()((set, get) => ({
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
     setSearchParams: (searchParams: Partial<ISearchParameters>) => {
       set(({ searchParams: previousSearchParams }) => {
-        console.log(previousSearchParams.search !== searchParams.search);
         if (previousSearchParams.search !== searchParams.search) {
           if (searchParams.search) {
             // reset selection and folder if we are searching

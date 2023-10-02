@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@edifice-ui/icons':
-    specifier: develop
-    version: 1.0.0-develop.10(react-dom@18.2.0)(react@18.2.0)
+    specifier: develop-pedago
+    version: 1.1.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
-    specifier: develop
-    version: 1.0.0-develop.12(@edifice-ui/icons@1.0.0-develop.10)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
+    specifier: develop-pedago
+    version: 1.1.0-develop-pedago.2(@edifice-ui/icons@1.1.0-develop-pedago.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -88,9 +88,12 @@ devDependencies:
   csstype:
     specifier: 3.1.2
     version: 3.1.2
+  edifice-bootstrap:
+    specifier: develop-pedago
+    version: 1.1.0-develop-pedago.4
   edifice-ts-client:
-    specifier: develop
-    version: 1.0.0-develop.10
+    specifier: develop-pedago
+    version: 1.0.0-develop-pedago.14
   eslint:
     specifier: 8.46.0
     version: 8.46.0
@@ -202,7 +205,7 @@ packages:
     dependencies:
       '@babel/compat-data': 7.22.20
       '@babel/helper-validator-option': 7.22.15
-      browserslist: 4.21.11
+      browserslist: 4.22.1
       lru-cache: 5.1.1
       semver: 6.3.1
     dev: true
@@ -372,8 +375,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.0.0-develop.10(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-Ov17kJMZzu14vka3aAXOvciL7oIJSAALkp6jjN0loNfLZE1f8Np8BXNgZqVsRV0O71S9LATpeGz4euUsJWOjXw==}
+  /@edifice-ui/icons@1.1.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-bSgo/N/pIaOlWoW+prbb5vGF6/1y5FOpZ9NUxNmWYVBlZkuLr3uAgh41v8L8WCxB39+gCNcxBfeiDXj5x/MWFw==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -382,8 +385,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.0.0-develop.12(@edifice-ui/icons@1.0.0-develop.10)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
-    resolution: {integrity: sha512-vJJJt0rRIg8Kkzfq4YpCE/AA46lY+DPTLXPyhgJ/NZlk52CLYsGHXJrHbAioH0jFGNP4hpjwHAKu5+UYgN6aNQ==}
+  /@edifice-ui/react@1.1.0-develop-pedago.2(@edifice-ui/icons@1.1.0-develop-pedago.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
+    resolution: {integrity: sha512-PdGWmopaaY2yLebfp6ZxAJJHdCs8CEfz2sM6kerZ8jf8dT2X1fbC6jLkzMofeSPulsQs60eijuUu5PXFECFnJg==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.2
@@ -395,7 +398,8 @@ packages:
       react-i18next: 13.0.1
       swiper: 10.0.3
     dependencies:
-      '@edifice-ui/icons': 1.0.0-develop.10(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.1.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0)
+      '@floating-ui/react': 0.25.4(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
       '@tanstack/react-query': 4.32.6(react-dom@18.2.0)(react@18.2.0)
@@ -617,8 +621,8 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@eslint-community/regexpp@4.8.2:
-    resolution: {integrity: sha512-0MGxAVt1m/ZK+LTJp/j0qF7Hz97D9O/FH9Ms3ltnyIdDD57cbb1ACIQTkbHvNXtWDv5TPq7w5Kq56+cNukbo7g==}
+  /@eslint-community/regexpp@4.9.1:
+    resolution: {integrity: sha512-Y27x+MBLjXa+0JWDhykM3+JE+il3kHKAEqabfEWq3SDhZjLYb6/BHL/JKFnH3fe207JaXkyDo685Oc2Glt6ifA==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
     dev: true
 
@@ -643,6 +647,47 @@ packages:
     resolution: {integrity: sha512-NCC3zz2+nvYd+Ckfh87rA47zfu2QsQpvc6k1yzTk+b9KzRj0wkGa8LSoGOXN6Zv4lRf/EIoZ80biDh9HOI+RNQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@floating-ui/core@1.5.0:
+    resolution: {integrity: sha512-kK1h4m36DQ0UHGj5Ah4db7R0rHemTqqO0QLvUqi1/mUUp3LuAWbWxdxSIf/XsnH9VS6rRVPLJCncjRzUvyCLXg==}
+    dependencies:
+      '@floating-ui/utils': 0.1.6
+    dev: false
+
+  /@floating-ui/dom@1.5.3:
+    resolution: {integrity: sha512-ClAbQnEqJAKCJOEbbLo5IUlZHkNszqhuxS4fHAVxRPXPya6Ysf2G8KypnYcOTpx6I8xcgF9bbHb6g/2KpbV8qA==}
+    dependencies:
+      '@floating-ui/core': 1.5.0
+      '@floating-ui/utils': 0.1.6
+    dev: false
+
+  /@floating-ui/react-dom@2.0.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-5qhlDvjaLmAst/rKb3VdlCinwTF4EYMiVxuuc/HVUjs46W0zgtbMmAZ1UTsDrRTxRmUEzl92mOtWbeeXL26lSQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      '@floating-ui/dom': 1.5.3
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@floating-ui/react@0.25.4(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-lWRQ/UiTvSIBxohn0/2HFHEmnmOVRjl7j6XcRJuLH0ls6f/9AyHMWVzkAJFuwx0n9gaEeCmg9VccCSCJzbEJig==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      '@floating-ui/react-dom': 2.0.2(react-dom@18.2.0)(react@18.2.0)
+      '@floating-ui/utils': 0.1.6
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tabbable: 6.2.0
+    dev: false
+
+  /@floating-ui/utils@0.1.6:
+    resolution: {integrity: sha512-OfX7E2oUDYxtBvsuS4e/jSn4Q9Qb6DzgeYtsAdkPZ47znpoNsMgZw0+tVijiv3uGNR6dgNlty6r9rzIzHjtd/A==}
+    dev: false
 
   /@humanwhocodes/config-array@0.11.11:
     resolution: {integrity: sha512-N2brEuAadi0CcdeMXUkhbZB84eskAc8MEX1By6qEchoVywSgXPIjou4rYsl0V3Hj0ZnuGycGCjdNgockbzeWNA==}
@@ -713,6 +758,10 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
+    dev: true
+
+  /@popperjs/core@2.11.7:
+    resolution: {integrity: sha512-Cr4OjIkipTtcXKjAsm8agyleBuDHvxzeBoa1v543lbv1YaIwQjESsVcmjiWiPEbC1FIeHOG/Op9kdCmAmiS3Kw==}
     dev: true
 
   /@popperjs/core@2.11.8:
@@ -788,7 +837,7 @@ packages:
       '@tanstack/react-query': 4.32.6(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      superjson: 1.13.1
+      superjson: 1.13.3
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: true
 
@@ -821,8 +870,8 @@ packages:
     resolution: {integrity: sha512-0mHckf6D2DiIAzh8fM8f3HQCvMKDpK94YQ0DSVkfWTG9BZleYIWudw9cJxX8oCk9bM+vAkDyujDV6dmKHbvQpg==}
     dev: true
 
-  /@types/prop-types@15.7.7:
-    resolution: {integrity: sha512-FbtmBWCcSa2J4zL781Zf1p5YUBXQomPEcep9QZCfRfQgTxz3pJWiDFLebohZ9fFntX5ibzOkSsrJ0TEew8cAog==}
+  /@types/prop-types@15.7.8:
+    resolution: {integrity: sha512-kMpQpfZKSCBqltAJwskgePRaYRFukDkm1oItcAbC3gNELR20XIBcN9VRgg4+m8DKsTfkWeA4m4Imp4DDuWy7FQ==}
 
   /@types/react-dom@18.2.7:
     resolution: {integrity: sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA==}
@@ -833,7 +882,7 @@ packages:
   /@types/react@18.2.19:
     resolution: {integrity: sha512-e2S8wmY1ePfM517PqCG80CcE48Xs5k0pwJzuDZsfE8IZRRBfOMCF+XqnFxu6mWtyivum1MQm4aco+WIt6Coimw==}
     dependencies:
-      '@types/prop-types': 15.7.7
+      '@types/prop-types': 15.7.8
       '@types/scheduler': 0.16.4
       csstype: 3.1.2
 
@@ -855,7 +904,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@eslint-community/regexpp': 4.8.2
+      '@eslint-community/regexpp': 4.9.1
       '@typescript-eslint/parser': 6.3.0(eslint@8.46.0)(typescript@5.1.6)
       '@typescript-eslint/scope-manager': 6.3.0
       '@typescript-eslint/type-utils': 6.3.0(eslint@8.46.0)(typescript@5.1.6)
@@ -1188,6 +1237,14 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
+  /bootstrap@5.3.0(@popperjs/core@2.11.7):
+    resolution: {integrity: sha512-UnBV3E3v4STVNQdms6jSGO2CvOkjUMdDAVR2V5N4uCMdaIkaQjbcEAMqRimDHIs4uqBYzDAKCQwCB+97tJgHQw==}
+    peerDependencies:
+      '@popperjs/core': ^2.11.7
+    dependencies:
+      '@popperjs/core': 2.11.7
+    dev: true
+
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
     dependencies:
@@ -1202,15 +1259,15 @@ packages:
       fill-range: 7.0.1
     dev: true
 
-  /browserslist@4.21.11:
-    resolution: {integrity: sha512-xn1UXOKUz7DjdGlg9RrUr0GGiWzI97UQJnugHtH0OLDfJB7jMgoIkYvRIEO1l9EeEERVqeqLYOcFBW9ldjypbQ==}
+  /browserslist@4.22.1:
+    resolution: {integrity: sha512-FEVc202+2iuClEhZhrWy6ZiAcRLvNMyYcxZ8raemul1DYVOVdFsbqckWLdsixQZCpJlwe77Z3UTalE7jsjnKfQ==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001539
-      electron-to-chromium: 1.4.529
+      caniuse-lite: 1.0.30001542
+      electron-to-chromium: 1.4.537
       node-releases: 2.0.13
-      update-browserslist-db: 1.0.13(browserslist@4.21.11)
+      update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
 
   /call-bind@1.0.2:
@@ -1225,8 +1282,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite@1.0.30001539:
-    resolution: {integrity: sha512-hfS5tE8bnNiNvEOEkm8HElUHroYwlqMMENEzELymy77+tJ6m+gA2krtHl5hxJaj71OlpC2cHZbdSMX1/YEqEkA==}
+  /caniuse-lite@1.0.30001542:
+    resolution: {integrity: sha512-UrtAXVcj1mvPBFQ4sKd38daP8dEcXXr5sQe6QNNinaPd0iA/cxg9/l3VrSdL73jgw5sKyuQ6jNgiKO12W3SsVA==}
     dev: true
 
   /chalk@2.4.2:
@@ -1507,8 +1564,16 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /edifice-ts-client@1.0.0-develop.10:
-    resolution: {integrity: sha512-IX9vwcS3xJFlnq7iAGN8Re+SAWdttBH3bzZZxzPYBggJhdTa/oc72EgWEYHLlyBd4BYp/v3XfXeiJeMGXJRMPg==}
+  /edifice-bootstrap@1.1.0-develop-pedago.4:
+    resolution: {integrity: sha512-l+yeD1/c1fgtLQQm9gI+rIXSipa7m6V+Lj2+P4k0WKsdW/oYHrtW2NhkLJNcgMbp0eWb9BE394yr/67xBti8Aw==}
+    engines: {node: 16 || 18}
+    dependencies:
+      '@popperjs/core': 2.11.7
+      bootstrap: 5.3.0(@popperjs/core@2.11.7)
+    dev: true
+
+  /edifice-ts-client@1.0.0-develop-pedago.14:
+    resolution: {integrity: sha512-rfS7++APED6Up4pZHsMMLYMVtwX7PWBh7tL+lYwwXJ+2/tZYLH9xP7p8tBvdwOLtTKbmmu2trQqPFUOIsp1mng==}
     engines: {node: 16 || 18}
     dependencies:
       axios: 1.4.0
@@ -1518,8 +1583,8 @@ packages:
       - debug
     dev: true
 
-  /electron-to-chromium@1.4.529:
-    resolution: {integrity: sha512-6uyPyXTo8lkv8SWAmjKFbG42U073TXlzD4R8rW3EzuznhFS2olCIAfjjQtV2dV2ar/vRF55KUd3zQYnCB0dd3A==}
+  /electron-to-chromium@1.4.537:
+    resolution: {integrity: sha512-W1+g9qs9hviII0HAwOdehGYkr+zt7KKdmCcJcjH0mYg6oL8+ioT3Skjmt7BLoAQqXhjf40AXd+HlR4oAWMlXjA==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -1810,7 +1875,7 @@ packages:
     hasBin: true
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.46.0)
-      '@eslint-community/regexpp': 4.8.2
+      '@eslint-community/regexpp': 4.9.1
       '@eslint/eslintrc': 2.1.2
       '@eslint/js': 8.50.0
       '@humanwhocodes/config-array': 0.11.11
@@ -2856,8 +2921,8 @@ packages:
     hasBin: true
     dev: true
 
-  /postcss@8.4.30:
-    resolution: {integrity: sha512-7ZEao1g4kd68l97aWG/etQKPKq07us0ieSZ2TnFDk11i0ZfDW2AwKHYU8qv4MZKqN2fdBfg+7q0ES06UA73C1g==}
+  /postcss@8.4.31:
+    resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.6
@@ -3075,8 +3140,8 @@ packages:
       glob: 7.2.3
     dev: true
 
-  /rollup@3.29.3:
-    resolution: {integrity: sha512-T7du6Hum8jOkSWetjRgbwpM6Sy0nECYrYRSmZjayFcOddtKJWU4d17AC3HNUk7HRuqy4p+G7aEZclSHytqUmEg==}
+  /rollup@3.29.4:
+    resolution: {integrity: sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
@@ -3311,8 +3376,8 @@ packages:
       inline-style-parser: 0.1.1
     dev: false
 
-  /superjson@1.13.1:
-    resolution: {integrity: sha512-AVH2eknm9DEd3qvxM4Sq+LTCkSXE2ssfh1t11MHMXyYXFQyQ1HLgVvV+guLTsaQnJU3gnaVo34TohHPulY/wLg==}
+  /superjson@1.13.3:
+    resolution: {integrity: sha512-mJiVjfd2vokfDxsQPOwJ/PtanO87LhpYY88ubI5dUB1Ab58Txbyje3+jpm+/83R/fevaq/107NNhtYBLuoTrFg==}
     engines: {node: '>=10'}
     dependencies:
       copy-anything: 3.0.5
@@ -3347,6 +3412,10 @@ packages:
   /swiper@10.1.0:
     resolution: {integrity: sha512-E+wh+hcSbwlRfXuwBTclcOOikOjNdSF0a2Sdg3J4cIWtHO64A7SaLRfezfrJ67CW3GEc15AduYU2YKlElsjqsQ==}
     engines: {node: '>= 4.7.0'}
+    dev: false
+
+  /tabbable@6.2.0:
+    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
     dev: false
 
   /text-table@0.2.0:
@@ -3483,13 +3552,13 @@ packages:
       which-boxed-primitive: 1.0.2
     dev: true
 
-  /update-browserslist-db@1.0.13(browserslist@4.21.11):
+  /update-browserslist-db@1.0.13(browserslist@4.22.1):
     resolution: {integrity: sha512-xebP81SNcPuNpPP3uzeW1NYXxI3rxyJzF3pD6sH4jE7o/IX+WtSpwnVU+qIsDPyk0d3hmFQ7mjqc6AtV604hbg==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
-      browserslist: 4.21.11
+      browserslist: 4.22.1
       escalade: 3.1.1
       picocolors: 1.0.0
     dev: true
@@ -3554,8 +3623,8 @@ packages:
     dependencies:
       '@types/node': 20.4.8
       esbuild: 0.18.20
-      postcss: 8.4.30
-      rollup: 3.29.3
+      postcss: 8.4.31
+      rollup: 3.29.4
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
