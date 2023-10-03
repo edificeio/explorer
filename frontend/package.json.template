@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@edifice-ui/icons": "develop",
-    "@edifice-ui/react": "develop",
+    "@edifice-ui/react": "1.0.0",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.32.6",
     "dayjs": "1.11.9",
