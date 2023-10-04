@@ -21,7 +21,7 @@ Prérequis: Il faut désactiver la création des indexs par vertx dans la config
 }
 ```
 
-Pour créer les indexs il faut éxecuter la commande suivante pour initialiser les alias (init-alias=true)
+Pour créer les indexs il faut éxecuter la commande suivante
 
 ```shell
 ./migrate --list-apps=all --git-branch=master
