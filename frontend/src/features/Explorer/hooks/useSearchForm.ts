@@ -29,7 +29,7 @@ export const useSearchForm = () => {
   const handleKeyPress = (event: React.KeyboardEvent): void => {
     if (event.key === "Enter" || event.key === "Return") {
       setSearchParams({
-        search: debounceInputSearch ? debounceInputSearch : undefined,
+        search: inputSearch ? inputSearch : undefined,
       });
       event.preventDefault();
     }
