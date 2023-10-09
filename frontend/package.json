@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.3-develop-pedago-develop-pedago.202309291200",
+  "version": "1.0.3-develop-pedago.202309291200",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -78,7 +78,7 @@
     "concurrently": "8.2.0",
     "csstype": "3.1.2",
     "edifice-bootstrap": "develop-pedago",
-    "edifice-ts-client": "link:../../edifice-ts-client",
+    "edifice-ts-client": "develop-pedago",
     "eslint": "8.46.0",
     "eslint-config-prettier": "9.0.0",
     "eslint-plugin-import": "2.28.0",
