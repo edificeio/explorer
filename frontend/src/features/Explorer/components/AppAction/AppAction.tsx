@@ -9,14 +9,25 @@ import {
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
+import { useStoreActions } from "~/store";
+
 const CreateModal = lazy(
   async () => await import("../../../Actionbar/components/EditResourceModal"),
 );
 
 export default function AppAction() {
   const [isCreateResourceOpen, toggle] = useToggle();
+
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
+
+  const { clearSelectedItems, clearSelectedIds } = useStoreActions();
+
+  const handleOnResourceCreate = () => {
+    clearSelectedItems();
+    clearSelectedIds();
+    toggle();
+  };
 
   return (
     <>
@@ -26,7 +37,7 @@ export default function AppAction() {
         variant="filled"
         leftIcon={<Plus />}
         className="ms-auto"
-        onClick={toggle}
+        onClick={handleOnResourceCreate}
       >
         {t("explorer.create.title")}
       </Button>

@@ -28,13 +28,24 @@ export const TreeViewContainer = () => {
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
   const selectedNodesIds = useSelectedNodesIds();
-  const { goToTrash, selectTreeItem, unfoldTreeItem, foldTreeItem } =
-    useStoreActions();
+  const {
+    goToTrash,
+    selectTreeItem,
+    unfoldTreeItem,
+    foldTreeItem,
+    clearSelectedItems,
+    clearSelectedIds,
+  } = useStoreActions();
 
   const handleTreeItemUnfold = async (folderId: ID) => {
     await unfoldTreeItem(folderId, queryclient);
   };
 
+  const handleOnFolderCreate = () => {
+    clearSelectedItems();
+    clearSelectedIds();
+    toggle();
+  };
   return treeData ? (
     <>
       <TreeView
@@ -56,7 +67,7 @@ export const TreeViewContainer = () => {
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={toggle}
+          onClick={handleOnFolderCreate}
         >
           {t("explorer.folder.new")}
         </Button>
