@@ -84,7 +84,7 @@ export default function EditResourceModal({
         </Heading>
 
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <div className="d-flex gap-16 mb-24">
+          <div className="d-block d-md-flex gap-16 mb-24">
             <div>
               <ImagePicker
                 app={currentApp}
