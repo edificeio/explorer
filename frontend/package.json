@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@edifice-ui/icons": "develop-pedago",
-    "@edifice-ui/react": "develop-pedago",
+    "@edifice-ui/react": "link:../../edifice-ui/packages/react",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.32.6",
     "dayjs": "1.11.9",
