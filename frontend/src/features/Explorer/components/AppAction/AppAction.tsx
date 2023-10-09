@@ -7,8 +7,10 @@ import {
   useToggle,
   LoadingScreen,
 } from "@edifice-ui/react";
+import { IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { useActions } from "~/services/queries";
 import { useStoreActions } from "~/store";
 
 const CreateModal = lazy(
@@ -23,13 +25,17 @@ export default function AppAction() {
 
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
 
+  const { data: actions } = useActions();
+
+  const canCreate = actions?.find((action: IAction) => action.id === "create");
+
   const handleOnResourceCreate = () => {
     clearSelectedItems();
     clearSelectedIds();
     toggle();
   };
 
-  return (
+  return canCreate ? (
     <>
       <Button
         type="button"
@@ -53,5 +59,5 @@ export default function AppAction() {
         )}
       </Suspense>
     </>
-  );
+  ) : null;
 }
