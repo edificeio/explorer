@@ -7,11 +7,12 @@ import {
   useToggle,
   LoadingScreen,
 } from "@edifice-ui/react";
-import { IAction } from "edifice-ts-client";
+import { APP, IAction, odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions } from "~/services/queries";
 import { useStoreActions } from "~/store";
+import { searchContext } from "~/services/api";
 
 const CreateModal = lazy(
   async () => await import("../../../Actionbar/components/EditResourceModal"),
@@ -30,6 +31,10 @@ export default function AppAction() {
   const canCreate = actions?.find((action: IAction) => action.id === "create");
 
   const handleOnResourceCreate = () => {
+    if (appCode == APP.SCRAPBOOK) {
+      odeServices.resource(appCode).gotoCreate();
+      return;
+    }
     clearSelectedItems();
     clearSelectedIds();
     toggle();

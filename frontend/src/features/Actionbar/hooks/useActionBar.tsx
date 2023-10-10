@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-import { Alert, useHotToast } from "@edifice-ui/react";
-import { type IAction, ACTION } from "edifice-ts-client";
+import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
+import { type IAction, ACTION, odeServices, APP } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";
@@ -33,6 +33,7 @@ export default function useActionBar() {
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
   const [clickedAction, setClickedAction] = useState<IAction>();
 
+  const { appCode } = useOdeClient();
   const { t } = useTranslation();
   const { hotToast } = useHotToast(Alert);
 
@@ -187,7 +188,10 @@ export default function useActionBar() {
 
   function onEdit() {
     if (resourceIds && resourceIds.length > 0) {
-      setOpenedModalName("edit_resource");
+      const selectedResource = selectedResources[0].assetId;
+      appCode == APP.SCRAPBOOK
+        ? odeServices.resource(appCode).gotoEdit(selectedResource)
+        : setOpenedModalName("edit_resource");
     } else {
       setOpenedModalName("edit_folder");
     }
