@@ -1,27 +1,32 @@
 import { Copy } from "@edifice-ui/icons";
-import {
-  Heading,
-  Alert,
-  FormControl,
-  Input,
-  FormText,
-  Button,
-} from "@edifice-ui/react";
+import { Heading, Alert, FormControl, Button } from "@edifice-ui/react";
+import { IResource } from "edifice-ts-client";
+import { UseFormRegister } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+
+import { FormInputs } from "../hooks/useEditResourceModal";
+
+interface BlogPublicProps {
+  appCode: string;
+  isPublic: boolean;
+  onCopyToClipBoard: () => void;
+  onPublicChange: (boolean: boolean) => void;
+  register: UseFormRegister<FormInputs>;
+  resource: IResource;
+  slug: string;
+  resourceName: string;
+}
 
 export const BlogPublic = ({
   appCode,
-  correctSlug,
-  disableSlug,
+  isPublic,
+  onCopyToClipBoard,
   onPublicChange,
-  onSlugChange,
-  refPublic,
-  refSlug,
   register,
   resource,
   slug,
-  onCopyToClipBoard,
-}: any) => {
+  resourceName,
+}: BlogPublicProps) => {
   const { t } = useTranslation();
 
   return (
@@ -40,11 +45,12 @@ export const BlogPublic = ({
         <FormControl.Input
           type="checkbox"
           role="switch"
-          key={refPublic}
           {...register("enablePublic", {
+            disabled: !isPublic && !resourceName,
             value: resource && resource.public,
-            onChange: (e: { target: { checked: any } }) =>
-              onPublicChange(e.target.checked),
+            onChange: (e: { target: { checked: any } }) => {
+              onPublicChange(e.target.checked);
+            },
           })}
           className="form-check-input mt-0"
           size="md"
@@ -54,47 +60,16 @@ export const BlogPublic = ({
         </FormControl.Label>
       </FormControl>
 
-      <FormControl id="slug" status={correctSlug ? "invalid" : undefined}>
+      {isPublic && !!resourceName && (
         <div className="d-flex flex-wrap align-items-center gap-4">
           <div>
             {window.location.origin}
-            {window.location.pathname}/pub/
-          </div>
-
-          <div className="flex-fill">
-            <Input
-              type="text"
-              key={refSlug}
-              {...register("safeSlug", {
-                validate: {
-                  required: (value: any) => {
-                    if (!value && !disableSlug)
-                      return t("explorer.slug.name.mandatory");
-                    return true;
-                  },
-                },
-                disabled: disableSlug,
-                value: slug,
-                onChange: (e: { target: { value: any } }) =>
-                  onSlugChange(e.target.value),
-              })}
-              size="md"
-              placeholder={t(
-                "explorer.resource.editModal.access.url.extension",
-              )}
-            />
-            {correctSlug && (
-              <div className="position-absolute">
-                <FormText>{t("explorer.slug.name.error")}</FormText>
-              </div>
-            )}
+            {window.location.pathname}/pub/{slug}
           </div>
           <Button
             color="primary"
-            disabled={disableSlug}
-            onClick={() => {
-              onCopyToClipBoard();
-            }}
+            disabled={!isPublic}
+            onClick={() => onCopyToClipBoard()}
             type="button"
             leftIcon={<Copy />}
             variant="ghost"
@@ -103,7 +78,7 @@ export const BlogPublic = ({
             {t("explorer.resource.editModal.access.url.button")}
           </Button>
         </div>
-      </FormControl>
+      )}
     </>
   );
 };
