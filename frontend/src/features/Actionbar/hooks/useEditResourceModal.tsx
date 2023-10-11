@@ -48,7 +48,7 @@ export default function useEditResourceModal({
   } = useForm<FormInputs>({
     mode: "onChange",
   });
-  const id = useId();
+  const formId = useId();
 
   const currentFolder = useCurrentFolder();
 
@@ -130,7 +130,7 @@ export default function useEditResourceModal({
         setCorrectSlug(false);
       } else {
         queryclient.invalidateQueries(queryKey);
-        createResource.mutate({
+        await createResource.mutateAsync({
           name: formData.title,
           description: formData.description || "",
           thumbnail: cover.image,
@@ -145,12 +145,16 @@ export default function useEditResourceModal({
       }
       hotToast.success(
         <>
-          <strong>{t("explorer.resource.updated")}</strong>
+          <strong>
+            {t(
+              edit ? "explorer.resource.updated" : "explorer.resource.created",
+            )}
+          </strong>
           <p>Titre: {formData.title}</p>
           <p>Description: {formData.description}</p>
           {edit && appCode === APP.BLOG && (
             <p>
-              Public:{" "}
+              Public:
               {formData.enablePublic
                 ? t("explorer.enable.public.yes")
                 : t("explorer.enable.public.no")}
@@ -176,8 +180,6 @@ export default function useEditResourceModal({
     reset();
     onCancel();
   }
-
-  const formId = `resource_edit_modal_${id}`;
 
   return {
     slug,

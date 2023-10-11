@@ -221,6 +221,11 @@ public class ResourceSearchOperation {
         return search;
     }
 
+    public ResourceSearchOperation setSearch(final Object search) {
+        this.search = search==null?Optional.empty():Optional.ofNullable(search.toString());
+        return this;
+    }
+
     public ResourceSearchOperation setSearch(final String search) {
         this.search = Optional.ofNullable(search);
         return this;

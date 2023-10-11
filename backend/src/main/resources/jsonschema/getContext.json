@@ -23,7 +23,7 @@
         { "type": "number" }
       ]
     },
-    "search": { "type": "string" },
+    "search": { "type": ["string","number","boolean"] },
     "start_idx": { "type": "number" },
     "page_size": { "type": "number" },
     "folder_start_idx": { "type": "number" },

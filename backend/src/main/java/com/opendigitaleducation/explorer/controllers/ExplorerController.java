@@ -144,6 +144,7 @@ public class ExplorerController extends BaseController {
             HttpUtils.getAndCheckQueryParams(pathPrefix,"getContext", request.params()).onSuccess(queryParams -> {
                 final String application = queryParams.getString("application");
                 final JsonObject json = new JsonObject();
+                json.put("searchConfig", config.getJsonObject("search-config", new JsonObject()));
                 final Future<JsonArray> folders = folderService.fetch(user, application, toFolderSearch(queryParams)).onSuccess(e -> {
                     json.put("folders", adaptFolder(e));
                 });
@@ -598,11 +599,13 @@ public class ExplorerController extends BaseController {
         op.setShared(queryParams.getBoolean("shared"));
         op.setFavorite(queryParams.getBoolean("favorite"));
         op.setParentId(queryParams.getValue("folder"));
-        op.setSearch(queryParams.getString("search"));
+        op.setSearch(queryParams.getValue("search"));
         op.setPageSize(queryParams.getLong("page_size"));
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
         op.setTrashed(queryParams.getBoolean("trashed"));
+        // in case of search search everywhere
+        op.setSearchEverywhere(op.getSearch().isPresent());
         return op;
     }
 
@@ -612,6 +615,9 @@ public class ExplorerController extends BaseController {
         op.setStartIndex(queryParams.getLong("folder_start_idx", 0l));
         op.setParentId(queryParams.getValue("folder"));
         op.setTrashed(queryParams.getBoolean("trashed"));
+        op.setSearch(queryParams.getValue("search"));
+        // in case of search search everywhere
+        op.setSearchEverywhere(op.getSearch().isPresent());
         return op;
     }
 

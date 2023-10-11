@@ -27,7 +27,7 @@ const FoldersList = ({
       );
       setSelectedFolders(
         selectedFolders.filter(
-          (selectedFolder) => selectedFolder.id !== folder.id,
+          (selectedFolder: { id: string }) => selectedFolder.id !== folder.id,
         ),
       );
     } else {
@@ -49,16 +49,19 @@ const FoldersList = ({
         const { id, name } = folder;
         return (
           <animated.li
-            className="g-col-4"
+            className="g-col-4 z-1"
             key={id}
             style={{
+              position: "relative",
               ...springs,
             }}
           >
             <Card
-              app={currentApp}
-              name={name}
-              isFolder
+              app={currentApp!}
+              options={{
+                type: "folder",
+                name,
+              }}
               isLoading={isFetching}
               isSelected={folderIds.includes(folder.id)}
               onOpen={() => {

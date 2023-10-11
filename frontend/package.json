@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.0.0-develop-pedago.20230881605",
+  "version": "1.0.3-develop-pedago.202309291200",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@edifice-ui/icons": "develop-pedago",
-    "@edifice-ui/react": "develop-pedago",
+    "@edifice-ui/react": "link:../../edifice-ui/packages/react",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.32.6",
     "dayjs": "1.11.9",
@@ -77,6 +77,7 @@
     "clsx": "2.0.0",
     "concurrently": "8.2.0",
     "csstype": "3.1.2",
+    "edifice-bootstrap": "develop-pedago",
     "edifice-ts-client": "develop-pedago",
     "eslint": "8.46.0",
     "eslint-config-prettier": "9.0.0",

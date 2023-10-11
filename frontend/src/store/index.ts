@@ -23,12 +23,12 @@ import {
   publishResource,
   searchContext,
 } from "~/services/api";
-import { arrayUnique } from "~/shared/utils/arrayUnique";
-import { findNodeById } from "~/shared/utils/findNodeById";
-import { getAncestors } from "~/shared/utils/getAncestors";
-import { getAppParams } from "~/shared/utils/getAppParams";
-import { hasChildren } from "~/shared/utils/hasChildren";
-import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
+import { arrayUnique } from "~/utils/arrayUnique";
+import { findNodeById } from "~/utils/findNodeById";
+import { getAncestors } from "~/utils/getAncestors";
+import { getAppParams } from "~/utils/getAppParams";
+import { hasChildren } from "~/utils/hasChildren";
+import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const { app, types, filters, orders } = getAppParams();
 
@@ -45,9 +45,12 @@ interface State {
   resourceIds: ID[];
   resourceIsTrash: boolean;
   resourceActionDisable: boolean;
+  searchConfig: { minLength: number };
+  status: string | undefined;
   updaters: {
+    setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
-    setSearchParams: (searchParams: ISearchParameters) => void;
+    setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
@@ -84,6 +87,7 @@ interface State {
 export const useStoreContext = create<State>()((set, get) => ({
   filters,
   orders,
+  searchConfig: { minLength: 1 },
   searchParams: {
     app,
     types,
@@ -117,10 +121,54 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIds: [],
   resourceIsTrash: false,
   resourceActionDisable: false,
+  status: undefined,
   updaters: {
+    setSearchConfig: (searchConfig: { minLength: number }) =>
+      set((state) => ({
+        searchConfig: { ...state.searchConfig, ...searchConfig },
+      })),
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
-    setSearchParams: (searchParams: ISearchParameters) =>
-      set(() => ({ searchParams })),
+    setSearchParams: (searchParams: Partial<ISearchParameters>) => {
+      set(({ searchParams: previousSearchParams }) => {
+        if (previousSearchParams.search !== searchParams.search) {
+          if (searchParams.search) {
+            // reset selection and folder if we are searching
+            return {
+              selectedFolders: [],
+              selectedNodesIds: [],
+              selectedResources: [],
+              currentFolder: undefined,
+              searchParams: {
+                ...previousSearchParams,
+                ...searchParams,
+                filters: {
+                  ...previousSearchParams.filters,
+                  folder: undefined,
+                },
+              },
+            };
+          } else {
+            // reset selection if we are not searching
+            return {
+              selectedFolders: [],
+              selectedNodesIds: [],
+              selectedResources: [],
+              searchParams: {
+                ...previousSearchParams,
+                ...searchParams,
+                filters: {
+                  ...previousSearchParams.filters,
+                },
+              },
+            };
+          }
+        } else {
+          return {
+            searchParams: { ...previousSearchParams, ...searchParams },
+          };
+        }
+      });
+    },
     setSelectedFolders: (selectedFolders: IFolder[]) =>
       set(() => ({ selectedFolders })),
     setSelectedResources: (selectedResources: IResource[]) =>
@@ -186,6 +234,7 @@ export const useStoreContext = create<State>()((set, get) => ({
           },
           searchParams: {
             ...searchParams,
+            search: undefined,
             filters: {
               ...searchParams.filters,
               folder: folderId,
@@ -246,6 +295,11 @@ export const useStoreContext = create<State>()((set, get) => ({
 
       set((state) => ({
         ...state,
+        searchParams: {
+          ...state.searchParams,
+          search: undefined,
+        },
+        status: "select",
         selectedResources: [],
       }));
 
@@ -307,6 +361,9 @@ export const useSelectedFolders = () =>
 export const useSelectedResources = () =>
   useStoreContext((state) => state.selectedResources);
 
+export const useSearchConfig = () =>
+  useStoreContext((state) => state.searchConfig);
+
 export const useFolderIds = () => useStoreContext((state) => state.folderIds);
 
 export const useResourceIds = () =>
@@ -347,3 +404,5 @@ export const useHasSelectedNodes = () => {
   const selectedNodesIds = useSelectedNodesIds();
   return selectedNodesIds.length > 1;
 };
+
+export const useTreeStatus = () => useStoreContext((state) => state.status);

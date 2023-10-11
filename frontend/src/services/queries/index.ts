@@ -34,12 +34,6 @@ import {
   updateFolder,
   updateResource,
 } from "~/services/api";
-import { addNode } from "~/shared/utils/addNode";
-import { deleteNode } from "~/shared/utils/deleteNode";
-import { getAppParams } from "~/shared/utils/getAppParams";
-import { moveNode } from "~/shared/utils/moveNode";
-import { updateNode } from "~/shared/utils/updateNode";
-import { wrapTreeNode } from "~/shared/utils/wrapTreeNode";
 import {
   useStoreActions,
   useSearchParams,
@@ -50,6 +44,12 @@ import {
   useResourceIds,
   useResourceWithoutIds,
 } from "~/store";
+import { addNode } from "~/utils/addNode";
+import { deleteNode } from "~/utils/deleteNode";
+import { getAppParams } from "~/utils/getAppParams";
+import { moveNode } from "~/utils/moveNode";
+import { updateNode } from "~/utils/updateNode";
+import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const { actions, app } = getAppParams();
 
@@ -88,8 +88,8 @@ export const useSearchContext = () => {
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
-  const { setTreeData, setSearchParams } = useStoreActions();
-  const { filters, trashed } = searchParams;
+  const { setTreeData, setSearchParams, setSearchConfig } = useStoreActions();
+  const { filters, trashed, search } = searchParams;
 
   const queryKey = [
     "context",
@@ -97,6 +97,7 @@ export const useSearchContext = () => {
       folderId: filters.folder,
       filters,
       trashed,
+      search,
     },
   ];
 
@@ -115,32 +116,38 @@ export const useSearchContext = () => {
     },
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
-      const folders = data?.pages[0]?.folders;
-      console.log(data);
-      if (currentFolder?.id === "default") {
-        setTreeData({
-          id: FOLDER.DEFAULT,
-          section: true,
-          children: folders.map(
-            (folder: IFolder) => new TreeNodeFolderWrapper(folder),
-          ),
-          name: t("explorer.filters.mine", { ns: appCode }),
-        });
-      } else {
-        setTreeData(
-          wrapTreeNode(
-            treeData,
-            folders,
-            searchParams.filters.folder || FOLDER.DEFAULT,
-          ),
-        );
+      // copy folders
+      const folders: IFolder[] = [...(data?.pages[0]?.folders ?? [])];
+      if (data?.pages[0]?.searchConfig) {
+        setSearchConfig(data.pages[0].searchConfig);
       }
-
+      if (!searchParams.search) {
+        // set tree data only if we are not searching
+        if (currentFolder?.id === "default") {
+          setTreeData({
+            id: FOLDER.DEFAULT,
+            section: true,
+            children: folders.map(
+              (folder: IFolder) => new TreeNodeFolderWrapper(folder),
+            ),
+            name: t("explorer.filters.mine", { ns: appCode }),
+          });
+        } else {
+          setTreeData(
+            wrapTreeNode(
+              treeData,
+              folders,
+              searchParams.filters.folder || FOLDER.DEFAULT,
+            ),
+          );
+        }
+      }
       setSearchParams({
         ...searchParams,
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
       });
     },
+    retry: false,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined,
   });
@@ -792,6 +799,7 @@ export const useCreateResource = () => {
     "context",
     {
       folderId: searchParams.filters.folder,
+      filters: searchParams.filters,
       trashed: searchParams.trashed,
     },
   ];
@@ -805,8 +813,6 @@ export const useCreateResource = () => {
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
-
-      console.log({ data, variables });
 
       const newResource: IResource = {
         ...variables,

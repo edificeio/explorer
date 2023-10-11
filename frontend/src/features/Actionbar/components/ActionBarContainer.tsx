@@ -5,8 +5,8 @@ import { useTransition, animated } from "@react-spring/web";
 import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { AccessControl } from "~/components/AccessControl";
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
-import { AccessControl } from "~/shared/components/AccessControl";
 
 const ShareResourceModal = lazy(
   async () => await import("./ShareResourceModal"),

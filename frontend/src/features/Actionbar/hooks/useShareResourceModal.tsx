@@ -185,7 +185,6 @@ export default function useShareResourceModal({
   };
 
   const handleShare = async () => {
-    console.log({ payloadUpdatePublishType });
     try {
       await updateResource.mutateAsync(payloadUpdatePublishType);
       await shareResource.mutateAsync({

@@ -185,7 +185,6 @@ abstract class MessageIngesterElasticOperation {
             document.remove("createdAt");
             document.remove("creatorId");
             document.remove("creatorName");
-            document.put("updatedAt", new Date().getTime());
             //custom field should not override existing fields
             final JsonObject custom = document.getJsonObject("custom", new JsonObject());
             for (final String key : custom.fieldNames()) {

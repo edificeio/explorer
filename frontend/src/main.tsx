@@ -10,8 +10,8 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
+import { getAppParams } from "./utils/getAppParams";
 import Root from "~/app/root/root";
-import { getAppParams } from "~/shared/utils/getAppParams";
 
 const root = document.getElementById("root");
 
@@ -19,6 +19,10 @@ if (process.env.NODE_ENV !== "production") {
   import("@axe-core/react").then((axe) => {
     axe.default(React, root, 1000);
   });
+}
+
+if (process.env.NODE_ENV !== "production") {
+  import("edifice-bootstrap/dist/index.css");
 }
 
 const queryClient = new QueryClient({

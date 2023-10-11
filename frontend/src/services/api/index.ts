@@ -251,7 +251,6 @@ export const createResource = ({
   params: CreateParameters;
 }) => {
   const result = odeServices.resource(searchParams.app).create(params);
-  console.log({ result });
   return result;
 };
 
@@ -263,7 +262,6 @@ export const printResource = ({
   assetId: ID;
 }) => {
   const result = odeServices.resource(searchParams.app).gotoPrint(assetId);
-  console.log({ result });
   return result;
 };
 

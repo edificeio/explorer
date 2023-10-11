@@ -7,8 +7,7 @@ import clsx from "clsx";
 import { type ID, type IResource, ISearchResults } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { dayjs } from "~/shared/config";
-import { isResourceShared } from "~/shared/utils/isResourceShared";
+import { dayjs } from "~/config";
 import {
   useStoreActions,
   useResourceIds,
@@ -16,6 +15,7 @@ import {
   useSearchParams,
   useIsTrash,
 } from "~/store";
+import { isResourceShared } from "~/utils/isResourceShared";
 
 const ResourcesList = ({
   data,
@@ -103,30 +103,38 @@ const ResourcesList = ({
                 .locale(currentLanguage as string)
                 .fromNow();
 
+              const tooltips = {
+                messagePublic: t("tooltip.public", { ns: appCode }),
+                messageShared: t("tooltip.shared", { ns: appCode }),
+              };
+
               return (
                 <animated.li
-                  className="g-col-4"
+                  className="g-col-4 z-1"
                   key={id}
                   style={{
+                    position: "relative",
                     ...springs,
                   }}
                 >
                   <Card
-                    app={currentApp}
+                    app={currentApp!}
                     className="c-pointer"
-                    creatorName={creatorName}
-                    isPublic={resource.public}
+                    tooltips={tooltips}
+                    options={{
+                      type: "resource",
+                      name,
+                      creatorName,
+                      userSrc: `/userbook/avatar/${creatorId}`,
+                      updatedAt: time,
+                      isPublic: resource.public,
+                      isShared,
+                      imageSrc: thumbnail,
+                    }}
                     isSelected={resourceIds.includes(resource.id)}
                     isLoading={isFetching}
-                    isShared={isShared}
-                    messagePublic={t("tooltip.public", { ns: appCode })}
-                    messageShared={t("tooltip.shared", { ns: appCode })}
-                    name={name}
                     onOpen={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
-                    resourceSrc={thumbnail}
-                    updatedAt={time}
-                    userSrc={`/userbook/avatar/${creatorId}`}
                   />
                 </animated.li>
               );

@@ -4,6 +4,7 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
@@ -345,9 +346,21 @@ public class ResourceQueryElastic {
             filter.add(appTerm.get());
         }
         //search text
-        if (text.isPresent()) {
-            final JsonArray fields = new JsonArray().add("application").add("contentAll");
-            must.add(new JsonObject().put("multi_match", new JsonObject().put("query", text.get()).put("fields", fields)));
+        if (text.isPresent() && !text.get().isEmpty()) {
+            if(StringUtils.containsWhitespace(text.get())){
+                // contains multiple words
+                final JsonObject prefix = new JsonObject();
+                prefix.put("query", text.get());
+                // allow 3 words between terms
+                prefix.put("slop", 3);
+                must.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
+            }else{
+                // contains only one word
+                final JsonObject prefix = new JsonObject();
+                prefix.put("value", text.get());
+                prefix.put("case_insensitive", true);
+                must.add(new JsonObject().put("prefix", new JsonObject().put("contentAll", prefix)));
+            }
         }
         if (trashed.isPresent()) {
             if(trashed.get()){

@@ -14,6 +14,7 @@ export default function ShareResourceModalFooterBlog({
 }: ShareResourceModalFooterBlogProps) {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
+
   return (
     <>
       <hr />
@@ -28,6 +29,7 @@ export default function ShareResourceModalFooterBlog({
         name="publication"
         value={"IMMEDIATE" as PublicationType}
         model={radioPublicationValue as string}
+        checked={radioPublicationValue === "IMMEDIATE"}
         onChange={(e) =>
           onRadioPublicationChange(e.target.value as PublicationType)
         }
@@ -37,6 +39,7 @@ export default function ShareResourceModalFooterBlog({
         id="publication-validate"
         name="publication"
         value={"RESTRAINT" as PublicationType}
+        checked={radioPublicationValue === "RESTRAINT"}
         model={radioPublicationValue as string}
         onChange={(e) =>
           onRadioPublicationChange(e.target.value as PublicationType)

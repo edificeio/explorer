@@ -3,17 +3,28 @@ import { Suspense, lazy } from "react";
 import { LoadingScreen } from "@edifice-ui/react";
 
 import { useSearchContext } from "~/services/queries";
-import { useIsRoot, useIsTrash, useHasSelectedNodes } from "~/store";
+import {
+  useIsRoot,
+  useIsTrash,
+  useHasSelectedNodes,
+  useSearchParams,
+} from "~/store";
 
 const EmptyScreenApp = lazy(
-  async () => await import("~/features/EmptyScreens/EmptyScreenApp"),
+  async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
+);
+const EmptyScreenSearch = lazy(
+  async () => await import("~/components/EmptyScreens/EmptyScreenSearch"),
+);
+const EmptyScreenError = lazy(
+  async () => await import("~/components/EmptyScreens/EmptyScreenError"),
 );
 const EmptyScreenNoContentInFolder = lazy(
   async () =>
-    await import("~/features/EmptyScreens/EmptyScreenNoContentInFolder"),
+    await import("~/components/EmptyScreens/EmptyScreenNoContentInFolder"),
 );
 const EmptyScreenTrash = lazy(
-  async () => await import("~/features/EmptyScreens/EmptyScreenTrash"),
+  async () => await import("~/components/EmptyScreens/EmptyScreenTrash"),
 );
 const FoldersList = lazy(
   async () =>
@@ -28,43 +39,67 @@ export const List = () => {
   const isRoot = useIsRoot();
   const isTrashFolder = useIsTrash();
   const hasSelectedNodes = useHasSelectedNodes();
-  const { data, isLoading, isFetching, fetchNextPage } = useSearchContext();
+  const searchParams = useSearchParams();
+  const { data, isError, isLoading, isFetching, fetchNextPage } =
+    useSearchContext();
 
   const hasNoFolders = data?.pages[0].folders.length === 0;
   const hasNoResources = data?.pages[0].resources.length === 0;
 
   const hasNoData = hasNoFolders && hasNoResources;
 
-  return (
-    <Suspense fallback={<LoadingScreen />}>
-      {!hasNoData && !isLoading && (
-        <Suspense fallback={<LoadingScreen />}>
-          <FoldersList data={data} isFetching={isFetching} />
-          <ResourcesList
-            data={data}
-            isFetching={isFetching}
-            fetchNextPage={fetchNextPage}
-          />
-        </Suspense>
-      )}
+  if (isError) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenError />
+      </Suspense>
+    );
+  }
 
-      {isRoot && hasNoData && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenApp />
-        </Suspense>
-      )}
+  if (searchParams.search && hasNoData) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenSearch />
+      </Suspense>
+    );
+  }
 
-      {hasSelectedNodes && hasNoData && !isTrashFolder && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenNoContentInFolder />
-        </Suspense>
-      )}
+  if (!hasNoData && !isLoading) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <FoldersList data={data} isFetching={isFetching} />
+        <ResourcesList
+          data={data}
+          isFetching={isFetching}
+          fetchNextPage={fetchNextPage}
+        />
+      </Suspense>
+    );
+  }
 
-      {isTrashFolder && data?.pages[0].resources.length === 0 && (
-        <Suspense fallback={<LoadingScreen />}>
-          <EmptyScreenTrash />
-        </Suspense>
-      )}
-    </Suspense>
-  );
+  if (isRoot && hasNoData) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenApp />
+      </Suspense>
+    );
+  }
+
+  if (hasSelectedNodes && hasNoData && !isTrashFolder) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenNoContentInFolder />
+      </Suspense>
+    );
+  }
+
+  if (isTrashFolder && data?.pages[0].resources.length === 0) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <EmptyScreenTrash />
+      </Suspense>
+    );
+  }
+
+  return null;
 };
