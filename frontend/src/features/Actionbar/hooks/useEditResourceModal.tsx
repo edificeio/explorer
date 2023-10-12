@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 
 import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { APP, type IResource } from "edifice-ts-client";
+import { APP, type IResource, ThumbnailParams } from "edifice-ts-client";
 import { hash } from "ohash";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -26,7 +26,6 @@ export interface FormInputs {
   title: string;
   description: string;
   enablePublic: boolean;
-  safeSlug: string;
 }
 
 export default function useEditResourceModal({
@@ -59,19 +58,19 @@ export default function useEditResourceModal({
 
   const [slug, setSlug] = useState<string>(resource?.slug || "");
   const [isPublic, setIsPublic] = useState<boolean>(!!resource?.public);
-  const [cover, setCover] = useState<{ name: string; image: string }>({
+  const [thumbnail, setThumbnail] = useState<Partial<ThumbnailParams>>({
     name: "",
     image: selectedResources[0]?.thumbnail,
   });
 
   const resourceName = watch("title");
 
-  const handleUploadImage = (preview: Record<string, string>) => {
-    setCover(preview as any);
+  const handleUploadImage = (preview: ThumbnailParams) => {
+    setThumbnail(preview);
   };
 
   const handleDeleteImage = () => {
-    setCover({
+    setThumbnail({
       name: "",
       image: "",
     });
@@ -106,6 +105,8 @@ export default function useEditResourceModal({
     },
   ];
 
+  const uniqueId = useId();
+
   const onSubmit: SubmitHandler<FormInputs> = async function (
     formData: FormInputs,
   ) {
@@ -118,24 +119,24 @@ export default function useEditResourceModal({
           name: formData.title,
           public: formData.enablePublic,
           slug: `${hash({
-            foo: formData.title,
+            foo: `${formData.title}${uniqueId}`,
           })}-${slugify(formData.title)}`,
           trashed: selectedResources[0]?.trashed,
-          thumbnail: cover.image,
+          thumbnail: thumbnail as ThumbnailParams,
         });
       } else {
         queryclient.invalidateQueries(queryKey);
         await createResource.mutateAsync({
           name: formData.title,
           description: formData.description || "",
-          thumbnail: cover.image,
+          thumbnail: thumbnail as ThumbnailParams,
           folder:
             currentFolder?.id === "default"
               ? undefined
               : parseInt(currentFolder?.id || ""),
           public: formData.enablePublic,
           slug: `${hash({
-            foo: formData.title,
+            foo: `${formData.title}${uniqueId}`,
           })}-${slugify(formData.title)}`,
           app: appCode,
         });

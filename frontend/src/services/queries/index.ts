@@ -769,7 +769,7 @@ export const useUpdateResource = () => {
                         ...resource,
                         ...others, // add any custom field
                         name,
-                        thumbnail: thumbnail! as string,
+                        thumbnail: thumbnail.image as string,
                         public: pub,
                         description,
                         slug,
@@ -814,9 +814,12 @@ export const useCreateResource = () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
+      console.log({ data, variables });
+
+      const { thumbnail } = variables;
       const newResource: IResource = {
         ...variables,
-        thumbnail: variables.thumbnail as string,
+        thumbnail: thumbnail.image as string,
         application: app,
         assetId: data._id || data.entId || "",
         id: data._id || data.entId || "",
