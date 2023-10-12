@@ -245,9 +245,9 @@ public abstract class IngestJobTest {
                             }));
                         }));
                     }));
-                    //user1 has 1 resource with text -> text2
-                    getResourceService().fetch(user1, application, new ResourceSearchOperation().setSearch("text2")).onComplete(context.asyncAssertSuccess(fetch1 -> {
-                        context.assertEquals(1, fetch1.size());
+                    //user1 has 2 resource with name starting with name2
+                    getResourceService().fetch(user1, application, new ResourceSearchOperation().setSearch("name2")).onComplete(context.asyncAssertSuccess(fetch1 -> {
+                        context.assertEquals(2, fetch1.size());
                         async.countDown();
                     }));
                 }));
