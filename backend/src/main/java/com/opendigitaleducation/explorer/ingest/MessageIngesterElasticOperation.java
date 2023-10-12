@@ -100,7 +100,9 @@ abstract class MessageIngesterElasticOperation {
             JsonObject changes = message.getMessage().copy();
             if(message.isSynthetic()) {
                 changes = keepOnlyOverride(changes);
-            } else {
+            } else if(message.getSubresources().size() == 0){
+                // when we have subresources we should not reset resource fields
+                //TODO decorrelate subresource and resources
                 changes = beforeCreate(changes);
             }
             this.version = message.getVersion();
