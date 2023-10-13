@@ -62,10 +62,10 @@ export const BlogPublic = ({
 
       {isPublic && !!resourceName && (
         <div className="d-flex flex-wrap align-items-center gap-4">
-          <div>
+          <p className="text-truncate">
             {window.location.origin}
             {window.location.pathname}/pub/{slug}
-          </div>
+          </p>
           <Button
             color="primary"
             disabled={!isPublic}

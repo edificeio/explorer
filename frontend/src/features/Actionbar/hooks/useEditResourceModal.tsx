@@ -60,7 +60,7 @@ export default function useEditResourceModal({
   const [isPublic, setIsPublic] = useState<boolean>(!!resource?.public);
   const [thumbnail, setThumbnail] = useState<Partial<ThumbnailParams>>({
     name: "",
-    image: selectedResources[0]?.thumbnail,
+    image: selectedResources[0]?.thumbnail || "",
   });
 
   const resourceName = watch("title");
@@ -111,6 +111,14 @@ export default function useEditResourceModal({
     formData: FormInputs,
   ) {
     try {
+      console.log({ formData });
+      const slug = formData.enablePublic
+        ? resource && resource.slug
+          ? resource.slug
+          : `${hash({
+              foo: `${formData.title}${uniqueId}`,
+            })}-${slugify(formData.title)}`
+        : "";
       // call API
       if (edit) {
         await updateResource.mutateAsync({
@@ -118,9 +126,7 @@ export default function useEditResourceModal({
           entId: selectedResources[0]?.assetId,
           name: formData.title,
           public: formData.enablePublic,
-          slug: `${hash({
-            foo: `${formData.title}${uniqueId}`,
-          })}-${slugify(formData.title)}`,
+          slug,
           trashed: selectedResources[0]?.trashed,
           thumbnail: thumbnail as ThumbnailParams,
         });
@@ -135,9 +141,7 @@ export default function useEditResourceModal({
               ? undefined
               : parseInt(currentFolder?.id || ""),
           public: formData.enablePublic,
-          slug: `${hash({
-            foo: `${formData.title}${uniqueId}`,
-          })}-${slugify(formData.title)}`,
+          slug,
           app: appCode,
         });
       }

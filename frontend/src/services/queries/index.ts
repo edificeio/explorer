@@ -808,9 +808,11 @@ export const useCreateResource = () => {
     mutationFn: async (params: CreateParameters) =>
       await createResource({ searchParams, params }),
     onError(error) {
+      console.log({ error });
       if (typeof error === "string") hotToast.error(t(error));
     },
     onSuccess: async (data, variables) => {
+      console.log({ data, variables });
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
