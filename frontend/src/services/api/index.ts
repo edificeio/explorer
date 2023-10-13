@@ -250,9 +250,7 @@ export const createResource = ({
   searchParams: ISearchParameters;
   params: CreateParameters;
 }) => {
-  console.log({ searchParams, params });
   const result = odeServices.resource(searchParams.app).create(params);
-  console.log({ result });
   return result;
 };
 

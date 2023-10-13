@@ -50,6 +50,7 @@ export default function EditResourceModal({
     handleDeleteImage,
     onCopyToClipBoard,
     onPublicChange,
+    setValue,
   } = useEditResourceModal({
     resource,
     edit,
@@ -140,6 +141,7 @@ export default function EditResourceModal({
                 resource={resource}
                 resourceName={resourceName}
                 slug={slug}
+                setValue={setValue}
                 register={register}
               />
             )}

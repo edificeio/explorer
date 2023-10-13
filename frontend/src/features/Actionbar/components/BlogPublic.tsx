@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { Copy } from "@edifice-ui/icons";
 import { Heading, Alert, FormControl, Button } from "@edifice-ui/react";
 import { IResource } from "edifice-ts-client";
@@ -15,11 +17,13 @@ interface BlogPublicProps {
   resource: IResource;
   slug: string;
   resourceName: string;
+  setValue: any;
 }
 
 export const BlogPublic = ({
   appCode,
   isPublic,
+  setValue,
   onCopyToClipBoard,
   onPublicChange,
   register,
@@ -28,6 +32,13 @@ export const BlogPublic = ({
   resourceName,
 }: BlogPublicProps) => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (resourceName === "") {
+      onPublicChange(false);
+      setValue("enablePublic", false);
+    }
+  }, [onPublicChange, resourceName, setValue]);
 
   return (
     <>

@@ -46,6 +46,7 @@ export default function useEditResourceModal({
     register,
     handleSubmit,
     setFocus,
+    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<FormInputs>({
     mode: "onChange",
@@ -111,7 +112,6 @@ export default function useEditResourceModal({
     formData: FormInputs,
   ) {
     try {
-      console.log({ formData });
       const slug = formData.enablePublic
         ? resource && resource.slug
           ? resource.slug
@@ -193,6 +193,7 @@ export default function useEditResourceModal({
     onPublicChange,
     register,
     setFocus,
+    setValue,
     handleSubmit,
     onFormCancel,
     onSubmit,
