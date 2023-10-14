@@ -66,6 +66,8 @@ export default function useEditResourceModal({
 
   const resourceName = watch("title");
 
+  const uniqueId = useId();
+
   const handleUploadImage = (preview: ThumbnailParams) => {
     setThumbnail(preview);
   };
@@ -86,7 +88,7 @@ export default function useEditResourceModal({
       slug = resource.slug;
     } else {
       slug = `${hash({
-        foo: resourceName,
+        foo: `${resourceName}${uniqueId}`,
       })}-${slugify(resourceName)}`;
     }
 
@@ -105,8 +107,6 @@ export default function useEditResourceModal({
       trashed,
     },
   ];
-
-  const uniqueId = useId();
 
   const onSubmit: SubmitHandler<FormInputs> = async function (
     formData: FormInputs,
