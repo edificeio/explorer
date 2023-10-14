@@ -73,7 +73,7 @@ export const BlogPublic = ({
 
       {isPublic && !!resourceName && (
         <div className="d-flex flex-wrap align-items-center gap-4">
-          <p className="text-truncate">
+          <p className="text-break">
             {window.location.origin}
             {window.location.pathname}/pub/{slug}
           </p>
