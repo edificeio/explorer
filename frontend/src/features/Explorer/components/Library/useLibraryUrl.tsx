@@ -1,14 +1,28 @@
 import { useOdeClient } from "@edifice-ui/react";
 import { IUserInfo } from "edifice-ts-client";
 
-import { capitalizeFirstLetter } from "~/utils/capitalizeFirstLetter";
-import { getAppParams } from "~/utils/getAppParams";
-
 export const useLibraryUrl = () => {
-  const { user } = useOdeClient();
-  const appName = capitalizeFirstLetter(getAppParams().app);
+  const { user, appCode } = useOdeClient();
 
-  // libraryUrl from userInfo.apps is like: https://libraryHost/?platformURL=userPlatformURL
+  /**
+   * Object literal to find correct app code for Library Webapp
+   */
+  const libraryMaps: Record<string, string> = {
+    blog: "Blog",
+    mindmap: "MindMap",
+    scrapbook: "ScrapBook",
+    collaborativewall: "CollaborativeWall",
+    timelinegenerator: "TimelineGenerator",
+    wiki: "Wiki",
+    exercizer: "Exercizer",
+  };
+
+  const appName = libraryMaps[appCode as string];
+
+  /**
+   * libraryUrl from userInfo.apps is like: https://libraryHost/?platformURL=userPlatformURL
+   */
+
   const libraryUrlSplitted: Array<string> | undefined = (user as IUserInfo).apps
     .find(
       (app) =>
