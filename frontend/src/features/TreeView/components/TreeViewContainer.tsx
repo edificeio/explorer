@@ -83,6 +83,20 @@ export const TreeViewContainer = () => {
           {t("explorer.folder.new")}
         </Button>
       </div>
+    
+      <div className="d-grid my-16">
+        <Button
+          disabled={isTrashFolder}
+          type="button"
+          color="primary"
+          variant="outline"
+          leftIcon={<Plus />}
+          onClick={handleOnFolderCreate}
+        >
+          {t("explorer.folder.new")}
+        </Button>
+      </div>
+      
       <Suspense fallback={<LoadingScreen />}>
         {isCreateFolderModalOpen && (
           <CreateModal
