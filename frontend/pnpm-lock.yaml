@@ -1,16 +1,12 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 dependencies:
   '@edifice-ui/icons':
-    specifier: develop
-    version: 1.1.0-develop.1(react-dom@18.2.0)(react@18.2.0)
+    specifier: 1.0.0
+    version: 1.0.0(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
     specifier: 1.0.0
-    version: 1.0.0(@edifice-ui/icons@1.1.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
+    version: 1.0.0(@edifice-ui/icons@1.0.0)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -89,8 +85,8 @@ devDependencies:
     specifier: 3.1.2
     version: 3.1.2
   edifice-ts-client:
-    specifier: develop
-    version: 1.0.1-develop.1
+    specifier: 1.0.2
+    version: 1.0.2
   eslint:
     specifier: 8.46.0
     version: 8.46.0
@@ -372,8 +368,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.1.0-develop.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-H/7xJUEmHtGBmB/GtsEvnmRmM2cgxbj5yyAqiFQ38V8oxJApWJ1TXXz0Av6IOtmLdksPorkG0GA9AI61kKbdMA==}
+  /@edifice-ui/icons@1.0.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-TO6vMkDwdtsbwhYI8lOm6sdfauJ62zGz6xjYk1pae34o/DYN6Z9Svaw2GONjH3EN2RfYGCKdDl3tkVDhwz8uSA==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -382,7 +378,7 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.0.0(@edifice-ui/icons@1.1.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
+  /@edifice-ui/react@1.0.0(@edifice-ui/icons@1.0.0)(@react-spring/web@9.7.3)(@tanstack/react-query@4.32.6)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.0.3)(react@18.2.0)(swiper@10.1.0):
     resolution: {integrity: sha512-0kDeEQl/wJf1o5/AJU/kfNoqmvUA5jjI2gkZv2ThRuix3OLrBtwn4Hqvg1SFrKmP/5pU6t61x/oq6DVF9exmLg==}
     peerDependencies:
       '@edifice-ui/icons': '*'
@@ -395,7 +391,7 @@ packages:
       react-i18next: 13.0.1
       swiper: 10.0.3
     dependencies:
-      '@edifice-ui/icons': 1.1.0-develop.1(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.0.0(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
       '@tanstack/react-query': 4.32.6(react-dom@18.2.0)(react@18.2.0)
@@ -1507,8 +1503,8 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /edifice-ts-client@1.0.1-develop.1:
-    resolution: {integrity: sha512-KVLIsZCjr27iHAlkMzVj+ux3ArnR6NDVHpzzT5Hmq/GUj9xVV6rQWE1ma3Ddger9dtH1i5Mxn+VCeI4c93V+Ow==}
+  /edifice-ts-client@1.0.2:
+    resolution: {integrity: sha512-hNpfF5KmEeEXTb2r3N7bgnzfSq/7jO9Yz1QJRBKGGQZunRsd9CHKHbQ32WguT17k1p1EiH6CIiCUGlt2Sf13Mg==}
     engines: {node: 16 || 18}
     dependencies:
       axios: 1.4.0
@@ -3693,3 +3689,7 @@ packages:
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
