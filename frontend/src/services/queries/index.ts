@@ -744,7 +744,6 @@ export const useUpdateResource = () => {
     onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
-
       if (previousData) {
         return queryClient.setQueryData<
           InfiniteData<ISearchResults> | undefined
@@ -770,7 +769,7 @@ export const useUpdateResource = () => {
                         ...others, // add any custom field
                         name,
                         thumbnail:
-                          typeof thumbnail === "string"
+                          typeof thumbnail === "string" || !thumbnail
                             ? thumbnail
                             : URL.createObjectURL(
                                 thumbnail as Blob | MediaSource,
@@ -818,7 +817,6 @@ export const useCreateResource = () => {
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
-      console.log(data, variables);
       const { thumbnail } = variables;
       const newResource: IResource = {
         ...variables,
