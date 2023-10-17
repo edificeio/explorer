@@ -43,6 +43,7 @@ export default function EditResourceModal({
     isSubmitting,
     isPublic,
     resourceName,
+    isLoading,
     register,
     handleSubmit,
     onSubmit,
@@ -161,6 +162,7 @@ export default function EditResourceModal({
           form={formId}
           type="submit"
           color="primary"
+          isLoading={isLoading}
           variant="filled"
           disabled={!isValid || isSubmitting}
         >

@@ -35,12 +35,13 @@ export interface InputProps {
 export default function usePublishModal({ onSuccess }: ModalProps) {
   const { user, currentApp } = useOdeClient();
 
+  const userId = user ? user?.userId : "";
+
   const selectedResources = useSelectedResources();
 
-  const [cover, setCover] = useState<Record<string, string>>({
-    name: "",
-    image: selectedResources[0].thumbnail,
-  });
+  const [cover, setCover] = useState<string | Blob | File>(
+    selectedResources[0]?.thumbnail || "",
+  );
 
   const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
 
@@ -100,25 +101,22 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     setSelectedSubjectAreas(checked);
   };
 
-  function handleUploadImage(preview: Record<string, string>) {
-    setCover(preview);
-  }
-
-  const userId = user ? user?.userId : "";
+  const handleUploadImage = (file: File) => {
+    setCover(file);
+  };
 
   const handleDeleteImage = () => {
-    setCover({
-      name: "",
-      image: "",
-    });
+    setCover("");
   };
 
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
     try {
       setLoaderPublish(true);
       let coverBlob = new Blob();
-      if (cover.image) {
-        coverBlob = await http.get(cover.image, { responseType: "blob" });
+      if (cover) {
+        coverBlob = await http.get(URL.createObjectURL(cover as Blob), {
+          responseType: "blob",
+        });
       } else if (selectedResources[0].thumbnail) {
         coverBlob = await http.get(selectedResources[0].thumbnail, {
           responseType: "blob",

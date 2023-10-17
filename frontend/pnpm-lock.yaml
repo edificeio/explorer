@@ -6,7 +6,7 @@ dependencies:
     version: 1.1.0-develop-pedago.2(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
     specifier: develop-pedago
-    version: 1.1.0-develop-pedago.6(@edifice-ui/icons@1.1.0-develop-pedago.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.3.0)(react@18.2.0)(swiper@10.3.1)
+    version: 1.1.0-develop-pedago.8(@edifice-ui/icons@1.1.0-develop-pedago.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.3.0)(react@18.2.0)(swiper@10.3.1)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -95,7 +95,7 @@ devDependencies:
     version: 1.1.0-develop-pedago.11
   edifice-ts-client:
     specifier: develop-pedago
-    version: 1.0.3-develop-pedago.2
+    version: 1.0.3-develop-pedago.3
   eslint:
     specifier: 8.51.0
     version: 8.51.0
@@ -387,8 +387,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.1.0-develop-pedago.6(@edifice-ui/icons@1.1.0-develop-pedago.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.3.0)(react@18.2.0)(swiper@10.3.1):
-    resolution: {integrity: sha512-vNyOi/ueM128Z55EaBOeW6C7btLkalTDpyVvpvGR9F0TgLZZf5RIUncGrDV2uiDjbMGDE6kl5BifhqXCo+5MZA==}
+  /@edifice-ui/react@1.1.0-develop-pedago.8(@edifice-ui/icons@1.1.0-develop-pedago.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.3.0)(react@18.2.0)(swiper@10.3.1):
+    resolution: {integrity: sha512-ZPeOND/+PaHBI67u7+eHyMYDatUHmsVBOvEsGOQ166vBIeganRQmClpS6nr+qRb4eHs01vjTwIDz2oISj6V+uQ==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.3
@@ -1290,8 +1290,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001547
-      electron-to-chromium: 1.4.553
+      caniuse-lite: 1.0.30001549
+      electron-to-chromium: 1.4.556
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -1308,8 +1308,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite@1.0.30001547:
-    resolution: {integrity: sha512-W7CrtIModMAxobGhz8iXmDfuJiiKg1WADMO/9x7/CLNin5cpSbuBjooyoIUVB5eyCc36QuTVlkVa1iB2S5+/eA==}
+  /caniuse-lite@1.0.30001549:
+    resolution: {integrity: sha512-qRp48dPYSCYaP+KurZLhDYdVE+yEyht/3NlmcJgVQ2VMGt6JL36ndQ/7rgspdZsJuxDPFIo/OzBT2+GmIJ53BA==}
     dev: true
 
   /chalk@2.4.2:
@@ -1585,8 +1585,8 @@ packages:
       bootstrap: 5.3.0(@popperjs/core@2.11.7)
     dev: true
 
-  /edifice-ts-client@1.0.3-develop-pedago.2:
-    resolution: {integrity: sha512-TnKe/ZlCpmrQyFuBlJGGk0KP2ePSDbNwfVIA1j+bzI3xsRVc9TfYYjsqmBkcstIxPh/tuM5EsUidVoU+e+XFyA==}
+  /edifice-ts-client@1.0.3-develop-pedago.3:
+    resolution: {integrity: sha512-v/MeegauVFp1kJgl+NFWGrxT98WITmU9i4bwO21mQPmCd49fu2I0Bm8qPtv8DWLqHadnLLPUA+gWOKPh+zQhng==}
     engines: {node: 16 || 18}
     dependencies:
       axios: 1.4.0
@@ -1596,8 +1596,8 @@ packages:
       - debug
     dev: true
 
-  /electron-to-chromium@1.4.553:
-    resolution: {integrity: sha512-HiRdtyKS2+VhiXvjhMvvxiMC33FJJqTA5EB2YHgFZW6v7HkK4Q9Ahv2V7O2ZPgAjw+MyCJVMQvigj13H8t+wvA==}
+  /electron-to-chromium@1.4.556:
+    resolution: {integrity: sha512-6RPN0hHfzDU8D56E72YkDvnLw5Cj2NMXZGg3UkgyoHxjVhG99KZpsKgBWMmTy0Ei89xwan+rbRsVB9yzATmYzQ==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -1641,7 +1641,7 @@ packages:
       is-string: 1.0.7
       is-typed-array: 1.1.12
       is-weakref: 1.0.2
-      object-inspect: 1.12.3
+      object-inspect: 1.13.0
       object-keys: 1.1.1
       object.assign: 4.1.4
       regexp.prototype.flags: 1.5.1
@@ -2820,8 +2820,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /object-inspect@1.12.3:
-    resolution: {integrity: sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==}
+  /object-inspect@1.13.0:
+    resolution: {integrity: sha512-HQ4J+ic8hKrgIt3mqk6cVOVrW2ozL4KdvHlqpBv9vDYWx9ysAgENAdvy4FoGF+KFdhR7nQTNm5J0ctAeOwn+3g==}
     dev: true
 
   /object-keys@1.1.1:
@@ -3304,7 +3304,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       get-intrinsic: 1.2.1
-      object-inspect: 1.12.3
+      object-inspect: 1.13.0
     dev: true
 
   /signal-exit@3.0.7:

@@ -94,8 +94,14 @@ const ResourcesList = ({
           // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
-              const { id, creatorName, creatorId, name, thumbnail, updatedAt } =
-                resource;
+              const {
+                id,
+                creatorName,
+                creatorId,
+                name,
+                thumbnail: imageSrc,
+                updatedAt,
+              } = resource;
 
               const isShared = isResourceShared(resource);
 
@@ -129,7 +135,7 @@ const ResourcesList = ({
                       updatedAt: time,
                       isPublic: resource.public,
                       isShared,
-                      imageSrc: thumbnail,
+                      imageSrc,
                     }}
                     isSelected={resourceIds.includes(resource.id)}
                     isLoading={isFetching}

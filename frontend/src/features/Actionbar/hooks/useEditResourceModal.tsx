@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 
 import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { APP, type IResource, ThumbnailParams } from "edifice-ts-client";
+import { APP, type IResource } from "edifice-ts-client";
 import { hash } from "ohash";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -59,24 +59,21 @@ export default function useEditResourceModal({
 
   const [slug, setSlug] = useState<string>(resource?.slug || "");
   const [isPublic, setIsPublic] = useState<boolean>(!!resource?.public);
-  const [thumbnail, setThumbnail] = useState<Partial<ThumbnailParams>>({
-    name: "",
-    image: selectedResources[0]?.thumbnail || "",
-  });
+  const [thumbnail, setThumbnail] = useState<string | Blob | File>(
+    selectedResources[0]?.thumbnail || "",
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   const resourceName = watch("title");
 
   const uniqueId = useId();
 
-  const handleUploadImage = (preview: ThumbnailParams) => {
-    setThumbnail(preview);
+  const handleUploadImage = (file: File) => {
+    setThumbnail(file);
   };
 
   const handleDeleteImage = () => {
-    setThumbnail({
-      name: "",
-      image: "",
-    });
+    setThumbnail("");
   };
 
   function onPublicChange(value: boolean) {
@@ -112,6 +109,8 @@ export default function useEditResourceModal({
     formData: FormInputs,
   ) {
     try {
+      setIsLoading(true);
+
       const slug = formData.enablePublic
         ? resource && resource.slug
           ? resource.slug
@@ -128,14 +127,14 @@ export default function useEditResourceModal({
           public: formData.enablePublic,
           slug,
           trashed: selectedResources[0]?.trashed,
-          thumbnail: thumbnail as ThumbnailParams,
+          thumbnail,
         });
       } else {
         queryclient.invalidateQueries(queryKey);
         await createResource.mutateAsync({
           name: formData.title,
           description: formData.description || "",
-          thumbnail: thumbnail as ThumbnailParams,
+          thumbnail,
           folder:
             currentFolder?.id === "default"
               ? undefined
@@ -167,6 +166,8 @@ export default function useEditResourceModal({
       onSuccess?.();
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -190,6 +191,7 @@ export default function useEditResourceModal({
     isSubmitting,
     isValid,
     resourceName,
+    isLoading,
     onPublicChange,
     register,
     setFocus,

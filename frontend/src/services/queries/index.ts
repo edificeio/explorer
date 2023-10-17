@@ -741,7 +741,7 @@ export const useUpdateResource = () => {
     onError(error) {
       if (typeof error === "string") hotToast.error(t(error));
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -769,7 +769,11 @@ export const useUpdateResource = () => {
                         ...resource,
                         ...others, // add any custom field
                         name,
-                        thumbnail: thumbnail.image as string,
+                        thumbnail: data.thumbnail
+                          ? data.thumbnail
+                          : URL.createObjectURL(
+                              thumbnail as Blob | MediaSource,
+                            ),
                         public: pub,
                         description,
                         slug,
@@ -817,7 +821,9 @@ export const useCreateResource = () => {
       const { thumbnail } = variables;
       const newResource: IResource = {
         ...variables,
-        thumbnail: thumbnail.image as string,
+        thumbnail: thumbnail
+          ? (URL.createObjectURL(thumbnail as Blob | MediaSource) as string)
+          : "",
         application: app,
         assetId: data._id || data.entId || "",
         id: data._id || data.entId || "",

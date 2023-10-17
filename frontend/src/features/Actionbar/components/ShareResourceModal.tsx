@@ -55,6 +55,7 @@ export default function ShareResourceModal({
     bookmarkName,
     showBookmarkMembers,
     searchPending,
+    isLoading,
     currentIsAuthor,
     setBookmarkName,
     saveBookmark,
@@ -350,6 +351,7 @@ export default function ShareResourceModal({
           type="button"
           color="primary"
           variant="filled"
+          isLoading={isLoading}
           onClick={handleShare}
           disabled={!canSave()}
         >
