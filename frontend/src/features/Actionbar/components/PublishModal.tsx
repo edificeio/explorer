@@ -92,7 +92,7 @@ export default function PublishModal({
                 onDeleteImage={handleDeleteImage}
                 className="align-self-center"
               />
-              {!cover.image && (
+              {!cover && (
                 <p className="form-text is-invalid">
                   <em>
                     {t("bpr.form.publication.cover.upload.required.image")}
@@ -284,7 +284,7 @@ export default function PublishModal({
           variant="filled"
           isLoading={loaderPublish}
           disabled={
-            !cover.image ||
+            !cover ||
             loaderPublish ||
             !isDirty ||
             !isValid ||

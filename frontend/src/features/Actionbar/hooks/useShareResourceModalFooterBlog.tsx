@@ -43,7 +43,7 @@ export default function useShareResourceModalFooterBlog() {
     thumbnail,
     trashed,
     "publish-type": publishType,
-  } as BlogUpdate);
+  } as unknown as BlogUpdate);
 
   useEffect(() => {
     if (radioPublicationValue) {

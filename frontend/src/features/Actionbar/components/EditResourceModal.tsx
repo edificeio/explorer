@@ -41,17 +41,17 @@ export default function EditResourceModal({
     formId,
     isValid,
     isSubmitting,
-    disableSlug,
-    versionSlug,
-    correctSlug,
+    isPublic,
+    resourceName,
+    isLoading,
     register,
     handleSubmit,
     onSubmit,
     handleUploadImage,
     handleDeleteImage,
     onCopyToClipBoard,
-    onSlugChange,
     onPublicChange,
+    setValue,
   } = useEditResourceModal({
     resource,
     edit,
@@ -136,14 +136,13 @@ export default function EditResourceModal({
             isActionAvailable({ workflow: "createPublic", actions }) && (
               <BlogPublic
                 appCode={appCode}
-                correctSlug={correctSlug}
-                disableSlug={disableSlug}
+                isPublic={isPublic}
                 onCopyToClipBoard={onCopyToClipBoard}
                 onPublicChange={onPublicChange}
-                onSlugChange={onSlugChange}
                 resource={resource}
+                resourceName={resourceName}
                 slug={slug}
-                versionSlug={versionSlug}
+                setValue={setValue}
                 register={register}
               />
             )}
@@ -163,6 +162,7 @@ export default function EditResourceModal({
           form={formId}
           type="submit"
           color="primary"
+          isLoading={isLoading}
           variant="filled"
           disabled={!isValid || isSubmitting}
         >

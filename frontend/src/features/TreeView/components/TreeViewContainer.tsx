@@ -5,7 +5,7 @@ import {
   Button,
   LoadingScreen,
   TreeView,
-  useHasWorkflow,
+  // useHasWorkflow,
   useToggle,
 } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -43,9 +43,9 @@ export const TreeViewContainer = () => {
     clearSelectedIds,
   } = useStoreActions();
 
-  const canCreateFolder = useHasWorkflow(
+  /* const canCreateFolder = useHasWorkflow(
     "org.entcore.blog.controllers.FoldersController|add",
-  );
+  ); */
 
   const handleTreeItemUnfold = async (folderId: ID) => {
     await unfoldTreeItem(folderId, queryclient);
@@ -71,20 +71,18 @@ export const TreeViewContainer = () => {
         selected={isTrashFolder}
         onSelect={goToTrash}
       />
-      {canCreateFolder && (
-        <div className="d-grid my-16">
-          <Button
-            disabled={isTrashFolder}
-            type="button"
-            color="primary"
-            variant="outline"
-            leftIcon={<Plus />}
-            onClick={handleOnFolderCreate}
-          >
-            {t("explorer.folder.new")}
-          </Button>
-        </div>
-      )}
+      <div className="d-grid my-16">
+        <Button
+          disabled={isTrashFolder}
+          type="button"
+          color="primary"
+          variant="outline"
+          leftIcon={<Plus />}
+          onClick={handleOnFolderCreate}
+        >
+          {t("explorer.folder.new")}
+        </Button>
+      </div>
       <Suspense fallback={<LoadingScreen />}>
         {isCreateFolderModalOpen && (
           <CreateModal

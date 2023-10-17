@@ -64,6 +64,8 @@ export default function useShareResourceModal({
     useState<boolean>(false);
   const [searchPending, setSearchPending] = useState<boolean>(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const { isAdml } = useIsAdml();
 
   const selectedResources = useSelectedResources();
@@ -186,6 +188,7 @@ export default function useShareResourceModal({
 
   const handleShare = async () => {
     try {
+      setIsLoading(true);
       await updateResource.mutateAsync(payloadUpdatePublishType);
       await shareResource.mutateAsync({
         entId: selectedResources[0]?.assetId,
@@ -197,6 +200,8 @@ export default function useShareResourceModal({
     } catch (e) {
       console.error("Failed to save share", e);
       hotToast.error(t("explorer.shared.status.error"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -469,6 +474,7 @@ export default function useShareResourceModal({
     showBookmarkMembers,
     debouncedSearchInputValue,
     searchPending,
+    isLoading,
     setBookmarkName,
     saveBookmark,
     canSave,
