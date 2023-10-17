@@ -769,11 +769,12 @@ export const useUpdateResource = () => {
                         ...resource,
                         ...others, // add any custom field
                         name,
-                        thumbnail: data.thumbnail
-                          ? data.thumbnail
-                          : URL.createObjectURL(
-                              thumbnail as Blob | MediaSource,
-                            ),
+                        thumbnail:
+                          typeof thumbnail === "string"
+                            ? thumbnail
+                            : URL.createObjectURL(
+                                thumbnail as Blob | MediaSource,
+                              ),
                         public: pub,
                         description,
                         slug,
