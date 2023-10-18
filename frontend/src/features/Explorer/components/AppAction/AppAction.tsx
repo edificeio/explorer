@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next";
 
 import { useActions } from "~/services/queries";
 import { useStoreActions } from "~/store";
-import { searchContext } from "~/services/api";
 
 const CreateModal = lazy(
   async () => await import("../../../Actionbar/components/EditResourceModal"),

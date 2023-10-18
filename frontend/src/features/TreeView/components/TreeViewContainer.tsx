@@ -83,6 +83,7 @@ export const TreeViewContainer = () => {
           {t("explorer.folder.new")}
         </Button>
       </div>
+
       <Suspense fallback={<LoadingScreen />}>
         {isCreateFolderModalOpen && (
           <CreateModal
