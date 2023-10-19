@@ -741,7 +741,7 @@ export const useUpdateResource = () => {
     onError(error) {
       if (typeof error === "string") hotToast.error(t(error));
     },
-    onSuccess: async (data, variables) => {
+    onSuccess: async (_data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
@@ -831,6 +831,7 @@ export const useCreateResource = () => {
         creatorId: user?.userId as string,
         creatorName: user?.username as string,
         createdAt: Date.now() as unknown as string,
+        slug: variables.slug || "",
         modifiedAt: data.modified?.$date || "",
         modifierId: data.author?.userId || "",
         modifierName: data.author?.username || "",

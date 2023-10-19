@@ -89,6 +89,8 @@ export default function useEditResourceModal({
       })}-${slugify(resourceName)}`;
     }
 
+    console.log({ slug });
+
     setSlug(slug);
   }
 

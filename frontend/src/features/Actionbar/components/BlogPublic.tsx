@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import { Copy } from "@edifice-ui/icons";
 import { Heading, Alert, FormControl, Button } from "@edifice-ui/react";
 import { IResource } from "edifice-ts-client";
@@ -23,7 +21,6 @@ interface BlogPublicProps {
 export const BlogPublic = ({
   appCode,
   isPublic,
-  setValue,
   onCopyToClipBoard,
   onPublicChange,
   register,
@@ -32,13 +29,6 @@ export const BlogPublic = ({
   resourceName,
 }: BlogPublicProps) => {
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (resourceName === "") {
-      onPublicChange(false);
-      setValue("enablePublic", false);
-    }
-  }, [onPublicChange, resourceName, setValue]);
 
   return (
     <>
@@ -71,7 +61,7 @@ export const BlogPublic = ({
         </FormControl.Label>
       </FormControl>
 
-      {isPublic && !!resourceName && (
+      {isPublic && (
         <div className="d-flex flex-wrap align-items-center gap-4">
           <p className="text-break">
             {window.location.origin}
