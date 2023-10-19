@@ -113,7 +113,11 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     try {
       setLoaderPublish(true);
       let coverBlob = new Blob();
-      if (cover) {
+      if (typeof cover === "string") {
+        coverBlob = await http.get(cover, {
+          responseType: "blob",
+        });
+      } else if (cover) {
         coverBlob = await http.get(URL.createObjectURL(cover as Blob), {
           responseType: "blob",
         });
