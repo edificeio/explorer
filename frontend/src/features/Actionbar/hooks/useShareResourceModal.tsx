@@ -188,11 +188,35 @@ export default function useShareResourceModal({
 
   const handleShare = async () => {
     try {
-      setIsLoading(true);
+      //TODO move this logic into services
+      // add my rights if needed (because visible api does not return my rights)
+      const myRights = selectedResources[0].rights
+        .filter((right) => user && right.includes(`user:${user.userId}`))
+        .map((right) => right.split(":")[2])
+        .filter((right) => !!right);
+      const shares = [...shareRights.rights];
+      if (myRights.length > 0) {
+        const actions: ShareRightAction[] = myRights.map((right) => {
+          return {
+            displayName: right,
+            id: right,
+          } as ShareRightAction;
+        });
+        shares.push({
+          actions,
+          avatarUrl: "",
+          directoryUrl: "",
+          displayName: user!.username,
+          id: user!.userId,
+          type: "user",
+        });
+      }
+      // update publication data
       await updateResource.mutateAsync(payloadUpdatePublishType);
+      // update shared
       await shareResource.mutateAsync({
         entId: selectedResources[0]?.assetId,
-        shares: shareRights.rights,
+        shares,
       });
 
       hotToast.success(t("explorer.shared.status.saved"));
