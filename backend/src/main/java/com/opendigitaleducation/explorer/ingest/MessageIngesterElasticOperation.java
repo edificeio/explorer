@@ -104,6 +104,8 @@ abstract class MessageIngesterElasticOperation {
                 // when we have subresources we should not reset resource fields
                 //TODO decorrelate subresource and resources
                 changes = beforeCreate(changes);
+            }else {
+                changes = beforeUpdate(changes);
             }
             this.version = message.getVersion();
             this.changes = changes;
