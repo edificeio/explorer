@@ -75,7 +75,7 @@ export default function PublishModal({
         </Heading>
 
         <form id="libraryModalForm" onSubmit={handleSubmit(publish)}>
-          <div className="d-flex mb-24 gap-24">
+          <div className="d-block d-md-flex mb-24 gap-24">
             <div style={{ maxWidth: "160px" }}>
               <div className="form-label">
                 {t("bpr.form.publication.cover.title")}
