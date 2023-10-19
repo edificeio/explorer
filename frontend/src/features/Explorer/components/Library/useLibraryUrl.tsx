@@ -1,21 +1,10 @@
 import { useOdeClient } from "@edifice-ui/react";
 import { IUserInfo } from "edifice-ts-client";
 
+import { libraryMaps } from "~/constants";
+
 export const useLibraryUrl = () => {
   const { user, appCode } = useOdeClient();
-
-  /**
-   * Object literal to find correct app code for Library Webapp
-   */
-  const libraryMaps: Record<string, string> = {
-    blog: "Blog",
-    mindmap: "MindMap",
-    scrapbook: "ScrapBook",
-    collaborativewall: "CollaborativeWall",
-    timelinegenerator: "TimelineGenerator",
-    wiki: "Wiki",
-    exercizer: "Exercizer",
-  };
 
   const appName = libraryMaps[appCode as string];
 

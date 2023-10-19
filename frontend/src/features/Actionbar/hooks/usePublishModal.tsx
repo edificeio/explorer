@@ -1,20 +1,19 @@
 import { useState } from "react";
 
 import { Alert, useOdeClient, useHotToast } from "@edifice-ui/react";
-import {
-  RESOURCE,
-  type PublishParameters,
-  type PublishResult,
-} from "edifice-ts-client";
+import { type PublishParameters, type PublishResult } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
-import { http } from "~/constants";
-import { useStoreActions, useSelectedResources } from "~/store";
-import { capitalizeFirstLetter } from "~/utils/capitalizeFirstLetter";
+import { http, libraryMaps } from "~/constants";
+import {
+  useStoreActions,
+  useSelectedResources,
+  useSearchParams,
+} from "~/store";
 import { getAppParams } from "~/utils/getAppParams";
 
 interface ModalProps {
@@ -33,11 +32,12 @@ export interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
-  const { user, currentApp } = useOdeClient();
+  const { user, appCode } = useOdeClient();
 
   const userId = user ? user?.userId : "";
 
   const selectedResources = useSelectedResources();
+  const searchParams = useSearchParams();
 
   const [cover, setCover] = useState<string | Blob | File>(
     selectedResources[0]?.thumbnail || "",
@@ -137,16 +137,12 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         { responseType: "json" } as any,
       );
 
-      let appName = "";
-      if (currentApp?.displayName) {
-        appName = capitalizeFirstLetter(currentApp?.displayName);
-      }
+      const appName = libraryMaps[appCode as string];
 
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application:
-          getAppParams().libraryAppFilter ?? capitalizeFirstLetter(appName),
+        application: getAppParams().libraryAppFilter ?? appName,
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,
@@ -161,7 +157,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         userStructureName: resAttachmentSchool.name || user?.structureNames[0],
       };
 
-      const resourceType = [RESOURCE.BLOG][0];
+      const resourceType = searchParams.types[0];
       const result: PublishResult = (await publishApi(
         resourceType,
         parameters,
