@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { Alert, useHotToast, useOdeClient } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -76,22 +76,24 @@ export default function useEditResourceModal({
     setThumbnail("");
   };
 
+  useEffect(() => {
+    if (isPublic) {
+      let slug = "";
+
+      if (resource && resource.slug) {
+        slug = resource.slug;
+      } else {
+        slug = `${hash({
+          foo: `${resourceName}${uniqueId}`,
+        })}-${slugify(resourceName)}`;
+      }
+
+      setSlug(slug);
+    }
+  }, [isPublic, resource, resourceName, uniqueId]);
+
   function onPublicChange(value: boolean) {
     setIsPublic(value);
-
-    let slug = "";
-
-    if (resource && resource.slug) {
-      slug = resource.slug;
-    } else {
-      slug = `${hash({
-        foo: `${resourceName}${uniqueId}`,
-      })}-${slugify(resourceName)}`;
-    }
-
-    console.log({ slug });
-
-    setSlug(slug);
   }
 
   const queryclient = useQueryClient();
