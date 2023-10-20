@@ -31,15 +31,23 @@ export default function EmptyScreenApp(): JSX.Element {
     }
   };
 
+  const labelEmptyScreenTitleApp = () => {
+    if (canCreate?.available && theme?.is1d) {
+      return t("explorer.emptyScreen.title1d.create", { ns: appCode });
+    } else if (canCreate?.available && !theme?.is1d) {
+      return t("explorer.emptyScreen.title2d.create", { ns: appCode });
+    } else if (!canCreate?.available && theme?.is1d) {
+      return t("explorer.emptyScreen.title1d.consultation", { ns: appCode });
+    } else {
+      return t("explorer.emptyScreen.title2d.consultation", { ns: appCode });
+    }
+  };
+
   return (
     <EmptyScreen
       imageSrc={`${imagePath}/emptyscreen/illu-${appCode}.svg`}
       imageAlt={t("explorer.emptyScreen.app.alt", { ns: appCode })}
-      title={`${
-        canCreate?.available
-          ? t("explorer.emptyScreen.title.create", { ns: appCode })
-          : t("explorer.emptyScreen.title.consultation")
-      }`}
+      title={labelEmptyScreenTitleApp()}
       text={labelEmptyScreenApp()}
     />
   );
