@@ -30,6 +30,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
+
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -43,11 +45,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.HttpUtils;
 import org.entcore.common.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExplorerController extends BaseController {
@@ -537,36 +535,40 @@ public class ExplorerController extends BaseController {
         final String drop = request.params().get("drop");
         final String oldFolders = request.params().get("include_old_folders");
         final String newFolders = request.params().get("include_new_folders");
+        final Date fromDate = getDateParam("from", request).orElse(null);
+        final Date toDate = getDateParam("to", request).orElse(null);
+        final Set<String> ids = getParamAsSet("ids", request);
+        final Set<String> states = getParamAsSet("states", request);
+        final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
+        final Set<String> apps = "all".equals(app) ?
+            config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet()) :
+            Collections.singleton(app);
+        final ExplorerReindexResourcesRequest reindexRequest =
+            new ExplorerReindexResourcesRequest(fromDate, toDate, apps, includeFolder, ids, states);
         if("all".equals(app)){
-            final Set<String> apps = config.getJsonArray("applications").stream().map(Object::toString).collect(Collectors.toSet());
             final boolean dropBefore= "true".equals(drop) || drop == null;
             final boolean oldFolder = "true".equals(oldFolders) || oldFolders == null;
             final boolean newFolder = "true".equals(newFolders) || newFolders == null;
-            new MigrateCronTask(this.vertx, this.resourceService, apps ,dropBefore, oldFolder, newFolder).run().onComplete(onFinish -> {
+            new MigrateCronTask(this.vertx, this.resourceService, apps ,dropBefore, oldFolder, newFolder, states).run()
+            .onComplete(onFinish -> {
                 if (onFinish.succeeded()) {
                     renderJson(request,onFinish.result());
                 } else {
                     renderError(request, new JsonObject().put("error", onFinish.cause().getMessage()));
                 }
             });
-        }else {
+        } else {
             final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, app, type);
             UserUtils.getUserInfos(eb, request, user -> {
                 if (user == null) {
                     unauthorized(request);
                     return;
                 }
-                final boolean includeFolder = "true".equalsIgnoreCase(request.params().get("include_folders"));
                 try {
                     final Future<Void> dropFuture = "true".equals(drop) ? resourceService.dropMapping(app).compose(e -> {
                         return resourceService.initMapping(app);
                     }) : Future.succeededFuture();
-                    final Date fromDate = getDateParam("from", request).orElse(null);
-                    final Date toDate = getDateParam("to", request).orElse(null);
-                    final Set<String> ids = getParamAsSet("ids", request);
                     final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
-                        final ExplorerReindexResourcesRequest reindexRequest =
-                                new ExplorerReindexResourcesRequest(fromDate, toDate, emptySet(), includeFolder, ids);
                         return client.reindex(user, reindexRequest);
                     });
                     future.onComplete(res -> {

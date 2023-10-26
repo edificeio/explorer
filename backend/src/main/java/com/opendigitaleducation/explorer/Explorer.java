@@ -54,11 +54,10 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.IPostgresClient;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptySet;
 
 public class Explorer extends BaseServer {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
@@ -158,7 +157,7 @@ public class Explorer extends BaseServer {
                 final boolean dropBefore = migrateCron.getBoolean("drop-before-migrate", true);
                 final boolean migrateOldFolder = migrateCron.getBoolean("migrate-old-folder", true);
                 final boolean migrateNewFolder = migrateCron.getBoolean("migrate-new-folder", true);
-                new CronTrigger(vertx, cron).schedule(new MigrateCronTask(vertx, resourceService, apps, dropBefore, migrateOldFolder, migrateNewFolder));
+                new CronTrigger(vertx, cron).schedule(new MigrateCronTask(vertx, resourceService, apps, dropBefore, migrateOldFolder, migrateNewFolder, emptySet()));
             }else {
                 log.info("Migrate task is disabled");
             }
