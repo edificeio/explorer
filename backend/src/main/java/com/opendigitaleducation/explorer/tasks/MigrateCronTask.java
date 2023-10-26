@@ -47,15 +47,18 @@ public class MigrateCronTask implements Handler<Long> {
     private final ResourceService resourceService;
     private final Vertx vertx;
     private int migrationCounter = 0;
+    private final Set<String> states;
 
     public MigrateCronTask(final Vertx vertx, final ResourceService resourceService, final Set<String> applications,
-                           final boolean dropBefore, final boolean migrateOldFolder, final boolean migrateNewFolder) {
+                           final boolean dropBefore, final boolean migrateOldFolder, final boolean migrateNewFolder,
+                           final Set<String> states) {
         this.vertx = vertx;
         this.resourceService = resourceService;
         this.applications = applications;
         this.dropBefore = dropBefore;
         this.migrateOldFolder = migrateOldFolder;
         this.migrateNewFolder = migrateNewFolder;
+        this.states = states;
     }
 
     public Future<JsonArray> run(){
@@ -69,7 +72,7 @@ public class MigrateCronTask implements Handler<Long> {
             }) : Future.succeededFuture();
             final Future<IExplorerPluginClient.IndexResponse> future = dropFuture.compose(e -> {
                 final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, application);
-                return client.reindex(null, new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet()));
+                return client.reindex(null, new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet(), this.states));
             });
             futures.add(future);
             future.onComplete(res -> {
@@ -89,7 +92,7 @@ public class MigrateCronTask implements Handler<Long> {
                 final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, application);
                 return client.reindex(
                         null,
-                        new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet())
+                        new ExplorerReindexResourcesRequest(null, null, emptySet(), this.migrateOldFolder, emptySet(), this.states)
                 );
             });
             futures.add(future);
