@@ -48,8 +48,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop",
-    "@edifice-ui/react": "develop",
+    "@edifice-ui/icons": "1.1.1",
+    "@edifice-ui/react": "1.1.1",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.32.6",
     "dayjs": "1.11.9",
@@ -80,7 +80,7 @@
     "concurrently": "8.2.0",
     "csstype": "3.1.2",
     "edifice-bootstrap": "develop",
-    "edifice-ts-client": "develop",
+    "edifice-ts-client": "1.0.4",
     "eslint": "8.46.0",
     "eslint-config-prettier": "9.0.0",
     "eslint-plugin-import": "2.28.0",

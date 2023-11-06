@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -48,8 +48,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop",
-    "@edifice-ui/react": "develop",
+    "@edifice-ui/icons": "1.1.1",
+    "@edifice-ui/react": "1.1.1",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.32.6",
     "dayjs": "1.11.9",

@@ -134,7 +134,7 @@ export default function PublishModal({
 
           <div className="d-flex flex-column flex-md-row gap-16 row mb-24">
             <div className="col d-flex">
-              <Dropdown block>
+              <Dropdown block overflow>
                 <Dropdown.Trigger
                   size="md"
                   label={t("bpr.form.publication.type")}
@@ -155,7 +155,7 @@ export default function PublishModal({
               </Dropdown>
             </div>
             <div className="col d-flex">
-              <Dropdown block>
+              <Dropdown block overflow>
                 <Dropdown.Trigger
                   size="md"
                   label={t("bpr.form.publication.discipline")}
