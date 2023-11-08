@@ -1,4 +1,4 @@
-import { useScrollToTop, Card, useOdeClient } from "@edifice-ui/react";
+import { useScrollToTop, useOdeClient, FolderCard } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import { InfiniteData } from "@tanstack/react-query";
 import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
@@ -7,7 +7,6 @@ import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = ({
   data,
-  isFetching,
 }: {
   data: InfiniteData<ISearchResults> | undefined;
   isFetching: boolean;
@@ -56,15 +55,11 @@ const FoldersList = ({
               ...springs,
             }}
           >
-            <Card
-              app={currentApp!}
-              options={{
-                type: "folder",
-                name,
-              }}
-              isLoading={isFetching}
+            <FolderCard
+              name={name}
+              app={currentApp}
               isSelected={folderIds.includes(folder.id)}
-              onOpen={() => {
+              onClick={() => {
                 scrollToTop();
                 openFolder({ folder, folderId: folder.id });
               }}

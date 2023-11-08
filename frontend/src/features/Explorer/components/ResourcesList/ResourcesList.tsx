@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 
-import { Button, Card, useOdeClient } from "@edifice-ui/react";
+import { Button, ResourceCard, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import { InfiniteData } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -15,18 +15,16 @@ import {
   useSearchParams,
   useIsTrash,
 } from "~/store";
-import { isResourceShared } from "~/utils/isResourceShared";
 
 const ResourcesList = ({
   data,
-  isFetching,
   fetchNextPage,
 }: {
   data: InfiniteData<ISearchResults> | undefined;
   isFetching: boolean;
   fetchNextPage: () => void;
 }): JSX.Element | null => {
-  const { currentApp, currentLanguage, appCode } = useOdeClient();
+  const { currentApp, currentLanguage } = useOdeClient();
   const { t } = useTranslation();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
@@ -94,25 +92,11 @@ const ResourcesList = ({
           // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
-              const {
-                id,
-                creatorName,
-                creatorId,
-                name,
-                thumbnail: imageSrc,
-                updatedAt,
-              } = resource;
-
-              const isShared = isResourceShared(resource);
+              const { id, updatedAt } = resource;
 
               const time = dayjs(updatedAt)
                 .locale(currentLanguage as string)
                 .fromNow();
-
-              const tooltips = {
-                messagePublic: t("tooltip.public", { ns: appCode }),
-                messageShared: t("tooltip.shared", { ns: appCode }),
-              };
 
               return (
                 <animated.li
@@ -123,23 +107,13 @@ const ResourcesList = ({
                     ...springs,
                   }}
                 >
-                  <Card
-                    app={currentApp!}
-                    className="c-pointer"
-                    tooltips={tooltips}
-                    options={{
-                      type: "resource",
-                      name,
-                      creatorName,
-                      userSrc: `/userbook/avatar/${creatorId}`,
-                      updatedAt: time,
-                      isPublic: resource.public,
-                      isShared,
-                      imageSrc,
-                    }}
+                  <ResourceCard
+                    app={currentApp}
+                    resource={resource}
+                    time={time}
+                    isSelectable={true}
                     isSelected={resourceIds.includes(resource.id)}
-                    isLoading={isFetching}
-                    onOpen={() => clickOnResource(resource)}
+                    onClick={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
                   />
                 </animated.li>
