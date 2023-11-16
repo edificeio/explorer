@@ -23,7 +23,7 @@ def make_request(app: str, resource: str, date, auth: str, root_url: str, days_d
         logging.info(f"{resource}@{app} - The script is not authenticated anymore.")
         authenticated = False
     else:
-        logging.warn(f"{resource}@{app} - {duration} - Request for {date} failed with status code {response.status_code}.")
+        logging.warning(f"{resource}@{app} - {duration} - Request for {date} failed with status code {response.status_code}.")
     
     return authenticated
 
@@ -50,7 +50,8 @@ def main():
     arg_apps = [app.strip() for app in args.apps.split(',')]
     apps_config = {
         "blog": "blog",
-        "exercizer": "subject"
+        "exercizer": "subject",
+        "mindmap": "mindmap"
     }
 
     apps_to_reindex = {k: v for k, v in apps_config.items() if k in arg_apps or args.apps == 'all'}
