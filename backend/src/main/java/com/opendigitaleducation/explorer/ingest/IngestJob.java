@@ -213,7 +213,8 @@ public class IngestJob {
                                 }
                                 final IngestJobResult jobResult = new IngestJobResult(
                                         emptyList(),
-                                        messagesToTreat);
+                                        messagesToTreat,
+                                        emptyList());
                                 return Pair.of(jobResult, result);
                             });
                 })
@@ -363,15 +364,18 @@ public class IngestJob {
 
     private IngestJobResult transformIngestResult(final IngestJobResult ingestResult, final MergeMessagesResult mergedMessages) {
         final Map<String, List<ExplorerMessageForIngest>> messagesByUniqueId = mergedMessages.getMessagesToAckByTratedMessageIdQueue();
-        final List<ExplorerMessageForIngest> succeededSourceMessages = ingestResult.succeed.stream()
-                .filter(message -> message.getIdQueue().isPresent()) // Because some synthetic messages can be added
-                .flatMap(message -> messagesByUniqueId.get(message.getIdQueue().get()).stream())
-                .collect(Collectors.toList());
-        final List<ExplorerMessageForIngest> failedSourceMessages = ingestResult.failed.stream()
-                .filter(message -> message.getIdQueue().isPresent()) // Because some synthetic messages can be added
-                .flatMap(message -> messagesByUniqueId.get(message.getIdQueue().get()).stream())
-                .collect(Collectors.toList());
-        return new IngestJobResult(succeededSourceMessages, failedSourceMessages);
+        final List<ExplorerMessageForIngest> succeededSourceMessages = extractMessages(ingestResult.succeed, messagesByUniqueId);
+        final List<ExplorerMessageForIngest> failedSourceMessages = extractMessages(ingestResult.failed, messagesByUniqueId);
+        final List<ExplorerMessageForIngest> skippedSourceMessages = extractMessages(ingestResult.skipped, messagesByUniqueId);
+        return new IngestJobResult(succeededSourceMessages, failedSourceMessages, skippedSourceMessages);
+    }
+
+    private List<ExplorerMessageForIngest> extractMessages(final List<ExplorerMessageForIngest> sourceMessagesExtractor,
+                                                         final Map<String, List<ExplorerMessageForIngest>> messagesByUniqueId) {
+        return sourceMessagesExtractor.stream()
+            .filter(message -> message.getIdQueue().isPresent()) // Because some synthetic messages can be added
+            .flatMap(message -> messagesByUniqueId.get(message.getIdQueue().get()).stream())
+            .collect(Collectors.toList());
     }
 
     private void onTaskComplete(final Promise<Void> current) {
@@ -381,8 +385,8 @@ public class IngestJob {
 
     private void scheduleNextExecution(final AsyncResult<IngestJobResult> result) {
         vertx.cancelTimer(nextExecutionTimerId);
-        final IngestJobResult messages = result.otherwise(IngestJobResult.empty()).result();
-        if (result.failed() || messages.size() >= this.batchSize || messages.failed.size() > 0) {
+        final IngestJobResult messages = result.otherwise(new IngestJobResult()).result();
+        if (result.failed() || messages.size() >= this.batchSize || !messages.failed.isEmpty()) {
             //messagereader seems to have still some message pending so trigger now
             execute();
         } else {
@@ -465,14 +469,17 @@ public class IngestJob {
     public static class IngestJobResult {
         final List<ExplorerMessageForIngest> succeed;
         final List<ExplorerMessageForIngest> failed;
+        final List<ExplorerMessageForIngest> skipped;
 
-        public IngestJobResult(final List<ExplorerMessageForIngest> succeed, final List<ExplorerMessageForIngest> failed) {
+        public IngestJobResult() {
+            this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        }
+        public IngestJobResult(final List<ExplorerMessageForIngest> succeed,
+                               final List<ExplorerMessageForIngest> failed,
+                               final List<ExplorerMessageForIngest> skipped) {
             this.succeed = succeed;
             this.failed = failed;
-        }
-
-        public static IngestJobResult empty() {
-            return new IngestJobResult(new ArrayList<>(), new ArrayList<>());
+            this.skipped = skipped;
         }
 
         public List<ExplorerMessageForIngest> getSucceed() {
@@ -483,8 +490,12 @@ public class IngestJob {
             return failed;
         }
 
+        public List<ExplorerMessageForIngest> getSkipped() {
+            return skipped;
+        }
+
         public int size() {
-            return succeed.size() + failed.size();
+            return succeed.size() + failed.size() + skipped.size();
         }
     }
 

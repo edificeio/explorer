@@ -42,7 +42,7 @@ public class MessageIngesterElastic implements MessageIngester {
     @Override
     public Future<IngestJob.IngestJobResult> ingest(final List<ExplorerMessageForIngest> messages) {
         if(messages.isEmpty()){
-            return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
+            return Future.succeededFuture(new IngestJob.IngestJobResult());
         }
         final List<MessageIngesterElasticOperation> operations = new ArrayList<>();
         final List<ExplorerMessageForIngest> failedTransformationToOperation = new ArrayList<>();
@@ -76,7 +76,7 @@ public class MessageIngesterElastic implements MessageIngester {
     }
 
     private Future<IngestJob.IngestJobResult> executeOperations(final List<MessageIngesterElasticOperation> operations) {
-        final IngestJob.IngestJobResult ingestJobResult = new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>());
+        final IngestJob.IngestJobResult ingestJobResult = new IngestJob.IngestJobResult();
         final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(elasticOptions);
         for (MessageIngesterElasticOperation operation : operations) {
             operation.execute(bulk);

@@ -51,7 +51,7 @@ public class MessageIngesterPostgres implements MessageIngester {
         log.trace("[IngesterPostgres] start ingest");
         final long start = System.currentTimeMillis();
         if (messages.isEmpty()) {
-            return Future.succeededFuture(new IngestJob.IngestJobResult(new ArrayList<>(), new ArrayList<>()));
+            return Future.succeededFuture(new IngestJob.IngestJobResult());
         }
         final List<ExplorerMessageWithParent> moveResources = new ArrayList<>();
         final List<ExplorerMessageForIngest> deleteFolders = new ArrayList<>();
@@ -113,14 +113,21 @@ public class MessageIngesterPostgres implements MessageIngester {
                         //add to failed all resources that cannot be deleted or created into postgres
                         final List<ExplorerMessageForIngest> prepareFailed = new ArrayList<>(messages);
                         prepareFailed.removeAll(toIngest);
+                        final List<ExplorerMessageForIngest> failedMessages = ingestResult.getFailed();
+                        final List<ExplorerMessageForIngest> skippedMessages = ingestResult.getSkipped();
                         for (final ExplorerMessageForIngest failedMessage : prepareFailed) {
-                            if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
+                            if(ExplorerMessage.ExplorerAction.Delete.name().equals(failedMessage.getAction())) {
+                                log.warn("Cannot perform in postgres the action in " + failedMessage +". The target resource was probably already deleted or had never been indexed.");
+                                // Add the failing message to the succeeded ones so it can be ack-ed in the reader
+                                skippedMessages.add(failedMessage);
+                                // And we don't add it to failedMessagess on purpose
+                            } else if (isBlank(failedMessage.getError()) && isBlank(failedMessage.getErrorDetails())) {
                                 failedMessage.setError("psql.error");
                                 failedMessage.setErrorDetails("resource cannot be deleted or created into postgres");
+                                failedMessages.add(failedMessage);
                             }
                         }
-                        ingestResult.getFailed().addAll(prepareFailed);
-                        return ingestResult;
+                        return new IngestJob.IngestJobResult(ingestResult.getSucceed(), failedMessages, skippedMessages);
                     }).compose(ingestResult -> {
                         //delete definitely all resources deleted from ES
                         final List<ExplorerMessageForIngest> deleted = deleteResourceFuture.result();
@@ -147,9 +154,6 @@ public class MessageIngesterPostgres implements MessageIngester {
                             failed.add(message);
                         }
                     }
-                    final IngestJob.IngestJobResult result = new IngestJob.IngestJobResult(
-                            emptyList(),
-                            failed);
                     return Future.failedFuture(all.cause());
                 }
             });

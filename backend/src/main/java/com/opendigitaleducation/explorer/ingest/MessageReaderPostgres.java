@@ -130,7 +130,12 @@ public class MessageReaderPostgres implements MessageReader {
 
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult result, final int maxAttempt) {
-        final List<ExplorerMessageForIngest> succeed = result.succeed;
+        final List<ExplorerMessageForIngest> toAck = new ArrayList<>();
+        toAck.addAll(result.succeed);
+        // We also acknowledge skipped messages because we know that
+        // they are not true failures and replaying them won't make
+        // them pass
+        toAck.addAll(result.skipped);
         final List<ExplorerMessageForIngest> failed = result.failed;
         final List<JsonObject> failedJson = result.failed.stream().filter(e->{
             return e.getIdQueue().isPresent();
@@ -141,16 +146,16 @@ public class MessageReaderPostgres implements MessageReader {
         }).collect(Collectors.toList());
         //save
         return this.pgClient.transaction().compose(transaction -> {
-            if (succeed.size() > 0) {
-                final List<Long> ids = succeed.stream().filter(e->{
-                    return e.getIdQueue().isPresent();
-                }).map(e -> Long.valueOf(e.getIdQueue().get())).collect(Collectors.toList());
+            if (!toAck.isEmpty()) {
+                final List<Long> ids = toAck.stream()
+                    .filter(e-> e.getIdQueue().isPresent())
+                    .map(e -> Long.valueOf(e.getIdQueue().get())).collect(Collectors.toList());
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(STATUS_SUCCESS), ids);
-                final String placeholder = PostgresClient.inPlaceholder(succeed, 2);
+                final String placeholder = PostgresClient.inPlaceholder(toAck, 2);
                 final String query = String.format("UPDATE explorer.resource_queue SET  attempt_status=$1, attempted_count=attempted_count+1, attempted_at=NOW() WHERE id IN (%s)", placeholder);
                 transaction.addPreparedQuery(query, tuple);
             }
-            if (failed.size() > 0) {
+            if (!failed.isEmpty()) {
                 final LocalDateTime now = LocalDateTime.now();
                 final Map<String, Object> defaultValues = new HashMap<>();
                 defaultValues.put("_attemptat", now);
