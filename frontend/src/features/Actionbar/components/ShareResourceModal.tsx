@@ -75,9 +75,6 @@ export default function ShareResourceModal({
   const { t } = useTranslation();
   const refBookmark = useRef<HTMLInputElement>(null);
 
-  console.log({ searchResults });
-  console.log(showSearchNoResults);
-  console.log(showSearchLoading);
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
       <Modal.Header onModalClose={onCancel}>{t("share.title")}</Modal.Header>
