@@ -293,19 +293,23 @@ export default function ShareResourceModal({
             <InfoCircle className="c-pointer" height="18" />
           </Tooltip>
         </Heading>
-        <Combobox
-          value={searchInputValue}
-          placeholder={
-            showSearchAdmlHint()
-              ? t("explorer.search.adml.hint")
-              : t("explorer.modal.share.search.placeholder")
-          }
-          isLoading={showSearchLoading()}
-          noResult={showSearchNoResults()}
-          options={searchResults}
-          handleSearchInputChange={handleSearchInputChange}
-          handleSearchResultsChange={handleSearchResultsChange}
-        />
+        <div className="row">
+          <div className="col-10">
+            <Combobox
+              value={searchInputValue}
+              placeholder={
+                showSearchAdmlHint()
+                  ? t("explorer.search.adml.hint")
+                  : t("explorer.modal.share.search.placeholder")
+              }
+              isLoading={showSearchLoading()}
+              noResult={showSearchNoResults()}
+              options={searchResults}
+              onSearchInputChange={handleSearchInputChange}
+              onSearchResultsChange={handleSearchResultsChange}
+            />
+          </div>
+        </div>
         <ShareResourceModalFooter
           radioPublicationValue={radioPublicationValue}
           onRadioPublicationChange={handleRadioPublicationChange}
