@@ -230,7 +230,12 @@ public class MessageReaderRedis implements MessageReader {
         final List<Future> transactions = new ArrayList<>();
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
-        for (final ExplorerMessageForIngest mess : ingestResult.succeed) {
+        final List<ExplorerMessageForIngest> toAck = new ArrayList<>(ingestResult.succeed);
+        // We also acknowledge skipped messages because we know that
+        // they are not true failures and replaying them won't make
+        // them pass
+        toAck.addAll(ingestResult.skipped);
+        for (final ExplorerMessageForIngest mess : toAck) {
             if(mess.getIdQueue().isPresent()) {
                 final String idQueue = mess.getIdQueue().get();
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
