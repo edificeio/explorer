@@ -12,10 +12,10 @@ import {
 
 export function ExplorerBreadcrumb() {
   const { appCode } = useOdeClient();
-  const { t } = useTranslation(["common", appCode]);
   const selectedNodesIds = useSelectedNodesIds();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
+  const { t } = useTranslation(["common", appCode]);
   const { gotoPreviousFolder } = useStoreActions();
   const { inputSearch } = useSearchForm();
 
@@ -47,8 +47,8 @@ export function ExplorerBreadcrumb() {
           {inputSearch.length !== 0
             ? searchName
             : !isTrashFolder
-            ? rootName
-            : trashName}
+              ? rootName
+              : trashName}
         </h2>
       )}
     </div>

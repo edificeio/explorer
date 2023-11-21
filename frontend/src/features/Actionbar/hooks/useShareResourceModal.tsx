@@ -76,10 +76,12 @@ export default function useShareResourceModal({
 
   useEffect(() => {
     initShareRightsAndActions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     search(debouncedSearchInputValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchInputValue]);
 
   /**
@@ -98,6 +100,7 @@ export default function useShareResourceModal({
       .getRightsForResource(appCode, selectedResources[0]?.assetId);
 
     setShareRights(rights);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleActionCheckbox = (

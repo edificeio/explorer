@@ -53,6 +53,7 @@ const ResourcesList = ({
 
   const handleNextPage = useCallback(() => {
     fetchNextPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clickOnResource = (resource: IResource) => {

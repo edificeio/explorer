@@ -32,26 +32,23 @@ export interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
+  const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
+
   const { user, appCode } = useOdeClient();
+  const { hotToast } = useHotToast(Alert);
 
-  const userId = user ? user?.userId : "";
-
+  // * https://github.com/pmndrs/zustand#fetching-everything
+  // ! https://github.com/pmndrs/zustand/discussions/913
   const selectedResources = useSelectedResources();
   const searchParams = useSearchParams();
+  const { publishApi } = useStoreActions();
 
   const [cover, setCover] = useState<string | Blob | File>(
     selectedResources[0]?.thumbnail || "",
   );
 
-  const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
-
-  const { hotToast } = useHotToast(Alert);
-
-  // * https://github.com/pmndrs/zustand#fetching-everything
-  // ! https://github.com/pmndrs/zustand/discussions/913
-  const { publishApi } = useStoreActions();
-
   const {
+    control,
     register,
     watch,
     setValue,
@@ -110,6 +107,8 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   };
 
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
+    const userId = user ? user?.userId : "";
+
     try {
       setLoaderPublish(true);
       let coverBlob = new Blob();
@@ -182,6 +181,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     watch,
     setValue,
     selectedResources,
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
