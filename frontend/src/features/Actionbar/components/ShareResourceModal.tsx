@@ -16,7 +16,6 @@ import {
   IconButton,
   Input,
   Modal,
-  SelectList,
   Loading,
   Tooltip,
   VisuallyHidden,
@@ -51,7 +50,7 @@ export default function ShareResourceModal({
     shareRights,
     shareRightActions,
     showBookmarkInput,
-    searchResults,
+    // searchResults,
     bookmarkName,
     showBookmarkMembers,
     searchPending,
@@ -65,7 +64,7 @@ export default function ShareResourceModal({
     handleShare,
     handleDeleteRow,
     handleSearchInputChange,
-    handleSearchResultsChange,
+    // handleSearchResultsChange,
     showSearchNoResults,
     showSearchAdmlHint,
     showSearchLoading,
@@ -322,7 +321,7 @@ export default function ShareResourceModal({
             <div className="p-4">{t("portal.no.result")}</div>
           )}
         </FormControl>
-        {searchResults?.length > 0 && (
+        {/* {searchResults?.length > 0 && (
           <div className="position-absolute w-100 max-w-512 z-1 bg-white shadow rounded-4 d-block show py-12 px-8">
             <SelectList
               options={searchResults}
@@ -331,7 +330,7 @@ export default function ShareResourceModal({
               onChange={handleSearchResultsChange}
             ></SelectList>
           </div>
-        )}
+        )} */}
         <ShareResourceModalFooter
           radioPublicationValue={radioPublicationValue}
           onRadioPublicationChange={handleRadioPublicationChange}

@@ -64,6 +64,7 @@ export default function useActionBar() {
       return;
     }
     setIsActionBarOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceIds, folderIds]);
 
   async function handleClick(action: IAction) {

@@ -28,6 +28,7 @@ export default function useAccessControl({
   // run effect if params changes
   useEffect(() => {
     refreshState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roles, rights]);
 
   const checkRights = async function (rights: string[] | string) {
