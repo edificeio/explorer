@@ -14,12 +14,10 @@ import {
   FormControl,
   Heading,
   IconButton,
-  Input,
   Modal,
-  SelectList,
-  Loading,
   Tooltip,
   VisuallyHidden,
+  Combobox,
 } from "@edifice-ui/react";
 import { ShareRight } from "edifice-ts-client";
 import { createPortal } from "react-dom";
@@ -54,8 +52,8 @@ export default function ShareResourceModal({
     searchResults,
     bookmarkName,
     showBookmarkMembers,
-    searchPending,
     isLoading,
+    searchInputValue,
     currentIsAuthor,
     setBookmarkName,
     saveBookmark,
@@ -76,6 +74,7 @@ export default function ShareResourceModal({
 
   const { t } = useTranslation();
   const refBookmark = useRef<HTMLInputElement>(null);
+
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
       <Modal.Header onModalClose={onCancel}>{t("share.title")}</Modal.Header>
@@ -83,7 +82,6 @@ export default function ShareResourceModal({
         <Heading headingStyle="h4" level="h3" className="mb-16">
           {t("explorer.modal.share.usersWithAccess")}
         </Heading>
-
         <div className="table-responsive">
           <table className="table border align-middle mb-0">
             <thead className="bg-secondary">
@@ -221,7 +219,6 @@ export default function ShareResourceModal({
             </tbody>
           </table>
         </div>
-
         <div className="mt-16">
           <Button
             color="tertiary"
@@ -280,9 +277,7 @@ export default function ShareResourceModal({
             </div>
           )}
         </div>
-
         <hr />
-
         <Heading
           headingStyle="h4"
           level="h3"
@@ -298,40 +293,19 @@ export default function ShareResourceModal({
             <InfoCircle className="c-pointer" height="18" />
           </Tooltip>
         </Heading>
-
-        <FormControl className="d-flex align-items-center" id="search">
-          <Input
-            className="max-w-512"
-            noValidationIcon
-            placeholder={
-              showSearchAdmlHint()
-                ? t("explorer.search.adml.hint")
-                : t("explorer.modal.share.search.placeholder")
-            }
-            size="md"
-            type="search"
-            onChange={handleSearchInputChange}
-          />
-          {showSearchLoading() && (
-            <div className="d-flex align-items-center p-4">
-              <Loading isLoading={searchPending} />
-              <span className="ps-4">{t("explorer.search.pending")}</span>
-            </div>
-          )}
-          {showSearchNoResults() && (
-            <div className="p-4">{t("portal.no.result")}</div>
-          )}
-        </FormControl>
-        {searchResults?.length > 0 && (
-          <div className="position-absolute w-100 max-w-512 z-1 bg-white shadow rounded-4 d-block show py-12 px-8">
-            <SelectList
-              options={searchResults}
-              hideCheckbox={true}
-              isMonoSelection={true}
-              onChange={handleSearchResultsChange}
-            ></SelectList>
-          </div>
-        )}
+        <Combobox
+          value={searchInputValue}
+          placeholder={
+            showSearchAdmlHint()
+              ? t("explorer.search.adml.hint")
+              : t("explorer.modal.share.search.placeholder")
+          }
+          isLoading={showSearchLoading()}
+          noResult={showSearchNoResults()}
+          options={searchResults}
+          handleSearchInputChange={handleSearchInputChange}
+          handleSearchResultsChange={handleSearchResultsChange}
+        />
         <ShareResourceModalFooter
           radioPublicationValue={radioPublicationValue}
           onRadioPublicationChange={handleRadioPublicationChange}
