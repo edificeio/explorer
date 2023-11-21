@@ -1,8 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import com.opendigitaleducation.explorer.ingest.impl.MessageMergerRepository;
-import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerChain;
-import com.opendigitaleducation.explorer.ingest.impl.MessageTransformerFactory;
+import com.opendigitaleducation.explorer.ingest.impl.*;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
@@ -18,7 +16,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.util.Collections.emptyList;
-import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
@@ -33,9 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
-import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
 
 public class IngestJob {
     static Logger log = LoggerFactory.getLogger(IngestJob.class);
@@ -60,6 +54,9 @@ public class IngestJob {
     private IngestJobStatus status = IngestJobStatus.Idle;
     private Handler<AsyncResult<IngestJob.IngestJobResult>> onExecutionEnd = e -> {
     };
+
+    private PermanentIngestionErrorHandler permanentIngestionErrorHandler;
+
     private boolean pendingNotification = false;
     private final MessageConsumer messageConsumer;
 
@@ -82,6 +79,7 @@ public class IngestJob {
         this.messageConsumer = getRouter(vertx);
         this.ingestJobMetricsRecorder = metricsRecorder;
         loadTransformerChain(config);
+        this.permanentIngestionErrorHandler = createIngestionErrorHandler(vertx, config);
     }
 
     private MessageConsumer getRouter(Vertx vertx) {
@@ -197,6 +195,7 @@ public class IngestJob {
                 .onFailure(current::fail)
                 .map(this.messageMerger::mergeMessages)
                 .compose(result -> {
+
                     final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
                     return this.messageIngester
                             .ingest(messagesToTreat)
@@ -224,9 +223,15 @@ public class IngestJob {
                     this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight(), start);
                     if (ingestResult.size() > 0) {
                         final IngestJobResult transformedJob = transformIngestResult(ingestResult, ingestResultAndJobResult.getRight());
-                        updateMessagesAttemptedTooManyTimes(transformedJob);
                         future = this.messageReader.updateStatus(transformedJob, maxAttempt)
-                                .map(ingestResult);
+                            .compose(e -> {
+                                final List<ExplorerMessageForIngest> permanentlyDeletedMessages =
+                                    ingestResult.getFailed().stream()
+                                        .filter(m -> m.getAttemptCount() > maxAttempt)
+                                        .collect(Collectors.toList());
+                                return permanentIngestionErrorHandler.handleDeletedMessages(permanentlyDeletedMessages);
+                            })
+                            .map(ingestResult);
                     } else {
                         future = Future.succeededFuture(ingestResult);
                     }
@@ -304,16 +309,6 @@ public class IngestJob {
             this.batchSize = newBatchSize;
         }
         this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
-    }
-
-    private void updateMessagesAttemptedTooManyTimes(IngestJobResult ingestResult) {
-        if(ingestResult.getFailed() != null) {
-            final int nbMessagesAttemptedTooManyTimes = (int) ingestResult.getFailed().stream()
-                    .mapToInt(ExplorerMessageForIngest::getAttemptCount)
-                    .filter(attemptCount -> attemptCount > maxAttempt)
-                    .count();
-            this.ingestJobMetricsRecorder.onMessagesAttempedTooManyTimes(nbMessagesAttemptedTooManyTimes);
-        }
     }
 
     private static class ApplicationAndEntity {
@@ -515,5 +510,16 @@ public class IngestJob {
             this.messageTransformer.clearChain();
             messageTransformer.withTransformer(transformers);
         }
+    }
+
+    private PermanentIngestionErrorHandler createIngestionErrorHandler(final Vertx vertx, final JsonObject config) {
+        return new ChainPermanentIngestionErrorHandler(
+          new MetricsUpdaterPermanentIngestionErrorHandler(ingestJobMetricsRecorder),
+          new DebouncedIngestionErrorReplayer(
+              vertx,
+              config.getLong("reindex-error-debounce-delay-ms", 60000L),
+              config.getInteger("reindex-error-debounce-queue-max-size", -1)
+          )
+        );
     }
 }
