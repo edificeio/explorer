@@ -129,11 +129,13 @@ export const useStoreContext = create<State>()((set, get) => ({
       })),
     setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
     setSearchParams: (searchParams: Partial<ISearchParameters>) => {
-      set(({ searchParams: previousSearchParams }) => {
+      set((state) => {
+        const { searchParams: previousSearchParams } = state;
         if (previousSearchParams.search !== searchParams.search) {
           if (searchParams.search) {
             // reset selection and folder if we are searching
             return {
+              ...state,
               selectedFolders: [],
               selectedNodesIds: [],
               selectedResources: [],
@@ -141,6 +143,7 @@ export const useStoreContext = create<State>()((set, get) => ({
               searchParams: {
                 ...previousSearchParams,
                 ...searchParams,
+                trashed: false,
                 filters: {
                   ...previousSearchParams.filters,
                   folder: undefined,
@@ -150,12 +153,17 @@ export const useStoreContext = create<State>()((set, get) => ({
           } else {
             // reset selection if we are not searching
             return {
+              ...state,
               selectedFolders: [],
-              selectedNodesIds: [],
+              selectedNodesIds: ["default"],
               selectedResources: [],
+              currentFolder: {
+                id: "default",
+              },
               searchParams: {
                 ...previousSearchParams,
                 ...searchParams,
+                trashed: false,
                 filters: {
                   ...previousSearchParams.filters,
                 },
@@ -333,8 +341,10 @@ export const useStoreContext = create<State>()((set, get) => ({
         selectedResources: [],
         resourceIds: [],
         folderIds: [],
+        status: "select",
         searchParams: {
           ...state.searchParams,
+          search: undefined,
           filters: {
             folder: FOLDER.BIN,
           },

@@ -28,18 +28,18 @@ export const useSearchForm = () => {
 
   const handleKeyPress = (event: React.KeyboardEvent): void => {
     if (event.key === "Enter" || event.key === "Return") {
+      event.preventDefault();
       setSearchParams({
         search: inputSearch ? inputSearch : undefined,
       });
-      event.preventDefault();
     }
   };
 
   const handleSearchSubmit = (e: React.MouseEvent): void => {
+    e.preventDefault();
     setSearchParams({
       search: debounceInputSearch ? debounceInputSearch : undefined,
     });
-    e.preventDefault();
   };
 
   useEffect(() => {
@@ -49,7 +49,9 @@ export const useSearchForm = () => {
       debounceInputSearch.length >= searchConfig.minLength;
 
     const searchPartial = shouldUpdateSearch
-      ? { search: debounceInputSearch ? debounceInputSearch : undefined }
+      ? {
+          search: debounceInputSearch ? debounceInputSearch : undefined,
+        }
       : {};
 
     setSearchParams({

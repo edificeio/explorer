@@ -10,7 +10,7 @@ const FoldersList = ({
 }: {
   data: InfiniteData<ISearchResults> | undefined;
   isFetching: boolean;
-}): JSX.Element | null => {
+}) => {
   const { currentApp } = useOdeClient();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
