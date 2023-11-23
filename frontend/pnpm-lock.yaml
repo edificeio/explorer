@@ -2,11 +2,11 @@ lockfileVersion: '6.0'
 
 dependencies:
   '@edifice-ui/icons':
-    specifier: develop-pedago
-    version: 1.2.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0)
+    specifier: develop
+    version: 1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
-    specifier: develop-pedago
-    version: 1.2.0-develop-pedago.10(@edifice-ui/icons@1.2.0-develop-pedago.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4)
+    specifier: develop
+    version: 1.2.0-develop-pedago.15(@edifice-ui/icons@1.2.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -91,11 +91,11 @@ devDependencies:
     specifier: 3.1.2
     version: 3.1.2
   edifice-bootstrap:
-    specifier: develop-pedago
-    version: 1.2.0-develop-pedago.2
+    specifier: develop
+    version: 1.2.0-develop.2
   edifice-ts-client:
-    specifier: develop-pedago
-    version: 1.0.5-develop-pedago.1
+    specifier: develop
+    version: 1.0.5-develop.1
   eslint:
     specifier: 8.54.0
     version: 8.54.0
@@ -377,8 +377,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.2.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-TxSysoOjlguGUhagAXHokL4XdyXWQFFs5crSznSOQ/nFamoI66A+6KcxUgyc6Yhb7wJlg/2+t4CFzN438HHlEA==}
+  /@edifice-ui/icons@1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-iXcRlfRS0F3nx/xxx0c1hGdVQ1v+A7LSvxFuq2i9gWZ7dIePd373SJNE/X92GuuoICfqBDKNwCGZLYAhY0S2Ig==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -387,8 +387,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.2.0-develop-pedago.10(@edifice-ui/icons@1.2.0-develop-pedago.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4):
-    resolution: {integrity: sha512-+Nghkzrm0DKO+xbSzXpJ91BVEaD7Zj8l5Wc6sI0cHyH3JYU+SrKIRgMwTjY6oeydPUt3F3GhaDqQ9O6PPgbShQ==}
+  /@edifice-ui/react@1.2.0-develop-pedago.15(@edifice-ui/icons@1.2.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4):
+    resolution: {integrity: sha512-S9rS0W25ZYiHmQsD2XgxlI4TLdtJ1xTRQ3w+F6pOS0Zvf0uezBsFLtAitVvLxc88gcmr1ApewrKt48b73D7YyA==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.3
@@ -400,7 +400,7 @@ packages:
       react-i18next: 13.0.1
       swiper: 10.0.3
     dependencies:
-      '@edifice-ui/icons': 1.2.0-develop-pedago.1(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0)
       '@floating-ui/react': 0.26.0(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -1300,7 +1300,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001564
-      electron-to-chromium: 1.4.590
+      electron-to-chromium: 1.4.592
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -1587,16 +1587,16 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /edifice-bootstrap@1.2.0-develop-pedago.2:
-    resolution: {integrity: sha512-BUPJyC3nNv5kmOJgi8XzvyKB4n1BUeo483Add4yRCVEBq0hNnq00Dpgsx1GMonZKIubU2kZvaf+viLCIhBFTcQ==}
+  /edifice-bootstrap@1.2.0-develop.2:
+    resolution: {integrity: sha512-d2V43QfBEJ18q9jhG16meGWn1T05ZgO6RAG/5z8yNKyXPWcHBzXVlmY/fKnruClj6PxLIGAdNR2GMZZcRG/+/A==}
     engines: {node: 16 || 18}
     dependencies:
       '@popperjs/core': 2.11.7
       bootstrap: 5.3.0(@popperjs/core@2.11.7)
     dev: true
 
-  /edifice-ts-client@1.0.5-develop-pedago.1:
-    resolution: {integrity: sha512-g/tsHEkL8eQ1J+DSTojrozygtl4io6bsVKLyxXPczJ34/k/VhneRg9ibO1XJ0A/V7MXkHz8E7IYKHgdJ9ZSojw==}
+  /edifice-ts-client@1.0.5-develop.1:
+    resolution: {integrity: sha512-QHIjj0eCA9vQrYTjDjErG/56FV5VgsDsPaX8pcPAKQUEKkAvDu3sBFhqo2z4pRbG/LBj7f+lWhZ6OLX9EHmY4g==}
     engines: {node: 16 || 18}
     dependencies:
       axios: 1.4.0
@@ -1606,8 +1606,8 @@ packages:
       - debug
     dev: true
 
-  /electron-to-chromium@1.4.590:
-    resolution: {integrity: sha512-hohItzsQcG7/FBsviCYMtQwUSWvVF7NVqPOnJCErWsAshsP/CR2LAXdmq276RbESNdhxiAq5/vRo1g2pxGXVww==}
+  /electron-to-chromium@1.4.592:
+    resolution: {integrity: sha512-D3NOkROIlF+d5ixnz7pAf3Lu/AuWpd6AYgI9O67GQXMXTcCP1gJQRotOq35eQy5Sb4hez33XH1YdTtILA7Udww==}
     dev: true
 
   /emoji-regex@8.0.0:
