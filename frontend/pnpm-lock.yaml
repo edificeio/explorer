@@ -3,10 +3,10 @@ lockfileVersion: '6.0'
 dependencies:
   '@edifice-ui/icons':
     specifier: develop
-    version: 1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0)
+    version: 1.2.1-develop.2(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
     specifier: develop
-    version: 1.2.0-develop-pedago.15(@edifice-ui/icons@1.2.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4)
+    version: 1.2.1-develop.2(@edifice-ui/icons@1.2.1-develop.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -377,8 +377,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-iXcRlfRS0F3nx/xxx0c1hGdVQ1v+A7LSvxFuq2i9gWZ7dIePd373SJNE/X92GuuoICfqBDKNwCGZLYAhY0S2Ig==}
+  /@edifice-ui/icons@1.2.1-develop.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-KzRZ3lc9Nqj5lv4sjgJmZmf4sVY57g6l4KQX+Gn9GnTct3ICE7qMAN00SQhHeePdEJMsg/+Z6EZqorTYcs9Z0Q==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -387,8 +387,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.2.0-develop-pedago.15(@edifice-ui/icons@1.2.0-develop.1)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4):
-    resolution: {integrity: sha512-S9rS0W25ZYiHmQsD2XgxlI4TLdtJ1xTRQ3w+F6pOS0Zvf0uezBsFLtAitVvLxc88gcmr1ApewrKt48b73D7YyA==}
+  /@edifice-ui/react@1.2.1-develop.2(@edifice-ui/icons@1.2.1-develop.2)(@react-spring/web@9.7.3)(@tanstack/react-query@4.36.1)(clsx@2.0.0)(react-dom@18.2.0)(react-hot-toast@2.4.1)(react-i18next@13.5.0)(react@18.2.0)(swiper@11.0.4):
+    resolution: {integrity: sha512-78bWLHWw1zoQwAkPa3+p53948GYzjT+Z3XeF4lwtvB2qv+F7osucEfXPgql1Tpb5EV2zeKl1UnnUr5Qq7+AANw==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.3
@@ -400,7 +400,7 @@ packages:
       react-i18next: 13.0.1
       swiper: 10.0.3
     dependencies:
-      '@edifice-ui/icons': 1.2.0-develop.1(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.2.1-develop.2(react-dom@18.2.0)(react@18.2.0)
       '@floating-ui/react': 0.26.0(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -1300,7 +1300,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001564
-      electron-to-chromium: 1.4.592
+      electron-to-chromium: 1.4.593
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -1606,8 +1606,8 @@ packages:
       - debug
     dev: true
 
-  /electron-to-chromium@1.4.592:
-    resolution: {integrity: sha512-D3NOkROIlF+d5ixnz7pAf3Lu/AuWpd6AYgI9O67GQXMXTcCP1gJQRotOq35eQy5Sb4hez33XH1YdTtILA7Udww==}
+  /electron-to-chromium@1.4.593:
+    resolution: {integrity: sha512-c7+Hhj87zWmdpmjDONbvNKNo24tvmD4mjal1+qqTYTrlF0/sNpAcDlU0Ki84ftA/5yj3BF2QhSGEC0Rky6larg==}
     dev: true
 
   /emoji-regex@8.0.0:
