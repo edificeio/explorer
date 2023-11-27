@@ -24,12 +24,10 @@ export const BlogPublic = ({
   onCopyToClipBoard,
   onPublicChange,
   register,
-  resource,
   slug,
   resourceName,
 }: BlogPublicProps) => {
   const { t } = useTranslation();
-
   return (
     <>
       <Heading headingStyle="h4" level="h3" className="mb-16">
@@ -48,7 +46,6 @@ export const BlogPublic = ({
           role="switch"
           {...register("enablePublic", {
             disabled: !isPublic && !resourceName,
-            value: resource && resource.public,
             onChange: (e: { target: { checked: any } }) => {
               onPublicChange(e.target.checked);
             },

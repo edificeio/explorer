@@ -40,7 +40,7 @@ export default function EditFolderModal({
     if (isOpen) {
       setFocus("name");
     }
-  }, [isOpen]);
+  }, [isOpen, setFocus]);
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>

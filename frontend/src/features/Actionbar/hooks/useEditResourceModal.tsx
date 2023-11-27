@@ -50,6 +50,11 @@ export default function useEditResourceModal({
     formState: { errors, isSubmitting, isValid },
   } = useForm<FormInputs>({
     mode: "onChange",
+    defaultValues: {
+      description: resource?.description,
+      enablePublic: resource?.public,
+      title: resource?.name,
+    },
   });
 
   const formId = useId();
