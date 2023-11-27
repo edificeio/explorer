@@ -239,6 +239,8 @@ export default function PublishModal({
                   control={control}
                   rules={{
                     required: true,
+                    validate: (value, formValues) =>
+                      parseInt(value) <= parseInt(formValues.ageMax),
                   }}
                   render={({ field: { onChange } }) => {
                     return (
@@ -260,6 +262,8 @@ export default function PublishModal({
                   control={control}
                   rules={{
                     required: true,
+                    validate: (value, formValues) =>
+                      parseInt(value) >= parseInt(formValues.ageMin),
                   }}
                   render={({ field: { onChange } }) => {
                     return (
