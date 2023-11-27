@@ -1,7 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
-
-import { useDebounce } from "@edifice-ui/react";
+import { useState, useEffect, useRef } from "react";
 
 import {
   useSearchConfig,
@@ -13,9 +11,11 @@ import {
 export const useSearchForm = () => {
   const searchParams = useSearchParams();
   const [inputSearch, setInputSearch] = useState<string>("");
-  const debounceInputSearch = useDebounce<string>(inputSearch, 500);
+  // const debounceInputSearch = useDebounce<string>(inputSearch, 500);
   const searchConfig = useSearchConfig();
   const status = useTreeStatus();
+
+  const formRef = useRef(null);
 
   const { setSearchParams } = useStoreActions();
 
@@ -38,19 +38,18 @@ export const useSearchForm = () => {
   const handleSearchSubmit = (e: React.MouseEvent): void => {
     e.preventDefault();
     setSearchParams({
-      search: debounceInputSearch ? debounceInputSearch : undefined,
+      search: inputSearch ? inputSearch : undefined,
     });
   };
 
   useEffect(() => {
     // auto update search only if searchbar is empty or have at least X caracters => else need manual action (enter or click button)
     const shouldUpdateSearch =
-      debounceInputSearch.length == 0 ||
-      debounceInputSearch.length >= searchConfig.minLength;
+      inputSearch.length == 0 || inputSearch.length >= searchConfig.minLength;
 
     const searchPartial = shouldUpdateSearch
       ? {
-          search: debounceInputSearch ? debounceInputSearch : undefined,
+          search: inputSearch ? inputSearch : undefined,
         }
       : {};
 
@@ -58,7 +57,7 @@ export const useSearchForm = () => {
       ...searchParams,
       ...searchPartial,
     });
-  }, [debounceInputSearch, searchConfig.minLength]);
+  }, [inputSearch, searchConfig.minLength]);
 
   useEffect(() => {
     if (status === "select") setInputSearch("");
@@ -69,6 +68,7 @@ export const useSearchForm = () => {
   }, [searchParams]);
 
   return {
+    formRef,
     inputSearch,
     handleInputSearchChange,
     handleKeyPress,

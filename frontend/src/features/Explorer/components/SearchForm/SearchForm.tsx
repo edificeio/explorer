@@ -21,6 +21,7 @@ export const SearchForm = () => {
     useSelectedFilters();
 
   const {
+    formRef,
     inputSearch,
     handleInputSearchChange,
     handleKeyPress,
@@ -33,6 +34,7 @@ export const SearchForm = () => {
     <form
       noValidate
       className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16 position-relative z-3 d-flex gap-8"
+      ref={formRef}
     >
       <FormControl id="search" className="input-group">
         <Input
