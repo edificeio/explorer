@@ -48,8 +48,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop",
-    "@edifice-ui/react": "develop",
+    "@edifice-ui/icons": "develop-b2school",
+    "@edifice-ui/react": "develop-b2school",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.36.1",
     "dayjs": "1.11.10",
@@ -79,7 +79,7 @@
     "clsx": "2.0.0",
     "concurrently": "8.2.2",
     "csstype": "3.1.2",
-    "edifice-bootstrap": "develop",
+    "edifice-bootstrap": "develop-b2school",
     "edifice-ts-client": "develop",
     "eslint": "8.54.0",
     "eslint-config-prettier": "9.0.0",
