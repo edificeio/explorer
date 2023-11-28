@@ -9,17 +9,19 @@ import {
   ImagePicker,
   Select,
   Dropdown,
-  DropdownTrigger,
-  SelectList,
-} from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { type PublishResult } from "ode-ts-client";
+  useOdeClient,
+  usePaths,
+  TextArea,
+} from "@edifice-ui/react";
+import { type PublishResult } from "edifice-ts-client";
 import { createPortal } from "react-dom";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import usePublishModal, { InputProps } from "../hooks/usePublishModal";
 import usePublishLibraryModalOptions from "../hooks/usePublishModalOptions";
 import { useSelectedResources } from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface PublishModalProps {
   isOpen: boolean;
@@ -32,19 +34,21 @@ export default function PublishModal({
   onSuccess,
   onCancel,
 }: PublishModalProps) {
-  const { currentApp, appCode } = useOdeClient();
+  const { currentApp } = useOdeClient();
+  const [imagePath] = usePaths();
   const { t } = useTranslation();
 
   const {
+    control,
     register,
     handleSubmit,
     publish,
     formState: { isDirty, isValid },
     handleUploadImage,
     selectedActivities,
-    setSelectedActivities,
+    selectActivities,
     selectedSubjectAreas,
-    setSelectedSubjectAreas,
+    selectSubjects,
     handleDeleteImage,
     loaderPublish,
     cover,
@@ -59,9 +63,9 @@ export default function PublishModal({
     ageOptions,
   } = usePublishLibraryModalOptions();
 
-  const defaultSelectLanguageOption = t("bpr.form.publication.language");
-  const defaultSelectAgeMinOption = t("bpr.form.publication.age.min");
-  const defaultSelectAgeMaxOption = t("bpr.form.publication.age.max");
+  const defaultSelectLanguageOption = "bpr.form.publication.language";
+  const defaultSelectAgeMinOption = "bpr.form.publication.age.min";
+  const defaultSelectAgeMaxOption = "bpr.form.publication.age.max";
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="libraryModal" size="lg">
@@ -73,13 +77,13 @@ export default function PublishModal({
         </Heading>
 
         <form id="libraryModalForm" onSubmit={handleSubmit(publish)}>
-          <div className="d-flex mb-24 gap-24">
+          <div className="d-block d-md-flex mb-24 gap-24">
             <div style={{ maxWidth: "160px" }}>
               <div className="form-label">
                 {t("bpr.form.publication.cover.title")}
               </div>
               <ImagePicker
-                app={currentApp}
+                app={getAppParams().libraryAppFilter ?? currentApp}
                 src={selectedResources[0]?.thumbnail}
                 label={t("bpr.form.publication.cover.upload.label")}
                 addButtonLabel={t("bpr.form.publication.cover.upload.add")}
@@ -90,7 +94,7 @@ export default function PublishModal({
                 onDeleteImage={handleDeleteImage}
                 className="align-self-center"
               />
-              {!cover.image && (
+              {!cover && (
                 <p className="form-text is-invalid">
                   <em>
                     {t("bpr.form.publication.cover.upload.required.image")}
@@ -113,14 +117,12 @@ export default function PublishModal({
 
               <FormControl id="description" isRequired>
                 <Label>{t("bpr.form.publication.description")}</Label>
-                <Input
-                  type="text"
+                <TextArea
                   {...register("description", { required: true })}
                   placeholder={t(
                     "bpr.form.publication.description.placeholder",
                   )}
                   size="md"
-                  aria-required={true}
                 />
               </FormControl>
             </div>
@@ -134,60 +136,95 @@ export default function PublishModal({
 
           <div className="d-flex flex-column flex-md-row gap-16 row mb-24">
             <div className="col d-flex">
-              <Dropdown
-                trigger={
-                  <DropdownTrigger
-                    title={t("bpr.form.publication.type")}
-                    size="md"
-                    grow={true}
-                    badgeContent={selectedActivities?.length}
-                  />
-                }
-                content={
-                  <SelectList
-                    options={activityTypeOptions}
-                    model={selectedActivities}
-                    onChange={(activities: Array<string | number>) =>
-                      setSelectedActivities(activities)
-                    }
-                  />
-                }
+              <Controller
+                name="activityType"
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange } }) => {
+                  return (
+                    <Dropdown block overflow>
+                      <Dropdown.Trigger
+                        size="md"
+                        label={t("bpr.form.publication.type")}
+                        badgeContent={selectedActivities?.length}
+                      />
+                      <Dropdown.Menu>
+                        {activityTypeOptions.map((option, index) => (
+                          <Dropdown.CheckboxItem
+                            key={index}
+                            value={option.value}
+                            model={selectedActivities}
+                            onChange={() => {
+                              selectActivities(option.value);
+                              onChange(option.value);
+                            }}
+                          >
+                            {option.label}
+                          </Dropdown.CheckboxItem>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  );
+                }}
               />
             </div>
             <div className="col d-flex">
-              <Dropdown
-                trigger={
-                  <DropdownTrigger
-                    title={t("bpr.form.publication.discipline")}
-                    size="md"
-                    grow={true}
-                    badgeContent={selectedSubjectAreas?.length}
-                  />
-                }
-                content={
-                  <SelectList
-                    options={subjectAreaOptions}
-                    model={selectedSubjectAreas}
-                    onChange={(subjectAreas: Array<string | number>) =>
-                      setSelectedSubjectAreas(subjectAreas)
-                    }
-                  />
-                }
+              <Controller
+                name="subjectArea"
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange } }) => {
+                  return (
+                    <Dropdown block overflow>
+                      <Dropdown.Trigger
+                        size="md"
+                        label={t("bpr.form.publication.discipline")}
+                        badgeContent={selectedSubjectAreas?.length}
+                      />
+                      <Dropdown.Menu>
+                        {subjectAreaOptions.map((option, index) => (
+                          <Dropdown.CheckboxItem
+                            key={index}
+                            value={option.value}
+                            model={selectedSubjectAreas}
+                            onChange={() => {
+                              selectSubjects(option.value);
+                              onChange(option.value);
+                            }}
+                          >
+                            {option.label}
+                          </Dropdown.CheckboxItem>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  );
+                }}
               />
             </div>
             <div className="col">
-              <FormControl id="language" isRequired>
-                <Select
-                  {...register("language", {
-                    required: true,
-                    validate: (value) => value !== defaultSelectLanguageOption,
-                  })}
-                  options={languageOptions}
-                  placeholderOption={defaultSelectLanguageOption}
-                  defaultValue={defaultSelectLanguageOption}
-                  aria-required={true}
-                />
-              </FormControl>
+              <Controller
+                name="language"
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange } }) => {
+                  return (
+                    <Select
+                      block
+                      size="md"
+                      onValueChange={onChange}
+                      options={languageOptions}
+                      aria-required={true}
+                      placeholderOption={defaultSelectLanguageOption}
+                    />
+                  );
+                }}
+              />
             </div>
           </div>
 
@@ -195,36 +232,52 @@ export default function PublishModal({
             <label htmlFor="" className="form-label">
               {t("bpr.form.publication.age")}
             </label>
-            <div className="d-flex">
-              <div className="me-16">
-                <FormControl id="ageMin" isRequired>
-                  <Select
-                    {...register("ageMin", {
-                      required: true,
-                      validate: (value, formValues) =>
-                        parseInt(value) <= parseInt(formValues.ageMax),
-                    })}
-                    options={ageOptions}
-                    placeholderOption={defaultSelectAgeMinOption}
-                    defaultValue={defaultSelectAgeMinOption}
-                    aria-required={true}
-                  />
-                </FormControl>
+            <div className="d-flex gap-8">
+              <div className="col col-2">
+                <Controller
+                  name="ageMin"
+                  control={control}
+                  rules={{
+                    required: true,
+                    validate: (value, formValues) =>
+                      parseInt(value) <= parseInt(formValues.ageMax),
+                  }}
+                  render={({ field: { onChange } }) => {
+                    return (
+                      <Select
+                        block
+                        size="md"
+                        onValueChange={onChange}
+                        options={ageOptions}
+                        aria-required={true}
+                        placeholderOption={defaultSelectAgeMinOption}
+                      />
+                    );
+                  }}
+                />
               </div>
-              <div>
-                <FormControl id="ageMax" isRequired>
-                  <Select
-                    {...register("ageMax", {
-                      required: true,
-                      validate: (value, formValues) =>
-                        parseInt(value) >= parseInt(formValues.ageMin),
-                    })}
-                    options={ageOptions}
-                    placeholderOption={defaultSelectAgeMaxOption}
-                    defaultValue={defaultSelectAgeMaxOption}
-                    aria-required={true}
-                  />
-                </FormControl>
+              <div className="col col-2">
+                <Controller
+                  name="ageMax"
+                  control={control}
+                  rules={{
+                    required: true,
+                    validate: (value, formValues) =>
+                      parseInt(value) >= parseInt(formValues.ageMin),
+                  }}
+                  render={({ field: { onChange } }) => {
+                    return (
+                      <Select
+                        block
+                        size="md"
+                        onValueChange={onChange}
+                        options={ageOptions}
+                        aria-required={true}
+                        placeholderOption={defaultSelectAgeMaxOption}
+                      />
+                    );
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -252,9 +305,8 @@ export default function PublishModal({
               {t("bpr.form.publication.licence.text.1")}
               <img
                 className="ms-8 d-inline-block"
-                src="/assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
-                alt="Icone licence Creative
-                  Commons"
+                src={`${imagePath}/common/image-creative-commons.png`}
+                alt="licence creative commons"
               />
             </li>
             <li>{t("bpr.form.publication.licence.text.2")}</li>
@@ -284,14 +336,7 @@ export default function PublishModal({
           color="primary"
           variant="filled"
           isLoading={loaderPublish}
-          disabled={
-            !cover.image ||
-            loaderPublish ||
-            !isDirty ||
-            !isValid ||
-            selectedActivities?.length === 0 ||
-            selectedSubjectAreas?.length === 0
-          }
+          disabled={!cover || loaderPublish || !isDirty || !isValid}
         >
           {t("bpr.form.submit")}
         </Button>

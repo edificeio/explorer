@@ -18,7 +18,7 @@ if [ "$#" -lt 1 ]; then
   echo "Usage: $0 <clean|init|localDep|build|install|watch>"
   echo "Example: $0 clean"
   echo "Example: $0 init"
-  echo "Example: $0 localDep   Use this option to update the ode-ts-client NPM dependency with a local version"
+  echo "Example: $0 localDep   Use this option to update the edifice-ts-client NPM dependency with a local version"
   echo "Example: $0 build"
   echo "Example: $0 install"
   echo "Example: $0 [--springboard=recette] watch"
@@ -89,9 +89,9 @@ doInit () {
 
   if [ "$1" == "Dev" ]
   then
-    sed -i "s/%odeTsClientVersion%/link:..\/ode-ts-client\//" package.json
+    sed -i "s/%packageVersion%/link:..\/edifice-ts-client\//" package.json
   else
-    sed -i "s/%odeTsClientVersion%/${BRANCH_NAME}/" package.json
+    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
   fi
 
   if [ "$NO_DOCKER" = "true" ] ; then
@@ -111,13 +111,13 @@ initDev() {
 
 # Install local dependencies as tarball (installing as folder creates symlinks which won't resolve in the docker container)
 localDep () {
-  if [ -e $PWD/../ode-ts-client ]; then
-    rm -rf ode-ts-client.tar ode-ts-client.tar.gz
-    mkdir ode-ts-client.tar && mkdir ode-ts-client.tar/dist \
-      && cp -R $PWD/../ode-ts-client/dist $PWD/../ode-ts-client/package.json ode-ts-client.tar
-    tar cfzh ode-ts-client.tar.gz ode-ts-client.tar
-    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install --no-save ode-ts-client.tar.gz"
-    rm -rf ode-ts-client.tar ode-ts-client.tar.gz
+  if [ -e $PWD/../edifice-ts-client ]; then
+    rm -rf edifice-ts-client.tar edifice-ts-client.tar.gz
+    mkdir edifice-ts-client.tar && mkdir edifice-ts-client.tar/dist \
+      && cp -R $PWD/../edifice-ts-client/dist $PWD/../edifice-ts-client/package.json edifice-ts-client.tar
+    tar cfzh edifice-ts-client.tar.gz edifice-ts-client.tar
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install --no-save edifice-ts-client.tar.gz"
+    rm -rf edifice-ts-client.tar edifice-ts-client.tar.gz
   fi
 }
 

@@ -1,4 +1,4 @@
-import { type IFolder } from "ode-ts-client";
+import { type IFolder } from "edifice-ts-client";
 
 import { type TreeNode } from "../types";
 

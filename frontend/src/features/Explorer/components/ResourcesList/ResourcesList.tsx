@@ -1,15 +1,13 @@
 import React, { useCallback } from "react";
 
-import { Button, Card } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
+import { Button, ResourceCard, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
+import { InfiniteData } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ID, type IResource } from "ode-ts-client";
+import { type ID, type IResource, ISearchResults } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { useSearchContext } from "~/services/queries";
-import { dayjs } from "~/shared/config";
-import { isResourceShared } from "~/shared/utils/isResourceShared";
+import { dayjs } from "~/config";
 import {
   useStoreActions,
   useResourceIds,
@@ -18,11 +16,16 @@ import {
   useIsTrash,
 } from "~/store";
 
-const ResourcesList = (): JSX.Element | null => {
-  const { currentApp, currentLanguage, appCode } = useOdeClient();
+const ResourcesList = ({
+  data,
+  fetchNextPage,
+}: {
+  data: InfiniteData<ISearchResults> | undefined;
+  isFetching: boolean;
+  fetchNextPage: () => void;
+}): JSX.Element | null => {
+  const { currentApp, currentLanguage } = useOdeClient();
   const { t } = useTranslation();
-
-  const { data, isFetching, fetchNextPage } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -50,6 +53,7 @@ const ResourcesList = (): JSX.Element | null => {
 
   const handleNextPage = useCallback(() => {
     fetchNextPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clickOnResource = (resource: IResource) => {
@@ -62,7 +66,7 @@ const ResourcesList = (): JSX.Element | null => {
     }
   };
 
-  function toggleSelect(resource: IResource) {
+  async function toggleSelect(resource: IResource) {
     if (resourceIds.includes(resource.id)) {
       setResourceIds(
         resourceIds.filter(
@@ -74,10 +78,10 @@ const ResourcesList = (): JSX.Element | null => {
           (selectedResource) => selectedResource.id !== resource.id,
         ),
       );
-    } else {
-      setResourceIds([...resourceIds, resource.id]);
-      setSelectedResources([...selectedResources, resource]);
+      return;
     }
+    setResourceIds([...resourceIds, resource.id]);
+    setSelectedResources([...selectedResources, resource]);
   }
 
   const classes = clsx("grid ps-0 list-unstyled");
@@ -89,10 +93,7 @@ const ResourcesList = (): JSX.Element | null => {
           // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
-              const { id, creatorName, creatorId, name, thumbnail, updatedAt } =
-                resource;
-
-              const isShared = isResourceShared(resource);
+              const { id, updatedAt } = resource;
 
               const time = dayjs(updatedAt)
                 .locale(currentLanguage as string)
@@ -100,28 +101,21 @@ const ResourcesList = (): JSX.Element | null => {
 
               return (
                 <animated.li
-                  className="g-col-4"
+                  className="g-col-4 z-1"
                   key={id}
                   style={{
+                    position: "relative",
                     ...springs,
                   }}
                 >
-                  <Card
+                  <ResourceCard
                     app={currentApp}
-                    className="c-pointer"
-                    creatorName={creatorName}
-                    isPublic={resource.public}
+                    resource={resource}
+                    time={time}
+                    isSelectable={true}
                     isSelected={resourceIds.includes(resource.id)}
-                    isLoading={isFetching}
-                    isShared={isShared}
-                    messagePublic={t("tooltip.public", { ns: appCode })}
-                    messageShared={t("tooltip.shared", { ns: appCode })}
-                    name={name}
-                    onOpen={() => clickOnResource(resource)}
+                    onClick={() => clickOnResource(resource)}
                     onSelect={() => toggleSelect(resource)}
-                    resourceSrc={thumbnail}
-                    updatedAt={time}
-                    userSrc={`/userbook/avatar/${creatorId}`}
                   />
                 </animated.li>
               );

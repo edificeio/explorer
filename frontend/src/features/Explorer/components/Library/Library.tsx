@@ -1,14 +1,18 @@
-import { Library as CoreLibrary } from "@ode-react-ui/components";
-import { useTheme } from "@ode-react-ui/core";
+import {
+  Library as CoreLibrary,
+  usePaths,
+  useOdeTheme,
+} from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 const Library = ({ url }: { url: string }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
+  const { theme } = useOdeTheme();
+  const [imagePath] = usePaths();
 
   return (
     <CoreLibrary
-      src={`${theme?.bootstrapPath}/images/image-library.svg`}
+      src={`${imagePath}/${theme?.bootstrapVersion}/image-library.svg`}
       url={url}
       alt={t("explorer.libray.img.alt")}
       text={t("explorer.libray.title")}

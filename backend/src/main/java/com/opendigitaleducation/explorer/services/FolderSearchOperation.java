@@ -13,9 +13,14 @@ public class FolderSearchOperation {
     private Optional<String> parentId = Optional.empty();
     private Optional<Long> startIndex = Optional.empty();
     private Optional<Long> pageSize = Optional.empty();
+    private Optional<String> search = Optional.empty();
 
     public boolean isWaitFor() {
         return waitFor;
+    }
+
+    public Optional<String> getSearch() {
+        return search;
     }
 
     public Optional<Long> getStartIndex() {return startIndex;}
@@ -91,6 +96,16 @@ public class FolderSearchOperation {
     
     public FolderSearchOperation setParentId(Object parentId) {
         this.parentId = Optional.ofNullable(parentId).map(e -> e.toString());
+        return this;
+    }
+
+    public FolderSearchOperation setSearch(final Object search) {
+        this.search = search==null?Optional.empty():Optional.ofNullable(search.toString());
+        return this;
+    }
+
+    public FolderSearchOperation setSearch(final String search) {
+        this.search = Optional.ofNullable(search);
         return this;
     }
 }

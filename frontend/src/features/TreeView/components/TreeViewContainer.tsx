@@ -1,10 +1,15 @@
 import { lazy, Suspense } from "react";
 
-import { Button, LoadingScreen, TreeView } from "@ode-react-ui/components";
-import { useToggle } from "@ode-react-ui/hooks";
-import { Plus } from "@ode-react-ui/icons";
+import { Plus } from "@edifice-ui/icons";
+import {
+  Button,
+  LoadingScreen,
+  TreeView,
+  // useHasWorkflow,
+  useToggle,
+} from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { FOLDER, type ID } from "ode-ts-client";
+import { FOLDER, type ID } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import TrashButton from "~/features/TreeView/components/TrashButton";
@@ -29,11 +34,27 @@ export const TreeViewContainer = () => {
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
   const selectedNodesIds = useSelectedNodesIds();
-  const { goToTrash, selectTreeItem, unfoldTreeItem, foldTreeItem } =
-    useStoreActions();
+  const {
+    goToTrash,
+    selectTreeItem,
+    unfoldTreeItem,
+    foldTreeItem,
+    clearSelectedItems,
+    clearSelectedIds,
+  } = useStoreActions();
+
+  /* const canCreateFolder = useHasWorkflow(
+    "org.entcore.blog.controllers.FoldersController|add",
+  ); */
 
   const handleTreeItemUnfold = async (folderId: ID) => {
     await unfoldTreeItem(folderId, queryclient);
+  };
+
+  const handleOnFolderCreate = () => {
+    clearSelectedItems();
+    clearSelectedIds();
+    toggle();
   };
 
   return treeData ? (
@@ -57,7 +78,7 @@ export const TreeViewContainer = () => {
           color="primary"
           variant="outline"
           leftIcon={<Plus />}
-          onClick={toggle}
+          onClick={handleOnFolderCreate}
         >
           {t("explorer.folder.new")}
         </Button>

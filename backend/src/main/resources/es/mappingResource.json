@@ -6,7 +6,22 @@
       "analyzer": {
         "html_analyzer": {
           "tokenizer": "keyword",
-          "char_filter": ["html_strip"]
+          "char_filter": [
+            "html_strip"
+          ]
+        },
+        "custom_lowercase_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "my_ascii_folding"
+          ]
+        }
+      },
+      "filter": {
+        "my_ascii_folding": {
+          "type": "asciifolding",
+          "preserve_original": true
         }
       }
     }
@@ -25,17 +40,15 @@
         "copy_to": "contentAll"
       },
       "content": {
-        "type": "text",
-        "copy_to": "contentAll"
+        "type": "text"
       },
       "contentHtml": {
-        "type": "text",
-
-        "copy_to": "contentAll"
+        "type": "text"
       },
       "contentAll": {
         "type": "text",
-        "store": true
+        "store": true,
+        "analyzer": "custom_lowercase_analyzer"
       },
       "application": {
         "type": "keyword"
@@ -90,13 +103,10 @@
             "type": "keyword"
           },
           "content": {
-            "type": "text",
-            "copy_to": "contentAll"
+            "type": "text"
           },
           "contentHtml": {
-            "type": "text",
-
-            "copy_to": "contentAll"
+            "type": "text"
           },
           "deleted": {
             "type": "boolean"

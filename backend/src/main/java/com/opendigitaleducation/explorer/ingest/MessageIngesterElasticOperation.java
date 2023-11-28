@@ -100,8 +100,12 @@ abstract class MessageIngesterElasticOperation {
             JsonObject changes = message.getMessage().copy();
             if(message.isSynthetic()) {
                 changes = keepOnlyOverride(changes);
-            } else {
+            } else if(message.getSubresources().size() == 0){
+                // when we have subresources we should not reset resource fields
+                //TODO decorrelate subresource and resources
                 changes = beforeCreate(changes);
+            }else {
+                changes = beforeUpdate(changes);
             }
             this.version = message.getVersion();
             this.changes = changes;
@@ -185,7 +189,6 @@ abstract class MessageIngesterElasticOperation {
             document.remove("createdAt");
             document.remove("creatorId");
             document.remove("creatorName");
-            document.put("updatedAt", new Date().getTime());
             //custom field should not override existing fields
             final JsonObject custom = document.getJsonObject("custom", new JsonObject());
             for (final String key : custom.fieldNames()) {

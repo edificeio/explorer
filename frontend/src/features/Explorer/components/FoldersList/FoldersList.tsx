@@ -1,16 +1,17 @@
-import { Card } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useScrollToTop } from "@ode-react-ui/hooks";
+import { useScrollToTop, useOdeClient, FolderCard } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
-import { type ID, type IFolder } from "ode-ts-client";
+import { InfiniteData } from "@tanstack/react-query";
+import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
 
-import { useSearchContext } from "~/services/queries";
 import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
-const FoldersList = (): JSX.Element | null => {
+const FoldersList = ({
+  data,
+}: {
+  data: InfiniteData<ISearchResults> | undefined;
+  isFetching: boolean;
+}) => {
   const { currentApp } = useOdeClient();
-
-  const { data, isFetching } = useSearchContext();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -25,7 +26,7 @@ const FoldersList = (): JSX.Element | null => {
       );
       setSelectedFolders(
         selectedFolders.filter(
-          (selectedFolder) => selectedFolder.id !== folder.id,
+          (selectedFolder: { id: string }) => selectedFolder.id !== folder.id,
         ),
       );
     } else {
@@ -47,19 +48,18 @@ const FoldersList = (): JSX.Element | null => {
         const { id, name } = folder;
         return (
           <animated.li
-            className="g-col-4"
+            className="g-col-4 z-1"
             key={id}
             style={{
+              position: "relative",
               ...springs,
             }}
           >
-            <Card
-              app={currentApp}
+            <FolderCard
               name={name}
-              isFolder
-              isLoading={isFetching}
+              app={currentApp}
               isSelected={folderIds.includes(folder.id)}
-              onOpen={() => {
+              onClick={() => {
                 scrollToTop();
                 openFolder({ folder, folderId: folder.id });
               }}

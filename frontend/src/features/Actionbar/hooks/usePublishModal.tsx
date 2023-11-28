@@ -1,22 +1,20 @@
 import { useState } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useOdeClient } from "@ode-react-ui/core";
-import { useHotToast } from "@ode-react-ui/hooks";
-import {
-  RESOURCE,
-  type PublishParameters,
-  type PublishResult,
-} from "ode-ts-client";
+import { Alert, useOdeClient, useHotToast } from "@edifice-ui/react";
+import { type PublishParameters, type PublishResult } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
   PublishModalSuccess,
   PublishModalError,
 } from "../components/PublishModal";
-import { http } from "~/shared/constants";
-import { capitalizeFirstLetter } from "~/shared/utils/capitalizeFirstLetter";
-import { useStoreActions, useResourceIds, useSelectedResources } from "~/store";
+import { http, libraryMaps } from "~/constants";
+import {
+  useStoreActions,
+  useSelectedResources,
+  useSearchParams,
+} from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -34,26 +32,26 @@ export interface InputProps {
 }
 
 export default function usePublishModal({ onSuccess }: ModalProps) {
-  const { user, currentApp } = useOdeClient();
-
-  const selectedResources = useSelectedResources();
-
-  const [cover, setCover] = useState<Record<string, string>>({
-    name: "",
-    image: selectedResources[0].thumbnail,
-  });
-
   const [loaderPublish, setLoaderPublish] = useState<boolean>(false);
 
+  const { user, appCode } = useOdeClient();
   const { hotToast } = useHotToast(Alert);
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const resourceIds = useResourceIds();
+  const selectedResources = useSelectedResources();
+  const searchParams = useSearchParams();
   const { publishApi } = useStoreActions();
 
+  const [cover, setCover] = useState<string | Blob | File>(
+    selectedResources[0]?.thumbnail || "",
+  );
+
   const {
+    control,
     register,
+    watch,
+    setValue,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<InputProps>({ mode: "onChange" });
@@ -66,25 +64,62 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     Array<string | number>
   >([]);
 
-  function handleUploadImage(preview: Record<string, string>) {
-    setCover(preview);
-  }
+  const selectActivities = (value: string | number) => {
+    let checked = [...selectedActivities];
+    const findIndex = checked.findIndex(
+      (item: string | number): boolean => item === value,
+    );
 
-  const userId = user ? user?.userId : "";
+    if (!selectedActivities.includes(value)) {
+      checked = [...selectedActivities, value];
+    } else {
+      checked = selectedActivities.filter(
+        (_, index: number) => index !== findIndex,
+      );
+    }
+
+    setSelectedActivities(checked);
+  };
+
+  const selectSubjects = (value: string | number) => {
+    let checked = [...selectedSubjectAreas];
+    const findIndex = checked.findIndex(
+      (item: string | number): boolean => item === value,
+    );
+
+    if (!selectedSubjectAreas.includes(value)) {
+      checked = [...selectedSubjectAreas, value];
+    } else {
+      checked = selectedSubjectAreas.filter(
+        (_, index: number) => index !== findIndex,
+      );
+    }
+
+    setSelectedSubjectAreas(checked);
+  };
+
+  const handleUploadImage = (file: File) => {
+    setCover(file);
+  };
 
   const handleDeleteImage = () => {
-    setCover({
-      name: "",
-      image: "",
-    });
+    setCover("");
   };
 
   const publish: SubmitHandler<InputProps> = async (formData: InputProps) => {
+    const userId = user ? user?.userId : "";
+
     try {
       setLoaderPublish(true);
       let coverBlob = new Blob();
-      if (cover.image) {
-        coverBlob = await http.get(cover.image, { responseType: "blob" });
+      if (typeof cover === "string") {
+        coverBlob = await http.get(cover, {
+          responseType: "blob",
+        });
+      } else if (cover) {
+        coverBlob = await http.get(URL.createObjectURL(cover as Blob), {
+          responseType: "blob",
+        });
       } else if (selectedResources[0].thumbnail) {
         coverBlob = await http.get(selectedResources[0].thumbnail, {
           responseType: "blob",
@@ -101,15 +136,12 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         { responseType: "json" } as any,
       );
 
-      let appName = "";
-      if (currentApp?.displayName) {
-        appName = capitalizeFirstLetter(currentApp?.displayName);
-      }
+      const appName = libraryMaps[appCode as string];
 
       const parameters: PublishParameters = {
         activityType: selectedActivities as string[],
         age: [formData.ageMin, formData.ageMax],
-        application: capitalizeFirstLetter(appName),
+        application: getAppParams().libraryAppFilter ?? appName,
         cover: coverBlob,
         description: formData.description,
         keyWords: formData.keyWords,
@@ -124,7 +156,7 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
         userStructureName: resAttachmentSchool.name || user?.structureNames[0],
       };
 
-      const resourceType = [RESOURCE.BLOG][0];
+      const resourceType = searchParams.types[0];
       const result: PublishResult = (await publishApi(
         resourceType,
         parameters,
@@ -146,7 +178,10 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
   };
 
   return {
+    watch,
+    setValue,
     selectedResources,
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty, isValid },
@@ -154,9 +189,9 @@ export default function usePublishModal({ onSuccess }: ModalProps) {
     handleDeleteImage,
     handleUploadImage,
     selectedActivities,
-    setSelectedActivities,
+    selectActivities,
     selectedSubjectAreas,
-    setSelectedSubjectAreas,
+    selectSubjects,
     loaderPublish,
     cover,
   };

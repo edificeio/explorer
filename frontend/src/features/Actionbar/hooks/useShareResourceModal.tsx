@@ -6,10 +6,16 @@ import {
   useState,
 } from "react";
 
-import { Alert, type OptionListItemType } from "@ode-react-ui/components";
-import { useIsAdml, useOdeClient, useUser } from "@ode-react-ui/core";
-import { useDebounce, useHotToast } from "@ode-react-ui/hooks";
-import { Bookmark } from "@ode-react-ui/icons";
+import { Bookmark } from "@edifice-ui/icons";
+import {
+  Alert,
+  type OptionListItemType,
+  useIsAdml,
+  useDebounce,
+  useHotToast,
+  useOdeClient,
+  useUser,
+} from "@edifice-ui/react";
 import {
   odeServices,
   type ShareRightAction,
@@ -18,7 +24,7 @@ import {
   type ShareRight,
   type ShareRightActionDisplayName,
   type BlogUpdate,
-} from "ode-ts-client";
+} from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useShareResource, useUpdateResource } from "~/services/queries";
@@ -58,6 +64,8 @@ export default function useShareResourceModal({
     useState<boolean>(false);
   const [searchPending, setSearchPending] = useState<boolean>(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const { isAdml } = useIsAdml();
 
   const selectedResources = useSelectedResources();
@@ -68,10 +76,12 @@ export default function useShareResourceModal({
 
   useEffect(() => {
     initShareRightsAndActions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     search(debouncedSearchInputValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchInputValue]);
 
   /**
@@ -90,6 +100,7 @@ export default function useShareResourceModal({
       .getRightsForResource(appCode, selectedResources[0]?.assetId);
 
     setShareRights(rights);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleActionCheckbox = (
@@ -115,8 +126,8 @@ export default function useShareResourceModal({
         let updatedActions = newShareRights[index].actions.filter(
           (action) => action.id !== actionName,
         );
-        const requiredActions = shareRightActions.filter((action) =>
-          action.requires?.includes(actionName),
+        const requiredActions = shareRightActions.filter(
+          (action) => action.requires?.includes(actionName),
         );
         updatedActions = updatedActions.filter(
           (action) =>
@@ -180,10 +191,35 @@ export default function useShareResourceModal({
 
   const handleShare = async () => {
     try {
+      //TODO move this logic into services
+      // add my rights if needed (because visible api does not return my rights)
+      const myRights = selectedResources[0].rights
+        .filter((right) => user && right.includes(`user:${user.userId}`))
+        .map((right) => right.split(":")[2])
+        .filter((right) => !!right);
+      const shares = [...shareRights.rights];
+      if (myRights.length > 0) {
+        const actions: ShareRightAction[] = myRights.map((right) => {
+          return {
+            displayName: right,
+            id: right,
+          } as ShareRightAction;
+        });
+        shares.push({
+          actions,
+          avatarUrl: "",
+          directoryUrl: "",
+          displayName: user!.username,
+          id: user!.userId,
+          type: "user",
+        });
+      }
+      // update publication data
       await updateResource.mutateAsync(payloadUpdatePublishType);
+      // update shared
       await shareResource.mutateAsync({
         entId: selectedResources[0]?.assetId,
-        shares: shareRights.rights,
+        shares,
       });
 
       hotToast.success(t("explorer.shared.status.saved"));
@@ -191,6 +227,8 @@ export default function useShareResourceModal({
     } catch (e) {
       console.error("Failed to save share", e);
       hotToast.error(t("explorer.shared.status.error"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -463,6 +501,7 @@ export default function useShareResourceModal({
     showBookmarkMembers,
     debouncedSearchInputValue,
     searchPending,
+    isLoading,
     setBookmarkName,
     saveBookmark,
     canSave,

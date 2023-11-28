@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 
-import { Alert } from "@ode-react-ui/components";
-import { useHotToast } from "@ode-react-ui/hooks";
-import { type IAction, ACTION } from "ode-ts-client";
+import { Alert, useHotToast } from "@edifice-ui/react";
+import { type IAction, ACTION } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";
-import { getAppParams } from "~/shared/utils/getAppParams";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -17,6 +15,7 @@ import {
   useSelectedResources,
   useResourceIsTrash,
 } from "~/store";
+import { getAppParams } from "~/utils/getAppParams";
 
 type ModalName =
   | "move"
@@ -47,7 +46,6 @@ export default function useActionBar() {
   const isTrashResource = useResourceIsTrash();
   const {
     openResource,
-    createResource,
     printSelectedResource,
     openFolder,
     clearSelectedItems,
@@ -66,6 +64,7 @@ export default function useActionBar() {
       return;
     }
     setIsActionBarOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceIds, folderIds]);
 
   async function handleClick(action: IAction) {
@@ -86,8 +85,6 @@ export default function useActionBar() {
             folderId: selectedFolders[0].id,
           });
         }
-      case ACTION.CREATE:
-        return createResource();
       case ACTION.MOVE:
         return setOpenedModalName("move");
       case ACTION.PRINT:

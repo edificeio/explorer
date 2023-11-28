@@ -1,5 +1,4 @@
-import { Alert } from "@ode-react-ui/components";
-import { useHotToast } from "@ode-react-ui/hooks";
+import { Alert, useHotToast } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 import { useDelete, useTrash } from "~/services/queries";

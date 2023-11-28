@@ -1,12 +1,6 @@
 import { useEffect } from "react";
 
-import {
-  Modal,
-  Button,
-  FormControl,
-  Label,
-  Input,
-} from "@ode-react-ui/components";
+import { Modal, Button, FormControl, Label, Input } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
@@ -46,7 +40,7 @@ export default function EditFolderModal({
     if (isOpen) {
       setFocus("name");
     }
-  }, [isOpen]);
+  }, [isOpen, setFocus]);
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>
