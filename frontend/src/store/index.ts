@@ -6,9 +6,6 @@ import {
   type ISearchParameters,
   type IFolder,
   type IResource,
-  type IActionResult,
-  type PublishParameters,
-  type ResourceType,
   type ID,
   type IFilter,
   type IOrder,
@@ -17,12 +14,7 @@ import {
 import { t } from "i18next";
 import { create } from "zustand";
 
-import {
-  goToResource,
-  printResource,
-  publishResource,
-  searchContext,
-} from "~/services/api";
+import { goToResource, printResource, searchContext } from "~/services/api";
 import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
 import { getAncestors } from "~/utils/getAncestors";
@@ -62,10 +54,6 @@ interface State {
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
     printSelectedResource: () => void;
-    publishApi: (
-      type: ResourceType,
-      params: PublishParameters,
-    ) => Promise<IActionResult | undefined>;
     openFolder: ({
       folderId,
       folder,
@@ -213,14 +201,6 @@ export const useStoreContext = create<State>()((set, get) => ({
       } catch (error) {
         console.error("explorer print failed: ", error);
       }
-    },
-    publishApi: async (
-      _resourceType: ResourceType,
-      params: PublishParameters,
-    ): Promise<IActionResult | undefined> => {
-      const { searchParams } = get();
-      const tmp = await publishResource({ searchParams, params });
-      return tmp;
     },
     openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
       const { searchParams, treeData } = get();

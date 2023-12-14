@@ -11,69 +11,112 @@ import {
   Avatar,
   Button,
   Checkbox,
+  Combobox,
   FormControl,
   Heading,
   IconButton,
   Modal,
   Tooltip,
   VisuallyHidden,
-  Combobox,
+  useOdeClient,
 } from "@edifice-ui/react";
-import { ShareRight } from "edifice-ts-client";
+import { UseMutationResult } from "@tanstack/react-query";
+import {
+  IResource,
+  PutShareResponse,
+  ShareRight,
+  UpdateParameters,
+  UpdateResult,
+} from "edifice-ts-client";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-import ShareResourceModalFooter from "./ShareResourceModalFooter";
-import useShareResourceModal from "../hooks/useShareResourceModal";
-import useShareResourceModalFooterBlog from "../hooks/useShareResourceModalFooterBlog";
+import Blog from "./apps/Blog";
+import { useSearch } from "./hooks/useSearch";
+import useShare from "./hooks/useShare";
+import useShareBlog from "./hooks/useShareBlog";
+import { useShareBookmark } from "./hooks/useShareBookmark";
+import { hasRight } from "./utils/hasRight";
+import { showShareRightLine } from "./utils/showShareRightLine";
 
 interface ShareResourceModalProps {
   isOpen: boolean;
+  resource: IResource;
+  updateResource: UseMutationResult<
+    UpdateResult,
+    unknown,
+    UpdateParameters,
+    unknown
+  >;
+  shareResource: UseMutationResult<
+    PutShareResponse,
+    unknown,
+    {
+      resourceId: string;
+      rights: ShareRight[];
+    },
+    unknown
+  >;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export default function ShareResourceModal({
   isOpen,
+  resource,
+  updateResource,
+  shareResource,
   onSuccess,
   onCancel,
 }: ShareResourceModalProps) {
+  const { appCode } = useOdeClient();
   const {
-    payloadUpdatePublishType,
     radioPublicationValue,
+    shareBlogPayload,
     handleRadioPublicationChange,
-  } = useShareResourceModalFooterBlog();
+  } = useShareBlog({ resource });
+
   const {
+    state: { isSharing, shareRights, shareRightActions },
+    dispatch: shareDispatch,
     myAvatar,
-    idBookmark,
-    shareRights,
-    shareRightActions,
-    showBookmarkInput,
-    searchResults,
-    bookmarkName,
-    showBookmarkMembers,
-    isLoading,
-    searchInputValue,
     currentIsAuthor,
-    setBookmarkName,
-    saveBookmark,
-    canSave,
-    toggleBookmarkInput,
-    handleActionCheckbox,
     handleShare,
+    toggleRight,
     handleDeleteRow,
-    handleSearchInputChange,
-    handleSearchResultsChange,
-    showSearchNoResults,
+  } = useShare({
+    resource,
+    updateResource,
+    shareResource,
+    onSuccess,
+  });
+
+  const {
+    state: { searchResults, searchInputValue },
     showSearchAdmlHint,
     showSearchLoading,
-    handleBookmarkMembersToggle,
-    hasRight,
-    showShareRightLine,
-  } = useShareResourceModal({ payloadUpdatePublishType, onSuccess, onCancel });
+    showSearchNoResults,
+    handleSearchInputChange,
+    handleSearchResultsChange,
+  } = useSearch({ resource, shareRights, shareDispatch });
+
+  const refBookmark = useRef<HTMLInputElement>(null);
+
+  const {
+    showBookmark,
+    toggleBookmark,
+    bookmark,
+    setBookmark,
+    saveBookmark,
+    showBookmarkInput,
+    toggleBookmarkInput,
+  } = useShareBookmark({ shareRights, shareDispatch });
 
   const { t } = useTranslation();
-  const refBookmark = useRef<HTMLInputElement>(null);
+
+  const searchPlaceholder = showSearchAdmlHint()
+    ? t("explorer.search.adml.hint")
+    : t("explorer.modal.share.search.placeholder");
 
   return createPortal(
     <Modal id="share_modal" size="lg" isOpen={isOpen} onModalClose={onCancel}>
@@ -136,7 +179,7 @@ export default function ShareResourceModal({
               )}
               {shareRights?.rights.map((shareRight: ShareRight) => {
                 return (
-                  showShareRightLine(shareRight) && (
+                  showShareRightLine(shareRight, showBookmark) && (
                     <tr
                       key={shareRight.id}
                       className={shareRight.isBookmarkMember ? "bg-light" : ""}
@@ -164,16 +207,14 @@ export default function ShareResourceModal({
                                   className="w-16 min-w-0"
                                   style={{
                                     transition: "rotate 0.2s ease-out",
-                                    rotate: showBookmarkMembers
-                                      ? "-180deg"
-                                      : "0deg",
+                                    rotate: showBookmark ? "-180deg" : "0deg",
                                   }}
                                 />
                               }
                               type="button"
                               variant="ghost"
                               className="fw-normal ps-0"
-                              onClick={handleBookmarkMembersToggle}
+                              onClick={toggleBookmark}
                             >
                               {shareRight.displayName}
                             </Button>
@@ -191,10 +232,7 @@ export default function ShareResourceModal({
                           <Checkbox
                             checked={hasRight(shareRight, shareRightAction)}
                             onChange={() =>
-                              handleActionCheckbox(
-                                shareRight,
-                                shareRightAction.id,
-                              )
+                              toggleRight(shareRight, shareRightAction.id)
                             }
                           />
                         </td>
@@ -248,10 +286,13 @@ export default function ShareResourceModal({
               >
                 <div className="flex-fill">
                   <FormControl.Input
-                    key={idBookmark}
+                    key={bookmark.id}
                     ref={refBookmark}
                     onChange={() => {
-                      setBookmarkName(() => refBookmark.current?.value || "");
+                      setBookmark((prev) => ({
+                        ...prev,
+                        name: refBookmark.current?.value || "",
+                      }));
                     }}
                     placeholder={t(
                       "explorer.modal.share.sharebookmark.placeholder",
@@ -264,7 +305,7 @@ export default function ShareResourceModal({
                   type="button"
                   color="primary"
                   variant="ghost"
-                  disabled={bookmarkName.length === 0}
+                  disabled={bookmark.name.length === 0}
                   leftIcon={<Save />}
                   onClick={() => {
                     saveBookmark(refBookmark.current!.value!);
@@ -297,11 +338,7 @@ export default function ShareResourceModal({
           <div className="col-10">
             <Combobox
               value={searchInputValue}
-              placeholder={
-                showSearchAdmlHint()
-                  ? t("explorer.search.adml.hint")
-                  : t("explorer.modal.share.search.placeholder")
-              }
+              placeholder={searchPlaceholder}
               isLoading={showSearchLoading()}
               noResult={showSearchNoResults()}
               options={searchResults}
@@ -310,10 +347,12 @@ export default function ShareResourceModal({
             />
           </div>
         </div>
-        <ShareResourceModalFooter
-          radioPublicationValue={radioPublicationValue}
-          onRadioPublicationChange={handleRadioPublicationChange}
-        />
+        {appCode === "blog" && (
+          <Blog
+            radioPublicationValue={radioPublicationValue}
+            onRadioPublicationChange={handleRadioPublicationChange}
+          />
+        )}
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -329,9 +368,9 @@ export default function ShareResourceModal({
           type="button"
           color="primary"
           variant="filled"
-          isLoading={isLoading}
-          onClick={handleShare}
-          disabled={!canSave()}
+          isLoading={isSharing}
+          onClick={() => handleShare(shareBlogPayload)}
+          disabled={isSharing}
         >
           {t("share")}
         </Button>

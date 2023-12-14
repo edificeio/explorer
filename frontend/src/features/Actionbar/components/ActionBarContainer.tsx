@@ -6,11 +6,16 @@ import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { AccessControl } from "~/components/AccessControl";
+import ShareModal from "~/components/ShareModal/ShareModal";
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
+import { useShareResource, useUpdateResource } from "~/services/queries";
+import { useSelectedResources } from "~/store";
 
-const ShareResourceModal = lazy(
-  async () => await import("./ShareResourceModal"),
-);
+/* const ShareModal = lazy(async () => {
+  const module = await import("@edifice-ui/react");
+  return { default: module.ShareModal };
+}); */
+
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
@@ -45,6 +50,10 @@ export default function ActionBarContainer() {
     isActivable,
     handleClick,
   } = useActionBar();
+
+  const selectedResources = useSelectedResources();
+  const shareResource = useShareResource();
+  const updateResource = useUpdateResource();
 
   const transition = useTransition(isActionBarOpen, {
     from: { opacity: 0, transform: "translateY(100%)" },
@@ -137,8 +146,11 @@ export default function ActionBarContainer() {
           />
         )}
         {isShareResourceOpen && (
-          <ShareResourceModal
+          <ShareModal
             isOpen={isShareResourceOpen}
+            resource={selectedResources[0]}
+            updateResource={updateResource}
+            shareResource={shareResource}
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
           />

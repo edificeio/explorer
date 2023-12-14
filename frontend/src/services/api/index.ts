@@ -10,8 +10,8 @@ import {
   type ShareRight,
   type UpdateParameters,
   type IFolder,
-  type PublishParameters,
   CreateParameters,
+  App,
 } from "edifice-ts-client";
 
 /**
@@ -200,15 +200,15 @@ export const moveToFolder = async ({
  * @returns shared resource
  */
 export const shareResource = async ({
-  searchParams,
-  entId,
-  shares,
+  app,
+  resourceId,
+  rights,
 }: {
-  searchParams: ISearchParameters;
-  entId: ID;
-  shares: ShareRight[];
+  app: string;
+  resourceId: string;
+  rights: ShareRight[];
 }) => {
-  return await odeServices.share().saveRights(searchParams.app, entId, shares);
+  return await odeServices.share().saveRights(app, resourceId, rights);
 };
 
 /**
@@ -217,13 +217,13 @@ export const shareResource = async ({
  * @returns updated resource
  */
 export const updateResource = async ({
-  searchParams,
+  app,
   params,
 }: {
-  searchParams: ISearchParameters;
+  app: App;
   params: UpdateParameters;
 }) => {
-  return await odeServices.resource(searchParams.app).update(params);
+  return await odeServices.resource(app).update(params);
 };
 
 /**
@@ -265,13 +265,13 @@ export const printResource = ({
   return result;
 };
 
-export const publishResource = async ({
-  searchParams,
+/* export const publishResource = async ({
+  app,
   params,
 }: {
-  searchParams: ISearchParameters;
+  app: App;
   params: PublishParameters;
-}) => await odeServices.resource(searchParams.app).publish(params);
+}) => await odeServices.resource(app).publish(params); */
 
 /**
  * getPreference API

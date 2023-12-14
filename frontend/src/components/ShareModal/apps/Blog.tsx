@@ -1,7 +1,7 @@
-import { Heading, Radio, useOdeClient } from "@edifice-ui/react";
+import { useOdeClient, Heading, Radio } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { type PublicationType } from "../hooks/useShareResourceModalFooterBlog";
+import { PublicationType } from "../hooks/useShareBlog";
 
 export interface ShareResourceModalFooterBlogProps {
   radioPublicationValue: PublicationType | string;
