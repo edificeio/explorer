@@ -1,5 +1,5 @@
     {
-      "name": "com.opendigitaleducation~explorer~1.4.0",
+      "name": "com.opendigitaleducation~explorer~1.4.1",
       "config": {
         "main" : "com.opendigitaleducation.explorer.Explorer",
         "port" : 8068,
