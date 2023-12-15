@@ -138,7 +138,7 @@ export default function useActionBar() {
         return true;
     }
   }
-  function isActivableForTrash(): boolean {
+  function isActivableForTrash() {
     return true;
   }
 

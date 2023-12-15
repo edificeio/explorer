@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { AccessControl } from "~/components/AccessControl";
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
+import { useSelectedResources } from "~/store";
 
 const ShareResourceModal = lazy(
   async () => await import("./ShareResourceModal"),
@@ -15,7 +16,9 @@ const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
 const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
-const PublishModal = lazy(async () => await import("./PublishModal"));
+const PublishModal = lazy(
+  async () => await import("../../../components/PublishModal/PublishModal"),
+);
 
 export default function ActionBarContainer() {
   const { t } = useTranslation();
@@ -45,6 +48,8 @@ export default function ActionBarContainer() {
     isActivable,
     handleClick,
   } = useActionBar();
+
+  const selectedResources = useSelectedResources();
 
   const transition = useTransition(isActionBarOpen, {
     from: { opacity: 0, transform: "translateY(100%)" },
@@ -116,6 +121,7 @@ export default function ActionBarContainer() {
         {isPublishModalOpen && (
           <PublishModal
             isOpen={isPublishModalOpen}
+            resource={selectedResources[0]}
             onCancel={onPublishCancel}
             onSuccess={onPublishSuccess}
           />

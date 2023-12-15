@@ -22,9 +22,11 @@ export const useLibraryUrl = () => {
     ?.address.split("?");
 
   let libraryHost = libraryUrlSplitted?.[0];
+
   if (!libraryHost?.endsWith("/")) {
     libraryHost = `${libraryHost}/`;
   }
+
   const platformParam = libraryUrlSplitted?.[1];
   const searchParams = `application%5B0%5D=${appName}&page=1&sort_field=views&sort_order=desc`;
   const libraryUrl = `${libraryHost}search/?${platformParam}&${searchParams}`;

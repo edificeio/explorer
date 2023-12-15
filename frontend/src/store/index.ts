@@ -62,10 +62,10 @@ interface State {
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
     printSelectedResource: () => void;
-    publishApi: (
+    /* publishApi: (
       type: ResourceType,
       params: PublishParameters,
-    ) => Promise<IActionResult | undefined>;
+    ) => Promise<IActionResult | undefined>; */
     openFolder: ({
       folderId,
       folder,
@@ -214,14 +214,14 @@ export const useStoreContext = create<State>()((set, get) => ({
         console.error("explorer print failed: ", error);
       }
     },
-    publishApi: async (
+    /* publishApi: async (
       _resourceType: ResourceType,
       params: PublishParameters,
     ): Promise<IActionResult | undefined> => {
       const { searchParams } = get();
       const tmp = await publishResource({ searchParams, params });
       return tmp;
-    },
+    }, */
     openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
       const { searchParams, treeData } = get();
       const previousId = searchParams.filters.folder as string;
