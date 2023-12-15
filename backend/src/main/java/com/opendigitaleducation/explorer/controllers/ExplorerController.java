@@ -560,10 +560,6 @@ public class ExplorerController extends BaseController {
         } else {
             final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, app, type);
             UserUtils.getUserInfos(eb, request, user -> {
-                if (user == null) {
-                    unauthorized(request);
-                    return;
-                }
                 try {
                     final Future<Void> dropFuture = "true".equals(drop) ? resourceService.dropMapping(app).compose(e -> {
                         return resourceService.initMapping(app);
