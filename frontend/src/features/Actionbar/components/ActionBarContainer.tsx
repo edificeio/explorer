@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 
 import { AccessControl } from "~/components/AccessControl";
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
+import { useUpdateResource } from "~/services/queries";
+import { useSelectedResources } from "~/store";
 
 const ShareResourceModal = lazy(
   async () => await import("./ShareResourceModal"),
@@ -14,7 +16,9 @@ const ShareResourceModal = lazy(
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
-const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
+const UpdateModal = lazy(
+  async () => await import("../../../components/ResourceModal/ResourceModal"),
+);
 const PublishModal = lazy(async () => await import("./PublishModal"));
 
 export default function ActionBarContainer() {
@@ -51,6 +55,9 @@ export default function ActionBarContainer() {
     enter: { opacity: 1, transform: "translateY(0)" },
     leave: { opacity: 0, transform: "translateY(100%)" },
   });
+
+  const updateResource = useUpdateResource();
+  const selectedResource = useSelectedResources()[0];
 
   return (
     <>
@@ -129,9 +136,11 @@ export default function ActionBarContainer() {
           />
         )}
         {isEditResourceOpen && (
-          <EditResourceModal
-            edit={true}
+          <UpdateModal
+            mode="update"
             isOpen={isEditResourceOpen}
+            selectedResource={selectedResource}
+            updateResource={updateResource}
             onCancel={onEditResourceCancel}
             onSuccess={onEditResourceSuccess}
           />

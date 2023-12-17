@@ -10,11 +10,11 @@ import {
 import { IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { useActions } from "~/services/queries";
-import { useStoreActions } from "~/store";
+import { useActions, useCreateResource } from "~/services/queries";
+import { useCurrentFolder, useStoreActions } from "~/store";
 
 const CreateModal = lazy(
-  async () => await import("../../../Actionbar/components/EditResourceModal"),
+  async () => await import("~/components/ResourceModal/ResourceModal"),
 );
 
 export default function AppAction() {
@@ -23,8 +23,10 @@ export default function AppAction() {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
 
-  const { clearSelectedItems, clearSelectedIds } = useStoreActions();
+  const currentFolder = useCurrentFolder();
+  const createResource = useCreateResource();
 
+  const { clearSelectedItems, clearSelectedIds } = useStoreActions();
   const { data: actions } = useActions();
 
   const canCreate = actions?.find((action: IAction) => action.id === "create");
@@ -51,7 +53,9 @@ export default function AppAction() {
       <Suspense fallback={<LoadingScreen />}>
         {isCreateResourceOpen && (
           <CreateModal
-            edit={false}
+            mode="create"
+            currentFolder={currentFolder}
+            createResource={createResource}
             isOpen={isCreateResourceOpen}
             onSuccess={toggle}
             onCancel={toggle}
