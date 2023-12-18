@@ -1,17 +1,17 @@
-import { Heading, Radio, useOdeClient } from "@edifice-ui/react";
+import { useOdeClient, Heading, Radio } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { type PublicationType } from "../hooks/useShareResourceModalFooterBlog";
+import { PublicationType } from "../hooks/useShareBlog";
 
-export interface ShareResourceModalFooterBlogProps {
+export interface ShareBlogProps {
   radioPublicationValue: PublicationType | string;
   onRadioPublicationChange: (event: PublicationType) => void;
 }
 
-export default function ShareResourceModalFooterBlog({
+export default function ShareBlog({
   radioPublicationValue,
   onRadioPublicationChange,
-}: ShareResourceModalFooterBlogProps) {
+}: ShareBlogProps) {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
 
