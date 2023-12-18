@@ -1,7 +1,3 @@
-import { TransportFrameworkFactory } from "edifice-ts-client";
-
-export const { http } = TransportFrameworkFactory.instance();
-
 /**
  * Object literal to find correct app code for Library Webapp
  */

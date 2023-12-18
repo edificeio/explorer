@@ -6,20 +6,20 @@ import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { AccessControl } from "~/components/AccessControl";
+import ShareModal from "~/components/ShareModal/ShareModal";
 import useActionBar from "~/features/Actionbar/hooks/useActionBar";
-import { useUpdateResource } from "~/services/queries";
+import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
 
-const ShareResourceModal = lazy(
-  async () => await import("./ShareResourceModal"),
-);
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
 const UpdateModal = lazy(
   async () => await import("../../../components/ResourceModal/ResourceModal"),
 );
-const PublishModal = lazy(async () => await import("./PublishModal"));
+const PublishModal = lazy(
+  async () => await import("../../../components/PublishModal/PublishModal"),
+);
 
 export default function ActionBarContainer() {
   const { t } = useTranslation();
@@ -50,14 +50,15 @@ export default function ActionBarContainer() {
     handleClick,
   } = useActionBar();
 
+  const selectedResources = useSelectedResources();
+  const shareResource = useShareResource();
+  const updateResource = useUpdateResource();
+
   const transition = useTransition(isActionBarOpen, {
     from: { opacity: 0, transform: "translateY(100%)" },
     enter: { opacity: 1, transform: "translateY(0)" },
     leave: { opacity: 0, transform: "translateY(100%)" },
   });
-
-  const updateResource = useUpdateResource();
-  const selectedResource = useSelectedResources()[0];
 
   return (
     <>
@@ -123,6 +124,7 @@ export default function ActionBarContainer() {
         {isPublishModalOpen && (
           <PublishModal
             isOpen={isPublishModalOpen}
+            resource={selectedResources[0]}
             onCancel={onPublishCancel}
             onSuccess={onPublishSuccess}
           />
@@ -146,8 +148,11 @@ export default function ActionBarContainer() {
           />
         )}
         {isShareResourceOpen && (
-          <ShareResourceModal
+          <ShareModal
             isOpen={isShareResourceOpen}
+            resource={selectedResources[0]}
+            updateResource={updateResource}
+            shareResource={shareResource}
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
           />
