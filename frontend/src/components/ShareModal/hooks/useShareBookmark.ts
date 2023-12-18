@@ -1,31 +1,46 @@
-import { Dispatch, useId, useState } from "react";
+import { Dispatch, useId, useRef, useState } from "react";
 
-import { useHotToast, Alert } from "@edifice-ui/react";
+import { useHotToast, Alert, useToggle } from "@edifice-ui/react";
 import { ShareRightWithVisibles, odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { ShareAction } from "./useShare";
 
+interface UseShareBookmarkProps {
+  shareRights: ShareRightWithVisibles;
+  shareDispatch: Dispatch<ShareAction>;
+}
+
+export type BookmarkProps = {
+  name: string;
+  id: string;
+};
+
 export const useShareBookmark = ({
   shareRights,
   shareDispatch,
-}: {
-  shareRights: ShareRightWithVisibles;
-
-  shareDispatch: Dispatch<ShareAction>;
-}) => {
+}: UseShareBookmarkProps) => {
   const { hotToast } = useHotToast(Alert);
   const { t } = useTranslation();
 
-  const [bookmark, setBookmark] = useState({
+  const refBookmark = useRef<HTMLInputElement>(null);
+
+  const [bookmark, setBookmark] = useState<BookmarkProps>({
     name: "",
     id: useId(),
   });
-  const [showBookmark, setShowBookmark] = useState<boolean>(false);
+  const [showBookmark, setShowBookmark] = useToggle(false);
   const [showBookmarkInput, toggleBookmarkInput] = useState<boolean>(false);
 
   const toggleBookmark = () => {
-    setShowBookmark((prev) => !prev);
+    setShowBookmark();
+  };
+
+  const handleBookmarkChange = () => {
+    setBookmark((prev) => ({
+      ...prev,
+      name: refBookmark.current?.value || "",
+    }));
   };
 
   const saveBookmark = async (name: string) => {
@@ -68,12 +83,19 @@ export const useShareBookmark = ({
     }
   };
 
+  const handleOnSave = () => {
+    const inputValue = refBookmark.current?.value || "";
+    saveBookmark(inputValue);
+  };
+
   return {
+    refBookmark,
     showBookmark,
     showBookmarkInput,
     bookmark,
+    handleBookmarkChange,
     setBookmark,
-    saveBookmark,
+    handleOnSave,
     toggleBookmark,
     toggleBookmarkInput,
   };

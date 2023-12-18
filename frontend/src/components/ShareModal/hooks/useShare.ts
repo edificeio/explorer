@@ -285,15 +285,8 @@ export default function useShare({
       },
     });
   };
-
-  const currentIsAuthor = (): boolean => {
-    if (!resource) return false;
-
-    if (resource?.creatorId !== user?.userId) {
-      return false;
-    }
-    return true;
-  };
+  const currentIsAuthor = () =>
+    resource && resource.creatorId === user?.userId ? true : false;
 
   return {
     state,

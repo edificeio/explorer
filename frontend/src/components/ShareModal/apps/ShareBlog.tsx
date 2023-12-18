@@ -3,15 +3,15 @@ import { useTranslation } from "react-i18next";
 
 import { PublicationType } from "../hooks/useShareBlog";
 
-export interface ShareResourceModalFooterBlogProps {
+export interface ShareBlogProps {
   radioPublicationValue: PublicationType | string;
   onRadioPublicationChange: (event: PublicationType) => void;
 }
 
-export default function ShareResourceModalFooterBlog({
+export default function ShareBlog({
   radioPublicationValue,
   onRadioPublicationChange,
-}: ShareResourceModalFooterBlogProps) {
+}: ShareBlogProps) {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
 

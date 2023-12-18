@@ -1,20 +1,10 @@
-import { useRef } from "react";
-
-import {
-  Bookmark,
-  Close,
-  InfoCircle,
-  RafterDown,
-  Save,
-} from "@edifice-ui/icons";
+import { Bookmark, InfoCircle, RafterDown } from "@edifice-ui/icons";
 import {
   Avatar,
   Button,
   Checkbox,
   Combobox,
-  FormControl,
   Heading,
-  IconButton,
   Modal,
   Tooltip,
   VisuallyHidden,
@@ -31,13 +21,13 @@ import {
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-import Blog from "./apps/Blog";
+import ShareBlog from "./apps/ShareBlog";
 import { useSearch } from "./hooks/useSearch";
 import useShare from "./hooks/useShare";
 import useShareBlog from "./hooks/useShareBlog";
 import { useShareBookmark } from "./hooks/useShareBookmark";
-import { hasRight } from "./utils/hasRight";
-import { showShareRightLine } from "./utils/showShareRightLine";
+import { ShareBookmark } from "./ShareBookmark";
+import { ShareBookmarkLine } from "./ShareBookmarkLine";
 
 interface ShareResourceModalProps {
   isOpen: boolean;
@@ -100,14 +90,13 @@ export default function ShareResourceModal({
     handleSearchResultsChange,
   } = useSearch({ resource, shareRights, shareDispatch });
 
-  const refBookmark = useRef<HTMLInputElement>(null);
-
   const {
+    refBookmark,
     showBookmark,
+    handleBookmarkChange,
     toggleBookmark,
     bookmark,
-    setBookmark,
-    saveBookmark,
+    handleOnSave,
     showBookmarkInput,
     toggleBookmarkInput,
   } = useShareBookmark({ shareRights, shareDispatch });
@@ -177,83 +166,14 @@ export default function ShareResourceModal({
                   <td></td>
                 </tr>
               )}
-              {shareRights?.rights.map((shareRight: ShareRight) => {
-                return (
-                  showShareRightLine(shareRight, showBookmark) && (
-                    <tr
-                      key={shareRight.id}
-                      className={shareRight.isBookmarkMember ? "bg-light" : ""}
-                    >
-                      <td>
-                        {shareRight.type !== "sharebookmark" && (
-                          <Avatar
-                            alt={t("explorer.modal.share.avatar.shared.alt")}
-                            size="xs"
-                            src={shareRight.avatarUrl}
-                            variant="circle"
-                          />
-                        )}
-
-                        {shareRight.type === "sharebookmark" && <Bookmark />}
-                      </td>
-                      <td>
-                        <div className="d-flex">
-                          {shareRight.type === "sharebookmark" && (
-                            <Button
-                              color="tertiary"
-                              rightIcon={
-                                <RafterDown
-                                  title="Show"
-                                  className="w-16 min-w-0"
-                                  style={{
-                                    transition: "rotate 0.2s ease-out",
-                                    rotate: showBookmark ? "-180deg" : "0deg",
-                                  }}
-                                />
-                              }
-                              type="button"
-                              variant="ghost"
-                              className="fw-normal ps-0"
-                              onClick={toggleBookmark}
-                            >
-                              {shareRight.displayName}
-                            </Button>
-                          )}
-                          {shareRight.type !== "sharebookmark" &&
-                            shareRight.displayName}
-                        </div>
-                      </td>
-                      {shareRightActions.map((shareRightAction) => (
-                        <td
-                          key={shareRightAction.displayName}
-                          style={{ width: "80px" }}
-                          className="text-center text-white"
-                        >
-                          <Checkbox
-                            checked={hasRight(shareRight, shareRightAction)}
-                            onChange={() =>
-                              toggleRight(shareRight, shareRightAction.id)
-                            }
-                          />
-                        </td>
-                      ))}
-                      <td>
-                        {!shareRight.isBookmarkMember && (
-                          <IconButton
-                            aria-label="Delete"
-                            color="tertiary"
-                            icon={<Close />}
-                            type="button"
-                            variant="ghost"
-                            title="Delete"
-                            onClick={() => handleDeleteRow(shareRight)}
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  )
-                );
-              })}
+              <ShareBookmarkLine
+                showBookmark={showBookmark}
+                shareRightActions={shareRightActions}
+                shareRights={shareRights}
+                onDeleteRow={handleDeleteRow}
+                toggleRight={toggleRight}
+                toggleBookmark={toggleBookmark}
+              />
             </tbody>
           </table>
         </div>
@@ -279,43 +199,12 @@ export default function ShareResourceModal({
             {t("share.save.sharebookmark")}
           </Button>
           {showBookmarkInput && (
-            <div className="mt-16">
-              <FormControl
-                id="bookmarkName"
-                className="d-flex flex-wrap align-items-center gap-16"
-              >
-                <div className="flex-fill">
-                  <FormControl.Input
-                    key={bookmark.id}
-                    ref={refBookmark}
-                    onChange={() => {
-                      setBookmark((prev) => ({
-                        ...prev,
-                        name: refBookmark.current?.value || "",
-                      }));
-                    }}
-                    placeholder={t(
-                      "explorer.modal.share.sharebookmark.placeholder",
-                    )}
-                    size="sm"
-                    type="text"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  color="primary"
-                  variant="ghost"
-                  disabled={bookmark.name.length === 0}
-                  leftIcon={<Save />}
-                  onClick={() => {
-                    saveBookmark(refBookmark.current!.value!);
-                  }}
-                  className="text-nowrap"
-                >
-                  {t("explorer.modal.share.sharebookmark.save")}
-                </Button>
-              </FormControl>
-            </div>
+            <ShareBookmark
+              refBookmark={refBookmark}
+              bookmark={bookmark}
+              onBookmarkChange={handleBookmarkChange}
+              onSave={handleOnSave}
+            />
           )}
         </div>
         <hr />
@@ -348,7 +237,7 @@ export default function ShareResourceModal({
           </div>
         </div>
         {appCode === "blog" && (
-          <Blog
+          <ShareBlog
             radioPublicationValue={radioPublicationValue}
             onRadioPublicationChange={handleRadioPublicationChange}
           />
