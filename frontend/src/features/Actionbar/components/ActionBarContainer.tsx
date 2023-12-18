@@ -141,7 +141,7 @@ export default function ActionBarContainer() {
           <UpdateModal
             mode="update"
             isOpen={isEditResourceOpen}
-            selectedResource={selectedResource}
+            selectedResource={selectedResources[0]}
             updateResource={updateResource}
             onCancel={onEditResourceCancel}
             onSuccess={onEditResourceSuccess}
