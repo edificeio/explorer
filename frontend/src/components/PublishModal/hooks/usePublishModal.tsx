@@ -8,8 +8,8 @@ import {
 } from "edifice-ts-client";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-import { ToastError } from "../ToastError";
-import { ToastSuccess } from "../ToastSuccess";
+import { ToastError } from "../components/ToastError";
+import { ToastSuccess } from "../components/ToastSuccess";
 import { libraryMaps } from "~/constants";
 
 interface ModalProps {

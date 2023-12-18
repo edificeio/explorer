@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { type BlogResource, type BlogUpdate } from "edifice-ts-client";
-
-import { useSelectedResources } from "~/store";
+import { IResource, type BlogUpdate, BlogResource } from "edifice-ts-client";
 
 export type PublicationType = "RESTRAINT" | "IMMEDIATE" | undefined;
 
-export default function useShareResourceModalFooterBlog() {
-  const selectedResources = useSelectedResources();
-
+export default function useShareBlog({ resource }: { resource: IResource }) {
   const {
     assetId,
     description,
@@ -18,8 +14,8 @@ export default function useShareResourceModalFooterBlog() {
     trashed,
     slug,
     "publish-type": publishType,
-  } = selectedResources.length > 0
-    ? (selectedResources[0] as BlogResource)
+  } = resource
+    ? (resource as BlogResource)
     : {
         "publish-type": "",
         assetId: "",
@@ -34,7 +30,7 @@ export default function useShareResourceModalFooterBlog() {
   const [radioPublicationValue, setRadioPublicationValue] =
     useState<PublicationType>((publishType as PublicationType) || "RESTRAINT");
 
-  const [payloadUpdatePublishType, setPayloadUpdatePublishType] = useState({
+  const [shareBlogPayload, setShareBlogPayload] = useState({
     description: description || "",
     entId: assetId,
     name,
@@ -47,8 +43,8 @@ export default function useShareResourceModalFooterBlog() {
 
   useEffect(() => {
     if (radioPublicationValue) {
-      setPayloadUpdatePublishType((prevPayload) => ({
-        ...prevPayload,
+      setShareBlogPayload((prev) => ({
+        ...prev,
         "publish-type": radioPublicationValue,
       }));
     }
@@ -57,9 +53,10 @@ export default function useShareResourceModalFooterBlog() {
   const handleRadioPublicationChange = async (value: PublicationType) => {
     setRadioPublicationValue(value);
   };
+
   return {
     radioPublicationValue,
-    payloadUpdatePublishType,
+    shareBlogPayload,
     handleRadioPublicationChange,
   };
 }

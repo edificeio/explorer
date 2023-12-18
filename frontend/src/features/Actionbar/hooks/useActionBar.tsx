@@ -138,9 +138,7 @@ export default function useActionBar() {
         return true;
     }
   }
-  function isActivableForTrash() {
-    return true;
-  }
+  const isActivableForTrash = () => true;
 
   async function onRestore() {
     try {

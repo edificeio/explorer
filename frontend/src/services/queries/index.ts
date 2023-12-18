@@ -646,7 +646,7 @@ export const useShareResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { setResourceIds, setSelectedResources } = useStoreActions();
-  const { filters, trashed } = searchParams;
+  const { filters, trashed, app } = searchParams;
 
   const queryKey = [
     "context",
@@ -659,12 +659,12 @@ export const useShareResource = () => {
 
   return useMutation({
     mutationFn: async ({
-      entId,
-      shares,
+      resourceId,
+      rights,
     }: {
-      entId: string;
-      shares: ShareRight[];
-    }) => await shareResource({ searchParams, entId, shares }),
+      resourceId: string;
+      rights: ShareRight[];
+    }) => await shareResource({ app, resourceId, rights }),
     onError(error) {
       if (typeof error === "string") hotToast.error(t(error));
     },
@@ -683,15 +683,15 @@ export const useShareResource = () => {
                 return {
                   ...page,
                   resources: page.resources.map((resource: IResource) => {
-                    if (resource.assetId === variables?.entId) {
+                    if (resource.assetId === variables?.resourceId) {
                       let rights: string[] = [`creator:${resource.creatorId}`];
 
-                      if (variables?.shares.length >= 1) {
+                      if (variables?.rights.length >= 1) {
                         rights = [
                           ...rights,
-                          ...variables.shares.flatMap((share) => {
-                            return share.actions.map((action) => {
-                              return `${share.type}:${share.id}:${action.id}`;
+                          ...variables.rights.flatMap((right) => {
+                            return right.actions.map((action) => {
+                              return `${right.type}:${right.id}:${action.id}`;
                             });
                           }),
                         ];
@@ -724,7 +724,7 @@ export const useUpdateResource = () => {
   const { hotToast } = useHotToast(Alert);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const { filters, trashed } = searchParams;
+  const { filters, trashed, app } = searchParams;
 
   const queryKey = [
     "context",
@@ -737,7 +737,7 @@ export const useUpdateResource = () => {
 
   return useMutation({
     mutationFn: async (params: UpdateParameters) =>
-      await updateResource({ searchParams, params }),
+      await updateResource({ app, params }),
     onError(error) {
       if (typeof error === "string") hotToast.error(t(error));
     },
