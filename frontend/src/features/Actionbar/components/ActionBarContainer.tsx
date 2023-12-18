@@ -11,16 +11,13 @@ import useActionBar from "~/features/Actionbar/hooks/useActionBar";
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
 
-/* const ShareModal = lazy(async () => {
-  const module = await import("@edifice-ui/react");
-  return { default: module.ShareModal };
-}); */
-
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
 const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
-const PublishModal = lazy(async () => await import("./PublishModal"));
+const PublishModal = lazy(
+  async () => await import("../../../components/PublishModal/PublishModal"),
+);
 
 export default function ActionBarContainer() {
   const { t } = useTranslation();
@@ -125,6 +122,7 @@ export default function ActionBarContainer() {
         {isPublishModalOpen && (
           <PublishModal
             isOpen={isPublishModalOpen}
+            resource={selectedResources[0]}
             onCancel={onPublishCancel}
             onSuccess={onPublishSuccess}
           />
