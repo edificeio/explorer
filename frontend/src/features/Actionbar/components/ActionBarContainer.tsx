@@ -14,7 +14,9 @@ import { useSelectedResources } from "~/store";
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
 const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
-const EditResourceModal = lazy(async () => await import("./EditResourceModal"));
+const UpdateModal = lazy(
+  async () => await import("../../../components/ResourceModal/ResourceModal"),
+);
 const PublishModal = lazy(
   async () => await import("../../../components/PublishModal/PublishModal"),
 );
@@ -136,9 +138,11 @@ export default function ActionBarContainer() {
           />
         )}
         {isEditResourceOpen && (
-          <EditResourceModal
-            edit={true}
+          <UpdateModal
+            mode="update"
             isOpen={isEditResourceOpen}
+            selectedResource={selectedResource}
+            updateResource={updateResource}
             onCancel={onEditResourceCancel}
             onSuccess={onEditResourceSuccess}
           />

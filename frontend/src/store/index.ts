@@ -30,7 +30,7 @@ interface State {
   searchParams: ISearchParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
-  currentFolder: Partial<IFolder> | undefined;
+  currentFolder: Partial<IFolder>;
   selectedFolders: IFolder[];
   selectedResources: IResource[];
   folderIds: ID[];

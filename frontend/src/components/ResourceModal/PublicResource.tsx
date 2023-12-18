@@ -1,10 +1,9 @@
 import { Copy } from "@edifice-ui/icons";
 import { Heading, Alert, FormControl, Button } from "@edifice-ui/react";
-import { IResource } from "edifice-ts-client";
 import { UseFormRegister } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { FormInputs } from "../hooks/useEditResourceModal";
+import { FormInputs } from "./ResourceModal";
 
 interface BlogPublicProps {
   appCode: string;
@@ -12,13 +11,11 @@ interface BlogPublicProps {
   onCopyToClipBoard: () => void;
   onPublicChange: (boolean: boolean) => void;
   register: UseFormRegister<FormInputs>;
-  resource: IResource;
   slug: string;
   resourceName: string;
-  setValue: any;
 }
 
-export const BlogPublic = ({
+export const PublicResource = ({
   appCode,
   isPublic,
   onCopyToClipBoard,
@@ -67,7 +64,7 @@ export const BlogPublic = ({
           <Button
             color="primary"
             disabled={!isPublic}
-            onClick={() => onCopyToClipBoard()}
+            onClick={onCopyToClipBoard}
             type="button"
             leftIcon={<Copy />}
             variant="ghost"
