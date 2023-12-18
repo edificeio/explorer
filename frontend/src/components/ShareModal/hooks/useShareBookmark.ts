@@ -1,6 +1,6 @@
 import { Dispatch, useId, useRef, useState } from "react";
 
-import { useHotToast, Alert, useToggle } from "@edifice-ui/react";
+import { useToast, useToggle } from "@edifice-ui/react";
 import { ShareRightWithVisibles, odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +20,7 @@ export const useShareBookmark = ({
   shareRights,
   shareDispatch,
 }: UseShareBookmarkProps) => {
-  const { hotToast } = useHotToast(Alert);
+  const toast = useToast();
   const { t } = useTranslation();
 
   const refBookmark = useRef<HTMLInputElement>(null);
@@ -56,7 +56,8 @@ export const useShareBookmark = ({
           .filter((right: { type: string }) => right.type === "sharebookmark")
           .map((u: { id: any }) => u.id),
       });
-      hotToast.success(t("explorer.bookmarked.status.saved"));
+
+      toast.success(t("explorer.bookmarked.status.saved"));
 
       shareDispatch({
         type: "updateShareRights",
@@ -79,7 +80,7 @@ export const useShareBookmark = ({
       toggleBookmarkInput(false);
     } catch (e) {
       console.error("Failed to save bookmark", e);
-      hotToast.error(t("explorer.bookmarked.status.error"));
+      toast.error(t("explorer.bookmarked.status.error"));
     }
   };
 

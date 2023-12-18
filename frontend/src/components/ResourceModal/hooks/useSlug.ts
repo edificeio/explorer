@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 
-import { Alert, useHotToast } from "@edifice-ui/react";
+import { useToast } from "@edifice-ui/react";
 import { IResource } from "edifice-ts-client";
 import { hash } from "ohash";
 import { UseFormWatch } from "react-hook-form";
@@ -24,7 +24,7 @@ export const useSlug = ({ watch, selectedResource }: UseSlugProps) => {
   const resourceName = watch("title");
 
   const { t } = useTranslation();
-  const { hotToast } = useHotToast(Alert);
+  const toast = useToast();
 
   useEffect(() => {
     if (isPublic) {
@@ -50,7 +50,7 @@ export const useSlug = ({ watch, selectedResource }: UseSlugProps) => {
     navigator.clipboard.writeText(
       `${window.location.origin}${window.location.pathname}/pub/${slug}`,
     );
-    hotToast.success(t("explorer.copy.clipboard"));
+    toast.success(t("explorer.copy.clipboard"));
   }
 
   return {

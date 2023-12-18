@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from "react";
 
-import { useOdeClient, useUser, useHotToast, Alert } from "@edifice-ui/react";
+import { useOdeClient, useUser } from "@edifice-ui/react";
 import { UseMutationResult } from "@tanstack/react-query";
 import {
   odeServices,
@@ -14,7 +14,6 @@ import {
   UpdateParameters,
   BlogUpdate,
 } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
 
 interface UseShareResourceModalProps {
   onSuccess: () => void;
@@ -84,9 +83,7 @@ export default function useShare({
   shareResource,
 }: UseShareResourceModalProps) {
   const { appCode } = useOdeClient();
-  const { t } = useTranslation();
   const { user, avatar } = useUser();
-  const { hotToast } = useHotToast(Alert);
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -254,11 +251,9 @@ export default function useShare({
         rights: shares,
       });
 
-      hotToast.success(t("explorer.shared.status.saved"));
       onSuccess?.();
     } catch (e) {
       console.error("Failed to save share", e);
-      hotToast.error(t("explorer.shared.status.error"));
     } finally {
       dispatch({
         type: "isSharing",

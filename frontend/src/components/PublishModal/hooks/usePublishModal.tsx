@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Alert, useOdeClient, useHotToast } from "@edifice-ui/react";
+import { useOdeClient, useToast } from "@edifice-ui/react";
 import {
   IResource,
   odeServices,
@@ -30,7 +30,7 @@ export interface FormDataProps {
 
 export default function usePublishModal({ onSuccess, resource }: ModalProps) {
   const { user, appCode } = useOdeClient();
-  const { hotToast } = useHotToast(Alert);
+  const toast = useToast();
 
   const [cover, setCover] = useState<string | Blob | File>(
     resource.thumbnail || "",
@@ -149,16 +149,16 @@ export default function usePublishModal({ onSuccess, resource }: ModalProps) {
         .publish(parameters);
 
       if (result.success) {
-        hotToast.success(<ToastSuccess result={result} />, {
+        toast.success(<ToastSuccess result={result} />, {
           duration: 10000,
         });
       } else {
-        hotToast.error(<ToastError formData={formData} />);
+        toast.error(<ToastError formData={formData} />);
       }
       onSuccess?.();
     } catch (error) {
       console.error(error);
-      hotToast.error(<ToastError formData={formData} />);
+      toast.error(<ToastError formData={formData} />);
     }
   };
 

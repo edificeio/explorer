@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Alert, useHotToast } from "@edifice-ui/react";
 import { type IAction, ACTION } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
 
 import { useActions, useRestore } from "~/services/queries";
 import {
@@ -32,9 +30,6 @@ export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
   const [clickedAction, setClickedAction] = useState<IAction>();
-
-  const { t } = useTranslation();
-  const { hotToast } = useHotToast(Alert);
 
   const currentFolder = useCurrentFolder();
   const resourceIds = useResourceIds();
@@ -144,7 +139,6 @@ export default function useActionBar() {
     try {
       if (isTrashFolder) {
         await restoreItem.mutate();
-        hotToast.success(t("explorer.trash.toast"));
       } else {
         throw new Error("Cannot restore untrashed resources");
       }

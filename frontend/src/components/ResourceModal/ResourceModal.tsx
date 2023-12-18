@@ -10,8 +10,7 @@ import {
   Label,
   Modal,
   useOdeClient,
-  useHotToast,
-  Alert,
+  useToast,
 } from "@edifice-ui/react";
 import { UseMutationResult } from "@tanstack/react-query";
 import {
@@ -107,7 +106,7 @@ const ResourceModal = ({ isOpen, onCancel, onSuccess, ...props }: Props) => {
     selectedResource: isUpdating ? props.selectedResource : undefined,
   });
 
-  const { hotToast } = useHotToast(Alert);
+  const toast = useToast();
 
   const { thumbnail, handleDeleteImage, handleUploadImage } = useThumb({
     isUpdating,
@@ -151,7 +150,7 @@ const ResourceModal = ({ isOpen, onCancel, onSuccess, ...props }: Props) => {
         });
       }
 
-      hotToast.success(
+      toast.success(
         <>
           <strong>
             {t(
