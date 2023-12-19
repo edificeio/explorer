@@ -9,7 +9,7 @@ def make_request(app: str, resource: str, date, auth: str, root_url: str, days_d
     authenticated = True
     from_date = date.strftime("%H%M-%d%m%Y")
     to_date = (date + timedelta(days=days_delta)).strftime("%H%M-%d%m%Y")
-    url = f"{root_url}/explorer/reindex/{app}/{resource}?include_folders=false&drop=false&from={from_date}&to={to_date}"
+    url = f"{root_url}/explorer/reindex/{app}/{resource}?include_folders=true&drop=false&from={from_date}&to={to_date}"
     headers = {'Cookie': f'oneSessionId={auth}'}
     
     start =  int(round(time.time() * 1000))
