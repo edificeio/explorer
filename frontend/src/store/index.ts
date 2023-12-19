@@ -6,6 +6,7 @@ import {
   type ISearchParameters,
   type IFolder,
   type IResource,
+  type IActionParameters,
   type IActionResult,
   type PublishParameters,
   type ResourceType,
@@ -35,7 +36,7 @@ const { app, types, filters, orders } = getAppParams();
 interface State {
   filters: IFilter[];
   orders: IOrder[];
-  searchParams: ISearchParameters;
+  searchParams: ISearchParameters & IActionParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
   currentFolder: Partial<IFolder> | undefined;
@@ -89,7 +90,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   orders,
   searchConfig: { minLength: 1 },
   searchParams: {
-    app,
+    application: app,
     types,
     filters: {
       folder: "default",
