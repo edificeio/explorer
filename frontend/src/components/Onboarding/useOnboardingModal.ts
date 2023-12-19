@@ -2,32 +2,33 @@ import { useEffect, useState } from "react";
 
 import { getOnboardingTrash, saveOnboardingTrash } from "~/services/api";
 
-export const useOnboardingModal = (
-  value: string,
-  { onSuccess }: { onSuccess: () => void },
-) => {
-  const [isOnboardingTrash, setIsOnboardingTrash] = useState(false);
+export const useOnboardingModal = (id: string) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isOnboardingTrash, setIsOnboardingTrash] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const response: any = await getOnboardingTrash(value);
+      const response: { showOnboardingTrash: boolean } =
+        await getOnboardingTrash(id);
+
       if (response) {
-        setIsOnboardingTrash(JSON.parse(response?.showOnboardingTrash));
+        const { showOnboardingTrash } = response;
+        setIsOnboardingTrash(showOnboardingTrash);
         return;
       }
       setIsOnboardingTrash(true);
     })();
-  }, []);
+  }, [id]);
 
   const handleSavePreference = async () => {
-    await saveOnboardingTrash({ value, onSuccess });
+    await saveOnboardingTrash(id);
+    setIsOpen(false);
   };
 
   return {
-    isOnboardingTrash,
     isOpen,
-    handleSavePreference,
     setIsOpen,
+    isOnboardingTrash,
+    handleSavePreference,
   };
 };
