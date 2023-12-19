@@ -20,10 +20,6 @@ export const useOnboardingModal = (id: string) => {
     })();
   }, [id]);
 
-  useEffect(() => {
-    if (isOnboardingTrash) console.log(isOnboardingTrash);
-  }, [isOnboardingTrash]);
-
   const handleSavePreference = async () => {
     await saveOnboardingTrash(id);
     setIsOpen(false);
