@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy } from "react";
 
 import {
   useOdeClient,
@@ -44,8 +44,6 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-
   const { currentApp } = useOdeClient();
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
@@ -96,8 +94,7 @@ export default function Explorer(): JSX.Element | null {
         <ActionBarContainer />
         <Suspense fallback={<LoadingScreen />}>
           <Onboarding
-            isOpen={isOnboardingOpen}
-            value="showOnboardingTrash"
+            id="showOnboardingTrash"
             items={[
               {
                 src: "onboarding/illu-trash-menu.svg",
@@ -117,12 +114,11 @@ export default function Explorer(): JSX.Element | null {
             ]}
             modalOptions={{
               title: "explorer.modal.onboarding.trash.title",
-              cancelText: "explorer.modal.onboarding.trash.prev",
+              prevText: "explorer.modal.onboarding.trash.prev",
               nextText: "explorer.modal.onboarding.trash.next",
               closeText: "explorer.modal.onboarding.trash.close",
             }}
-            onSuccess={() => setIsOnboardingOpen(false)}
-            onCancel={() => setIsOnboardingOpen(false)}
+            // onSuccess={() => {}}
           />
         </Suspense>
 
