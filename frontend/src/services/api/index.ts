@@ -277,10 +277,10 @@ export const printResource = ({
  * getPreference API
  * @returns check onboarding trash param
  */
-export const getOnboardingTrash = async () => {
+export const getOnboardingTrash = async (value: string) => {
   const res = await odeServices
     .conf()
-    .getPreference<{ showOnboardingTrash: boolean }>("showOnboardingTrash");
+    .getPreference<{ showOnboardingTrash: boolean }>(value);
   return res;
 };
 
@@ -289,16 +289,15 @@ export const getOnboardingTrash = async () => {
  * @returns set onboarding trash param
  */
 export const saveOnboardingTrash = async ({
+  value,
   onSuccess,
 }: {
+  value: string;
   onSuccess: () => void;
 }) => {
   const result = await odeServices
     .conf()
-    .savePreference(
-      "showOnboardingTrash",
-      JSON.stringify({ showOnboardingTrash: false }),
-    );
+    .savePreference(value, JSON.stringify({ showOnboardingTrash: false }));
   onSuccess?.();
   return result;
 };

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState } from "react";
 
 import {
   useOdeClient,
@@ -19,13 +19,12 @@ import ActionResourceDisableModal from "~/features/Explorer/components/Resources
 import { SearchForm } from "~/features/Explorer/components/SearchForm/SearchForm";
 import { TreeViewContainer } from "~/features/TreeView/components/TreeViewContainer";
 import { useActionDisableModal } from "~/hooks/useActionDisableModal";
-import { useOnboardingModal } from "~/hooks/useOnboardingModal";
 import { useTrashModal } from "~/hooks/useTrashedModal";
 import { useActions } from "~/services/queries";
 import { isActionAvailable } from "~/utils/isActionAvailable";
 
-const OnboardingTrash = lazy(
-  async () => await import("~/components/OnboardingTrash"),
+const Onboarding = lazy(
+  async () => await import("~/components/Onboarding/Onboarding"),
 );
 
 const AppAction = lazy(
@@ -45,22 +44,20 @@ const TrashedResourceModal = lazy(
 );
 
 export default function Explorer(): JSX.Element | null {
-  const { currentApp } = useOdeClient();
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
-  const { isOnboardingTrash, isOpen, setIsOpen, handleSavePreference } =
-    useOnboardingModal();
+  const { currentApp } = useOdeClient();
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } =
     useActionDisableModal();
+  const { libraryUrl } = useLibraryUrl();
 
   useXitiTrackPageLoad();
 
   const canPublish = actions?.find(
     (action: IAction) => action.id === "publish",
   );
-
-  const { libraryUrl } = useLibraryUrl();
 
   return (
     <>
@@ -97,15 +94,37 @@ export default function Explorer(): JSX.Element | null {
           <List />
         </Grid.Col>
         <ActionBarContainer />
-        {isOnboardingTrash && (
-          <Suspense fallback={<LoadingScreen />}>
-            <OnboardingTrash
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
-              handleSavePreference={handleSavePreference}
-            />
-          </Suspense>
-        )}
+        <Suspense fallback={<LoadingScreen />}>
+          <Onboarding
+            isOpen={isOnboardingOpen}
+            value="showOnboardingTrash"
+            items={[
+              {
+                src: "onboarding/illu-trash-menu.svg",
+                alt: "explorer.modal.onboarding.trash.screen1.alt",
+                text: "explorer.modal.onboarding.trash.screen1.title",
+              },
+              {
+                src: "onboarding/illu-trash-notif.svg",
+                alt: "explorer.modal.onboarding.trash.screen2.alt",
+                text: "explorer.modal.onboarding.trash.screen2.alt",
+              },
+              {
+                src: "onboarding/illu-trash-delete.svg",
+                alt: "explorer.modal.onboarding.trash.screen3.alt",
+                text: "explorer.modal.onboarding.trash.screen3.title",
+              },
+            ]}
+            modalOptions={{
+              title: "explorer.modal.onboarding.trash.title",
+              cancelText: "explorer.modal.onboarding.trash.prev",
+              nextText: "explorer.modal.onboarding.trash.next",
+              closeText: "explorer.modal.onboarding.trash.close",
+            }}
+            onSuccess={() => setIsOnboardingOpen(false)}
+            onCancel={() => setIsOnboardingOpen(false)}
+          />
+        </Suspense>
 
         {isTrashedModalOpen && (
           <Suspense fallback={<LoadingScreen />}>

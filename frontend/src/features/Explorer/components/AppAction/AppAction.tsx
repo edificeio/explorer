@@ -13,9 +13,10 @@ import { useTranslation } from "react-i18next";
 import { useActions, useCreateResource } from "~/services/queries";
 import { useCurrentFolder, useStoreActions } from "~/store";
 
-const CreateModal = lazy(
-  async () => await import("~/components/ResourceModal/ResourceModal"),
-);
+const CreateModal = lazy(async () => {
+  const module = await import("@edifice-ui/react");
+  return { default: module.ResourceModal };
+});
 
 export default function AppAction() {
   const [isCreateResourceOpen, toggle] = useToggle();
@@ -23,13 +24,13 @@ export default function AppAction() {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(appCode);
 
-  const currentFolder = useCurrentFolder();
-  const createResource = useCreateResource();
-
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
   const { data: actions } = useActions();
 
   const canCreate = actions?.find((action: IAction) => action.id === "create");
+
+  const currentFolder = useCurrentFolder();
+  const createResource = useCreateResource();
 
   const handleOnResourceCreate = () => {
     clearSelectedItems();
@@ -54,6 +55,7 @@ export default function AppAction() {
         {isCreateResourceOpen && (
           <CreateModal
             mode="create"
+            actions={actions}
             currentFolder={currentFolder}
             createResource={createResource}
             isOpen={isCreateResourceOpen}

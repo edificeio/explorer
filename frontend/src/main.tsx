@@ -10,8 +10,8 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
+import Root from "./app/root";
 import { getAppParams } from "./utils/getAppParams";
-import Root from "~/app/root/root";
 
 const root = document.getElementById("root");
 
