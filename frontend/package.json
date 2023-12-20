@@ -16,8 +16,16 @@
   "files": [
     "dist"
   ],
+  "module": "./dist/lib/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/lib/index.js"
+    }
+  },
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm run build-app && pnpm run build-component",
+    "build-app": "vite build",
+    "build-component": "vite build --config vite.config-lib.ts",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -91,9 +99,10 @@
     "prettier": "3.1.0",
     "typescript": "5.3.2",
     "vite": "4.5.1",
+    "vite-plugin-dts": "^3.6.4",
     "vite-tsconfig-paths": "4.2.1"
   },
-  "packageManager": "pnpm@8.5.0",
+  "packageManager": "pnpm@8.6.6",
   "engines": {
     "node": "18"
   }

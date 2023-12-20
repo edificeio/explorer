@@ -23,10 +23,13 @@ import { useTrashModal } from "~/hooks/useTrashedModal";
 import { useActions } from "~/services/queries";
 import { isActionAvailable } from "~/utils/isActionAvailable";
 
-const Onboarding = lazy(
-  async () => await import("~/components/Onboarding/Onboarding"),
-);
+import "node_modules/@edifice-ui/react/dist/style.css";
+import { useStoreActions } from "~/store";
 
+const OnboardingModal = lazy(async () => {
+  const module = await import("@edifice-ui/react");
+  return { default: module.OnboardingModal };
+});
 const AppAction = lazy(
   async () =>
     await import("~/features/Explorer/components/AppAction/AppAction"),
@@ -43,7 +46,10 @@ const TrashedResourceModal = lazy(
     ),
 );
 
-export default function Explorer(): JSX.Element | null {
+const Explorer = ({ config }: { config: any }) => {
+  const { setConfig } = useStoreActions();
+  setConfig(config);
+
   const { currentApp } = useOdeClient();
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
@@ -53,92 +59,95 @@ export default function Explorer(): JSX.Element | null {
 
   useXitiTrackPageLoad();
 
-  const canPublish = actions?.find(
-    (action: IAction) => action.id === "publish",
-  );
+  const canPublish =
+    config && actions?.find((action: IAction) => action.id === "publish");
 
   return (
-    <>
-      <AppHeader
-        render={() =>
-          isActionAvailable({ workflow: "create", actions }) ? (
-            <Suspense fallback={<LoadingScreen />}>
-              <AppAction />
-            </Suspense>
-          ) : null
-        }
-      >
-        <Breadcrumb app={currentApp as IWebApp} />
-      </AppHeader>
-
-      <Grid className="flex-grow-1">
-        <Grid.Col
-          sm="3"
-          lg="2"
-          xl="3"
-          className="border-end pt-16 pe-16 d-none d-lg-block"
-          as="aside"
+    config && (
+      <>
+        <AppHeader
+          render={() =>
+            isActionAvailable({ workflow: "create", actions }) ? (
+              <Suspense fallback={<LoadingScreen />}>
+                <AppAction />
+              </Suspense>
+            ) : null
+          }
         >
-          <TreeViewContainer />
-          {canPublish?.available && libraryUrl && (
+          <Breadcrumb app={currentApp as IWebApp} />
+        </AppHeader>
+
+        <Grid className="flex-grow-1">
+          <Grid.Col
+            sm="3"
+            lg="2"
+            xl="3"
+            className="border-end pt-16 pe-16 d-none d-lg-block"
+            as="aside"
+          >
+            <TreeViewContainer />
+            {canPublish?.available && libraryUrl && (
+              <Suspense fallback={<LoadingScreen />}>
+                <Library url={libraryUrl} />
+              </Suspense>
+            )}
+          </Grid.Col>
+          <Grid.Col sm="4" md="8" lg="6" xl="9">
+            <SearchForm />
+            <ExplorerBreadcrumb />
+            <List />
+          </Grid.Col>
+          {/* <ActionBarContainer /> */}
+          <Suspense fallback={<LoadingScreen />}>
+            <OnboardingModal
+              id="showOnboardingTrash"
+              items={[
+                {
+                  src: "onboarding/illu-trash-menu.svg",
+                  alt: "explorer.modal.onboarding.trash.screen1.alt",
+                  text: "explorer.modal.onboarding.trash.screen1.title",
+                },
+                {
+                  src: "onboarding/illu-trash-notif.svg",
+                  alt: "explorer.modal.onboarding.trash.screen2.alt",
+                  text: "explorer.modal.onboarding.trash.screen2.alt",
+                },
+                {
+                  src: "onboarding/illu-trash-delete.svg",
+                  alt: "explorer.modal.onboarding.trash.screen3.alt",
+                  text: "explorer.modal.onboarding.trash.screen3.title",
+                },
+              ]}
+              modalOptions={{
+                title: "explorer.modal.onboarding.trash.title",
+                prevText: "explorer.modal.onboarding.trash.prev",
+                nextText: "explorer.modal.onboarding.trash.next",
+                closeText: "explorer.modal.onboarding.trash.close",
+              }}
+              // onSuccess={() => {}}
+            />
+          </Suspense>
+
+          {isTrashedModalOpen && (
             <Suspense fallback={<LoadingScreen />}>
-              <Library url={libraryUrl} />
+              <TrashedResourceModal
+                isOpen={isTrashedModalOpen}
+                onCancel={onTrashedCancel}
+              />
             </Suspense>
           )}
-        </Grid.Col>
-        <Grid.Col sm="4" md="8" lg="6" xl="9">
-          <SearchForm />
-          <ExplorerBreadcrumb />
-          <List />
-        </Grid.Col>
-        <ActionBarContainer />
-        <Suspense fallback={<LoadingScreen />}>
-          <Onboarding
-            id="showOnboardingTrash"
-            items={[
-              {
-                src: "onboarding/illu-trash-menu.svg",
-                alt: "explorer.modal.onboarding.trash.screen1.alt",
-                text: "explorer.modal.onboarding.trash.screen1.title",
-              },
-              {
-                src: "onboarding/illu-trash-notif.svg",
-                alt: "explorer.modal.onboarding.trash.screen2.alt",
-                text: "explorer.modal.onboarding.trash.screen2.alt",
-              },
-              {
-                src: "onboarding/illu-trash-delete.svg",
-                alt: "explorer.modal.onboarding.trash.screen3.alt",
-                text: "explorer.modal.onboarding.trash.screen3.title",
-              },
-            ]}
-            modalOptions={{
-              title: "explorer.modal.onboarding.trash.title",
-              prevText: "explorer.modal.onboarding.trash.prev",
-              nextText: "explorer.modal.onboarding.trash.next",
-              closeText: "explorer.modal.onboarding.trash.close",
-            }}
-            // onSuccess={() => {}}
-          />
-        </Suspense>
-
-        {isTrashedModalOpen && (
-          <Suspense fallback={<LoadingScreen />}>
-            <TrashedResourceModal
-              isOpen={isTrashedModalOpen}
-              onCancel={onTrashedCancel}
-            />
-          </Suspense>
-        )}
-        {isActionDisableModalOpen && (
-          <Suspense fallback={<LoadingScreen />}>
-            <ActionResourceDisableModal
-              isOpen={isActionDisableModalOpen}
-              onCancel={onActionDisableCancel}
-            />
-          </Suspense>
-        )}
-      </Grid>
-    </>
+          {isActionDisableModalOpen && (
+            <Suspense fallback={<LoadingScreen />}>
+              <ActionResourceDisableModal
+                isOpen={isActionDisableModalOpen}
+                onCancel={onActionDisableCancel}
+              />
+            </Suspense>
+          )}
+        </Grid>
+      </>
+    )
   );
-}
+};
+
+export default Explorer;

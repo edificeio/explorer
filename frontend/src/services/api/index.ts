@@ -20,9 +20,11 @@ import {
  * @returns resources, no trashed folders and pagination
  */
 export const searchContext = async (searchParams: any) => {
-  const search = await odeServices
-    .resource(searchParams.app)
-    .searchContext(searchParams);
+  console.log({ searchParams });
+  const search = await odeServices.resource("blog").searchContext(searchParams);
+
+  console.log("search", { search });
+  console.log("here");
 
   return {
     ...search,

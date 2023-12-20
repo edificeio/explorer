@@ -40,8 +40,10 @@ export const List = () => {
   const isTrashFolder = useIsTrash();
   const hasSelectedNodes = useHasSelectedNodes();
   const searchParams = useSearchParams();
-  const { data, isError, isLoading, isFetching, fetchNextPage } =
+  const { data, isError, error, isLoading, isFetching, fetchNextPage } =
     useSearchContext();
+
+  console.log({ data, error });
 
   const hasNoFolders = data?.pages[0].folders.length === 0;
   const hasNoResources = data?.pages[0].resources.length === 0;

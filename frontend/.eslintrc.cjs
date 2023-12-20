@@ -61,5 +61,6 @@ module.exports = {
     "public",
     "scripts",
     "vite.config.ts",
+    "vite.config-lib.ts",
   ],
 };

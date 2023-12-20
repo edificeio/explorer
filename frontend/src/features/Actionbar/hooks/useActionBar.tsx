@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { type IAction, ACTION } from "edifice-ts-client";
 
+// import { explorerConfig } from "~/app/config";
 import { useActions, useRestore } from "~/services/queries";
 import {
   useStoreActions,
@@ -12,8 +13,9 @@ import {
   useSelectedFolders,
   useSelectedResources,
   useResourceIsTrash,
+  useStoreContext,
 } from "~/store";
-import { getAppParams } from "~/utils/getAppParams";
+// import { getAppParams } from "~/utils/getAppParams";
 
 type ModalName =
   | "move"
@@ -24,12 +26,14 @@ type ModalName =
   | "share"
   | "void";
 
-const { trashActions } = getAppParams();
+// const { trashActions } = explorerConfig;
 
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
   const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
   const [clickedAction, setClickedAction] = useState<IAction>();
+
+  const config = useStoreContext((state) => state.config);
 
   const currentFolder = useCurrentFolder();
   const resourceIds = useResourceIds();
@@ -196,7 +200,7 @@ export default function useActionBar() {
 
   return {
     onRestore,
-    actions: isTrashFolder ? trashActions : actions,
+    actions: isTrashFolder ? config.trashActions : actions,
     selectedElement: [...selectedResources, ...selectedFolders],
     currentFolderId: currentFolder?.id,
     overrideLabel,

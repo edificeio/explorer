@@ -10,8 +10,10 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
+import { Explorer } from ".";
+import { explorerConfig } from "./app/config";
 import Root from "./app/root";
-import { getAppParams } from "./utils/getAppParams";
+// import { getAppParams } from "./utils/getAppParams";
 
 const root = document.getElementById("root");
 
@@ -38,9 +40,14 @@ const queryClient = new QueryClient({
 createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider params={getAppParams()}>
+      <OdeClientProvider
+        params={{
+          app: "blog",
+        }}
+      >
         <ThemeProvider>
-          <Root />
+          {/* <Root /> */}
+          <Explorer config={explorerConfig} />
         </ThemeProvider>
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />

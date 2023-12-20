@@ -10,23 +10,26 @@ import {
   type IFilter,
   type IOrder,
   type ISearchResults,
+  App,
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { create } from "zustand";
 
+import { explorerConfig } from "~/app/config";
 import { goToResource, printResource, searchContext } from "~/services/api";
 import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
 import { getAncestors } from "~/utils/getAncestors";
-import { getAppParams } from "~/utils/getAppParams";
+// import { getAppParams } from "~/utils/getAppParams";
 import { hasChildren } from "~/utils/hasChildren";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
-const { app, types, filters, orders } = getAppParams();
+// const { app, types, filters, orders } = explorerConfig;
 
 interface State {
-  filters: IFilter[];
-  orders: IOrder[];
+  config: any;
+  // filters: IFilter[];
+  // orders: IOrder[];
   searchParams: ISearchParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
@@ -40,6 +43,7 @@ interface State {
   searchConfig: { minLength: number };
   status: string | undefined;
   updaters: {
+    setConfig: (config) => void;
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
     setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
@@ -73,12 +77,13 @@ interface State {
 }
 
 export const useStoreContext = create<State>()((set, get) => ({
-  filters,
-  orders,
+  config: null,
+  // filters: [],
+  // orders: [],
   searchConfig: { minLength: 1 },
   searchParams: {
-    app,
-    types,
+    app: "blog",
+    types: ["blog"],
     filters: {
       folder: "default",
       owner: undefined,
@@ -111,6 +116,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceActionDisable: false,
   status: undefined,
   updaters: {
+    setConfig: (config) => set({ config }),
     setSearchConfig: (searchConfig: { minLength: number }) =>
       set((state) => ({
         searchConfig: { ...state.searchConfig, ...searchConfig },

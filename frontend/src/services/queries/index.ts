@@ -43,15 +43,16 @@ import {
   useResourceAssetIds,
   useResourceIds,
   useResourceWithoutIds,
+  useStoreContext,
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";
-import { getAppParams } from "~/utils/getAppParams";
+// import { getAppParams } from "~/utils/getAppParams";
 import { moveNode } from "~/utils/moveNode";
 import { updateNode } from "~/utils/updateNode";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
-const { actions, app } = getAppParams();
+// const { actions, app } = explorerConfig;
 
 /**
  * useActions query
@@ -59,15 +60,16 @@ const { actions, app } = getAppParams();
  * @returns actions data
  */
 export const useActions = () => {
+  const config = useStoreContext((state) => state.config);
   return useQuery<Record<string, boolean>, Error, IAction[]>({
     queryKey: ["actions"],
     queryFn: async () => {
-      const actionRights = actions.map((action) => action.workflow);
+      const actionRights = config.actions.map((action) => action.workflow);
       const availableRights = await sessionHasWorkflowRights(actionRights);
       return availableRights;
     },
     select: (data) => {
-      return actions.map((action) => ({
+      return config.actions.map((action) => ({
         ...action,
         available: data[action.workflow],
       }));
@@ -81,13 +83,15 @@ export const useActions = () => {
  * @returns infinite query to load resources
  */
 export const useSearchContext = () => {
-  const toast = useToast();
-  const { appCode } = useOdeClient();
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const config = useStoreContext((state) => state.config);
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
+  const toast = useToast();
+
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation();
   const { setTreeData, setSearchParams, setSearchConfig } = useStoreActions();
   const { filters, trashed, search } = searchParams;
 
@@ -103,14 +107,18 @@ export const useSearchContext = () => {
 
   return useInfiniteQuery({
     queryKey,
-    queryFn: async ({ pageParam = 0 }) =>
-      await searchContext({
+    queryFn: async ({ pageParam = 0 }) => {
+      return await searchContext({
         ...searchParams,
+        app: config,
+        types: config.types,
         pagination: {
           ...searchParams.pagination,
           startIdx: pageParam,
         },
-      }),
+      });
+    },
+    enabled: !!config,
     onError(error) {
       if (typeof error === "string") toast.error(t(error));
     },
@@ -824,6 +832,7 @@ export const useCreateResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  const { appCode: application } = useOdeClient();
 
   const queryKey = [
     "context",
@@ -850,7 +859,7 @@ export const useCreateResource = () => {
         thumbnail: thumbnail
           ? (URL.createObjectURL(thumbnail as Blob | MediaSource) as string)
           : "",
-        application: app,
+        application,
         assetId: data._id || data.entId || "",
         id: data._id || data.entId || "",
         creatorId: user?.userId as string,

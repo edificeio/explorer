@@ -92,8 +92,8 @@
     "vite": "4.5.1",
     "vite-tsconfig-paths": "4.2.1"
   },
-  "packageManager": "pnpm@8.5.0",
+  "packageManager": "pnpm@8.6.6",
   "engines": {
-    "node": "16 || 18"
+    "node": "18"
   }
 }
