@@ -23,9 +23,12 @@ import { useTrashModal } from "~/hooks/useTrashedModal";
 import { useActions } from "~/services/queries";
 import { isActionAvailable } from "~/utils/isActionAvailable";
 
-const Onboarding = lazy(
-  async () => await import("~/components/Onboarding/Onboarding"),
-);
+import "node_modules/@edifice-ui/react/dist/style.css";
+
+const OnboardingModal = lazy(async () => {
+  const module = await import("@edifice-ui/react");
+  return { default: module.OnboardingModal };
+});
 
 const AppAction = lazy(
   async () =>
@@ -93,7 +96,7 @@ export default function Explorer(): JSX.Element | null {
         </Grid.Col>
         <ActionBarContainer />
         <Suspense fallback={<LoadingScreen />}>
-          <Onboarding
+          <OnboardingModal
             id="showOnboardingTrash"
             items={[
               {
