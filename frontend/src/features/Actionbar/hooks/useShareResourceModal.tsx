@@ -307,13 +307,33 @@ export default function useShareResourceModal({
               right.id === selectedResources[0].creatorId
             ),
         )
-        .map((searchResult: { id: any; displayName: any; type: string }) => {
-          return {
-            value: searchResult.id,
-            label: searchResult.displayName,
-            icon: searchResult.type === "sharebookmark" ? Bookmark : null,
-          };
-        });
+        .map(
+          (searchResult: {
+            id: any;
+            displayName: any;
+            type: string;
+            profile?: string;
+            structureName?: string;
+          }) => {
+            let label: string = searchResult.displayName;
+            if (searchResult.type === "user" && searchResult.profile) {
+              label = `${label} (${t(searchResult.profile)})`;
+            } else if (
+              searchResult.type === "group" &&
+              searchResult.structureName
+            ) {
+              label = `${label} (${searchResult.structureName})`;
+            } else if (searchResult.type === "sharebookmark") {
+              label = `${label} (${t("sharebookmark")})`;
+            }
+
+            return {
+              value: searchResult.id,
+              label,
+              icon: searchResult.type === "sharebookmark" ? Bookmark : null,
+            };
+          },
+        );
 
       setSearchResults(adaptedResults);
     } else {
