@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/assets/themes/edifice-bootstrap/index.css" />
   </head>
 
-  <body class="app-react" data-ode-app>
+  <body class="app-react" data-explorer-config>
     <!-- blog, collaborativeeditor, collaborativewall, exercizer, mindmap, pages, timelinegenerator, wiki, scrapbook -->
     <div id="root"></div>
     <div id="portal"></div>
@@ -106,8 +106,11 @@
           },
         ],
       };
-      var rootElement = document.querySelector("[data-ode-app]");
-      rootElement.setAttribute("data-ode-app", JSON.stringify(odeConfig));
+      const rootElement = document.querySelector("[data-explorer-config]");
+      rootElement.setAttribute(
+        "data-explorer-config",
+        JSON.stringify(explorerConfig),
+      );
     </script>
   </body>
 </html>

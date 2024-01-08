@@ -23,9 +23,7 @@
     }
   },
   "scripts": {
-    "build": "pnpm run build-app && pnpm run build-component",
-    "build-app": "vite build",
-    "build-component": "vite build --config vite.config-lib.ts",
+    "build": "vite build",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -58,8 +56,9 @@
   "dependencies": {
     "@edifice-ui/icons": "develop",
     "@edifice-ui/react": "develop",
+    "@edifice-ui/explorer": "file:edifice-ui-explorer-1.0.0.tgz",
     "@react-spring/web": "9.7.3",
-    "@tanstack/react-query": "4.36.1",
+    "@tanstack/react-query": "5.8.4",
     "dayjs": "1.11.10",
     "i18next": "23.7.6",
     "i18next-http-backend": "2.4.2",
@@ -74,7 +73,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "4.8.1",
-    "@tanstack/react-query-devtools": "4.36.1",
+    "@tanstack/react-query-devtools": "5.8.4",
     "@types/node": "20.9.3",
     "@types/react": "18.2.38",
     "@types/react-dom": "18.2.16",

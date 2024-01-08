@@ -4,7 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
-  // Checking environement files
+  // Checking environment files
   const envFile = loadEnv(mode, process.cwd());
   const envs = { ...process.env, ...envFile };
   const hasEnvFile = Object.keys(envFile).length;

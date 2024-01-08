@@ -10,10 +10,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
-import { Explorer } from ".";
-import { explorerConfig } from "./app/config";
 import Root from "./app/root";
-// import { getAppParams } from "./utils/getAppParams";
 
 const root = document.getElementById("root");
 
@@ -26,7 +23,9 @@ if (process.env.NODE_ENV !== "production") {
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      if (error === "0090") window.location.replace("/auth/login");
+      if (typeof error === "string") {
+        if (error === "0090") window.location.replace("/auth/login");
+      }
     },
   }),
   defaultOptions: {
@@ -46,8 +45,7 @@ createRoot(root!).render(
         }}
       >
         <ThemeProvider>
-          {/* <Root /> */}
-          <Explorer config={explorerConfig} />
+          <Root />
         </ThemeProvider>
       </OdeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />

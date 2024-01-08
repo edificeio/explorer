@@ -1,4 +1,4 @@
-import { App, ResourceType, IFilter, IOrder, IAction } from "edifice-ts-client";
+// import { App, ResourceType, IFilter, IOrder, IAction } from "edifice-ts-client";
 
 const WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
 const WORKFLOW_CREATE = "org.entcore.blog.controllers.BlogController|create";
@@ -7,7 +7,7 @@ const WORKFLOW_CREATE_PUBLIC =
 const WORKFLOW_PUBLISH = "org.entcore.blog.controllers.BlogController|publish";
 const WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
 
-interface AppParams {
+/* interface AppParams {
   app: App;
   types: ResourceType[];
   filters: IFilter[];
@@ -15,7 +15,7 @@ interface AppParams {
   actions: IAction[];
   trashActions: IAction[];
   libraryAppFilter?: string;
-}
+} */
 
 export const explorerConfig = {
   app: "blog",
