@@ -9,8 +9,6 @@ function Root() {
 
   const getHTMLConfig = getExplorerConfig();
 
-  console.log({ getHTMLConfig });
-
   if (!init) return <LoadingScreen position={false} />;
 
   return (
