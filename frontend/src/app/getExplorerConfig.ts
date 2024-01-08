@@ -28,7 +28,7 @@ export function getExplorerConfig(): AppParams {
     // Inject params (JSON object or string) read from index.html in OdeProvider
     try {
       const parsedConfig = JSON.parse(explorerConfig);
-      config = Object.assign(explorerConfig, parsedConfig);
+      config = Object.assign({}, parsedConfig);
     } catch (e) {
       console.error(
         "[Explorer Config] could not parse app params from root data attributes:",
