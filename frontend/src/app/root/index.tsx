@@ -1,8 +1,7 @@
-import { Explorer } from "@edifice-ui/explorer";
 import { Layout, useOdeClient, LoadingScreen } from "@edifice-ui/react";
 
-import { explorerConfig } from "../config";
 import { getExplorerConfig } from "../getExplorerConfig";
+import Explorer from "~/Explorer";
 
 function Root() {
   const { init } = useOdeClient();
@@ -13,7 +12,7 @@ function Root() {
 
   return (
     <Layout>
-      <Explorer config={getHTMLConfig ?? explorerConfig} />
+      <Explorer config={getHTMLConfig} />
     </Layout>
   );
 }
