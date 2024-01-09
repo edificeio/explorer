@@ -2,7 +2,7 @@ import { ArrowLeft } from "@edifice-ui/icons";
 import { IconButton, useOdeClient } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { useSearchForm } from "~/features/Explorer/hooks/useSearchForm";
+import { useSearchForm } from "~/features/SearchForm/useSearchForm";
 import {
   useStoreActions,
   useCurrentFolder,

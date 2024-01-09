@@ -13,6 +13,7 @@ import {
 import { t } from "i18next";
 import { create } from "zustand";
 
+import { AppParams } from "~/config/getExplorerConfig";
 import { goToResource, printResource, searchContext } from "~/services/api";
 import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
@@ -24,7 +25,7 @@ import { wrapTreeNode } from "~/utils/wrapTreeNode";
 // const { app, types, filters, orders } = explorerConfig;
 
 interface State {
-  config: any | null;
+  config: AppParams | null;
   searchParams: ISearchParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
@@ -38,7 +39,7 @@ interface State {
   searchConfig: { minLength: number };
   status: string | undefined;
   updaters: {
-    setConfig: (config) => void;
+    setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
     setSearchParams: (searchParams: Partial<ISearchParameters>) => void;

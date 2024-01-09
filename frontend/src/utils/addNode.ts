@@ -3,7 +3,7 @@ import { type IFolder } from "edifice-ts-client";
 
 import { arrayUnique } from "./arrayUnique";
 import { modifyNode } from "./modifyNode";
-import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
+import TreeNodeFolderWrapper from "./TreeNodeFolderWrapper";
 
 export function addNode(
   treeData: TreeNode,
