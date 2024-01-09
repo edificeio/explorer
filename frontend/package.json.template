@@ -51,7 +51,7 @@
     "@edifice-ui/icons": "develop",
     "@edifice-ui/react": "develop",
     "@react-spring/web": "9.7.3",
-    "@tanstack/react-query": "4.36.1",
+    "@tanstack/react-query": "5.8.4",
     "dayjs": "1.11.10",
     "i18next": "23.7.6",
     "i18next-http-backend": "2.4.2",
@@ -66,7 +66,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "4.8.1",
-    "@tanstack/react-query-devtools": "4.36.1",
+    "@tanstack/react-query-devtools": "5.8.4",
     "@types/node": "20.9.3",
     "@types/react": "18.2.38",
     "@types/react-dom": "18.2.16",
@@ -92,8 +92,8 @@
     "vite": "4.5.1",
     "vite-tsconfig-paths": "4.2.1"
   },
-  "packageManager": "pnpm@8.5.0",
+  "packageManager": "pnpm@8.6.6",
   "engines": {
-    "node": "16 || 18"
+    "node": "18"
   }
 }

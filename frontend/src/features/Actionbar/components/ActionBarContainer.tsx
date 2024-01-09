@@ -27,7 +27,7 @@ const UpdateModal = lazy(async () => {
 
 const DeleteModal = lazy(async () => await import("./DeleteModal"));
 const MoveModal = lazy(async () => await import("./MoveModal"));
-const EditFolderModal = lazy(async () => await import("./EditFolderModal"));
+const EditFolderModal = lazy(async () => await import("./FolderModal"));
 
 export default function ActionBarContainer() {
   const { t } = useTranslation();

@@ -11,7 +11,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
 import Root from "./app/root";
-import { getAppParams } from "./utils/getAppParams";
 
 const root = document.getElementById("root");
 
@@ -24,7 +23,9 @@ if (process.env.NODE_ENV !== "production") {
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      if (error === "0090") window.location.replace("/auth/login");
+      if (typeof error === "string") {
+        if (error === "0090") window.location.replace("/auth/login");
+      }
     },
   }),
   defaultOptions: {
@@ -38,7 +39,11 @@ const queryClient = new QueryClient({
 createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider params={getAppParams()}>
+      <OdeClientProvider
+        params={{
+          app: "blog",
+        }}
+      >
         <ThemeProvider>
           <Root />
         </ThemeProvider>

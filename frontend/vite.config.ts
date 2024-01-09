@@ -1,10 +1,14 @@
-import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import { BuildOptions, defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { resolve } from "path";
+
+import { dependencies } from "./package.json";
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
-  // Checking environement files
+  console.log({ mode });
+  // Checking environment files
   const envFile = loadEnv(mode, process.cwd());
   const envs = { ...process.env, ...envFile };
   const hasEnvFile = Object.keys(envFile).length;
@@ -46,7 +50,7 @@ export default ({ mode }: { mode: string }) => {
     "/explorer": proxyObj,
   };
 
-  const build = {
+  const build: BuildOptions = {
     assetsDir: "assets/js/ode-explorer/",
     cssCodeSplit: false,
     rollupOptions: {
@@ -62,7 +66,41 @@ export default ({ mode }: { mode: string }) => {
     },
   };
 
-  const plugins = [react(), tsconfigPaths()];
+  const buildLib: BuildOptions = {
+    outDir: "dist",
+    lib: {
+      // Could also be a dictionary or array of multiple entry points
+      entry: resolve(__dirname, "src/index.ts"),
+      formats: ["es"],
+    },
+    rollupOptions: {
+      // make sure to externalize deps that shouldn't be bundled
+      // into your library
+      external: [
+        ...Object.keys(dependencies),
+        "swiper/react",
+        "swiper/modules",
+        "react/jsx-runtime",
+        "@edifice-ui/icons/nav",
+      ],
+      /* output: {
+        entryFileNames: `[name].js`,
+        chunkFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`,
+      }, */
+    },
+  };
+
+  const plugins = [
+    mode === "production"
+      ? react()
+      : react({
+          babel: {
+            plugins: ["@babel/plugin-transform-react-pure-annotations"],
+          },
+        }),
+    tsconfigPaths(),
+  ];
 
   const server = {
     proxy,
@@ -73,7 +111,7 @@ export default ({ mode }: { mode: string }) => {
   };
 
   return defineConfig({
-    build,
+    build: mode === "production" ? build : buildLib,
     plugins,
     server,
   });

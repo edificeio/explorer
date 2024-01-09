@@ -13,14 +13,11 @@ import {
   type IResource,
   type ShareRight,
   type UpdateParameters,
-  FOLDER,
   IAction,
   CreateParameters,
 } from "edifice-ts-client";
 import { t } from "i18next";
-import { useTranslation } from "react-i18next";
 
-import { TreeNodeFolderWrapper } from "~/features/Explorer/adapters";
 import {
   createFolder,
   createResource,
@@ -38,20 +35,16 @@ import {
   useStoreActions,
   useSearchParams,
   useFolderIds,
-  useCurrentFolder,
   useTreeData,
   useResourceAssetIds,
   useResourceIds,
   useResourceWithoutIds,
+  useStoreContext,
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";
-import { getAppParams } from "~/utils/getAppParams";
 import { moveNode } from "~/utils/moveNode";
 import { updateNode } from "~/utils/updateNode";
-import { wrapTreeNode } from "~/utils/wrapTreeNode";
-
-const { actions, app } = getAppParams();
 
 /**
  * useActions query
@@ -59,19 +52,23 @@ const { actions, app } = getAppParams();
  * @returns actions data
  */
 export const useActions = () => {
+  const config = useStoreContext((state) => state.config);
+
   return useQuery<Record<string, boolean>, Error, IAction[]>({
     queryKey: ["actions"],
     queryFn: async () => {
-      const actionRights = actions.map((action) => action.workflow);
+      const actionRights = config.actions.map((action) => action.workflow);
       const availableRights = await sessionHasWorkflowRights(actionRights);
       return availableRights;
     },
     select: (data) => {
-      return actions.map((action) => ({
+      return config.actions.map((action) => ({
         ...action,
         available: data[action.workflow],
       }));
     },
+    staleTime: Infinity,
+    enabled: !!config,
   });
 };
 
@@ -81,14 +78,8 @@ export const useActions = () => {
  * @returns infinite query to load resources
  */
 export const useSearchContext = () => {
-  const toast = useToast();
-  const { appCode } = useOdeClient();
-  const { t } = useTranslation();
-  const queryClient = useQueryClient();
+  const config = useStoreContext((state) => state.config);
   const searchParams = useSearchParams();
-  const currentFolder = useCurrentFolder();
-  const treeData = useTreeData();
-  const { setTreeData, setSearchParams, setSearchConfig } = useStoreActions();
   const { filters, trashed, search } = searchParams;
 
   const queryKey = [
@@ -103,53 +94,25 @@ export const useSearchContext = () => {
 
   return useInfiniteQuery({
     queryKey,
-    queryFn: async ({ pageParam = 0 }) =>
-      await searchContext({
+    queryFn: async ({ pageParam }) => {
+      return await searchContext({
         ...searchParams,
+        app: config?.app,
+        types: config?.types,
         pagination: {
           ...searchParams.pagination,
           startIdx: pageParam,
         },
-      }),
-    onError(error) {
-      if (typeof error === "string") toast.error(t(error));
-    },
-    onSuccess: async (data) => {
-      await queryClient.cancelQueries({ queryKey });
-      // copy folders
-      const folders: IFolder[] = [...(data?.pages[0]?.folders ?? [])];
-      if (data?.pages[0]?.searchConfig) {
-        setSearchConfig(data.pages[0].searchConfig);
-      }
-      if (!searchParams.search) {
-        // set tree data only if we are not searching
-        if (currentFolder?.id === "default") {
-          setTreeData({
-            id: FOLDER.DEFAULT,
-            section: true,
-            children: folders.map(
-              (folder: IFolder) => new TreeNodeFolderWrapper(folder),
-            ),
-            name: t("explorer.filters.mine", { ns: appCode }),
-          });
-        } else {
-          setTreeData(
-            wrapTreeNode(
-              treeData,
-              folders,
-              searchParams.filters.folder || FOLDER.DEFAULT,
-            ),
-          );
-        }
-      }
-      setSearchParams({
-        ...searchParams,
-        pagination: data?.pages[data?.pages.length - 1]?.pagination,
       });
     },
+    initialPageParam: 0,
+    enabled: !!config,
     retry: false,
-    getNextPageParam: (lastPage) =>
-      lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined,
+    getNextPageParam: (lastPage) => {
+      return (
+        lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined
+      );
+    },
   });
 };
 
@@ -805,7 +768,15 @@ export const useUpdateResource = () => {
   });
 };
 
-/* const useCreateResourceBase = (onSuccess:((data: CreateResult, variables: CreateParameters, context: unknown) => unknown) | undefined) => {
+/* const useCreateResourceBase = (
+  onSuccess:
+    | ((
+        data: CreateResult,
+        variables: CreateParameters,
+        context: unknown,
+      ) => unknown)
+    | undefined,
+) => {
   const toast = useToast();
   const searchParams = useSearchParams();
 
@@ -815,7 +786,7 @@ export const useUpdateResource = () => {
     onError(error) {
       if (typeof error === "string") toast.error(t(error));
     },
-    onSuccess
+    onSuccess,
   });
 }; */
 
@@ -824,6 +795,7 @@ export const useCreateResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  const { appCode: application } = useOdeClient();
 
   const queryKey = [
     "context",
@@ -850,7 +822,7 @@ export const useCreateResource = () => {
         thumbnail: thumbnail
           ? (URL.createObjectURL(thumbnail as Blob | MediaSource) as string)
           : "",
-        application: app,
+        application,
         assetId: data._id || data.entId || "",
         id: data._id || data.entId || "",
         creatorId: user?.userId as string,

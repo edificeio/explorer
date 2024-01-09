@@ -56,10 +56,11 @@ module.exports = {
   ignorePatterns: [
     ".eslintrc.cjs",
     "dist",
+    "*.d.ts",
     "node_modules",
     "prettier.config.cjs",
     "public",
     "scripts",
-    "vite.config.ts",
+    "vite.*",
   ],
 };
