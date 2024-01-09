@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && pnpm run build-lib",
     "build-lib": "vite build -c vite.config.lib.ts",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
