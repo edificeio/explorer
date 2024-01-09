@@ -7,7 +7,6 @@ import { dependencies } from "./package.json";
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
-  console.log({ mode });
   // Checking environment files
   const envFile = loadEnv(mode, process.cwd());
   const envs = { ...process.env, ...envFile };

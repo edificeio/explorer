@@ -56,6 +56,7 @@ module.exports = {
   ignorePatterns: [
     ".eslintrc.cjs",
     "dist",
+    "lib",
     "*.d.ts",
     "node_modules",
     "prettier.config.cjs",
