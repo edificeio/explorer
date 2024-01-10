@@ -82,7 +82,7 @@ public class ResourceServiceTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final JsonObject jobConfig = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true));
-        final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
+        final MessageReader reader = MessageReader.redis(test.vertx(), redisClient, new JsonObject());
         job = IngestJob.createForTest(test.vertx(), elasticClientManager,postgresClient, jobConfig, reader);
         plugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final ShareTableManager shareTableManager = new DefaultShareTableManager();

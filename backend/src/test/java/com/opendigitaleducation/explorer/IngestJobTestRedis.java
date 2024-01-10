@@ -82,7 +82,7 @@ public class IngestJobTestRedis extends IngestJobTest {
     @Override
     protected synchronized IngestJob getIngestJob() {
         if (job == null) {
-            final MessageReader reader = MessageReader.redis(getRedisClient(), new JsonObject());
+            final MessageReader reader = MessageReader.redis(test.vertx(), getRedisClient(), new JsonObject());
             final JsonObject jobConfig = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true));
             job = IngestJob.createForTest(test.vertx(), elasticClientManager,getPostgresClient(), jobConfig, reader);
         }
