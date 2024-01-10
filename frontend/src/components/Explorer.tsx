@@ -21,7 +21,7 @@ import { TreeViewContainer } from "~/features/SideBar/TreeViewContainer";
 import { useActions } from "~/services/queries";
 import { useSearchParams, useStoreActions } from "~/store";
 
-import "node_modules/@edifice-ui/react/dist/style.css";
+import "@edifice-ui/react/style.css";
 
 const OnboardingModal = lazy(async () => {
   const module = await import("@edifice-ui/react");

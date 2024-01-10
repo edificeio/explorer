@@ -15,6 +15,8 @@ import {
   type UpdateParameters,
   IAction,
   CreateParameters,
+  ResourceType,
+  App,
 } from "edifice-ts-client";
 import { t } from "i18next";
 
@@ -57,15 +59,17 @@ export const useActions = () => {
   return useQuery<Record<string, boolean>, Error, IAction[]>({
     queryKey: ["actions"],
     queryFn: async () => {
-      const actionRights = config.actions.map((action) => action.workflow);
-      const availableRights = await sessionHasWorkflowRights(actionRights);
+      const actionRights = config?.actions.map((action) => action.workflow);
+      const availableRights = await sessionHasWorkflowRights(
+        actionRights as string[],
+      );
       return availableRights;
     },
     select: (data) => {
-      return config.actions.map((action) => ({
+      return config?.actions.map((action) => ({
         ...action,
         available: data[action.workflow],
-      }));
+      })) as IAction[];
     },
     staleTime: Infinity,
     enabled: !!config,
@@ -92,16 +96,16 @@ export const useSearchContext = () => {
     },
   ];
 
-  return useInfiniteQuery({
+  return useInfiniteQuery<ISearchResults>({
     queryKey,
     queryFn: async ({ pageParam }) => {
       return await searchContext({
         ...searchParams,
-        app: config?.app,
-        types: config?.types,
+        app: config?.app as App,
+        types: config?.types as ResourceType[],
         pagination: {
           ...searchParams.pagination,
-          startIdx: pageParam,
+          startIdx: pageParam as number,
         },
       });
     },
@@ -767,28 +771,6 @@ export const useUpdateResource = () => {
     },
   });
 };
-
-/* const useCreateResourceBase = (
-  onSuccess:
-    | ((
-        data: CreateResult,
-        variables: CreateParameters,
-        context: unknown,
-      ) => unknown)
-    | undefined,
-) => {
-  const toast = useToast();
-  const searchParams = useSearchParams();
-
-  return useMutation({
-    mutationFn: async (params: CreateParameters) =>
-      await createResource({ searchParams, params }),
-    onError(error) {
-      if (typeof error === "string") toast.error(t(error));
-    },
-    onSuccess,
-  });
-}; */
 
 export const useCreateResource = () => {
   const toast = useToast();
