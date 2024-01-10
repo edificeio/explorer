@@ -1,9 +1,10 @@
 import { BuildOptions, defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { resolve } from "path";
+import { resolve } from "node:path";
+import dts from "vite-plugin-dts";
 
-import { dependencies } from "./package.json";
+import { dependencies, peerDependencies } from "./package.json";
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -11,6 +12,9 @@ export default ({ mode }: { mode: string }) => {
   const envFile = loadEnv(mode, process.cwd());
   const envs = { ...process.env, ...envFile };
   const hasEnvFile = Object.keys(envFile).length;
+
+  const isProduction = mode === "production";
+  const isLibMode = mode === "lib";
 
   // Proxy variables
   const headers = hasEnvFile
@@ -66,40 +70,43 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const buildLib: BuildOptions = {
-    outDir: "dist",
+    outDir: "lib",
     lib: {
-      // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+      },
       formats: ["es"],
     },
     rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
+      treeshake: false,
       external: [
-        ...Object.keys(dependencies),
-        "swiper/react",
-        "swiper/modules",
+        ...Object.keys(dependencies || {}),
+        ...Object.keys(peerDependencies || {}),
         "react/jsx-runtime",
+        "edifice-ts-client",
         "@edifice-ui/icons/nav",
       ],
-      /* output: {
+      output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
         assetFileNames: `[name].[ext]`,
-      }, */
+      },
     },
   };
 
-  const plugins = [
-    mode === "production"
-      ? react()
-      : react({
+  const reactPlugin = react(
+    isLibMode
+      ? {
           babel: {
             plugins: ["@babel/plugin-transform-react-pure-annotations"],
           },
-        }),
-    tsconfigPaths(),
-  ];
+        }
+      : {},
+  );
+
+  const dtsPlugin = isLibMode && dts();
+
+  const plugins = [reactPlugin, dtsPlugin, tsconfigPaths()];
 
   const server = {
     proxy,
@@ -110,7 +117,7 @@ export default ({ mode }: { mode: string }) => {
   };
 
   return defineConfig({
-    build: mode === "production" ? build : buildLib,
+    build: isProduction ? build : buildLib,
     plugins,
     server,
   });

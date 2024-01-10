@@ -6,6 +6,7 @@ import {
   useMutation,
   useQueryClient,
   useQuery,
+  UseQueryResult,
 } from "@tanstack/react-query";
 import {
   type ISearchResults,
@@ -53,7 +54,7 @@ import { updateNode } from "~/utils/updateNode";
  * set actions correctly with workflow rights
  * @returns actions data
  */
-export const useActions = () => {
+export const useActions = (): UseQueryResult<IAction[], Error> => {
   const config = useStoreContext((state) => state.config);
 
   return useQuery<Record<string, boolean>, Error, IAction[]>({

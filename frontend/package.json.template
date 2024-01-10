@@ -25,8 +25,7 @@
     }
   },
   "scripts": {
-    "build": "vite build && pnpm run build-lib",
-    "build-lib": "vite build -c vite.config.lib.ts",
+    "build": "vite build && vite build --mode lib",
     "clean": "concurrently \"pnpm:clean:*\"",
     "clean:dist": "rm -rf dist",
     "clean:lighthouse": "rm -rf .lighthouseci",
@@ -103,7 +102,7 @@
     "husky": "8.0.3",
     "lint-staged": "15.1.0",
     "prettier": "3.1.0",
-    "typescript": "5.3.0",
+    "typescript": "5.2.2",
     "vite": "4.5.1",
     "vite-plugin-dts": "3.7.0",
     "vite-tsconfig-paths": "4.2.1"
