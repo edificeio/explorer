@@ -99,7 +99,7 @@ public class ExplorerControllerTest {
         //flush redis
         final Async async = context.async();
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
-            final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
+            final MessageReader reader = MessageReader.redis(test.vertx(), redisClient, new JsonObject());
             job = IngestJob.createForTest(test.vertx(), esClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> {
