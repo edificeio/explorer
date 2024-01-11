@@ -10,8 +10,8 @@ import {
   type ShareRight,
   type UpdateParameters,
   type IFolder,
-  type PublishParameters,
   CreateParameters,
+  App,
 } from "edifice-ts-client";
 
 /**
@@ -19,7 +19,7 @@ import {
  * @param searchParams
  * @returns resources, no trashed folders and pagination
  */
-export const searchContext = async (searchParams: any) => {
+export const searchContext = async (searchParams: ISearchParameters) => {
   const search = await odeServices
     .resource(searchParams.app)
     .searchContext(searchParams);
@@ -200,15 +200,15 @@ export const moveToFolder = async ({
  * @returns shared resource
  */
 export const shareResource = async ({
-  searchParams,
-  entId,
-  shares,
+  app,
+  resourceId,
+  rights,
 }: {
-  searchParams: ISearchParameters;
-  entId: ID;
-  shares: ShareRight[];
+  app: string;
+  resourceId: string;
+  rights: ShareRight[];
 }) => {
-  return await odeServices.share().saveRights(searchParams.app, entId, shares);
+  return await odeServices.share().saveRights(app, resourceId, rights);
 };
 
 /**
@@ -217,13 +217,13 @@ export const shareResource = async ({
  * @returns updated resource
  */
 export const updateResource = async ({
-  searchParams,
+  app,
   params,
 }: {
-  searchParams: ISearchParameters;
+  app: App;
   params: UpdateParameters;
 }) => {
-  return await odeServices.resource(searchParams.app).update(params);
+  return await odeServices.resource(app).update(params);
 };
 
 /**
@@ -241,7 +241,9 @@ export const goToResource = ({
 }: {
   searchParams: ISearchParameters;
   assetId: ID;
-}) => odeServices.resource(searchParams.app).gotoView(assetId);
+}) => {
+  return odeServices.resource(searchParams.app).gotoView(assetId);
+};
 
 export const createResource = ({
   searchParams,
@@ -265,22 +267,14 @@ export const printResource = ({
   return result;
 };
 
-export const publishResource = async ({
-  searchParams,
-  params,
-}: {
-  searchParams: ISearchParameters;
-  params: PublishParameters;
-}) => await odeServices.resource(searchParams.app).publish(params);
-
 /**
  * getPreference API
  * @returns check onboarding trash param
  */
-export const getOnboardingTrash = async () => {
+export const getOnboardingTrash = async (key: string) => {
   const res = await odeServices
     .conf()
-    .getPreference<{ showOnboardingTrash: boolean }>("showOnboardingTrash");
+    .getPreference<{ showOnboardingTrash: boolean }>(key);
   return res;
 };
 
@@ -288,17 +282,10 @@ export const getOnboardingTrash = async () => {
  * savePreference API
  * @returns set onboarding trash param
  */
-export const saveOnboardingTrash = async ({
-  onSuccess,
-}: {
-  onSuccess: () => void;
-}) => {
+export const saveOnboardingTrash = async (key: string) => {
   const result = await odeServices
     .conf()
-    .savePreference(
-      "showOnboardingTrash",
-      JSON.stringify({ showOnboardingTrash: false }),
-    );
-  onSuccess?.();
+    .savePreference(key, JSON.stringify({ showOnboardingTrash: false }));
+
   return result;
 };

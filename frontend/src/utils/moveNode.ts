@@ -3,7 +3,7 @@ import { type TreeNode } from "@edifice-ui/react";
 import { arrayUnique } from "./arrayUnique";
 import { findNodeById } from "./findNodeById";
 import { modifyNode } from "./modifyNode";
-import type TreeNodeFolderWrapper from "~/features/Explorer/adapters/TreeNodeFolderWrapper";
+import type TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
 
 export function moveNode(
   treeData: TreeNode,
