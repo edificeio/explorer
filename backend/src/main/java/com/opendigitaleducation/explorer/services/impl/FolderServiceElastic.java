@@ -46,7 +46,7 @@ public class FolderServiceElastic implements FolderService {
                         final JsonObject body = (JsonObject) message.body();
                         final FolderListRequest request = body.mapTo(FolderListRequest.class);
                         final UserInfos user = new UserInfos();
-                        user.setGroupsIds(new ArrayList<>());
+                        user.setGroupsIds(request.getGroupIds());
                         user.setUserId(request.getUserId());
                         user.setUsername(request.getUserName());
                         // search folders by user with max batch size (10000)
