@@ -21,13 +21,6 @@ import { TreeViewContainer } from "~/features/SideBar/TreeViewContainer";
 import { useActions } from "~/services/queries";
 import { useSearchParams, useStoreActions } from "~/store";
 
-import "@edifice-ui/react/style.css";
-
-const OnboardingModal = lazy(async () => {
-  const module = await import("@edifice-ui/react");
-  return { default: module.OnboardingModal };
-});
-
 const AppAction = lazy(
   async () => await import("~/components/AppAction/AppAction"),
 );
@@ -39,13 +32,15 @@ const Library = lazy(
 const ActionBar = lazy(
   async () => await import("~/features/ActionBar/ActionBarContainer"),
 );
-const ActionResourceDisableModal = lazy(
+const DisableModal = lazy(
   async () => await import("~/features/ActionBar/Disable/DisableModal"),
 );
 
-const TrashedResourceModal = lazy(
+const TrashModal = lazy(
   async () => await import("~/features/ActionBar/Trash/TrashModal"),
 );
+
+const OnboardingModal = lazy(async () => await import("./OnboardingModal"));
 
 const Explorer = ({ config }: { config: AppParams }) => {
   const searchParams = useSearchParams();
@@ -133,13 +128,13 @@ const Explorer = ({ config }: { config: AppParams }) => {
               }}
             />
             {isTrashedModalOpen && (
-              <TrashedResourceModal
+              <TrashModal
                 isOpen={isTrashedModalOpen}
                 onCancel={onTrashedCancel}
               />
             )}
             {isActionDisableModalOpen && (
-              <ActionResourceDisableModal
+              <DisableModal
                 isOpen={isActionDisableModalOpen}
                 onCancel={onActionDisableCancel}
               />

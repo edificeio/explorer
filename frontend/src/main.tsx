@@ -1,6 +1,7 @@
 import React, { StrictMode } from "react";
 
 import "./i18n";
+
 import { OdeClientProvider, ThemeProvider } from "@edifice-ui/react";
 import {
   QueryCache,
