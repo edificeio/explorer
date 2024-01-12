@@ -1,6 +1,7 @@
 import React, { StrictMode } from "react";
 
 import "./i18n";
+
 import { OdeClientProvider, ThemeProvider } from "@edifice-ui/react";
 import {
   QueryCache,
@@ -10,8 +11,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
-import { getAppParams } from "./utils/getAppParams";
-import Root from "~/app/root/root";
+import Root from "./app/root";
 
 const root = document.getElementById("root");
 
@@ -21,14 +21,12 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-/* if (process.env.NODE_ENV !== "production") {
-  import("edifice-bootstrap/dist/index.css");
-} */
-
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      if (error === "0090") window.location.replace("/auth/login");
+      if (typeof error === "string") {
+        if (error === "0090") window.location.replace("/auth/login");
+      }
     },
   }),
   defaultOptions: {
@@ -42,7 +40,11 @@ const queryClient = new QueryClient({
 createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider params={getAppParams()}>
+      <OdeClientProvider
+        params={{
+          app: "blog",
+        }}
+      >
         <ThemeProvider>
           <Root />
         </ThemeProvider>

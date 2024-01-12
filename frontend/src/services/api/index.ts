@@ -10,10 +10,10 @@ import {
   type ShareRight,
   type UpdateParameters,
   type IFolder,
-  type PublishParameters,
   CreateParameters,
   IActionParameters,
   GetContextParameters,
+  PublishParameters,
 } from "edifice-ts-client";
 
 /**
@@ -203,14 +203,16 @@ export const moveToFolder = async ({
  */
 export const shareResource = async ({
   searchParams,
-  entId,
-  shares,
+  resourceId,
+  rights,
 }: {
   searchParams: ISearchParameters & IActionParameters;
-  entId: ID;
-  shares: ShareRight[];
+  resourceId: ID;
+  rights: ShareRight[];
 }) => {
-  return await odeServices.share().saveRights(searchParams.application, entId, shares);
+  return await odeServices
+    .share()
+    .saveRights(searchParams.application, resourceId, rights);
 };
 
 /**
@@ -244,9 +246,11 @@ export const goToResource = ({
   searchParams: ISearchParameters & IActionParameters;
   assetId: ID;
 }) => {
-  const url = odeServices.resource(searchParams.application).getViewUrl(assetId);
+  const url = odeServices
+    .resource(searchParams.application)
+    .getViewUrl(assetId);
   window.open(url, "_self");
-}
+};
 
 export const createResource = ({
   searchParams,
@@ -266,7 +270,9 @@ export const printResource = ({
   searchParams: ISearchParameters & IActionParameters;
   assetId: ID;
 }) => {
-  const url = odeServices.resource(searchParams.application).getPrintUrl(assetId);
+  const url = odeServices
+    .resource(searchParams.application)
+    .getPrintUrl(assetId);
   return window.open(url, "_blank");
 };
 
@@ -282,10 +288,10 @@ export const publishResource = async ({
  * getPreference API
  * @returns check onboarding trash param
  */
-export const getOnboardingTrash = async () => {
+export const getOnboardingTrash = async (key: string) => {
   const res = await odeServices
     .conf()
-    .getPreference<{ showOnboardingTrash: boolean }>("showOnboardingTrash");
+    .getPreference<{ showOnboardingTrash: boolean }>(key);
   return res;
 };
 
@@ -293,17 +299,10 @@ export const getOnboardingTrash = async () => {
  * savePreference API
  * @returns set onboarding trash param
  */
-export const saveOnboardingTrash = async ({
-  onSuccess,
-}: {
-  onSuccess: () => void;
-}) => {
+export const saveOnboardingTrash = async (key: string) => {
   const result = await odeServices
     .conf()
-    .savePreference(
-      "showOnboardingTrash",
-      JSON.stringify({ showOnboardingTrash: false }),
-    );
-  onSuccess?.();
+    .savePreference(key, JSON.stringify({ showOnboardingTrash: false }));
+
   return result;
 };

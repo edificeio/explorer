@@ -7,39 +7,26 @@ import {
   type IFolder,
   type IResource,
   type IActionParameters,
-  type IActionResult,
-  type PublishParameters,
-  type ResourceType,
   type ID,
-  type IFilter,
-  type IOrder,
   type ISearchResults,
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { create } from "zustand";
 
-import {
-  goToResource,
-  printResource,
-  publishResource,
-  searchContext,
-} from "~/services/api";
+import { AppParams } from "~/config/getExplorerConfig";
+import { goToResource, printResource, searchContext } from "~/services/api";
 import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
 import { getAncestors } from "~/utils/getAncestors";
-import { getAppParams } from "~/utils/getAppParams";
 import { hasChildren } from "~/utils/hasChildren";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
-const { app, types, filters, orders } = getAppParams();
-
 interface State {
-  filters: IFilter[];
-  orders: IOrder[];
+  config: AppParams | null;
   searchParams: ISearchParameters & IActionParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
-  currentFolder: Partial<IFolder> | undefined;
+  currentFolder: Partial<IFolder>;
   selectedFolders: IFolder[];
   selectedResources: IResource[];
   folderIds: ID[];
@@ -49,9 +36,12 @@ interface State {
   searchConfig: { minLength: number };
   status: string | undefined;
   updaters: {
+    setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
-    setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
+    setSearchParams: (
+      searchParams: Partial<ISearchParameters & IActionParameters>,
+    ) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
@@ -63,10 +53,6 @@ interface State {
     clearSelectedIds: () => void;
     openResource: (resource: IResource) => void;
     printSelectedResource: () => void;
-    publishApi: (
-      type: ResourceType,
-      params: PublishParameters,
-    ) => Promise<IActionResult | undefined>;
     openFolder: ({
       folderId,
       folder,
@@ -86,12 +72,9 @@ interface State {
 }
 
 export const useStoreContext = create<State>()((set, get) => ({
-  filters,
-  orders,
+  config: null,
   searchConfig: { minLength: 1 },
   searchParams: {
-    application: app,
-    types,
     filters: {
       folder: "default",
       owner: undefined,
@@ -99,6 +82,8 @@ export const useStoreContext = create<State>()((set, get) => ({
       public: undefined,
     },
     orders: { updatedAt: "desc" },
+    application: "",
+    types: [],
     pagination: {
       startIdx: 0,
       pageSize: 48,
@@ -124,6 +109,7 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceActionDisable: false,
   status: undefined,
   updaters: {
+    setConfig: (config) => set({ config }),
     setSearchConfig: (searchConfig: { minLength: number }) =>
       set((state) => ({
         searchConfig: { ...state.searchConfig, ...searchConfig },
@@ -215,14 +201,6 @@ export const useStoreContext = create<State>()((set, get) => ({
         console.error("explorer print failed: ", error);
       }
     },
-    publishApi: async (
-      _resourceType: ResourceType,
-      params: PublishParameters,
-    ): Promise<IActionResult | undefined> => {
-      const { searchParams } = get();
-      const tmp = await publishResource({ searchParams, params });
-      return tmp;
-    },
     openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
       const { searchParams, treeData } = get();
       const previousId = searchParams.filters.folder as string;
@@ -260,6 +238,7 @@ export const useStoreContext = create<State>()((set, get) => ({
       // fetch subfolders
       if (!hasChildren(folderId, treeData)) {
         await queryClient.prefetchInfiniteQuery({
+          initialPageParam: 0,
           queryKey: [
             "prefetchContext",
             {
