@@ -102,7 +102,7 @@ export const useSearchContext = () => {
     queryFn: async ({ pageParam }) => {
       return await searchContext({
         ...searchParams,
-        app: config?.app as App,
+        application: config?.app as App,
         types: config?.types as ResourceType[],
         pagination: {
           ...searchParams.pagination,
@@ -622,7 +622,7 @@ export const useShareResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { setResourceIds, setSelectedResources } = useStoreActions();
-  const { filters, trashed, app } = searchParams;
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
@@ -640,7 +640,7 @@ export const useShareResource = () => {
     }: {
       resourceId: string;
       rights: ShareRight[];
-    }) => await shareResource({ app, resourceId, rights }),
+    }) => await shareResource({ searchParams, resourceId, rights }),
     onError(error) {
       if (typeof error === "string")
         toast.error(t("explorer.shared.status.error"));
@@ -703,7 +703,7 @@ export const useUpdateResource = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const { filters, trashed, app } = searchParams;
+  const { filters, trashed } = searchParams;
 
   const queryKey = [
     "context",
@@ -716,7 +716,7 @@ export const useUpdateResource = () => {
 
   return useMutation({
     mutationFn: async (params: UpdateParameters) =>
-      await updateResource({ app, params }),
+      await updateResource({ searchParams, params }),
     onError(error) {
       if (typeof error === "string") toast.error(t(error));
     },

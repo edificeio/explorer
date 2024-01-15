@@ -59,6 +59,18 @@ export default ({ mode }: { mode: string }) => {
     rollupOptions: {
       external: ["edifice-ts-client"],
       output: {
+        manualChunks: {
+          react: [
+            "react",
+            "react-dom",
+            "react-error-boundary",
+            "react-hook-form",
+            "react-intersection-observer",
+            "react-i18next",
+          ],
+          "edifice-react": ["@edifice-ui/react"],
+          "edifice-icons": ["@edifice-ui/icons"],
+        },
         paths: {
           "edifice-ts-client": "/assets/js/edifice-ts-client/index.js",
         },

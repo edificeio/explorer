@@ -137,7 +137,7 @@ public class FullExplorerStackTest {
         final JsonObject rights = new JsonObject();
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
-            final MessageReader reader = MessageReader.redis(redisClient, redisConfig);
+            final MessageReader reader = MessageReader.redis(test.vertx(), redisClient, redisConfig);
             job = IngestJob.create(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> job.stop())

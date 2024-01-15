@@ -20,6 +20,7 @@
             "index": "explorer-index"
         },
         "ingest":{
+            "retry-read-ms": 1000,
             "consumer-block-ms": 0,
             "max-attempt": 10,
             "batch-size": 100,

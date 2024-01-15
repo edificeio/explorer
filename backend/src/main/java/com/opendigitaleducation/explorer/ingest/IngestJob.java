@@ -186,17 +186,17 @@ public class IngestJob {
         idExecution++;
         this.ingestJobMetricsRecorder.onNewPendingIngestCycle();
         CompositeFuture.all(copyPending).onComplete(onReady -> {
+            final long tmpIdExecution = idExecution;
             try {
                 this.ingestJobMetricsRecorder.onIngestCycleStarted();
-                final long tmpIdExecution = idExecution;
                 final Future<List<ExplorerMessageForIngest>> messages = this.messageReader.getMessagesToTreat(batchSize, maxAttempt);
 
                 messages.onSuccess(readMessages -> notifyMessageStateUpdate(readMessages, IngestJobState.RECEIVED))
                 .onFailure(current::fail)
                 .map(this.messageMerger::mergeMessages)
                 .compose(result -> {
-
                     final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
+                    log.info("[IngestResult] [id=" + idExecution + "] Number of message to treat="+messagesToTreat.size()+ " batchSize="+batchSize);
                     return this.messageIngester
                             .ingest(messagesToTreat)
                             .map(jobResult -> Pair.of(jobResult, result))
@@ -241,6 +241,7 @@ public class IngestJob {
                         if (messageRes.succeeded()) {
                             this.ingestJobMetricsRecorder.onIngestCycleSucceeded();
                             final IngestJobResult ingestResult = messageRes.result();
+                            log.info("[IngestResult] [id=" + idExecution + "] Number of message treated="+ingestResult.size()+ " batchSize="+batchSize);
                             notifyMessageStateUpdate(ingestResult.succeed, IngestJobState.OK);
                             notifyMessageStateUpdate(ingestResult.failed, IngestJobState.KO);
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
@@ -268,6 +269,10 @@ public class IngestJob {
                 });
             } catch (Exception e) {
                 onTaskComplete(current);
+                //if no other pending execution => trigger next execution
+                if (tmpIdExecution == idExecution) {
+                    scheduleNextExecution(new DefaultAsyncResult<>(e));
+                }
             }
         });
         return current.future();
@@ -284,7 +289,17 @@ public class IngestJob {
             } else {
                 log.warn(failed.size() + " errors in batch " + idExecution);
                 for (final ExplorerMessageForIngest explorerMessageForIngest : failed) {
-                    log.warn("[IngestResult] [id=" + idExecution + "] " + explorerMessageForIngest);
+                    if(explorerMessageForIngest.getAttemptCount() > maxAttempt){
+                        log.warn("[IngestResult] [id=" + idExecution + "] definitly dropped: " + explorerMessageForIngest);
+                    }else{
+                        log.warn("[IngestResult] [id=" + idExecution + "] failed: " +
+                                " app="+explorerMessageForIngest.getApplication()
+                                + " type=" + explorerMessageForIngest.getResourceType()
+                                + " entId=" + explorerMessageForIngest.getId()
+                                + " queueId=" + explorerMessageForIngest.getIdQueue().orElse("")
+                                + " error=" + explorerMessageForIngest.getError()
+                                + " detail=" + explorerMessageForIngest.getErrorDetails());
+                    }
                 }
             }
             if (succeeded == null || succeeded.isEmpty()) {
@@ -299,16 +314,18 @@ public class IngestJob {
         final List<ExplorerMessageForIngest> succeeded = result == null ? emptyList() : result.getSucceed();
         final List<ExplorerMessageForIngest> failed = result == null ? emptyList() : result.getFailed();
         if(failed == null || failed.isEmpty()) {
-            if(this.batchSize != maxBatchSize) {
-                this.batchSize = Math.min(maxBatchSize, this.batchSize * 2);
+            // grow batch size only if some ingest succeed and maxBatchSize is not reached
+            if(succeeded.size() > 0 && this.batchSize != maxBatchSize) {
                 log.info("Growing back batch size to " + this.batchSize + " after a cycle without failures");
+                this.batchSize = Math.min(maxBatchSize, this.batchSize * 2);
+                this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
             }
         } else {
             final int newBatchSize = Math.max(1, this.batchSize / 2);
             log.warn("Ingest cycle failed so we are going to shrink the batch size from " + this.batchSize + " to " + newBatchSize);
             this.batchSize = newBatchSize;
+            this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
         }
-        this.ingestJobMetricsRecorder.onBatchSizeUpdate(this.batchSize);
     }
 
     private static class ApplicationAndEntity {
@@ -375,7 +392,9 @@ public class IngestJob {
 
     private void onTaskComplete(final Promise<Void> current) {
         pending.remove(current.future());
-        current.complete();
+        if(!current.future().isComplete()){
+            current.complete();
+        }
     }
 
     private void scheduleNextExecution(final AsyncResult<IngestJobResult> result) {

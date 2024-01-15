@@ -10,20 +10,17 @@ import useActionBar from "~/features/ActionBar/useActionBar";
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
 
-const ShareModal = lazy(async () => {
-  const module = await import("@edifice-ui/react");
-  return { default: module.ShareModal };
-});
+const ShareModal = lazy(
+  async () => await import("~/features/ActionBar/Share/ShareModal"),
+);
 
-const PublishModal = lazy(async () => {
-  const module = await import("@edifice-ui/react");
-  return { default: module.PublishModal };
-});
+const PublishModal = lazy(
+  async () => await import("~/features/ActionBar/Publish/PublishModal"),
+);
 
-const UpdateModal = lazy(async () => {
-  const module = await import("@edifice-ui/react");
-  return { default: module.ResourceModal };
-});
+const UpdateModal = lazy(
+  async () => await import("~/features/ActionBar/Resource/ResourceModal"),
+);
 
 const DeleteModal = lazy(async () => await import("./Delete/DeleteModal"));
 const MoveModal = lazy(async () => await import("./Move/MoveModal"));

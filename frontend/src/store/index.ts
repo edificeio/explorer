@@ -6,9 +6,9 @@ import {
   type ISearchParameters,
   type IFolder,
   type IResource,
+  type IActionParameters,
   type ID,
   type ISearchResults,
-  App,
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { create } from "zustand";
@@ -18,15 +18,12 @@ import { goToResource, printResource, searchContext } from "~/services/api";
 import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
 import { getAncestors } from "~/utils/getAncestors";
-// import { getAppParams } from "~/utils/getAppParams";
 import { hasChildren } from "~/utils/hasChildren";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
-// const { app, types, filters, orders } = explorerConfig;
-
 interface State {
   config: AppParams | null;
-  searchParams: ISearchParameters;
+  searchParams: ISearchParameters & IActionParameters;
   treeData: TreeNode;
   selectedNodesIds: string[];
   currentFolder: Partial<IFolder>;
@@ -42,7 +39,9 @@ interface State {
     setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeNode) => void;
-    setSearchParams: (searchParams: Partial<ISearchParameters>) => void;
+    setSearchParams: (
+      searchParams: Partial<ISearchParameters & IActionParameters>,
+    ) => void;
     setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
@@ -76,8 +75,6 @@ export const useStoreContext = create<State>()((set, get) => ({
   config: null,
   searchConfig: { minLength: 1 },
   searchParams: {
-    app: "" as App,
-    types: [],
     filters: {
       folder: "default",
       owner: undefined,
@@ -85,6 +82,8 @@ export const useStoreContext = create<State>()((set, get) => ({
       public: undefined,
     },
     orders: { updatedAt: "desc" },
+    application: "",
+    types: [],
     pagination: {
       startIdx: 0,
       pageSize: 48,
@@ -239,6 +238,7 @@ export const useStoreContext = create<State>()((set, get) => ({
       // fetch subfolders
       if (!hasChildren(folderId, treeData)) {
         await queryClient.prefetchInfiniteQuery({
+          initialPageParam: 0,
           queryKey: [
             "prefetchContext",
             {
