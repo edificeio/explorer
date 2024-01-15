@@ -175,7 +175,7 @@ public class ResourceExplorerDbSql {
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
         return client.preparedQuery(query, tuple).map(rows->{
             final Map<Integer, ResouceSql> results = new HashMap<>();
-            final List<ResouceSql> models = new ArrayList<>();
+            final Set<ResouceSql> models = new HashSet<>();
             for(final Row row : rows){
                 models.add(mapRowToModel(row, model -> {
                     // set if not exists -> ensure uniqueness
@@ -184,7 +184,7 @@ public class ResourceExplorerDbSql {
                     return results.get(model.id);
                 }));
             }
-            return models;
+            return new ArrayList<>(models);
         });
     }
 
@@ -381,7 +381,7 @@ public class ResourceExplorerDbSql {
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
         return client.preparedQuery(query, tuple).map(rows->{
             final Map<Integer, ResouceSql> results = new HashMap<>();
-            final List<ResouceSql> models = new ArrayList<>();
+            final Set<ResouceSql> models = new HashSet<>();
             for(final Row row : rows){
                 models.add(mapRowToModel(row, model -> {
                     // set if not exists -> ensure uniqueness
@@ -390,7 +390,7 @@ public class ResourceExplorerDbSql {
                     return results.get(model.id);
                 }));
             }
-            return models;
+            return new ArrayList<>(models);
         });
     }
 
