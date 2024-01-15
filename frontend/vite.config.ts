@@ -65,7 +65,6 @@ export default ({ mode }: { mode: string }) => {
             "react-dom",
             "react-error-boundary",
             "react-hook-form",
-            "react-slugify",
             "react-intersection-observer",
             "react-i18next",
           ],

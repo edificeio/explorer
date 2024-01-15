@@ -2,7 +2,7 @@ import { Modal, Button } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-export default function ActionResourceDisableModal({
+export default function DisableModal({
   isOpen,
   onCancel = () => ({}),
 }: {
