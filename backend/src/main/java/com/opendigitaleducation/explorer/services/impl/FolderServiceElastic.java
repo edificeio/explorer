@@ -68,7 +68,7 @@ public class FolderServiceElastic implements FolderService {
                             }).collect(Collectors.toMap(FolderResponse::getId, Function.identity()));
                             // find subresources ids related to theses folders
                             final String index = ExplorerConfig.getInstance().getIndex(request.getApplication());
-                            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(request.getApplication()).withSearchOperation(new ResourceSearchOperation().setFolderIds(folders.keySet()).setSearchEverywhere(true));
+                            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(request.getApplication()).withSearchOperation(new ResourceSearchOperation().setFolderIds(folders.keySet()).setSearchEverywhere(true)).withSize(10000l);
                             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(request.getApplication());
                             final JsonObject queryJson = query.withLimitedFieldNames(Arrays.asList("_id", "folderIds", "assetId")).getSearchQuery();
                             return manager.getClient().search(index, queryJson, options).map(resources -> {
