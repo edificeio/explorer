@@ -70,7 +70,7 @@ const ResourceCard = ({
                   alt=""
                   src={resource?.thumbnail}
                   objectFit="cover"
-                  className={"h-full"}
+                  className={"h-full w-100"}
                 />
               ) : (
                 <AppIcon
