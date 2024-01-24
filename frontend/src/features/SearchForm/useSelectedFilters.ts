@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 
 import { useOdeClient } from "@edifice-ui/react";
-import { APP } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useCurrentFolder, useSearchParams, useStoreActions } from "~/store";
@@ -53,10 +52,10 @@ export const useSelectedFilters = () => {
     { label: t("explorer.filter.all", { ns: appCode }), value: "0" },
     { label: t("explorer.filter.owner", { ns: appCode }), value: "1" },
     { label: t("explorer.filter.shared", { ns: appCode }), value: "2" },
-    ...(currentApp?.displayName == APP.EXERCIZER
+    ...(currentApp?.displayName == "exercizer"
       ? [{ label: "Exercices interactifs", value: "3" }]
       : []),
-    ...(currentApp?.displayName == APP.EXERCIZER
+    ...(currentApp?.displayName == "exercizer"
       ? [{ label: "Exercices à rendre", value: "4" }]
       : []),
     ...(currentApp?.displayName == "pages"
@@ -65,7 +64,7 @@ export const useSelectedFilters = () => {
     ...(currentApp?.displayName == "pages"
       ? [{ label: "Projets internes", value: "6" }]
       : []),
-    ...(currentApp?.displayName == APP.BLOG
+    ...(currentApp?.displayName == "blog"
       ? [{ label: t("explorer.filter.public", { ns: appCode }), value: "7" }]
       : []),
   ];
