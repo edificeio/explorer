@@ -196,7 +196,7 @@ public class IngestJob {
                 .map(this.messageMerger::mergeMessages)
                 .compose(result -> {
                     final List<ExplorerMessageForIngest> messagesToTreat = messageTransformer.transform(result.getMessagesToTreat());
-                    log.info("[IngestResult] [id=" + idExecution + "] Number of message to treat="+messagesToTreat.size()+ " batchSize="+batchSize);
+                    log.debug("[IngestResult] [id=" + idExecution + "] Number of message to treat="+messagesToTreat.size()+ " batchSize="+batchSize);
                     return this.messageIngester
                             .ingest(messagesToTreat)
                             .map(jobResult -> Pair.of(jobResult, result))
@@ -241,7 +241,7 @@ public class IngestJob {
                         if (messageRes.succeeded()) {
                             this.ingestJobMetricsRecorder.onIngestCycleSucceeded();
                             final IngestJobResult ingestResult = messageRes.result();
-                            log.info("[IngestResult] [id=" + idExecution + "] Number of message treated="+ingestResult.size()+ " batchSize="+batchSize);
+                            log.debug("[IngestResult] [id=" + idExecution + "] Number of message treated="+ingestResult.size()+ " batchSize="+batchSize);
                             notifyMessageStateUpdate(ingestResult.succeed, IngestJobState.OK);
                             notifyMessageStateUpdate(ingestResult.failed, IngestJobState.KO);
                             this.onExecutionEnd.handle(new DefaultAsyncResult<>(messageRes.result()));
