@@ -19,15 +19,15 @@ public interface MessageReader {
         ExplorerPluginFactory.init(vertx, config);
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
             final RedisClient redis = RedisClient.create(vertx, ExplorerPluginFactory.getRedisConfig());
-            return redis(redis, ingestConfig);
+            return redis(vertx, redis, ingestConfig);
         }else{
             final IPostgresClient postgres = IPostgresClient.create(vertx, ExplorerPluginFactory.getPostgresConfig(), true, false);
             return postgres(postgres, ingestConfig);
         }
     }
 
-    static MessageReader redis(final RedisClient client, final JsonObject config) {
-        return new MessageReaderRedis(client, config);
+    static MessageReader redis(final Vertx vertx, final RedisClient client, final JsonObject config) {
+        return new MessageReaderRedis(vertx, client, config);
     }
 
     static MessageReader postgres(final IPostgresClient client, final JsonObject config) {

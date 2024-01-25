@@ -1,9 +1,6 @@
 package com.opendigitaleducation.explorer.ingest;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -17,13 +14,16 @@ import java.util.function.Function;
 public class MessageReaderRedis implements MessageReader {
     static final Logger log = LoggerFactory.getLogger(MessageReaderRedis.class);
     static final Integer DEFAULT_BLOCK_MS = 0;//infinity
+    static final Integer DEFAULT_RETRY_READ_MS = 1000;//infinity
     static final String DEFAULT_CONSUMER_NAME = "message_reader";
     static final String DEFAULT_STREAM_FAIL = "_fail";
     static final String DEFAULT_CONSUMER_GROUP = "message_reader_group";
+    private final Vertx vertx;
     private final String consumerName;
     private final String consumerGroup;
     private final String streamFailSuffix;
     private final Integer consumerBlockMs;
+    private final Integer retryReadMs;
     private final Future<Void> onReady;
     private final RedisClient redisClient;
     private final List<String> streams = new ArrayList<>();
@@ -31,10 +31,13 @@ public class MessageReaderRedis implements MessageReader {
     private final JsonObject metrics = new JsonObject();
     private int pendingNotifications = 0;
     private boolean listening = false;
+    private Long retryTimer;
     private MessageReaderStatus status = MessageReaderStatus.Running;
 
-    public MessageReaderRedis(final RedisClient redisClient, final JsonObject config) {
+    public MessageReaderRedis(final Vertx vertx, final RedisClient redisClient, final JsonObject config) {
+        this.vertx = vertx;
         this.redisClient = redisClient;
+        this.retryReadMs = config.getInteger("retry-read-ms", DEFAULT_RETRY_READ_MS);
         this.consumerBlockMs = config.getInteger("consumer-block-ms", DEFAULT_BLOCK_MS);
         this.streamFailSuffix = config.getString("stream-fail-suffix", DEFAULT_STREAM_FAIL);
         this.consumerName = config.getString("consumer-name", DEFAULT_CONSUMER_NAME);
@@ -83,26 +86,41 @@ public class MessageReaderRedis implements MessageReader {
             //only new messages
             final String startFrom = ">";
             redisClient.xreadGroup(consumerGroup, consumerName, streams, true, Optional.of(1), Optional.of(consumerBlockMs), Optional.of(startFrom),true).onComplete(res -> {
-                if(res.failed()){
-                    log.error("Could not read xstream ",res.cause());
-                    return;
+                try {
+                    if (res.failed()) {
+                        log.error("Could not read xstream ", res.cause());
+                        return;
+                    }
+                    this.listening = false;
+                    if (res.result().size() > 0) {
+                        this.pendingNotifications++;
+                    }
+                    //do not notify each time
+                    if (isStopped()) {
+                        metrics.put("last_listen_skip_at", new Date().getTime());
+                        metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0) + 1);
+                    } else {
+                        metrics.put("last_listen_at", new Date().getTime());
+                        metrics.put("listen_count", metrics.getInteger("listen_count", 0) + 1);
+                    }
+                    //call listeners (avoid concurrent modification
+                    notifyListeners();
+                } finally {
+                    if(res.failed()){
+                        // if redis is down retry later
+                        //TODO add circuit breaker + exponential delay inside RedisClient?
+                        if(this.retryTimer != null){
+                            vertx.cancelTimer(this.retryTimer);
+                        }
+                        this.retryTimer = vertx.setTimer(this.retryReadMs, (Long time)->{
+                            //if paused on notify => stop listening => while rerun on resume
+                            scheduleXread();
+                        });
+                    }else{
+                        //if paused on notify => stop listening => while rerun on resume
+                        scheduleXread();
+                    }
                 }
-                this.listening = false;
-                if (res.result().size() > 0) {
-                    this.pendingNotifications++;
-                }
-                //do not notify each time
-                if (isStopped()) {
-                    metrics.put("last_listen_skip_at", new Date().getTime());
-                    metrics.put("listen_skip_count", metrics.getInteger("listen_skip_count", 0) + 1);
-                } else {
-                    metrics.put("last_listen_at", new Date().getTime());
-                    metrics.put("listen_count", metrics.getInteger("listen_count", 0) + 1);
-                }
-                //call listeners (avoid concurrent modification
-                notifyListeners();
-                //if paused on notify => stop listening => while rerun on resume
-                scheduleXread();
             });
         });
     }
@@ -125,6 +143,9 @@ public class MessageReaderRedis implements MessageReader {
     @Override
     public void stop() {
         status = MessageReaderStatus.Stopped;
+        if(this.retryTimer != null){
+            vertx.cancelTimer(this.retryTimer);
+        }
     }
 
     @Override
@@ -144,6 +165,7 @@ public class MessageReaderRedis implements MessageReader {
                     promise.complete(res.result());
                 } else {
                     log.error(String.format("Could not xread (%s,%s) from streams: %s | index=%s", consumerGroup, consumerName, stream, startAt), res.cause());
+                    promise.fail(res.cause());
                 }
             });
             return promise.future();
@@ -161,7 +183,7 @@ public class MessageReaderRedis implements MessageReader {
                 result.addAll(r);
                 final int newMaxBatchSize = maxBatchSize - result.size();
                 if (newMaxBatchSize > 0) {
-                    return fetchOneStream(nextStream, maxBatchSize, true);
+                    return fetchOneStream(nextStream, newMaxBatchSize, true);
                 } else {
                     return Future.succeededFuture(new ArrayList<>());
                 }
@@ -171,7 +193,7 @@ public class MessageReaderRedis implements MessageReader {
                 result.addAll(r);
                 final int newMaxBatchSize = maxBatchSize - result.size();
                 if (newMaxBatchSize > 0) {
-                    return fetchOneStream(nextStream, maxBatchSize, false);
+                    return fetchOneStream(nextStream, newMaxBatchSize, false);
                 } else {
                     return Future.succeededFuture(new ArrayList<>());
                 }
@@ -226,43 +248,54 @@ public class MessageReaderRedis implements MessageReader {
 
     @Override
     public Future<Void> updateStatus(final IngestJob.IngestJobResult ingestResult, final int maxAttempt) {
+        final Set<String> processed = new HashSet<>();
         //prepare
         final List<Future> transactions = new ArrayList<>();
         //on succeed => ACK + DEL (DEL only if ACK succeed)
         //if we want transaction we cannot push all ids to ack or delete CMD at once
-        for (final ExplorerMessageForIngest mess : ingestResult.succeed) {
-            if(mess.getIdQueue().isPresent()) {
+        final List<ExplorerMessageForIngest> toAck = new ArrayList<>(ingestResult.succeed);
+        // We also acknowledge skipped messages because we know that
+        // they are not true failures and replaying them won't make
+        // them pass
+        toAck.addAll(ingestResult.skipped);
+        for (final ExplorerMessageForIngest mess : toAck) {
+            if(mess.getIdQueue().isPresent() && !processed.contains(mess.getIdQueue().get())) {
                 final String idQueue = mess.getIdQueue().get();
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM);
-                //final RedisTransaction batch = redisClient.transaction();
-                redisClient.xAck(stream, consumerGroup, idQueue);
-                redisClient.xDel(stream, idQueue);
-                //transactions.add(batch.commit());
+                processed.add(idQueue);
+                // ACK message then delete it
+                transactions.add(redisClient.xAck(stream, consumerGroup, idQueue).compose(onAck -> {
+                    return redisClient.xDel(stream, idQueue);
+                }));
             }
         }
         //on failed => ADD + ACK + DEL (ACK only if ADD suceed and DEL only if ACK succeed)
         for (final ExplorerMessageForIngest mess : ingestResult.failed) {
-            if(mess.getIdQueue().isPresent()) {
+            if(mess.getIdQueue().isPresent() && !processed.contains(mess.getIdQueue().get())) {
                 final String idQueue = mess.getIdQueue().get();
                 final String stream = mess.getMetadata().getString(RedisClient.NAME_STREAM, "");
                 final int attemptCount = mess.getAttemptCount();
+                processed.add(idQueue);
                 if(attemptCount > maxAttempt) {
                     log.warn("A message has been dropped because it was attempted " + attemptCount + " : " + mess);
+                    transactions.add(redisClient.xAck(stream, consumerGroup, idQueue).compose(onAck -> {
+                        return redisClient.xDel(stream, idQueue);
+                    }));
                 } else {
                     final JsonObject json = toJson(mess).put("attempt_count", attemptCount + 1)
                             .put("attempted_at", new Date().getTime())
                             .put("error", mess.getError());
-                    //final RedisTransaction batch = redisClient.transaction();
                     //if already failed => do not add suffix to stream name
-                    if (stream.contains(streamFailSuffix)) {
-                        redisClient.xAdd(stream, json);
-                    } else {
-                        redisClient.xAdd(stream + streamFailSuffix, json);
-                    }
+                    final String targetStream = stream.contains(streamFailSuffix)? stream : stream + streamFailSuffix;
+                    // add message to failed stream
+                    transactions.add(redisClient.xAdd(targetStream, json).compose(onAdd->{
+                        // ack message from old stream
+                        return redisClient.xAck(stream, consumerGroup, idQueue).compose(onAck -> {
+                            // del message from old stream
+                            return redisClient.xDel(stream, idQueue);
+                        });
+                    }));
                 }
-                redisClient.xAck(stream, consumerGroup, idQueue);
-                redisClient.xDel(stream, idQueue);
-                //transactions.add(batch.commit());
             }
         }
         //execute batch

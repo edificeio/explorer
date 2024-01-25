@@ -85,7 +85,7 @@ public class IngestJobRedisDuplicateTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final JsonObject jobConfig = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true)).put("messageTransformers", new JsonArray().add(new JsonObject().put("id", "htmlAnalyse").put("minLength", 0)));
-        final MessageReader reader = MessageReader.redis(redisClient, new JsonObject());
+        final MessageReader reader = MessageReader.redis(test.vertx(), redisClient, new JsonObject());
         final IngestJobMetricsRecorder recorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
         final MessageIngester inner = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, recorder, jobConfig);
         ingester = new FailingIngester(inner);

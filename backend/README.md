@@ -2,6 +2,34 @@
 
 ## Installation
 
+### Containers
+
+Add this container to your springboard.
+
+```yaml
+  redis:
+    image: redis:5.0.3-alpine
+```
+
+### ENT conf
+
+Add this piece of configuration for module infra :
+
+```json
+{
+  "name": "org.entcore~infra~4.12-develop-pedago-SNAPSHOT",
+  ...
+  "config": {
+    ...
+    "explorerConfig": {
+      "enabled": true,
+      "postgres": false
+    }
+  }
+}
+```
+
+
 ### Build app
 
 ```sh
@@ -18,7 +46,6 @@ gradle clean install
 https://preprod-na.opendigitaleducation.com/explorer/reindex/exercizer/subject?include_folders=true&drop=true
 https://preprod-na.opendigitaleducation.com/explorer/reindex/blog/blog?include_folders=true&drop=true
 ```
-- Happy debugging sucker !
 
 ## Hacks 
 - Pour augmenter la taille de la file Mongo :

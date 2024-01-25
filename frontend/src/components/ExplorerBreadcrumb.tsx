@@ -2,6 +2,7 @@ import { ArrowLeft } from "@edifice-ui/icons";
 import { IconButton, useOdeClient } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
+import { useSearchForm } from "~/features/SearchForm/useSearchForm";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -11,13 +12,16 @@ import {
 
 export function ExplorerBreadcrumb() {
   const { appCode } = useOdeClient();
-  const { t } = useTranslation(["common", appCode]);
+  const { gotoPreviousFolder } = useStoreActions();
+  const { t } = useTranslation();
+  const { inputSearch } = useSearchForm();
+
   const selectedNodesIds = useSelectedNodesIds();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
-  const { gotoPreviousFolder } = useStoreActions();
 
   const trashName: string = t("explorer.tree.trash");
+  const searchName: string = t("explorer.tree.search");
   const rootName: string = t("explorer.filters.mine", {
     ns: appCode,
   });
@@ -41,7 +45,11 @@ export function ExplorerBreadcrumb() {
         </div>
       ) : (
         <h2 className="body py-8 fw-bold">
-          {!isTrashFolder ? rootName : trashName}
+          {inputSearch.length !== 0
+            ? searchName
+            : !isTrashFolder
+              ? rootName
+              : trashName}
         </h2>
       )}
     </div>

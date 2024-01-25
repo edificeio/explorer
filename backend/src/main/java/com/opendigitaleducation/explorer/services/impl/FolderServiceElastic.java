@@ -46,7 +46,7 @@ public class FolderServiceElastic implements FolderService {
                         final JsonObject body = (JsonObject) message.body();
                         final FolderListRequest request = body.mapTo(FolderListRequest.class);
                         final UserInfos user = new UserInfos();
-                        user.setGroupsIds(new ArrayList<>());
+                        user.setGroupsIds(request.getGroupIds());
                         user.setUserId(request.getUserId());
                         user.setUsername(request.getUserName());
                         // search folders by user with max batch size (10000)
@@ -68,7 +68,7 @@ public class FolderServiceElastic implements FolderService {
                             }).collect(Collectors.toMap(FolderResponse::getId, Function.identity()));
                             // find subresources ids related to theses folders
                             final String index = ExplorerConfig.getInstance().getIndex(request.getApplication());
-                            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(request.getApplication()).withSearchOperation(new ResourceSearchOperation().setFolderIds(folders.keySet()).setSearchEverywhere(true));
+                            final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(request.getApplication()).withSearchOperation(new ResourceSearchOperation().setFolderIds(folders.keySet()).setSearchEverywhere(true)).withSize(10000l);
                             final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(request.getApplication());
                             final JsonObject queryJson = query.withLimitedFieldNames(Arrays.asList("_id", "folderIds", "assetId")).getSearchQuery();
                             return manager.getClient().search(index, queryJson, options).map(resources -> {

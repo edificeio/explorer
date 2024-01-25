@@ -33,7 +33,9 @@
             "max-attempt": 10,
             "batch-size": 100,
             "max-delay-ms": 2000,
-            "messageTransformers": [{"id": "htmlAnalyse", "minLength": 0}]
+            "messageTransformers": [{"id": "htmlAnalyse", "minLength": 0}],
+            "reindex-error-debounce-delay-ms": {{ explorerReindexErrorDebounceDelayMys | default(60000) }},
+            "reindex-error-debounce-queue-max-size": {{ explorerReindexErrorDebounceQueueMaxSize | default(-1) }}
         },
         "migrate-task":{
             "enabled": {{ explorerMigrateTaskEnabled | default('false') }},

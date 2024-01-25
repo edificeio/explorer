@@ -117,7 +117,7 @@ public class IngestJobStressTest {
         pluginClient = IExplorerPluginClient.withBus(test.vertx(), FakeMongoPlugin.FAKE_APPLICATION, FakeMongoPlugin.FAKE_TYPE);
         //flush redis
         redisClient.getClient().flushall(new ArrayList<>(), e -> {
-            final MessageReader reader = MessageReader.redis(redisClient, redisConfig);
+            final MessageReader reader = MessageReader.redis(test.vertx(), redisClient, redisConfig);
             job = IngestJob.createForTest(test.vertx(), elasticClientManager, postgresClient, jobConf, reader);
             //start job to create streams
             job.start().compose(ee -> job.stop())

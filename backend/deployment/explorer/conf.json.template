@@ -1,5 +1,5 @@
     {
-      "name": "com.opendigitaleducation~explorer~1.2.4",
+      "name": "com.opendigitaleducation~explorer~1.4-develop-pedago-SNAPSHOT",
       "config": {
         "main" : "com.opendigitaleducation.explorer.Explorer",
         "port" : 8068,
@@ -20,10 +20,13 @@
             "index": "explorer-index"
         },
         "ingest":{
+            "retry-read-ms": 1000,
             "consumer-block-ms": 0,
             "max-attempt": 10,
             "batch-size": 100,
-            "max-delay-ms": 45000
+            "max-delay-ms": 45000,
+            "reindex-error-debounce-delay-ms": 60000,
+            "reindex-error-debounce-queue-max-size": -1
         },
         "migrate-task":{
             "enabled": false,

@@ -13,11 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +28,6 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter ingestCycleSucceededCounter;
     private final Counter ingestCycleFailedCounter;
     private final Counter ingestCycleCompletedCounter;
-    private final Counter ingestCyclePendingCounter;
     private final Counter ingestCycleWithFailuresCounter;
     private final Counter succeededMessagesCounter;
     private final Counter messagesAttemptedTooManyTimesCounter;
@@ -43,17 +38,16 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     private final Counter failedInOpenSearchCounter;
     private final Counter succeededInOpenSearchCounter;
     private final Timer ingestionPostgresTimes;
-    private final Counter failedInPostgresCounter;
-    private final Counter succeededInPostgresCounter;
-    private final Gauge batchSizeGauge;
     private int batchSize = 0;
+    private int nbPendingCycles = 0;
 
     public MicrometerJobMetricsRecorder(final Configuration configuration) {
         final MeterRegistry registry = BackendRegistries.getDefaultNow();
         if(registry == null) {
             throw new IllegalStateException("micrometer.registries.empty");
         }
-        batchSizeGauge = Gauge.builder("ingest.batch.size", () -> batchSize).register(registry);
+        Gauge.builder("ingest.batch.size", () -> batchSize).register(registry);
+        Gauge.builder("ingest.pending.cycle.size", () -> nbPendingCycles).register(registry);
         ingestCycleStartedCounter = Counter.builder("ingest.cycle.started")
                 .description("number of ingest cycles that were started")
                 .register(registry);
@@ -119,9 +113,6 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
             ingestionPGBuilder.sla(configuration.slaOpensearch.toArray(new Duration[0]));
         }
         ingestionPostgresTimes = ingestionPGBuilder.register(registry);
-        ingestCyclePendingCounter = Counter.builder("ingest.cycle.pending")
-                .description("number of pending cycles")
-                .register(registry);
         messagesAttemptedTooManyTimesCounter = Counter.builder("ingest.message.too.much.attempts")
                 .description("number of messages that were attempted too many times")
                 .register(registry);
@@ -130,12 +121,6 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
                 .register(registry);
         succeededInOpenSearchCounter = Counter.builder("ingest.message.opensearch.succeeded")
                 .description("number of messages that have successfully been ingested in OpenSearch")
-                .register(registry);
-        failedInPostgresCounter = Counter.builder("ingest.message.postgres.failed")
-                .description("number of messages that failed to be ingested in Postgres")
-                .register(registry);
-        succeededInPostgresCounter = Counter.builder("ingest.message.postgres.succeeded")
-                .description("number of messages that have successfully been ingested in Postgres")
                 .register(registry);
     }
 
@@ -167,7 +152,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
     @Override
     public void onIngestCycleCompleted() {
         ingestCycleCompletedCounter.increment();
-        ingestCyclePendingCounter.increment(-1.);
+        nbPendingCycles--;
     }
 
     @Override
@@ -195,7 +180,7 @@ public class MicrometerJobMetricsRecorder implements IngestJobMetricsRecorder {
 
     @Override
     public void onNewPendingIngestCycle() {
-        ingestCyclePendingCounter.increment();
+        nbPendingCycles++;
     }
 
     @Override
