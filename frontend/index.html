@@ -15,17 +15,18 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
+      var WORFLOW_ACCESS =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|view";
       var WORKFLOW_CREATE =
-        "org.entcore.blog.controllers.BlogController|create";
-      var WORKFLOW_CREATE_PUBLIC =
-        "org.entcore.blog.controllers.BlogController|createPublicBlog";
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|createScrapbook";
       var WORKFLOW_PUBLISH =
-        "org.entcore.blog.controllers.BlogController|publish";
-      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|publish";
+      var WORKFLOW_PRINT =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|print";
+      ///////////
       var explorerConfig = {
-        app: "blog",
-        types: ["blog"],
+        app: "scrapbook",
+        types: ["scrapbook"],
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -59,11 +60,12 @@
             workflow: WORKFLOW_CREATE,
             target: "tree",
           },
-          {
-            id: "createPublic",
-            workflow: WORKFLOW_CREATE_PUBLIC,
-            target: "tree",
-          },
+          /*{
+            id: "duplicate",
+            workflow: WORFLOW_ACCESS,
+            target: "actionbar",
+            right: "tree",
+          },*/
           {
             id: "move",
             workflow: WORFLOW_ACCESS,
@@ -106,7 +108,8 @@
           },
         ],
       };
-      const rootElement = document.querySelector("[data-explorer-config]");
+      ////
+      var rootElement = document.querySelector("[data-explorer-config]");
       rootElement.setAttribute(
         "data-explorer-config",
         JSON.stringify(explorerConfig),

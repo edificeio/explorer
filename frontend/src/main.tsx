@@ -12,6 +12,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRoot } from "react-dom/client";
 
 import Root from "./app/root";
+import { getExplorerConfig } from "./config/getExplorerConfig";
 
 const root = document.getElementById("root");
 
@@ -37,12 +38,14 @@ const queryClient = new QueryClient({
   },
 });
 
+const getHTMLConfig = getExplorerConfig();
+
 createRoot(root!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <OdeClientProvider
         params={{
-          app: "blog",
+          app: getHTMLConfig.app,
         }}
       >
         <ThemeProvider>
