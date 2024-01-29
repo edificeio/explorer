@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 
 import { type IAction, ACTION } from "edifice-ts-client";
 
-// import { explorerConfig } from "~/app/config";
-import { goToEdit } from "~/services/api";
+import { goToEdit, goToExport } from "~/services/api";
 import { useActions, useRestore } from "~/services/queries";
 import {
   useStoreActions,
@@ -17,7 +16,6 @@ import {
   useStoreContext,
   useSearchParams,
 } from "~/store";
-// import { getAppParams } from "~/utils/getAppParams";
 
 type ModalName =
   | "move"
@@ -27,8 +25,6 @@ type ModalName =
   | "edit_resource"
   | "share"
   | "void";
-
-// const { trashActions } = explorerConfig;
 
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
@@ -102,6 +98,8 @@ export default function useActionBar() {
       case ACTION.UPD_PROPS:
       case "edit" as any:
         return onEdit();
+      case "export":
+        return onExport();
       case ACTION.SHARE:
         return setOpenedModalName("share");
       // case ACTION.MANAGE:
@@ -194,6 +192,13 @@ export default function useActionBar() {
         : setOpenedModalName("edit_resource");
     } else {
       setOpenedModalName("edit_folder");
+    }
+  }
+
+  function onExport() {
+    if (resourceIds && resourceIds.length > 0) {
+      const selectedResource = selectedResources[0].assetId;
+      goToExport({ searchParams, assetId: selectedResource });
     }
   }
 

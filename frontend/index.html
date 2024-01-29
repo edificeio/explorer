@@ -23,6 +23,8 @@
         "fr.wseduc.scrapbook.controllers.ScrapbookController|publish";
       var WORKFLOW_PRINT =
         "fr.wseduc.scrapbook.controllers.ScrapbookController|print";
+      var WORKFLOW_EXPORT_HTML =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|exportHtml";
       ///////////
       var explorerConfig = {
         app: "scrapbook",
@@ -81,6 +83,12 @@
           {
             id: "print",
             workflow: WORKFLOW_PRINT,
+            target: "actionbar",
+            right: "read",
+          },
+          {
+            id: "export",
+            workflow: WORKFLOW_EXPORT_HTML,
             target: "actionbar",
             right: "read",
           },

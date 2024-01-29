@@ -303,6 +303,20 @@ export const goToEdit = ({
   return window.open(url, "_self");
 };
 
+export const goToExport = ({
+  searchParams,
+  assetId,
+}: {
+  searchParams: ISearchParameters & IActionParameters;
+  assetId: ID;
+}) => {
+  const url = odeServices
+    .resource(searchParams.application)
+    .getExportUrl(assetId);
+
+  return window.open(url, "_self");
+};
+
 export const publishResource = async ({
   searchParams,
   params,
