@@ -52,6 +52,7 @@ function generateDeps(content) {
 function generateDevDeps(content) {
   return {
     ...content.devDependencies,
+    "edifice-bootstrap": BRANCH,
     "edifice-ts-client": BRANCH,
   };
 }
