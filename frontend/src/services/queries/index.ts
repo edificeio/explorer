@@ -114,9 +114,7 @@ export const useSearchContext = () => {
     enabled: !!config,
     retry: false,
     getNextPageParam: (lastPage) => {
-      return (
-        lastPage.pagination.startIdx + lastPage.pagination.pageSize ?? undefined
-      );
+      return lastPage.pagination.startIdx + lastPage.pagination.pageSize;
     },
   });
 };
