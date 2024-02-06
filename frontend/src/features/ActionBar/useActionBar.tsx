@@ -166,6 +166,10 @@ export default function useActionBar() {
       onClearActionBar();
       clearSelectedItems();
       clearSelectedIds();
+      // queryClient.invalidateQueries({ queryKey: ["context"] });
+      /* setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["context"] });
+      }, 1000); */
     }
   };
 

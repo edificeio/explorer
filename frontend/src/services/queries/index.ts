@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useOdeClient, useToast, useUser } from "@edifice-ui/react";
+import {
+  useOdeClient,
+  useShareMutation,
+  useToast,
+  useUpdateMutation,
+  useUser,
+} from "@edifice-ui/react";
 import {
   useInfiniteQuery,
   type InfiniteData,
@@ -7,17 +13,21 @@ import {
   useQueryClient,
   useQuery,
   UseQueryResult,
+  UseMutationOptions,
+  UseMutationResult,
 } from "@tanstack/react-query";
 import {
   type ISearchResults,
   type IFolder,
   type IResource,
   type ShareRight,
-  type UpdateParameters,
   IAction,
   CreateParameters,
   ResourceType,
   App,
+  UpdateParameters,
+  UpdateResult,
+  PutShareResponse,
 } from "edifice-ts-client";
 import { t } from "i18next";
 
@@ -29,10 +39,8 @@ import {
   restoreAll,
   searchContext,
   sessionHasWorkflowRights,
-  shareResource,
   trashAll,
   updateFolder,
-  updateResource,
 } from "~/services/api";
 import {
   useStoreActions,
@@ -110,6 +118,7 @@ export const useSearchContext = () => {
         },
       });
     },
+    staleTime: 5000,
     initialPageParam: 0,
     enabled: !!config,
     retry: false,
@@ -617,10 +626,10 @@ export const useUpdatefolder = () => {
   });
 };
 
-export const useShareResource = () => {
-  const toast = useToast();
+export const useShareResource = (application: string) => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+
   const { setResourceIds, setSelectedResources } = useStoreActions();
   const { filters, trashed } = searchParams;
 
@@ -633,74 +642,68 @@ export const useShareResource = () => {
     },
   ];
 
-  return useMutation({
-    mutationFn: async ({
-      resourceId,
-      rights,
-    }: {
-      resourceId: string;
-      rights: ShareRight[];
-    }) => await shareResource({ searchParams, resourceId, rights }),
-    onError(error) {
-      if (typeof error === "string")
-        toast.error(t("explorer.shared.status.error"));
-    },
-    onSuccess: async (_data, variables) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
+  return useShareMutation({
+    application,
+    options: {
+      onSuccess: async (
+        _data: PutShareResponse,
+        variables: { resourceId: string; rights: ShareRight[] },
+      ) => {
+        await queryClient.cancelQueries({ queryKey });
+        const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
-      if (previousData) {
-        toast.success(t("explorer.shared.status.saved"));
-
-        return queryClient.setQueryData<
-          InfiniteData<ISearchResults> | undefined
-        >(queryKey, (prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              pages: prev?.pages.map((page) => {
-                return {
-                  ...page,
-                  resources: page.resources.map((resource: IResource) => {
-                    if (resource.assetId === variables?.resourceId) {
-                      let rights: string[] = [`creator:${resource.creatorId}`];
-
-                      if (variables?.rights.length >= 1) {
-                        rights = [
-                          ...rights,
-                          ...variables.rights.flatMap((right) => {
-                            return right.actions.map((action) => {
-                              return `${right.type}:${right.id}:${action.id}`;
-                            });
-                          }),
+        if (previousData) {
+          return queryClient.setQueryData<
+            InfiniteData<ISearchResults> | undefined
+          >(queryKey, (prev) => {
+            if (prev) {
+              return {
+                ...prev,
+                pages: prev?.pages.map((page) => {
+                  return {
+                    ...page,
+                    resources: page.resources.map((resource: IResource) => {
+                      if (resource.assetId === variables?.resourceId) {
+                        let rights: string[] = [
+                          `creator:${resource.creatorId}`,
                         ];
-                      }
 
-                      return {
-                        ...resource,
-                        rights,
-                      };
-                    } else {
-                      return resource;
-                    }
-                  }),
-                };
-              }),
-            };
-          }
-          return undefined;
-        });
-      }
-    },
-    onSettled: () => {
-      setResourceIds([]);
-      setSelectedResources([]);
+                        if (variables?.rights.length >= 1) {
+                          rights = [
+                            ...rights,
+                            ...variables.rights.flatMap((right) => {
+                              return right.actions.map((action) => {
+                                return `${right.type}:${right.id}:${action.id}`;
+                              });
+                            }),
+                          ];
+                        }
+
+                        return {
+                          ...resource,
+                          rights,
+                        };
+                      } else {
+                        return resource;
+                      }
+                    }),
+                  };
+                }),
+              };
+            }
+            return undefined;
+          });
+        }
+      },
+      onSettled: () => {
+        setResourceIds([]);
+        setSelectedResources([]);
+      },
     },
   });
 };
 
-export const useUpdateResource = () => {
-  const toast = useToast();
+export const useUpdateResource = (application: string) => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { filters, trashed } = searchParams;
@@ -714,63 +717,72 @@ export const useUpdateResource = () => {
     },
   ];
 
-  return useMutation({
-    mutationFn: async (params: UpdateParameters) =>
-      await updateResource({ searchParams, params }),
-    onError(error) {
-      if (typeof error === "string") toast.error(t(error));
-    },
-    onSuccess: async (_data, variables) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
+  return useUpdateMutation({
+    application,
+    options: {
+      onSuccess: async (_data: UpdateResult, variables: UpdateParameters) => {
+        await queryClient.cancelQueries({ queryKey });
+        const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
-      if (previousData) {
-        return queryClient.setQueryData<
-          InfiniteData<ISearchResults> | undefined
-        >(queryKey, (prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              pages: prev?.pages.map((page) => {
-                return {
-                  ...page,
-                  resources: page.resources.map((resource: IResource) => {
-                    if (resource.assetId === variables?.entId) {
-                      const {
-                        name,
-                        thumbnail,
-                        public: pub,
-                        description,
-                        slug,
-                        ...others
-                      } = variables;
-                      return {
-                        ...resource,
-                        ...others, // add any custom field
-                        name,
-                        thumbnail:
-                          typeof thumbnail === "string"
-                            ? thumbnail
-                            : URL.createObjectURL(
-                                thumbnail as Blob | MediaSource,
-                              ),
-                        public: pub,
-                        description,
-                        slug,
-                      };
-                    } else {
-                      return resource;
-                    }
-                  }),
-                };
-              }),
-            };
-          }
-          return undefined;
-        });
-      }
+        if (previousData) {
+          return queryClient.setQueryData<
+            InfiniteData<ISearchResults> | undefined
+          >(queryKey, (prev) => {
+            if (prev) {
+              return {
+                ...prev,
+                pages: prev?.pages.map((page) => {
+                  return {
+                    ...page,
+                    resources: page.resources.map((resource: IResource) => {
+                      if (resource.assetId === variables?.entId) {
+                        const {
+                          name,
+                          thumbnail,
+                          public: pub,
+                          description,
+                          slug,
+                          ...others
+                        } = variables;
+                        return {
+                          ...resource,
+                          ...others, // add any custom field
+                          name,
+                          thumbnail:
+                            typeof thumbnail === "string"
+                              ? thumbnail
+                              : URL.createObjectURL(
+                                  thumbnail as Blob | MediaSource,
+                                ),
+                          public: pub,
+                          description,
+                          slug,
+                        };
+                      } else {
+                        return resource;
+                      }
+                    }),
+                  };
+                }),
+              };
+            }
+            return undefined;
+          });
+        }
+      },
     },
   });
+};
+
+export const useCustomMutation = <
+  TData = unknown,
+  TError = unknown,
+  TVariables = void,
+  TContext = unknown,
+>(
+  options: UseMutationOptions<TData, TError, TVariables, TContext>,
+): UseMutationResult<TData, TError, TVariables, TContext> => {
+  return useMutation(options);
 };
 
 export const useCreateResource = () => {

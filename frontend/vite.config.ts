@@ -120,6 +120,8 @@ export default ({ mode }: { mode: string }) => {
 
   const plugins = [reactPlugin, dtsPlugin, tsconfigPaths()];
 
+  const base = mode === "production" ? "/blog" : "";
+
   const server = {
     proxy,
     host: "0.0.0.0",

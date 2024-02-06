@@ -6,6 +6,8 @@ import {
   Button,
   useToggle,
   LoadingScreen,
+  BlogPublic,
+  isActionAvailable,
 } from "@edifice-ui/react";
 import { IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
@@ -54,13 +56,26 @@ export default function AppAction() {
         {isCreateResourceOpen && (
           <CreateModal
             mode="create"
-            actions={actions}
             currentFolder={currentFolder}
             createResource={createResource}
             isOpen={isCreateResourceOpen}
             onSuccess={toggle}
             onCancel={toggle}
-          />
+          >
+            {(resource, isUpdating, watch, setValue, register) =>
+              appCode === "blog" &&
+              isActionAvailable("createPublic", actions) && (
+                <BlogPublic
+                  appCode={appCode}
+                  isUpdating={isUpdating}
+                  resource={resource}
+                  watch={watch}
+                  setValue={setValue}
+                  register={register}
+                />
+              )
+            }
+          </CreateModal>
         )}
       </Suspense>
     </>

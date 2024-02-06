@@ -202,17 +202,15 @@ export const moveToFolder = async ({
  * @returns shared resource
  */
 export const shareResource = async ({
-  searchParams,
+  application,
   resourceId,
   rights,
 }: {
-  searchParams: ISearchParameters & IActionParameters;
+  application: string;
   resourceId: ID;
   rights: ShareRight[];
 }) => {
-  return await odeServices
-    .share()
-    .saveRights(searchParams.application, resourceId, rights);
+  return await odeServices.share().saveRights(application, resourceId, rights);
 };
 
 /**
@@ -221,13 +219,13 @@ export const shareResource = async ({
  * @returns updated resource
  */
 export const updateResource = async ({
-  searchParams,
+  application,
   params,
 }: {
-  searchParams: ISearchParameters & IActionParameters;
+  application: string;
   params: UpdateParameters;
 }) => {
-  return await odeServices.resource(searchParams.application).update(params);
+  return await odeServices.resource(application).update(params);
 };
 
 /**
