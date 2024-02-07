@@ -1,18 +1,28 @@
 import { lazy, Suspense } from "react";
 
-import { Button, ActionBar, LoadingScreen } from "@edifice-ui/react";
+import {
+  Button,
+  ActionBar,
+  LoadingScreen,
+  useOdeClient,
+  ShareModal,
+  ShareBlog,
+  isActionAvailable,
+  BlogPublic,
+} from "@edifice-ui/react";
 import { useTransition, animated } from "@react-spring/web";
-import { type IAction } from "edifice-ts-client";
+import { BlogResource, type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+// import ShareBlog from "~/components/ShareModal/apps/ShareBlog";
 import { AccessControl } from "~/features/AccessControl/AccessControl";
 import useActionBar from "~/features/ActionBar/useActionBar";
 import { useShareResource, useUpdateResource } from "~/services/queries";
 import { useSelectedResources } from "~/store";
 
-const ShareModal = lazy(
+/* const ShareModal = lazy(
   async () => await import("~/features/ActionBar/Share/ShareModal"),
-);
+); */
 
 const PublishModal = lazy(
   async () => await import("~/features/ActionBar/Publish/PublishModal"),
@@ -27,6 +37,8 @@ const MoveModal = lazy(async () => await import("./Move/MoveModal"));
 const FolderModal = lazy(async () => await import("./Folder/FolderModal"));
 
 export default function ActionBarContainer() {
+  const { appCode } = useOdeClient();
+
   const { t } = useTranslation();
   const {
     actions,
@@ -56,8 +68,10 @@ export default function ActionBarContainer() {
   } = useActionBar();
 
   const selectedResources = useSelectedResources();
-  const shareResource = useShareResource();
-  const updateResource = useUpdateResource();
+  const selectedResource = selectedResources[0];
+
+  const shareResource = useShareResource(appCode);
+  const updateResource = useUpdateResource(appCode);
 
   const transition = useTransition(isActionBarOpen, {
     from: { opacity: 0, transform: "translateY(100%)" },
@@ -126,10 +140,10 @@ export default function ActionBarContainer() {
             onSuccess={onDeleteSuccess}
           />
         )}
-        {isPublishModalOpen && (
+        {isPublishModalOpen && selectedResource && (
           <PublishModal
             isOpen={isPublishModalOpen}
-            resource={selectedResources[0]}
+            resourceId={selectedResource.assetId}
             onCancel={onPublishCancel}
             onSuccess={onPublishSuccess}
           />
@@ -142,26 +156,45 @@ export default function ActionBarContainer() {
             onSuccess={onEditFolderSuccess}
           />
         )}
-        {isEditResourceOpen && (
+        {isEditResourceOpen && selectedResource && (
           <UpdateModal
             mode="update"
-            actions={actions}
             isOpen={isEditResourceOpen}
-            selectedResource={selectedResources[0]}
+            resourceId={selectedResource.assetId}
             updateResource={updateResource}
             onCancel={onEditResourceCancel}
             onSuccess={onEditResourceSuccess}
-          />
+          >
+            {(resource, isUpdating, watch, setValue, register) =>
+              appCode === "blog" &&
+              isActionAvailable("createPublic", actions) && (
+                <BlogPublic
+                  appCode={appCode}
+                  isUpdating={isUpdating}
+                  resource={resource}
+                  watch={watch}
+                  setValue={setValue}
+                  register={register}
+                />
+              )
+            }
+          </UpdateModal>
         )}
-        {isShareResourceOpen && (
+        {isShareResourceOpen && selectedResource && (
           <ShareModal
             isOpen={isShareResourceOpen}
-            resource={selectedResources[0]}
-            updateResource={updateResource}
+            resourceId={selectedResource.assetId}
             shareResource={shareResource}
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
-          />
+          >
+            {appCode === "blog" ? (
+              <ShareBlog
+                resource={selectedResource as BlogResource}
+                updateResource={updateResource}
+              />
+            ) : null}
+          </ShareModal>
         )}
       </Suspense>
     </>

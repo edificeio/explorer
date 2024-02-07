@@ -1,11 +1,5 @@
 import { ArrowRight } from "@edifice-ui/icons";
-import {
-  usePaths,
-  useOdeTheme,
-  useLibraryUrl,
-  Image,
-  Button,
-} from "@edifice-ui/react";
+import { usePaths, useOdeTheme, useLibraryUrl, Image } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 const Library = () => {
@@ -25,15 +19,14 @@ const Library = () => {
         alt={t("explorer.libray.img.alt")}
       />
       <p className="m-8">{t("explorer.libray.title")}</p>
-      <a href={libraryUrl} target="_blank" rel="noreferrer">
-        <Button
-          rightIcon={<ArrowRight />}
-          className="py-0 px-8"
-          variant="ghost"
-          color="primary"
-        >
-          {t("explorer.libray.btn")}
-        </Button>
+      <a
+        href={libraryUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="d-inline-flex gap-4 btn btn-ghost-primary py-0 p-0 pe-8"
+      >
+        <ArrowRight />
+        <span>{t("explorer.libray.btn")}</span>
       </a>
     </div>
   );
