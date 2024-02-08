@@ -6,17 +6,17 @@ settings:
 
 dependencies:
   '@edifice-ui/icons':
-    specifier: develop-pedago
-    version: 1.4.2-develop-pedago.4(react-dom@18.2.0)(react@18.2.0)
+    specifier: develop
+    version: 1.4.2-develop.8(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
-    specifier: develop-pedago
-    version: 1.4.2-develop-pedago.5(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.2-develop-pedago.4)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.18.0)(@tiptap/core@2.2.1)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0)
+    specifier: develop
+    version: 1.4.2-develop.8(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.2-develop.8)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.1)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
   '@tanstack/react-query':
-    specifier: 5.18.0
-    version: 5.18.0(react@18.2.0)
+    specifier: 5.8.4
+    version: 5.8.4(react-dom@18.2.0)(react@18.2.0)
   clsx:
     specifier: 2.1.0
     version: 2.1.0
@@ -60,7 +60,7 @@ devDependencies:
     version: 7.23.3(@babel/core@7.23.9)
   '@tanstack/react-query-devtools':
     specifier: 5.8.4
-    version: 5.8.4(@tanstack/react-query@5.18.0)(react-dom@18.2.0)(react@18.2.0)
+    version: 5.8.4(@tanstack/react-query@5.8.4)(react-dom@18.2.0)(react@18.2.0)
   '@types/node':
     specifier: 20.11.10
     version: 20.11.10
@@ -89,11 +89,11 @@ devDependencies:
     specifier: 3.1.3
     version: 3.1.3
   edifice-bootstrap:
-    specifier: develop-pedago
-    version: 1.4.0-develop-pedago.2
+    specifier: develop
+    version: 1.3.1-develop.1
   edifice-ts-client:
-    specifier: develop-pedago
-    version: 1.2.0-develop-pedago.1
+    specifier: develop
+    version: 1.1.1-develop.1
   eslint:
     specifier: 8.56.0
     version: 8.56.0
@@ -399,8 +399,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.4.2-develop-pedago.4(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-XT+CY8jbUtzhnRpf3zefOnNAKihkDMoiLRJ/w3bipa2i04zmFK64UjESa947w5XvHQ4tYsXcM6cX2VmL2QrJXQ==}
+  /@edifice-ui/icons@1.4.2-develop.8(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-XLMaNjqMuasdnuZOynSHqq1eArRNYAP++8O9z2SxUJzbKidraNP+K+8kmVW3Gl23nyA/hEDRKdDlq5BVKS1unQ==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -409,8 +409,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.4.2-develop-pedago.5(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.2-develop-pedago.4)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.18.0)(@tiptap/core@2.2.1)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0):
-    resolution: {integrity: sha512-+wa8msRXPmVABD1zhpTplU3eB13HaV9OZ3DMGKqoWjNGCvmDbWo+l8pWU1+B+ep6XsCcW8XFcNINsoLlzPOK+w==}
+  /@edifice-ui/react@1.4.2-develop.8(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.2-develop.8)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.1)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0):
+    resolution: {integrity: sha512-epDEWgZr/ejxOWZTrghTfddz3uYlaMGv8b9ACHapyu7dfp+55OhF2RrkqmgCjR/0l/iNWUs00ifNCs/Lw7Ofdw==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.3
@@ -421,12 +421,12 @@ packages:
       react-hook-form: 7.49.2
       react-i18next: 13.5.0
     dependencies:
-      '@edifice-ui/icons': 1.4.2-develop-pedago.4(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.4.2-develop.8(react-dom@18.2.0)(react@18.2.0)
       '@floating-ui/react': 0.26.0(react-dom@18.2.0)(react@18.2.0)
       '@pixi/react': 7.1.1(@babel/runtime@7.23.9)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
-      '@tanstack/react-query': 5.18.0(react@18.2.0)
+      '@tanstack/react-query': 5.8.4(react-dom@18.2.0)(react@18.2.0)
       '@tiptap/pm': 2.0.3(@tiptap/core@2.2.1)
       '@tiptap/react': 2.0.3(@tiptap/core@2.2.1)(@tiptap/pm@2.0.3)(react-dom@18.2.0)(react@18.2.0)
       '@tiptap/starter-kit': 2.0.3(@tiptap/pm@2.0.3)
@@ -1820,14 +1820,14 @@ packages:
     resolution: {integrity: sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==}
     dev: true
 
-  /@tanstack/query-core@5.18.0:
-    resolution: {integrity: sha512-8c6nxeAnGHxIDZIyDmHdmgFt4D+LprAQaJmjsnM4szcIjsWOyFlzxdqQUuQ/XuQRvUgqYaqlJTtDADlSS7pTPQ==}
+  /@tanstack/query-core@5.8.3:
+    resolution: {integrity: sha512-SWFMFtcHfttLYif6pevnnMYnBvxKf3C+MHMH7bevyYfpXpTMsLB9O6nNGBdWSoPwnZRXFNyNeVZOw25Wmdasow==}
 
   /@tanstack/query-devtools@5.8.4:
     resolution: {integrity: sha512-F1dRbITNt9tMUoM9WCH8WQ2c54116hv52m/PKK8ZiN/pO2wGVzTZtKuLanF8pFpwmNchjIixcMw/a57HY5ivcw==}
     dev: true
 
-  /@tanstack/react-query-devtools@5.8.4(@tanstack/react-query@5.18.0)(react-dom@18.2.0)(react@18.2.0):
+  /@tanstack/react-query-devtools@5.8.4(@tanstack/react-query@5.8.4)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-mffs51FJqXU/5rwhbwv393DccL6et7uK2pRLwOcmMrWbPyW8vpxr9oidaghHX4cdVeP/7u5owW9yMpBhBAJfcQ==}
     peerDependencies:
       '@tanstack/react-query': ^5.8.4
@@ -1835,18 +1835,26 @@ packages:
       react-dom: ^18.0.0
     dependencies:
       '@tanstack/query-devtools': 5.8.4
-      '@tanstack/react-query': 5.18.0(react@18.2.0)
+      '@tanstack/react-query': 5.8.4(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: true
 
-  /@tanstack/react-query@5.18.0(react@18.2.0):
-    resolution: {integrity: sha512-7FKxNfxxKEL7n3ADpwp81Fy4FX85hNkYVzQQVQsF0JAPl93c3d1gmNZMIbEtOqgYfom1/ontGh3FiZGYj3xyWA==}
+  /@tanstack/react-query@5.8.4(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-CD+AkXzg8J72JrE6ocmuBEJfGzEzu/bzkD6sFXFDDB5yji9N20JofXZlN6n0+CaPJuIi+e4YLCbGsyPFKkfNQA==}
     peerDependencies:
       react: ^18.0.0
+      react-dom: ^18.0.0
+      react-native: '*'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
     dependencies:
-      '@tanstack/query-core': 5.18.0
+      '@tanstack/query-core': 5.8.3
       react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   /@tiptap/core@2.2.1(@tiptap/pm@2.0.3):
     resolution: {integrity: sha512-9G6N2d5q4M5i/elK61qu28uO5MBDKEbStQnHuVKNe+LVNpb6xZal1AcIilmq1FVeuCUh3kYl3cFH3nBQOXtZUw==}
@@ -3023,16 +3031,16 @@ packages:
     resolution: {integrity: sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ==}
     dev: false
 
-  /edifice-bootstrap@1.4.0-develop-pedago.2:
-    resolution: {integrity: sha512-s7x5KRqg1OsWTKdw/9QvKgzybuvANZ9V7CvFK2P1SgrfMnmnWPZaKGea1ygaMq/YtPtHCcAviY290piXfdINig==}
+  /edifice-bootstrap@1.3.1-develop.1:
+    resolution: {integrity: sha512-t/SZb9yT3Y8eEMYnTqsNzf2/sBqa6wpy+iGGctiI9mw75kOM0maWhG+yS7hFsHMLapeAhkrz4FmlpSe092lAhQ==}
     engines: {node: 18 || 20}
     dependencies:
       '@popperjs/core': 2.11.8
       bootstrap: 5.3.2(@popperjs/core@2.11.8)
     dev: true
 
-  /edifice-ts-client@1.2.0-develop-pedago.1:
-    resolution: {integrity: sha512-a3xMdtM8XyXd6R8ld+UZ2NRySYLuYHN877AoSPQ8j0qQzOCMBRtAGvXKVko/5x3IIarbYcfn54IgE9QqqWTRtQ==}
+  /edifice-ts-client@1.1.1-develop.1:
+    resolution: {integrity: sha512-7OzmG6O836SQMGLbh1j76UB32GJ7DL692X2QOK5z4rEiJ4tqZXgumyRv2fhHgTEkGU/NtlEi4R15G51u1hBePA==}
     engines: {node: 18 || 20}
     dependencies:
       axios: 1.6.6
