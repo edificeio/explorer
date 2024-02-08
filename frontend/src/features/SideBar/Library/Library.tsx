@@ -25,8 +25,8 @@ const Library = () => {
         rel="noreferrer"
         className="d-inline-flex gap-4 btn btn-ghost-primary py-0 p-0 pe-8"
       >
-        <ArrowRight />
         <span>{t("explorer.libray.btn")}</span>
+        <ArrowRight />
       </a>
     </div>
   );
