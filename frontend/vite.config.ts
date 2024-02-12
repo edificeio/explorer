@@ -54,12 +54,14 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const build: BuildOptions = {
+    minify: false,
     assetsDir: "assets/js/ode-explorer/",
     cssCodeSplit: false,
     rollupOptions: {
       external: ["edifice-ts-client"],
       output: {
-        manualChunks: {
+        inlineDynamicImports: true,
+        /* manualChunks: {
           react: [
             "react",
             "react-dom",
@@ -70,7 +72,7 @@ export default ({ mode }: { mode: string }) => {
           ],
           "edifice-react": ["@edifice-ui/react"],
           "edifice-icons": ["@edifice-ui/icons"],
-        },
+        }, */
         paths: {
           "edifice-ts-client": "/assets/js/edifice-ts-client/index.js",
         },
@@ -119,8 +121,6 @@ export default ({ mode }: { mode: string }) => {
   const dtsPlugin = isLibMode && dts();
 
   const plugins = [reactPlugin, dtsPlugin, tsconfigPaths()];
-
-  const base = mode === "production" ? "/blog" : "";
 
   const server = {
     proxy,
