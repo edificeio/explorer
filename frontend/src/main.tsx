@@ -41,18 +41,18 @@ const queryClient = new QueryClient({
 const getHTMLConfig = getExplorerConfig();
 
 createRoot(root!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <OdeClientProvider
-        params={{
-          app: getHTMLConfig.app,
-        }}
-      >
-        <ThemeProvider>
-          <Root />
-        </ThemeProvider>
-      </OdeClientProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  </StrictMode>,
+  // <StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <OdeClientProvider
+      params={{
+        app: getHTMLConfig.app,
+      }}
+    >
+      <ThemeProvider>
+        <Root />
+      </ThemeProvider>
+    </OdeClientProvider>
+    <ReactQueryDevtools initialIsOpen={false} />
+  </QueryClientProvider>,
+  // </StrictMode>,
 );

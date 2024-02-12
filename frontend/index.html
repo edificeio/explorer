@@ -15,20 +15,16 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|view";
+      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
       var WORKFLOW_CREATE =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|createScrapbook";
+        "org.entcore.blog.controllers.BlogController|create";
       var WORKFLOW_PUBLISH =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|publish";
-      var WORKFLOW_PRINT =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|print";
-      var WORKFLOW_EXPORT_HTML =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|exportHtml";
+        "org.entcore.blog.controllers.BlogController|publish";
+      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
       ///////////
       var explorerConfig = {
-        app: "scrapbook",
-        types: ["scrapbook"],
+        app: "blog",
+        types: ["blog"],
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -62,12 +58,12 @@
             workflow: WORKFLOW_CREATE,
             target: "tree",
           },
-          /*{
-            id: "duplicate",
-            workflow: WORFLOW_ACCESS,
-            target: "actionbar",
-            right: "tree",
-          },*/
+          {
+            id: "createPublic",
+            workflow:
+              "org.entcore.blog.controllers.BlogController|createPublicBlog",
+            target: "tree",
+          },
           {
             id: "move",
             workflow: WORFLOW_ACCESS,
@@ -83,12 +79,6 @@
           {
             id: "print",
             workflow: WORKFLOW_PRINT,
-            target: "actionbar",
-            right: "read",
-          },
-          {
-            id: "export",
-            workflow: WORKFLOW_EXPORT_HTML,
             target: "actionbar",
             right: "read",
           },
