@@ -99,7 +99,11 @@ export default function useActionBar() {
       case "edit" as any:
         return onEdit();
       case "export":
-        return onExport();
+        if (resourceIds.length > 0) {
+          return onExport();
+        } else {
+          return null;
+        }
       case ACTION.SHARE:
         return setOpenedModalName("share");
       // case ACTION.MANAGE:
@@ -131,6 +135,8 @@ export default function useActionBar() {
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.SHARE:
         return noFolderSelected && onlyOneItemSelected;
+      case "export":
+        return onlyOneItemSelected && noFolderSelected;
       case ACTION.PRINT:
         return onlyOneItemSelected && noFolderSelected;
       case "edit" as any:

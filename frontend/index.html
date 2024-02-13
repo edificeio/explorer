@@ -15,16 +15,20 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
+      var WORFLOW_ACCESS =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|view";
       var WORKFLOW_CREATE =
-        "org.entcore.blog.controllers.BlogController|create";
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|createScrapbook";
       var WORKFLOW_PUBLISH =
-        "org.entcore.blog.controllers.BlogController|publish";
-      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|publish";
+      var WORKFLOW_PRINT =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|print";
+      var WORKFLOW_EXPORT_HTML =
+        "fr.wseduc.scrapbook.controllers.ScrapbookController|exportHtml";
       ///////////
       var explorerConfig = {
-        app: "blog",
-        types: ["blog"],
+        app: "scrapbook",
+        types: ["scrapbook"],
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -58,12 +62,12 @@
             workflow: WORKFLOW_CREATE,
             target: "tree",
           },
-          {
-            id: "createPublic",
-            workflow:
-              "org.entcore.blog.controllers.BlogController|createPublicBlog",
-            target: "tree",
-          },
+          /*{
+            id: "duplicate",
+            workflow: WORFLOW_ACCESS,
+            target: "actionbar",
+            right: "tree",
+          },*/
           {
             id: "move",
             workflow: WORFLOW_ACCESS,
@@ -75,6 +79,12 @@
             workflow: WORKFLOW_PUBLISH,
             target: "actionbar",
             right: "creator",
+          },
+          {
+            id: "export",
+            workflow: WORKFLOW_EXPORT_HTML,
+            target: "actionbar",
+            right: "read",
           },
           {
             id: "print",
