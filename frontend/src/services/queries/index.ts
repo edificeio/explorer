@@ -32,6 +32,7 @@ import {
 import { t } from "i18next";
 
 import {
+  copyResource,
   createFolder,
   createResource,
   deleteAll,
@@ -373,6 +374,86 @@ export const useDelete = () => {
     onSettled: () => {
       clearSelectedItems();
       clearSelectedIds();
+    },
+  });
+};
+
+/**
+ * useCopyResource query.
+ * Optimistic UI when resource is copied.
+ */
+export const useCopyResource = () => {
+  const toast = useToast();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const { user } = useUser();
+
+  const { filters, trashed } = searchParams;
+  const TOAST_INFO_ID = "duplicate_start";
+
+  const queryKey = [
+    "context",
+    {
+      folderId: filters.folder,
+      filters,
+      trashed,
+    },
+  ];
+
+  return useMutation({
+    mutationFn: async (resource: IResource) => {
+      toast.info(t("duplicate.start"), {
+        id: TOAST_INFO_ID,
+      });
+      return await copyResource(searchParams, resource.assetId);
+    },
+    onSuccess: async (data, variables) => {
+      toast.remove(TOAST_INFO_ID);
+      toast.success(t("duplicate.done"));
+
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
+      const newResource: IResource = {
+        ...variables,
+        name: `${variables.name}${t("duplicate.suffix")}`,
+        assetId: data.duplicateId,
+        id: data.duplicateId,
+        creatorId: user?.userId as string,
+        creatorName: user?.username as string,
+        createdAt: Date.now() as unknown as string,
+        slug: variables.slug || "",
+        modifiedAt: Date.now() as unknown as string,
+        modifierId: user?.userId || "",
+        modifierName: user?.username || "",
+        updatedAt: Date.now() as unknown as string,
+        trashed: false,
+        rights: [`creator:${user?.userId}`],
+      };
+
+      if (previousData) {
+        return queryClient.setQueryData<
+          InfiniteData<ISearchResults> | undefined
+        >(queryKey, (prev) => {
+          if (prev) {
+            return {
+              ...prev,
+              pages: prev?.pages.map((page) => {
+                return {
+                  ...page,
+                  resources: [newResource, ...page.resources],
+                };
+              }),
+            };
+          }
+          return undefined;
+        });
+      }
+    },
+    onError: (error) => {
+      toast.remove(TOAST_INFO_ID);
+      if (typeof error === "string") {
+        toast.error(`${t("duplicate.error")}: ${error}`);
+      }
     },
   });
 };

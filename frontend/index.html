@@ -16,19 +16,21 @@
     <!-- SET INITIALISATION CONFIG -->
     <script>
       var WORFLOW_ACCESS =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|view";
+        "net.atos.entng.mindmap.controllers.MindmapController|view";
       var WORKFLOW_CREATE =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|createScrapbook";
-      var WORKFLOW_PUBLISH =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|publish";
+        "net.atos.entng.mindmap.controllers.MindmapController|create";
       var WORKFLOW_PRINT =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|print";
-      var WORKFLOW_EXPORT_HTML =
-        "fr.wseduc.scrapbook.controllers.ScrapbookController|exportHtml";
-      ///////////
+        "net.atos.entng.mindmap.controllers.MindmapController|printView";
+      var WORKFLOW_EXPORT_PNG =
+        "net.atos.entng.mindmap.controllers.MindmapController|exportPngMindmap";
+      var WORKFLOW_EXPORT_SVG =
+        "net.atos.entng.mindmap.controllers.MindmapController|exportSvgMindmap";
+      var WORKFLOW_PUBLISH =
+        "net.atos.entng.mindmap.controllers.MindmapController|publish";
       var explorerConfig = {
-        app: "scrapbook",
-        types: ["scrapbook"],
+        app: "mindmap",
+        types: ["mindmap"],
+        libraryAppFilter: "MindMap",
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -62,12 +64,12 @@
             workflow: WORKFLOW_CREATE,
             target: "tree",
           },
-          /*{
-            id: "duplicate",
+          {
+            id: "copy",
             workflow: WORFLOW_ACCESS,
             target: "actionbar",
-            right: "tree",
-          },*/
+            right: "read",
+          },
           {
             id: "move",
             workflow: WORFLOW_ACCESS,
@@ -79,12 +81,6 @@
             workflow: WORKFLOW_PUBLISH,
             target: "actionbar",
             right: "creator",
-          },
-          {
-            id: "export",
-            workflow: WORKFLOW_EXPORT_HTML,
-            target: "actionbar",
-            right: "read",
           },
           {
             id: "print",

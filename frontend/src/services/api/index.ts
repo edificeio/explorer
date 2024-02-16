@@ -167,6 +167,22 @@ export const restoreAll = async ({
 };
 
 /**
+ * copyResource API.
+ * @param searchParams searchParams to retrieve the application name.
+ * @param resourceId the resource id to copy.
+ * @returns copied ressource id and message.
+ */
+export const copyResource = async (
+  searchParams: ISearchParameters & IActionParameters,
+  resourceId: ID,
+) => {
+  return await odeServices.resource(searchParams.application).copy({
+    application: searchParams.application,
+    resourceId,
+  });
+};
+
+/**
  * moveToFolder API
  * @param searchParams, resourceIds, folderIds, folderId
  * @returns folders and resources to new folderId location
