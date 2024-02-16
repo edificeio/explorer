@@ -166,6 +166,12 @@ export const restoreAll = async ({
     .restoreAll(trashParameters, useAssetIds);
 };
 
+/**
+ * copyResource API.
+ * @param searchParams searchParams to retrieve the application name.
+ * @param resourceId the resource id to copy.
+ * @returns copied ressource id and message.
+ */
 export const copyResource = async (
   searchParams: ISearchParameters & IActionParameters,
   resourceId: ID,

@@ -378,6 +378,10 @@ export const useDelete = () => {
   });
 };
 
+/**
+ * useCopyResource query.
+ * Optimistic UI when resource is copied.
+ */
 export const useCopyResource = () => {
   const toast = useToast();
   const searchParams = useSearchParams();
