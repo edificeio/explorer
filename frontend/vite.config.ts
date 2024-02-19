@@ -47,7 +47,7 @@ export default ({ mode }: { mode: string }) => {
     "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
     "^/(?=archive|auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
       proxyObj,
-    "^/(?=blog|mindmap|scrapbook)": proxyObj,
+    "^/(?=blog|mindmap|scrapbook|collaborativewall)": proxyObj,
     "/xiti": proxyObj,
     "/analyticsConf": proxyObj,
     "/explorer": proxyObj,
