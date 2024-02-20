@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.ExplorerConfig;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
 
@@ -97,5 +98,15 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
 
     public void setAttemptCount(final int attemptCount) {
         metadata.put(ATTEMPT_COUNT, attemptCount);
+    }
+
+    public boolean hasRights(){
+        final JsonArray rights = this.getRights();
+        return rights == null? false : rights.size() > 0;
+    }
+
+    public boolean hasSubResources(){
+        final JsonArray subresources = this.getSubresources();
+        return subresources == null? false : subresources.size() > 0;
     }
 }
