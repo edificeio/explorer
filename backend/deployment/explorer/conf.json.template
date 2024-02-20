@@ -46,6 +46,6 @@
             }
           <% } %>
         },
-        "applications": ["blog", "exercizer", "mindmap"]
+        "applications": ["blog", "exercizer", "mindmap", "scrapbook"]
       }
     }
