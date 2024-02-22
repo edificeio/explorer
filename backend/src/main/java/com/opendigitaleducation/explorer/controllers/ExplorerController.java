@@ -187,7 +187,7 @@ public class ExplorerController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            final ResourceSearchOperation filter = new ResourceSearchOperation();
+            final ResourceSearchOperation filter = new ResourceSearchOperation().setSearchEverywhere(true);
             if(useSearchId){
                 filter.setId(resourceId);
             }else{
