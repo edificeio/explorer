@@ -171,6 +171,44 @@ public class ExplorerController extends BaseController {
         });
     }
 
+    @Get("resources/:id")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getResourceById(final HttpServerRequest request) {
+        //resources/:id?idtype=search&application
+        final String application = request.params().get("application");
+        final String resourceId = request.params().get("id");
+        final boolean useSearchId = "search".equals(request.params().get("idtype"));
+        if(org.apache.commons.lang3.StringUtils.isBlank(application) || org.apache.commons.lang3.StringUtils.isBlank(resourceId)){
+            badRequest(request,"missing.params");
+            return;
+        }
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                unauthorized(request);
+                return;
+            }
+            final ResourceSearchOperation filter = new ResourceSearchOperation();
+            if(useSearchId){
+                filter.setId(resourceId);
+            }else{
+                filter.setAssetId(resourceId);
+            }
+            resourceService.fetch(user, application, filter).onComplete(e -> {
+                if (e.succeeded()) {
+                    final JsonArray results = e.result();
+                    if(results.isEmpty() || results.getJsonObject(0)== null){
+                        notFound(request);
+                    }else{
+                        renderJson(request, adaptResource(results.getJsonObject(0)));
+                    }
+                } else {
+                    renderError(request);
+                    log.error("Failed to fetch resource by id:", e.cause());
+                }
+            });
+        });
+    }
+
     @Get("folders")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getFolders(final HttpServerRequest request) {
