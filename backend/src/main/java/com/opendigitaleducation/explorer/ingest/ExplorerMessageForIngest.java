@@ -4,8 +4,10 @@ import com.opendigitaleducation.explorer.ExplorerConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.share.ShareRoles;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ExplorerMessageForIngest extends ExplorerMessage {
     public static final String ATTEMPT_COUNT = "attempt_count";
@@ -100,9 +102,18 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
         metadata.put(ATTEMPT_COUNT, attemptCount);
     }
 
-    public boolean hasRights(){
+    public boolean hasRights(final boolean excludeCreator){
         final JsonArray rights = this.getRights();
-        return rights == null? false : rights.size() > 0;
+        if(rights == null || rights.size() == 0){
+            return false;
+        }
+        if(excludeCreator){
+            final String creatorPrefix = ShareRoles.getSerializedForCreator("");
+            final long count = rights.stream().filter(right -> !right.toString().startsWith(creatorPrefix)).count();
+            return count > 0;
+        }else{
+            return rights.size() > 0;
+        }
     }
 
     public boolean hasSubResources(){
