@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.3.3-dev.0",
+  "version": "1.3.3-develop-pedago.20240281551",
   "description": "Open Digital Education Explorer",
   "homepage": "https://github.com/opendigitaleducation/explorer#readme",
   "bugs": {
@@ -40,7 +40,7 @@
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
-    "prepare": "cd .. && husky install frontend/.husky",
+    "prepare": "cd .. && husky frontend/.husky",
     "preview": "vite preview",
     "tsc": "tsc"
   },
@@ -59,7 +59,7 @@
     "@edifice-ui/icons": "develop-pedago",
     "@edifice-ui/react": "develop-pedago",
     "@react-spring/web": "9.7.3",
-    "@tanstack/react-query": "5.18.0",
+    "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
     "dayjs": "1.11.10",
     "i18next": "23.8.1",
@@ -94,7 +94,7 @@
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.5",
-    "husky": "8.0.3",
+    "husky": "9.0.7",
     "lint-staged": "15.2.0",
     "prettier": "3.2.4",
     "typescript": "5.3.3",
