@@ -40,7 +40,7 @@
     "lighthouse": "pnpm clean:lighthouse && lhci autorun",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
-    "prepare": "cd .. && husky install frontend/.husky",
+    "prepare": "cd .. && husky frontend/.husky",
     "preview": "vite preview",
     "tsc": "tsc"
   },
@@ -94,7 +94,7 @@
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.5",
-    "husky": "8.0.3",
+    "husky": "9.0.7",
     "lint-staged": "15.2.0",
     "prettier": "3.2.4",
     "typescript": "5.3.3",
