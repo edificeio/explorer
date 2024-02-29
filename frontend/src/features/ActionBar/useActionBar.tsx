@@ -132,6 +132,8 @@ export default function useActionBar() {
         return onlyOneSelected;
       case ACTION.MANAGE:
         return onlyOneItemSelected;
+      case ACTION.COPY:
+        return onlyOneItemSelected && noFolderSelected;
       case ACTION.PUBLISH:
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.UPD_PROPS:
