@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.0-%branch%.%generateVersion%",
+  "version": "1.4.0",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
