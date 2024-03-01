@@ -1,17 +1,17 @@
 {
   "name": "ode-explorer",
-  "version": "1.3.3-develop.20240281551",
-  "description": "Open Digital Education Explorer",
-  "homepage": "https://github.com/opendigitaleducation/explorer#readme",
+  "version": "1.4.0-develop.20240311539",
+  "description": "Edifice Explorer",
+  "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
-    "url": "https://github.com/opendigitaleducation/explorer/issues"
+    "url": "https://github.com/edificeio/explorer/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/opendigitaleducation/explorer.git"
+    "url": "git+https://github.com/edificeio/explorer.git"
   },
-  "license": "GPL-3.0",
-  "author": "Open Digital Education",
+  "license": "AGPL-3.0",
+  "author": "Edifice",
   "type": "module",
   "files": [
     "dist",
