@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.9-develop.202406101923",
+  "version": "1.4.12-develop-b2school.202406121446",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -56,8 +56,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "1.5.8",
-    "@edifice-ui/react": "1.5.8",
+    "@edifice-ui/icons": "develop-b2school",
+    "@edifice-ui/react": "develop-b2school",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
@@ -85,8 +85,8 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "concurrently": "8.2.2",
     "csstype": "3.1.3",
-    "edifice-bootstrap": "1.5.8",
-    "edifice-ts-client": "1.5.8",
+    "edifice-bootstrap": "develop-b2school",
+    "edifice-ts-client": "develop-b2school",
     "eslint": "8.56.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
@@ -101,20 +101,6 @@
     "vite": "5.0.12",
     "vite-plugin-dts": "3.7.2",
     "vite-tsconfig-paths": "4.3.1"
-  },
-  "peerDependencies": {
-    "@edifice-ui/icons": "*",
-    "@edifice-ui/react": "*",
-    "@react-spring/web": "9.7.3",
-    "@tanstack/react-query": "5.8.4",
-    "clsx": "2.0.0",
-    "i18next": "23.8.1",
-    "i18next-http-backend": "2.4.2",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-hook-form": "7.49.2",
-    "react-i18next": "14.0.1",
-    "zustand": "4.5.0"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
