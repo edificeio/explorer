@@ -210,8 +210,7 @@ public class FolderServiceElastic implements FolderService {
         final FolderQueryElastic query = new FolderQueryElastic().withCreatorId(creatorId).withSearch(search).withApplication(application);
         final String index = getIndex();
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(creator));
-        final JsonObject queryJson = query.getSearchQuery();
-        queryJson.remove("sort");
+        final JsonObject queryJson = query.getCountQuery();
         return manager.getClient().count(index, queryJson, options);
     }
 
