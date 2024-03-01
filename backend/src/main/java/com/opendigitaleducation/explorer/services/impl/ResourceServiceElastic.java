@@ -144,8 +144,7 @@ public class ResourceServiceElastic implements ResourceService {
         final String index = getIndex(application);
         final ResourceQueryElastic query = new ResourceQueryElastic(user).withApplication(application).withSearchOperation(operation);
         final ElasticClient.ElasticOptions options = new ElasticClient.ElasticOptions().withRouting(getRoutingKey(application));
-        final JsonObject queryJson = query.getSearchQuery();
-        queryJson.remove("sort");
+        final JsonObject queryJson = query.getCountQuery();
         return manager.getClient().count(index, queryJson, options);
     }
 

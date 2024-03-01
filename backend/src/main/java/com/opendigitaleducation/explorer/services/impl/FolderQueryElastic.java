@@ -205,7 +205,18 @@ public class FolderQueryElastic {
         }
         if (size.isPresent()) {
             payload.put("size", size.get());
+        }else if(!id.isEmpty()) {
+            // if searching by id => size must be at least id.size
+            payload.put("size", id.size()+1);
         }
+        return payload;
+    }
+
+    public JsonObject getCountQuery() {
+        final JsonObject payload = this.getSearchQuery();
+        payload.remove("from");
+        payload.remove("size");
+        payload.remove("sort");
         return payload;
     }
 }

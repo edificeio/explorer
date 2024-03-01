@@ -410,7 +410,21 @@ public class ResourceQueryElastic {
         }
         if (size.isPresent()) {
             payload.put("size", size.get());
+        }else if(!id.isEmpty()) {
+            // if searching by id => size must be at least id.size
+            payload.put("size", id.size()+1);
+        }else if(!assetId.isEmpty()) {
+            // if searching by assetId => size must be at least assetId.size
+            payload.put("size", assetId.size()+1);
         }
+        return payload;
+    }
+
+    public JsonObject getCountQuery() {
+        final JsonObject payload = this.getSearchQuery();
+        payload.remove("from");
+        payload.remove("size");
+        payload.remove("sort");
         return payload;
     }
 }
