@@ -52,6 +52,7 @@ import {
   useResourceIds,
   useResourceWithoutIds,
   useStoreContext,
+  useCurrentFolder,
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";
@@ -387,6 +388,7 @@ export const useCopyResource = () => {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { user } = useUser();
+  const currentFolder = useCurrentFolder();
 
   const { filters, trashed } = searchParams;
   const TOAST_INFO_ID = "duplicate_start";
@@ -431,21 +433,34 @@ export const useCopyResource = () => {
       };
 
       if (previousData) {
-        return queryClient.setQueryData<
-          InfiniteData<ISearchResults> | undefined
-        >(queryKey, (prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              pages: prev?.pages.map((page) => {
-                return {
-                  ...page,
-                  resources: [newResource, ...page.resources],
-                };
-              }),
-            };
-          }
-          return undefined;
+        queryClient.setQueryData<InfiniteData<ISearchResults> | undefined>(
+          queryKey,
+          (prev) => {
+            if (prev) {
+              return {
+                ...prev,
+                pages: prev?.pages.map((page) => {
+                  return {
+                    ...page,
+                    resources: [newResource, ...page.resources],
+                  };
+                }),
+              };
+            }
+            return undefined;
+          },
+        );
+      }
+
+      // Fix #WB2-1478: Duplicate Backend API creates the duplicated resource in the root folder
+      // So in case we are in another folder we need to move the duplicated resource to that folder
+      if (currentFolder.id && currentFolder.id !== "default") {
+        moveToFolder({
+          searchParams,
+          resourceIds: [data.duplicateId],
+          folderId: currentFolder.id,
+          folderIds: [],
+          useAssetIds: true,
         });
       }
     },
