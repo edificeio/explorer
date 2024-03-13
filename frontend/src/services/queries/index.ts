@@ -16,6 +16,7 @@ import {
   UseMutationOptions,
   UseMutationResult,
 } from "@tanstack/react-query";
+import { FOLDER } from "edifice-ts-client";
 import {
   type ISearchResults,
   type IFolder,
@@ -454,7 +455,7 @@ export const useCopyResource = () => {
 
       // Fix #WB2-1478: Duplicate Backend API creates the duplicated resource in the root folder
       // So in case we are in another folder we need to move the duplicated resource to that folder
-      if (currentFolder.id && currentFolder.id !== "default") {
+      if (currentFolder.id && currentFolder.id !== FOLDER.DEFAULT) {
         moveToFolder({
           searchParams,
           resourceIds: [data.duplicateId],
