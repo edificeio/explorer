@@ -34,7 +34,8 @@ abstract class MessageIngesterElasticOperation {
             case Delete:
                 return Arrays.asList(new MessageIngesterElasticOperationDelete(message));
             case Upsert:
-                if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders() && message.isTrashed()){
+                if(ExplorerConfig.getInstance().isSkipIndexOfTrashedFolders()
+                        && (message.isTrashed() || message.isTrashedBy(message.getUpdaterId()))){
                     //specific indexation for trashed message
                     if(message.isFolderMessage()){
                         //folder are not indexed

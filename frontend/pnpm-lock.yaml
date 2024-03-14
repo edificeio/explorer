@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@edifice-ui/icons':
-    specifier: develop
-    version: 1.4.3-develop.4(react-dom@18.2.0)(react@18.2.0)
+    specifier: develop-b2school
+    version: 1.4.6-develop-b2school.0(react-dom@18.2.0)(react@18.2.0)
   '@edifice-ui/react':
-    specifier: develop
-    version: 1.4.3-develop.5(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.3-develop.4)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.3)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0)
+    specifier: develop-b2school
+    version: 1.4.6-develop-b2school.0(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.6-develop-b2school.0)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.3)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0)
   '@react-spring/web':
     specifier: 9.7.3
     version: 9.7.3(react-dom@18.2.0)(react@18.2.0)
@@ -89,11 +89,11 @@ devDependencies:
     specifier: 3.1.3
     version: 3.1.3
   edifice-bootstrap:
-    specifier: develop
-    version: 1.3.1-develop.1
+    specifier: develop-b2school
+    version: 1.5.0-develop-b2school.1
   edifice-ts-client:
-    specifier: develop
-    version: 1.2.0-develop.1
+    specifier: develop-b2school
+    version: 1.3.1-develop-b2school.1
   eslint:
     specifier: 8.56.0
     version: 8.56.0
@@ -116,8 +116,8 @@ devDependencies:
     specifier: 0.4.5
     version: 0.4.5(eslint@8.56.0)
   husky:
-    specifier: 8.0.3
-    version: 8.0.3
+    specifier: 9.0.7
+    version: 9.0.7
   lint-staged:
     specifier: 15.2.0
     version: 15.2.0
@@ -399,8 +399,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@edifice-ui/icons@1.4.3-develop.4(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-A5Zhw+C3+wRxwSdmDTVV278H5ZSWZlUfuKAdYtW87ahMrHfwbGJZ6dDBS3GWhIOQYmraJiLA89SNFwnD+V7I1g==}
+  /@edifice-ui/icons@1.4.6-develop-b2school.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-LtrOu3bBPkoLA0DoFsgrBUmT9WR3b86s5uzimpt3HNf85MnfV97iG+swHS/gn0TAqnF2sPfwd0zR9DwUgRJgog==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
@@ -409,8 +409,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@edifice-ui/react@1.4.3-develop.5(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.3-develop.4)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.3)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0):
-    resolution: {integrity: sha512-R423LaGDhg0tu34BsiR/l/7228K21n2vbrZUNsNS9/R3E6bTefKbCLr4oqZAvX6XKP2B5iBcR9lUJLVaoXlDAQ==}
+  /@edifice-ui/react@1.4.6-develop-b2school.0(@babel/runtime@7.23.9)(@edifice-ui/icons@1.4.6-develop-b2school.0)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(@pixi/utils@7.3.2)(@react-spring/web@9.7.3)(@tanstack/react-query@5.8.4)(@tiptap/core@2.2.3)(clsx@2.1.0)(csstype@3.1.3)(prop-types@15.8.1)(react-dom@18.2.0)(react-hook-form@7.49.3)(react-i18next@14.0.1)(react@18.2.0):
+    resolution: {integrity: sha512-9jqASmEvh8UtoSn9Nc60Iq630k8ncmxvkkrwhYjyWgRIcau8zEMcTypJXUmAp3/bLA2ZRlQHLogpD/K8KLv5/w==}
     peerDependencies:
       '@edifice-ui/icons': '*'
       '@react-spring/web': 9.7.3
@@ -421,9 +421,10 @@ packages:
       react-hook-form: 7.49.2
       react-i18next: 13.5.0
     dependencies:
-      '@edifice-ui/icons': 1.4.3-develop.4(react-dom@18.2.0)(react@18.2.0)
+      '@edifice-ui/icons': 1.4.6-develop-b2school.0(react-dom@18.2.0)(react@18.2.0)
       '@floating-ui/react': 0.26.0(react-dom@18.2.0)(react@18.2.0)
-      '@pixi/react': 7.1.1(@babel/runtime@7.23.9)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
+      '@pixi/mixin-get-child-by-name': 7.3.2(@pixi/display@7.3.2)
+      '@pixi/react': 7.1.1(@babel/runtime@7.23.9)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
       '@popperjs/core': 2.11.8
       '@react-spring/web': 9.7.3(react-dom@18.2.0)(react@18.2.0)
       '@tanstack/react-query': 5.8.4(react-dom@18.2.0)(react@18.2.0)
@@ -879,7 +880,7 @@ packages:
     dependencies:
       '@pixi/core': 7.3.2
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
-      '@pixi/events': 7.3.2(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/events': 7.3.2(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/app@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2):
@@ -892,34 +893,25 @@ packages:
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
     dev: false
 
-  /@pixi/app@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0):
+  /@pixi/app@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2):
     resolution: {integrity: sha512-9pDB974rfuObG5YHvR7kdWhDiIV26b0GeC4vHRQB3bkmltguMi8SCQ9WQKH3WwRLaflzf9EMZpgX10cU1gLgKg==}
     peerDependencies:
       '@pixi/core': 7.4.0
       '@pixi/display': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
     dev: false
 
-  /@pixi/assets@7.3.2(@pixi/core@7.3.2)(@pixi/utils@7.3.2):
+  /@pixi/assets@7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2):
     resolution: {integrity: sha512-yteq6ptAxA09EcwU9D9hl7qr5yWIqy+c2PsXkTDkc76vTAwIamLY3KxLq2aR5y1U4L4O6aHFJd26uNhHcuTPmw==}
     peerDependencies:
       '@pixi/core': 7.3.2
       '@pixi/utils': 7.3.2
     dependencies:
-      '@pixi/core': 7.3.2
+      '@pixi/core': 7.4.0
       '@pixi/utils': 7.3.2
       '@types/css-font-loading-module': 0.0.7
-    dev: false
-
-  /@pixi/assets@7.4.0(@pixi/core@7.4.0):
-    resolution: {integrity: sha512-Z7J2ZYSZ41Pr3CK0IXgtVV1HiLm1sG0AOZHAPMwB82wNdIDvmWowo/LkXvQmSHFLxFlEz1hWOdOFs1daWAeIfg==}
-    peerDependencies:
-      '@pixi/core': 7.4.0
-    dependencies:
-      '@pixi/core': 7.4.0
-      '@types/css-font-loading-module': 0.0.12
     dev: false
 
   /@pixi/color@7.3.2:
@@ -944,7 +936,7 @@ packages:
       '@pixi/assets': 7.3.2
       '@pixi/core': 7.3.2
     dependencies:
-      '@pixi/assets': 7.3.2(@pixi/core@7.3.2)(@pixi/utils@7.3.2)
+      '@pixi/assets': 7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2)
       '@pixi/core': 7.3.2
     dev: false
 
@@ -991,22 +983,22 @@ packages:
       '@pixi/core': 7.3.2
     dev: false
 
-  /@pixi/display@7.4.0(@pixi/core@7.4.0):
-    resolution: {integrity: sha512-l+K6H9CqB2tQltpaxal3dIPPAOWhBWszrJm5EbK5sVVQFcaWXgeS/Hmniz0DhT7OpPmstcx4nii9hZgRkmMmEg==}
+  /@pixi/display@7.3.2(@pixi/core@7.4.0):
+    resolution: {integrity: sha512-cY5AnZ3TWt5GYGx4e5AQ2/2U9kP+RorBg/O30amJ+8e9bFk9rS8cjh/DDq/hc4lql96BkXAInTl40eHnAML5lQ==}
     peerDependencies:
-      '@pixi/core': 7.4.0
+      '@pixi/core': 7.3.2
     dependencies:
       '@pixi/core': 7.4.0
     dev: false
 
-  /@pixi/events@7.3.2(@pixi/core@7.4.0)(@pixi/display@7.4.0):
+  /@pixi/events@7.3.2(@pixi/core@7.4.0)(@pixi/display@7.3.2):
     resolution: {integrity: sha512-Moca9epu8jk1wIQCdVYjhz2pD9Ol21m50wvWUKvpgt9yM/AjkCLSDt8HO/PmTpavDrkhx5pVVWeDDA6FyUNaGA==}
     peerDependencies:
       '@pixi/core': 7.3.2
       '@pixi/display': 7.3.2
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
     dev: false
 
   /@pixi/extensions@7.3.2:
@@ -1085,7 +1077,7 @@ packages:
       '@pixi/sprite': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)
     dev: false
 
-  /@pixi/graphics@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0):
+  /@pixi/graphics@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0):
     resolution: {integrity: sha512-9GcXbP/iTFEA5xwXx6sSwGyIYPd6XVhFJR7ALqqnlYC+FvvvHPoh7cN3HPa1Aw9dWpNRKUKuNcoOYPmd0O0aJA==}
     peerDependencies:
       '@pixi/core': 7.4.0
@@ -1093,8 +1085,8 @@ packages:
       '@pixi/sprite': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/math@7.3.2:
@@ -1122,7 +1114,7 @@ packages:
       '@pixi/mesh': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/mesh@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2):
@@ -1135,14 +1127,14 @@ packages:
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
     dev: false
 
-  /@pixi/mesh@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0):
+  /@pixi/mesh@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2):
     resolution: {integrity: sha512-Ql5B3q8UD898LTKTPAkveOU72tN9xD8CsLPuvmPSrjpE5FlyRhrS90JzD26/sz6H3B7Kfu2gRjilmujCzNvuWA==}
     peerDependencies:
       '@pixi/core': 7.4.0
       '@pixi/display': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
     dev: false
 
   /@pixi/mixin-cache-as-bitmap@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)(@pixi/sprite@7.3.2):
@@ -1162,7 +1154,7 @@ packages:
     peerDependencies:
       '@pixi/display': 7.3.2
     dependencies:
-      '@pixi/display': 7.3.2(@pixi/core@7.3.2)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
     dev: false
 
   /@pixi/mixin-get-global-position@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2):
@@ -1187,7 +1179,7 @@ packages:
       '@pixi/sprite': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)
     dev: false
 
-  /@pixi/particle-container@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0):
+  /@pixi/particle-container@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0):
     resolution: {integrity: sha512-y3cB2EvgzfOm/pw4qBFsKOVoRzhzLy/FFj92DbD3bL5a6Z+YtKblkeWw3P5exzZJBTRn9sEk1vhzBb1HM/WEJw==}
     peerDependencies:
       '@pixi/core': 7.4.0
@@ -1195,8 +1187,8 @@ packages:
       '@pixi/sprite': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/prepare@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)(@pixi/graphics@7.3.2)(@pixi/text@7.3.2):
@@ -1213,7 +1205,7 @@ packages:
       '@pixi/text': 7.3.2(@pixi/core@7.3.2)(@pixi/sprite@7.3.2)
     dev: false
 
-  /@pixi/react@7.1.1(@babel/runtime@7.23.9)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
+  /@pixi/react@7.1.1(@babel/runtime@7.23.9)(@pixi/app@7.4.0)(@pixi/constants@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/extensions@7.4.0)(@pixi/graphics@7.4.0)(@pixi/math@7.4.0)(@pixi/mesh-extras@7.4.0)(@pixi/mesh@7.4.0)(@pixi/particle-container@7.4.0)(@pixi/sprite-animated@7.4.0)(@pixi/sprite-tiling@7.4.0)(@pixi/sprite@7.4.0)(@pixi/text-bitmap@7.4.0)(@pixi/text@7.4.0)(@pixi/ticker@7.4.0)(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-W3LILsYiUxavrLoDGiIuQneFgSzsUuHkt6VVuAaqUPEGjMBzicgA5v5R2dPDmu3B+5BRwAHcJZttUKH7zFjbGw==}
     peerDependencies:
       '@babel/runtime': ^7.14.8
@@ -1238,21 +1230,21 @@ packages:
       react-dom: '>=17.0.0'
     dependencies:
       '@babel/runtime': 7.23.9
-      '@pixi/app': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/app': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
       '@pixi/constants': 7.4.0
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
       '@pixi/extensions': 7.4.0
-      '@pixi/graphics': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0)
+      '@pixi/graphics': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0)
       '@pixi/math': 7.4.0
-      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
       '@pixi/mesh-extras': 7.4.0(@pixi/core@7.4.0)(@pixi/mesh@7.4.0)
-      '@pixi/particle-container': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0)
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/particle-container': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
       '@pixi/sprite-animated': 7.4.0(@pixi/core@7.4.0)(@pixi/sprite@7.4.0)
-      '@pixi/sprite-tiling': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0)
+      '@pixi/sprite-tiling': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0)
       '@pixi/text': 7.4.0(@pixi/core@7.4.0)(@pixi/sprite@7.4.0)
-      '@pixi/text-bitmap': 7.4.0(@pixi/assets@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/mesh@7.4.0)(@pixi/text@7.4.0)
+      '@pixi/text-bitmap': 7.4.0(@pixi/assets@7.3.2)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/mesh@7.4.0)(@pixi/text@7.4.0)
       '@pixi/ticker': 7.4.0
       lodash.isnil: 4.0.0
       lodash.times: 4.3.2
@@ -1303,7 +1295,7 @@ packages:
       '@pixi/sprite': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/sprite-tiling@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)(@pixi/sprite@7.3.2):
@@ -1318,7 +1310,7 @@ packages:
       '@pixi/sprite': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)
     dev: false
 
-  /@pixi/sprite-tiling@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/sprite@7.4.0):
+  /@pixi/sprite-tiling@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/sprite@7.4.0):
     resolution: {integrity: sha512-q0wjrdhvqnfSRNYIJ0KHUIT0nARvlmBoKBtjEZLAnk1jQCFzrJIg4qfmsBNDSOzMVaAxAot0EbOLjld6EZmf8w==}
     peerDependencies:
       '@pixi/core': 7.4.0
@@ -1326,8 +1318,8 @@ packages:
       '@pixi/sprite': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/sprite@7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2):
@@ -1340,14 +1332,14 @@ packages:
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
     dev: false
 
-  /@pixi/sprite@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0):
+  /@pixi/sprite@7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2):
     resolution: {integrity: sha512-+yQdq3aKS59s9uxiW066geWLCKYTRjtbdgE2qtyUP4pK/bYanWVWash7K8P3qVX8NQsQKjGvNPoa2fkP6MBE1Q==}
     peerDependencies:
       '@pixi/core': 7.4.0
       '@pixi/display': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
     dev: false
 
   /@pixi/spritesheet@7.3.2(@pixi/assets@7.3.2)(@pixi/core@7.3.2):
@@ -1356,7 +1348,7 @@ packages:
       '@pixi/assets': 7.3.2
       '@pixi/core': 7.3.2
     dependencies:
-      '@pixi/assets': 7.3.2(@pixi/core@7.3.2)(@pixi/utils@7.3.2)
+      '@pixi/assets': 7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2)
       '@pixi/core': 7.3.2
     dev: false
 
@@ -1369,14 +1361,14 @@ packages:
       '@pixi/mesh': 7.3.2
       '@pixi/text': 7.3.2
     dependencies:
-      '@pixi/assets': 7.3.2(@pixi/core@7.3.2)(@pixi/utils@7.3.2)
+      '@pixi/assets': 7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2)
       '@pixi/core': 7.3.2
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
       '@pixi/mesh': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)
       '@pixi/text': 7.3.2(@pixi/core@7.3.2)(@pixi/sprite@7.3.2)
     dev: false
 
-  /@pixi/text-bitmap@7.4.0(@pixi/assets@7.4.0)(@pixi/core@7.4.0)(@pixi/display@7.4.0)(@pixi/mesh@7.4.0)(@pixi/text@7.4.0):
+  /@pixi/text-bitmap@7.4.0(@pixi/assets@7.3.2)(@pixi/core@7.4.0)(@pixi/display@7.3.2)(@pixi/mesh@7.4.0)(@pixi/text@7.4.0):
     resolution: {integrity: sha512-OkYixlqMW9b1EHtEbSP9mgZEqI0WLN1KP4h2EyJk0LC9lH2Ybp3v7ZGHKAetGkSCt8PXY5AfXbcWtm+TgTWbJw==}
     peerDependencies:
       '@pixi/assets': 7.4.0
@@ -1385,10 +1377,10 @@ packages:
       '@pixi/mesh': 7.4.0
       '@pixi/text': 7.4.0
     dependencies:
-      '@pixi/assets': 7.4.0(@pixi/core@7.4.0)
+      '@pixi/assets': 7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2)
       '@pixi/core': 7.4.0
-      '@pixi/display': 7.4.0(@pixi/core@7.4.0)
-      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/display': 7.3.2(@pixi/core@7.4.0)
+      '@pixi/mesh': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
       '@pixi/text': 7.4.0(@pixi/core@7.4.0)(@pixi/sprite@7.4.0)
     dev: false
 
@@ -1423,7 +1415,7 @@ packages:
       '@pixi/sprite': 7.4.0
     dependencies:
       '@pixi/core': 7.4.0
-      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/sprite': 7.4.0(@pixi/core@7.4.0)(@pixi/display@7.3.2)
     dev: false
 
   /@pixi/ticker@7.3.2:
@@ -1864,14 +1856,6 @@ packages:
       '@tiptap/pm': 2.0.3(@tiptap/core@2.2.3)
     dev: false
 
-  /@tiptap/core@2.2.3(@tiptap/pm@2.2.3):
-    resolution: {integrity: sha512-0l3p1/cuaQk8XFf+Ft/ExbUjReGes5Iep7y4nuL/Fzi2S92DZzozY6cosXBHC/Xsqzn6zIkl/gnQTgmTvlmhCQ==}
-    peerDependencies:
-      '@tiptap/pm': ^2.0.0
-    dependencies:
-      '@tiptap/pm': 2.2.3
-    dev: false
-
   /@tiptap/extension-blockquote@2.2.3(@tiptap/core@2.2.3):
     resolution: {integrity: sha512-gN23d/ADhTOB0YIM4lR0VrVczdyaXpmIVYYWZ45tQEVJzFWRSIScE9m9NaVqtqwEMpYHyTHxLth0OQutZ91sog==}
     peerDependencies:
@@ -1894,7 +1878,7 @@ packages:
       '@tiptap/core': ^2.0.0
       '@tiptap/pm': ^2.0.0
     dependencies:
-      '@tiptap/core': 2.2.3(@tiptap/pm@2.2.3)
+      '@tiptap/core': 2.2.3(@tiptap/pm@2.0.3)
       '@tiptap/pm': 2.0.3(@tiptap/core@2.2.3)
       tippy.js: 6.3.7
     dev: false
@@ -1949,7 +1933,7 @@ packages:
       '@tiptap/core': ^2.0.0
       '@tiptap/pm': ^2.0.0
     dependencies:
-      '@tiptap/core': 2.2.3(@tiptap/pm@2.2.3)
+      '@tiptap/core': 2.2.3(@tiptap/pm@2.0.3)
       '@tiptap/pm': 2.0.3(@tiptap/core@2.2.3)
       tippy.js: 6.3.7
     dev: false
@@ -2053,30 +2037,7 @@ packages:
     peerDependencies:
       '@tiptap/core': ^2.0.0
     dependencies:
-      '@tiptap/core': 2.2.3(@tiptap/pm@2.2.3)
-      prosemirror-changeset: 2.2.1
-      prosemirror-collab: 1.3.1
-      prosemirror-commands: 1.5.2
-      prosemirror-dropcursor: 1.8.1
-      prosemirror-gapcursor: 1.3.2
-      prosemirror-history: 1.3.2
-      prosemirror-inputrules: 1.4.0
-      prosemirror-keymap: 1.2.2
-      prosemirror-markdown: 1.12.0
-      prosemirror-menu: 1.2.4
-      prosemirror-model: 1.19.4
-      prosemirror-schema-basic: 1.2.2
-      prosemirror-schema-list: 1.3.0
-      prosemirror-state: 1.4.3
-      prosemirror-tables: 1.3.5
-      prosemirror-trailing-node: 2.0.7(prosemirror-model@1.19.4)(prosemirror-state@1.4.3)(prosemirror-view@1.33.1)
-      prosemirror-transform: 1.8.0
-      prosemirror-view: 1.33.1
-    dev: false
-
-  /@tiptap/pm@2.2.3:
-    resolution: {integrity: sha512-jYZX+0fjN+a1J8qY72Poz1LK6X6oHVQkJIq6qzcx3rm0voYZNVRzP2GIfzstncZiEqRXABHY3mWfOi2I4K9tQA==}
-    dependencies:
+      '@tiptap/core': 2.2.3(@tiptap/pm@2.0.3)
       prosemirror-changeset: 2.2.1
       prosemirror-collab: 1.3.1
       prosemirror-commands: 1.5.2
@@ -2105,7 +2066,7 @@ packages:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
     dependencies:
-      '@tiptap/core': 2.2.3(@tiptap/pm@2.2.3)
+      '@tiptap/core': 2.2.3(@tiptap/pm@2.0.3)
       '@tiptap/extension-bubble-menu': 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.0.3)
       '@tiptap/extension-floating-menu': 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.0.3)
       '@tiptap/pm': 2.0.3(@tiptap/core@2.2.3)
@@ -3033,16 +2994,16 @@ packages:
     resolution: {integrity: sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ==}
     dev: false
 
-  /edifice-bootstrap@1.3.1-develop.1:
-    resolution: {integrity: sha512-t/SZb9yT3Y8eEMYnTqsNzf2/sBqa6wpy+iGGctiI9mw75kOM0maWhG+yS7hFsHMLapeAhkrz4FmlpSe092lAhQ==}
+  /edifice-bootstrap@1.5.0-develop-b2school.1:
+    resolution: {integrity: sha512-5PwVRnZqOsafTzD0EZsD5uylUxi3bLDEZH3qiJPUnibv12IfIGDjTpviyVD07OO5tyHGqRBDEZy4/KbWn1CM4g==}
     engines: {node: 18 || 20}
     dependencies:
       '@popperjs/core': 2.11.8
       bootstrap: 5.3.2(@popperjs/core@2.11.8)
     dev: true
 
-  /edifice-ts-client@1.2.0-develop.1:
-    resolution: {integrity: sha512-xNP0LTAbLPzt5VbwGm3KE/uepD07O6W2YoRS+cmAQYivdoO6dLyqTycojJ2nFeaVcgGWnpDP+4s9rspG3DeRDg==}
+  /edifice-ts-client@1.3.1-develop-b2school.1:
+    resolution: {integrity: sha512-WsYfWZYUSZgSobvAY+3UI6m2QdtkPkjl3Di7N1gIojJ1ZarZON/A+IgyyZisgpbAZkL79NbCyoHVIlzqP4j8MQ==}
     engines: {node: 18 || 20}
     dependencies:
       axios: 1.6.6
@@ -3822,9 +3783,9 @@ packages:
     engines: {node: '>=16.17.0'}
     dev: true
 
-  /husky@8.0.3:
-    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
-    engines: {node: '>=14'}
+  /husky@9.0.7:
+    resolution: {integrity: sha512-vWdusw+y12DUEeoZqW1kplOFqk3tedGV8qlga8/SF6a3lOiWLqGZZQvfWvY0fQYdfiRi/u1DFNpudTSV9l1aCg==}
+    engines: {node: '>=18'}
     hasBin: true
     dev: true
 
@@ -4619,11 +4580,11 @@ packages:
     dependencies:
       '@pixi/accessibility': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)(@pixi/events@7.3.2)
       '@pixi/app': 7.3.2(@pixi/core@7.3.2)(@pixi/display@7.3.2)
-      '@pixi/assets': 7.3.2(@pixi/core@7.3.2)(@pixi/utils@7.3.2)
+      '@pixi/assets': 7.3.2(@pixi/core@7.4.0)(@pixi/utils@7.3.2)
       '@pixi/compressed-textures': 7.3.2(@pixi/assets@7.3.2)(@pixi/core@7.3.2)
       '@pixi/core': 7.3.2
       '@pixi/display': 7.3.2(@pixi/core@7.3.2)
-      '@pixi/events': 7.3.2(@pixi/core@7.4.0)(@pixi/display@7.4.0)
+      '@pixi/events': 7.3.2(@pixi/core@7.4.0)(@pixi/display@7.3.2)
       '@pixi/extensions': 7.3.2
       '@pixi/extract': 7.3.2(@pixi/core@7.3.2)
       '@pixi/filter-alpha': 7.3.2(@pixi/core@7.3.2)

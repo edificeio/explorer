@@ -89,6 +89,10 @@ public class ExplorerMessageForIngest extends ExplorerMessage {
         return this.getMessage().getBoolean("trashed", false);
     }
 
+    public boolean isTrashedBy(String userId) {
+        return this.getTrashedBy().contains(userId);
+    }
+
     public boolean isFolderMessage(){
         return ExplorerConfig.FOLDER_TYPE.equals(getResourceType())
                 && ExplorerConfig.FOLDER_TYPE.equals(getEntityType());

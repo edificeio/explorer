@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { type IAction, ACTION } from "edifice-ts-client";
 
 import { goToEdit, goToExport } from "~/services/api";
-import { useActions, useRestore } from "~/services/queries";
+import { useActions, useCopyResource, useRestore } from "~/services/queries";
 import {
   useStoreActions,
   useCurrentFolder,
@@ -42,6 +42,7 @@ export default function useActionBar() {
   const restoreItem = useRestore();
   const isTrashResource = useResourceIsTrash();
   const searchParams = useSearchParams();
+  const copyResource = useCopyResource();
 
   const {
     openResource,
@@ -84,6 +85,8 @@ export default function useActionBar() {
             folderId: selectedFolders[0].id,
           });
         }
+      case ACTION.COPY:
+        return onCopy();
       case ACTION.MOVE:
         return setOpenedModalName("move");
       case ACTION.PRINT:
@@ -99,7 +102,11 @@ export default function useActionBar() {
       case "edit" as any:
         return onEdit();
       case "export":
-        return onExport();
+        if (resourceIds.length > 0) {
+          return onExport();
+        } else {
+          return null;
+        }
       case ACTION.SHARE:
         return setOpenedModalName("share");
       // case ACTION.MANAGE:
@@ -125,12 +132,16 @@ export default function useActionBar() {
         return onlyOneSelected;
       case ACTION.MANAGE:
         return onlyOneItemSelected;
+      case ACTION.COPY:
+        return onlyOneItemSelected && noFolderSelected;
       case ACTION.PUBLISH:
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.UPD_PROPS:
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.SHARE:
         return noFolderSelected && onlyOneItemSelected;
+      case "export":
+        return onlyOneItemSelected && noFolderSelected;
       case ACTION.PRINT:
         return onlyOneItemSelected && noFolderSelected;
       case "edit" as any:
@@ -187,6 +198,15 @@ export default function useActionBar() {
   const onEditResourceCancel = onFinish("edit_resource");
   const onShareResourceSuccess = onFinish("share");
   const onShareResourceCancel = onFinish("share");
+
+  async function onCopy() {
+    if (selectedResources && selectedResources.length > 0) {
+      const selectedResource = selectedResources[0];
+      await copyResource.mutate(selectedResource);
+      clearSelectedItems();
+      clearSelectedIds();
+    }
+  }
 
   function onEdit() {
     if (resourceIds && resourceIds.length > 0) {
