@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.1-%branch%.%generateVersion%",
+  "version": "1.4.2-%branch%.%generateVersion%",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -13,17 +13,17 @@
   "license": "AGPL-3.0",
   "author": "Edifice",
   "type": "module",
+  "exports": {
+    "./lib": {
+        "import": "./lib/index.js",
+        "types": "./lib/index.d.ts"
+    }
+  },
   "files": [
     "dist",
     "lib",
     "*.d.ts"
   ],
-  "exports": {
-    "./lib": {
-      "import": "./lib/index.js",
-      "types": "./lib/index.d.ts"
-    }
-  },
   "scripts": {
     "build": "vite build && vite build --mode lib",
     "clean": "concurrently \"pnpm:clean:*\"",
@@ -46,13 +46,13 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+        "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
-      "pnpm format",
-      "pnpm fix"
+        "pnpm format",
+        "pnpm fix"
     ]
   },
   "dependencies": {
