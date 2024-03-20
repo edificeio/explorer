@@ -9,6 +9,7 @@ import {
   type IActionParameters,
   type ID,
   type ISearchResults,
+  SORT_ORDER,
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { create } from "zustand";
@@ -35,6 +36,9 @@ interface State {
   resourceActionDisable: boolean;
   searchConfig: { minLength: number };
   status: string | undefined;
+}
+
+type Action = {
   updaters: {
     setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
@@ -69,19 +73,19 @@ interface State {
     gotoPreviousFolder: () => void;
     goToTrash: () => void;
   };
-}
+};
 
-export const useStoreContext = create<State>()((set, get) => ({
+const initialState = {
   config: null,
   searchConfig: { minLength: 1 },
   searchParams: {
     filters: {
-      folder: "default",
+      folder: FOLDER.DEFAULT,
       owner: undefined,
       shared: undefined,
       public: undefined,
     },
-    orders: { updatedAt: "desc" },
+    orders: { updatedAt: SORT_ORDER.DESC },
     application: "",
     types: [],
     pagination: {
@@ -108,6 +112,10 @@ export const useStoreContext = create<State>()((set, get) => ({
   resourceIsTrash: false,
   resourceActionDisable: false,
   status: undefined,
+};
+
+export const useStoreContext = create<State & Action>()((set, get) => ({
+  ...initialState,
   updaters: {
     setConfig: (config) => set({ config }),
     setSearchConfig: (searchConfig: { minLength: number }) =>
