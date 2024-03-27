@@ -68,9 +68,9 @@ public class Explorer extends BaseServer {
     private Optional<ExplorerTaskManager> taskManager = Optional.empty();
 
     @Override
-    public void start() throws Exception {
+    public void start(Promise startPromise) throws Exception {
         log.info("Starting explorer...");
-        super.start();
+        super.start(startPromise);
         final boolean runjobInWroker = config.getBoolean("worker-job", true);
         final boolean poolMode = config.getBoolean("postgres-pool-mode", true);
         final List<Future> futures = new ArrayList<>();

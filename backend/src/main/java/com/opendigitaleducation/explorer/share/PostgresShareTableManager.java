@@ -41,25 +41,26 @@ public class PostgresShareTableManager implements ShareTableManager {
         final String fetch = "SELECT * FROM explorer.share_subjects WHERE id=$1 AND hash_algorithm=$2 LIMIT 1";
         return pgClient.preparedQuery(fetch, Tuple.of(hash, ALGO_MD5)).compose(r -> {
             if (r.size() == 0) {
-                return pgClient.transaction().compose(transaction -> {
+                List<Future<?>> futures = new ArrayList<>();
+                return pgClient.transaction(sqlConnection -> {
                     final String query = "INSERT INTO explorer.share_subjects (id, hash_algorithm) VALUES ($1,$2) ";
                     final Tuple tuple = Tuple.of(hash, ALGO_MD5);
-                    transaction.addPreparedQuery(query, tuple);
+                    futures.add(sqlConnection.preparedQuery(query).execute(tuple));
                     if (!groupIds.isEmpty()) {
                         final List<JsonObject> rows = groupIds.stream().map(id -> new JsonObject().put("share_subject_id", hash).put("id", id)).collect(Collectors.toList());
                         final String placeholder = PostgresClient.insertPlaceholders(rows, 1, "id", "share_subject_id");
                         final Tuple values = PostgresClient.insertValues(rows, Tuple.tuple(), "id", "share_subject_id");
                         final String queryGroups = String.format("INSERT INTO explorer.share_groups (id, share_subject_id) VALUES %s", placeholder);
-                        transaction.addPreparedQuery(queryGroups, values);
+                        futures.add(sqlConnection.preparedQuery(queryGroups).execute(values));
                     }
                     if (!userIds.isEmpty()) {
                         final List<JsonObject> rows = userIds.stream().map(id -> new JsonObject().put("share_subject_id", hash).put("id", id)).collect(Collectors.toList());
                         final String placeholder = PostgresClient.insertPlaceholders(rows, 1, "id", "share_subject_id");
                         final Tuple values = PostgresClient.insertValues(rows, Tuple.tuple(), "id", "share_subject_id");
                         final String queryGroups = String.format("INSERT INTO explorer.share_users (id, share_subject_id) VALUES %s", placeholder);
-                        transaction.addPreparedQuery(queryGroups, values);
+                        futures.add(sqlConnection.preparedQuery(queryGroups).execute(values));
                     }
-                    return transaction.commit();
+                    return Future.all(futures);
                 });
             } else {
                 return Future.succeededFuture();

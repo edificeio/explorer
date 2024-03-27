@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.explorer.ExplorerMessage;
@@ -475,13 +476,10 @@ public class ResourceExplorerDbSql {
      * @return resources info after trash status update
      */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final Collection<Integer> idsToTrashForEverybody, final boolean trashed) {
-        return client.transaction().compose(transaction->{
-           final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForAll(transaction, idsToTrashForEverybody, trashed);
-           return transaction.commit().compose(commit -> future);
-        });
+        return client.transaction(sqlConnection -> this.trashForAll(sqlConnection, idsToTrashForEverybody, trashed));
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final IPostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final SqlConnection sqlConnection, final Collection<Integer> resourceIds, final boolean trashed){
         if(resourceIds.isEmpty()){
             return Future.succeededFuture(new HashMap<>());
         }
@@ -489,7 +487,7 @@ public class ResourceExplorerDbSql {
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), resourceIds);
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
-        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+        final Future<RowSet<Row>> future = sqlConnection.preparedQuery(query).execute(tuple).onSuccess(rows->{
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");
                 final String application = row.getString("application");
@@ -510,13 +508,10 @@ public class ResourceExplorerDbSql {
      * @return basic resources info after trash status update
      */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<IdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
-        return client.transaction().compose(transaction->{
-            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForUser(transaction, idsToTrashForUser, userId, trashed);
-            return transaction.commit().compose(commit -> future);
-        });
+        return client.transaction(sqlConnection -> this.trashForUser(sqlConnection, idsToTrashForUser, userId, trashed));
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final IPostgresTransaction transaction, final Collection<IdAndVersion> resourceIds, final String userId, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final SqlConnection sqlConnection, final Collection<IdAndVersion> resourceIds, final String userId, final boolean trashed){
         if (resourceIds.isEmpty()) {
             return Future.succeededFuture(new HashMap<>());
         }
@@ -524,7 +519,7 @@ public class ResourceExplorerDbSql {
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(IdAndVersion::getId).collect(Collectors.toSet()));
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed_by = trashed_by || $1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
-        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+        final Future<RowSet<Row>> future = sqlConnection.preparedQuery(query).execute(tuple).onSuccess(rows->{
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");
                 final String application = row.getString("application");
