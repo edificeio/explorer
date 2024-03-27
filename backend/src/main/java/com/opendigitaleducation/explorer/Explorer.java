@@ -73,10 +73,11 @@ public class Explorer extends BaseServer {
         super.start();
         final boolean runjobInWroker = config.getBoolean("worker-job", true);
         final boolean poolMode = config.getBoolean("postgres-pool-mode", true);
+        final boolean enablePgBus = config.getBoolean("postgres-enable-bus", true);
         final List<Future> futures = new ArrayList<>();
         //create postgres client
         log.info("Init postgres bus consumer...");
-        if (runjobInWroker) {
+        if (runjobInWroker && enablePgBus) {
             IPostgresClient.initPostgresConsumer(vertx, config, poolMode);
         }
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
