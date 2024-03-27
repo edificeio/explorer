@@ -1,4 +1,3 @@
-version: '3'
 services:
   node:
     image: 'opendigitaleducation/node:18-alpine-pnpm'

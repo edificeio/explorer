@@ -41,3 +41,5 @@ bower_components
 gradle/
 gradlew*
 package-lock.json
+.env
+dependency-reduced-pom.xml

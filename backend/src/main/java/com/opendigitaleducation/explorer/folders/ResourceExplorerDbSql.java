@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.explorer.ExplorerMessage;
@@ -41,9 +42,7 @@ public class ResourceExplorerDbSql {
         final String inPlaceholder = PostgresClient.inPlaceholder(uniqIds, 1);
         final String queryTpl = "UPDATE explorer.resources SET deleted=TRUE WHERE resource_unique_id IN (%s) RETURNING *";
         final String query = String.format(queryTpl, inPlaceholder);
-        return client.preparedQuery(query, tuple).map(rows->{
-            return resourcesToMap(resources, rows);
-        });
+        return client.preparedQuery(query, tuple).map(rows-> resourcesToMap(resources, rows));
     }
 
     public Future<Map<Integer, ExplorerMessage>> deleteDefinitlyResources(final Collection<? extends ExplorerMessage> resources){
@@ -549,13 +548,10 @@ public class ResourceExplorerDbSql {
      * @return resources info after trash status update
      */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final Collection<Integer> idsToTrashForEverybody, final boolean trashed) {
-        return client.transaction().compose(transaction->{
-           final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForAll(transaction, idsToTrashForEverybody, trashed);
-           return transaction.commit().compose(commit -> future);
-        });
+        return client.transaction(sqlConnection -> this.trashForAll(sqlConnection, idsToTrashForEverybody, trashed));
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final IPostgresTransaction transaction, final Collection<Integer> resourceIds, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForAll(final SqlConnection sqlConnection, final Collection<Integer> resourceIds, final boolean trashed){
         if(resourceIds.isEmpty()){
             return Future.succeededFuture(new HashMap<>());
         }
@@ -563,7 +559,7 @@ public class ResourceExplorerDbSql {
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), resourceIds);
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
-        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+        final Future<RowSet<Row>> future = sqlConnection.preparedQuery(query).execute(tuple).onSuccess(rows->{
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");
                 final String application = row.getString("application");
@@ -584,22 +580,19 @@ public class ResourceExplorerDbSql {
      * @return basic resources info after trash status update
      */
     public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<ResourceIdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
-        return client.transaction().compose(transaction->{
-            final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForUser(transaction, idsToTrashForUser, userId, trashed);
-            return transaction.commit().compose(commit -> future);
-        });
+        return client.transaction(sqlConnection -> this.trashForUser(sqlConnection, idsToTrashForUser, userId, trashed));
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final IPostgresTransaction transaction, final Collection<ResourceIdAndVersion> resourceIds, final String userId, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final SqlConnection sqlConnection, final Collection<ResourceIdAndVersion> resourceIds, final String userId, final boolean trashed){
         if (resourceIds.isEmpty()) {
             return Future.succeededFuture(new HashMap<>());
         }
         final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(ResourceIdAndVersion::getId).collect(Collectors.toSet()));
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed_by = trashed_by || $1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
-        final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = transaction.addPreparedQuery(query, tuple).map(rows->{
-            final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
-            for(final Row row : rows){
+        final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = sqlConnection.preparedQuery(query).execute(tuple).map(rows->{
+          final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
+          for(final Row row : rows){
                 final Integer id = row.getInteger("id");
                 final String application = row.getString("application");
                 final String resource_type = row.getString("resource_type");
@@ -616,7 +609,7 @@ public class ResourceExplorerDbSql {
         // delete user/folder link
         final String queryDelete = String.format("DELETE FROM explorer.folder_resources WHERE user_id = $1 AND resource_id IN (%s)", inPlaceholder);
         final Tuple tupleDelete = PostgresClient.inTuple(Tuple.of(userId), resourceIds.stream().map(ResourceIdAndVersion::getOpenSearchId).collect(Collectors.toSet()));
-        transaction.addPreparedQuery(queryDelete, tupleDelete);
+        sqlConnection.preparedQuery(queryDelete).execute(tupleDelete);
         return future;
     }
 

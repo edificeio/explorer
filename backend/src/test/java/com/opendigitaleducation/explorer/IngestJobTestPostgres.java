@@ -42,7 +42,7 @@ public class IngestJobTestPostgres extends IngestJobTest {
         if(postgresClient == null) {
             try {
                 final JsonObject json = new JsonObject().put("postgresConfig", getPostgresConfig());
-                IPostgresClient.initPostgresConsumer(test.vertx(), json, true);
+                //IPostgresClient.initPostgresConsumer(test.vertx(), json, true);
                 postgresClient = IPostgresClient.create(test.vertx(), json, true, false);
             } catch (Exception e) {
                 throw new RuntimeException(e);

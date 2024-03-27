@@ -217,8 +217,8 @@ public class FolderTrashTest {
                 }));
             }));
         }));
-        final Promise promise = Promise.promise();
-        async.handler(promise.future());
+        final Promise<Void> promise = Promise.promise();
+        async.handler(promise);
         return promise.future();
     }
 
@@ -237,8 +237,8 @@ public class FolderTrashTest {
                 }));
             }));
         }));
-        final Promise promise = Promise.promise();
-        async.handler(promise.future());
+        final Promise<Void> promise = Promise.promise();
+        async.handler(promise);
         return promise.future();
     }
 

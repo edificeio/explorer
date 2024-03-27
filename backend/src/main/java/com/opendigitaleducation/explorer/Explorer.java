@@ -69,18 +69,16 @@ public class Explorer extends BaseServer {
     private Optional<ExplorerTaskManager> taskManager = Optional.empty();
 
     @Override
-    public void start() throws Exception {
+    public void start(Promise<Void> startPromise) throws Exception {
         log.info("Starting explorer...");
-        super.start();
-        final boolean runjobInWroker = config.getBoolean("worker-job", true);
+        super.start(startPromise);
         final boolean poolMode = config.getBoolean("postgres-pool-mode", true);
-        final boolean enablePgBus = config.getBoolean("postgres-enable-bus", true);
         final List<Future> futures = new ArrayList<>();
         //create postgres client
-        log.info("Init postgres bus consumer...");
+        /*log.info("Init postgres bus consumer...");
         if (runjobInWroker && enablePgBus) {
             IPostgresClient.initPostgresConsumer(vertx, config, poolMode);
-        }
+        }*/
         final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
         //create es client
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
@@ -141,9 +139,9 @@ public class Explorer extends BaseServer {
         if (config.getBoolean("enable-job", true)) {
             final Promise<String> onWorkerDeploy = Promise.promise();
             final DeploymentOptions dep = new DeploymentOptions().setConfig(config);
-            if (runjobInWroker) {
+            /*if (runjobInWroker) {
                 dep.setWorker(true).setWorkerPoolName("ingestjob").setWorkerPoolSize(config.getInteger("pool-size", 1));
-            }
+            }*/
             vertx.deployVerticle(new IngestJobWorker(), dep, onWorkerDeploy);
             futures.add(onWorkerDeploy.future());
             if (ExplorerConfig.getInstance().skipIndexOfTrashedFolders) {
@@ -171,6 +169,9 @@ public class Explorer extends BaseServer {
             log.info("Explorer application started -> " + e.succeeded());
             if (e.failed()) {
                 log.error("Explorer application failed to start", e.cause());
+                startPromise.tryFail(e.cause());
+            } else {
+                startPromise.tryComplete();
             }
         });
         vertx.eventBus().consumer("explorer.resources.details", message -> {
