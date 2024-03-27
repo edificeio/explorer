@@ -182,9 +182,9 @@ public class FolderExplorerDbSql {
             log.error("Failed to upsert folders:", e);
         }).compose(rows -> {
             //fetch folder
-            return client.transaction().compose(transaction->{
+            return client.transaction(sqlConnection -> {
                 final Set<String> resourceEntIds = new HashSet<>();
-                final List<Future> futures = new ArrayList<>();
+                final List<Future<?>> futures = new ArrayList<>();
                 for(final ExplorerMessage res : resources){
                     if(res.getChildEntId().isPresent() && res.getChildEntId().get().size() > 0){
                         final String folderId = res.getId();
@@ -221,17 +221,13 @@ public class FolderExplorerDbSql {
                         upsertQuery.append("FROM explorer.resources AS upserted ");
                         upsertQuery.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
                         upsertQuery.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
-                        futures.add(transaction.addPreparedQuery(upsertQuery.toString(), ituple).onFailure(e->{
+                        futures.add(sqlConnection.preparedQuery(upsertQuery.toString()).execute(ituple).onFailure(e->{
                            log.error("Failed to insert relationship for folderId="+folderId, e);
                         }));
                         resourceEntIds.addAll(resEntId);
                     }
                 }
-                return transaction.commit().compose(commit->{
-                    return new ResourceExplorerDbSql(client).getModelByEntIds(resourceEntIds).map(allResources->{
-                        return new FolderUpsertResult(rows, allResources);
-                    });
-                });
+                return Future.all(futures).compose(result-> new ResourceExplorerDbSql(client).getModelByEntIds(resourceEntIds).map(allResources-> new FolderUpsertResult(rows, allResources)));
             });
         });
     }
@@ -274,17 +270,19 @@ public class FolderExplorerDbSql {
     }
 
     public Future<Map<Integer, FolderMoveResult>> move(final Collection<Integer> ids, final Optional<String> newParent){
-        return client.transaction().compose(transaction->{
-            final List<Future> futures = new ArrayList<>();
+        return client.transaction(sqlConnection -> {
+            final List<Future<?>> futures = new ArrayList<>();
+	        final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
+	        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
             // get all old parents and store in map
             final Map<Integer, Integer> oldParentById = new HashMap<>();
-            final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
             final String queryOldParent = String.format("SELECT id, parent_id FROM explorer.folders WHERE id IN (%s) ", inPlaceholder);
-            futures.add(transaction.addPreparedQuery(queryOldParent, PostgresClient.inTuple(Tuple.tuple(), ids)).onSuccess(rows->{
-                for(final Row row : rows){
-                    oldParentById.put(row.getInteger("id"), row.getInteger("parent_id"));
-                }
-            }));
+			final Future<RowSet<Row>> promiseOldParent = sqlConnection.preparedQuery(queryOldParent).execute(tuple).onSuccess(rows->{
+				for(final Row row : rows){
+					oldParentById.put(row.getInteger("id"), row.getInteger("parent_id"));
+				}
+			});
+            futures.add(promiseOldParent);
             // iterate on each id to update parent
             for(final Integer numId: ids){
                 final StringBuilder query = new StringBuilder();
@@ -294,30 +292,26 @@ public class FolderExplorerDbSql {
                     }
                     return Integer.valueOf(e);
                 }).orElse(null);
-                final Tuple tuple = Tuple.of(numParentId,numId);
+                final Tuple tupleUpdate = Tuple.of(numParentId,numId);
                 query.append("UPDATE explorer.folders SET parent_id=$1 WHERE id=$2");
-                futures.add(transaction.addPreparedQuery(query.toString(), tuple));
+                futures.add(sqlConnection.preparedQuery(query.toString()).execute(tupleUpdate));
             }
-            final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
-            final String placeholder = PostgresClient.inPlaceholder(ids, 1);
             // get all new parents
-            final String query = String.format("SELECT id, parent_id, application FROM explorer.folders WHERE id IN (%s) ", placeholder);
-            final Future<RowSet<Row>> promiseRows = transaction.addPreparedQuery(query.toString(), tuple);
+            final String query = String.format("SELECT id, parent_id, application FROM explorer.folders WHERE id IN (%s) ", inPlaceholder);
+            final Future<RowSet<Row>> promiseRows = sqlConnection.preparedQuery(query).execute(tuple);
             futures.add(promiseRows);
-            return transaction.commit().compose(e->{
-               return  CompositeFuture.all(futures).map(results->{
-                   final RowSet<Row> rows = promiseRows.result();
-                   final Map<Integer, FolderMoveResult> mappingParentByChild = new HashMap<>();
-                   for(final Row row : rows){
-                       final Integer id = row.getInteger("id");
-                       final Integer parentId = row.getInteger("parent_id");
-                       final String application = row.getString("application");
-                       final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
-                       final Optional<Integer> oldParentOpt = Optional.ofNullable(oldParentById.get(id));
-                       mappingParentByChild.put(id, new FolderMoveResult(id, parentOpt, oldParentOpt, application));
-                   }
-                   return mappingParentByChild;
-               });
+            return Future.all(futures).map(results->{
+                final RowSet<Row> rows = promiseRows.result();
+                final Map<Integer, FolderMoveResult> mappingParentByChild = new HashMap<>();
+                for(final Row row : rows){
+                    final Integer id = row.getInteger("id");
+                    final Integer parentId = row.getInteger("parent_id");
+                    final String application = row.getString("application");
+                    final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
+                    final Optional<Integer> oldParentOpt = Optional.ofNullable(oldParentById.get(id));
+					mappingParentByChild.put(id, new FolderMoveResult(id, parentOpt, oldParentOpt,application));
+                }
+                return mappingParentByChild;
             });
         });
     }
@@ -331,20 +325,18 @@ public class FolderExplorerDbSql {
         if(resourceIds.isEmpty() && folderIds.isEmpty()){
             return Future.succeededFuture(new FolderTrashResults());
         }
-        return client.transaction().compose(transaction->{
-            final List<Future> futures = new ArrayList<>();
+        return client.transaction(sqlConnection -> {
+            final List<Future<?>> futures = new ArrayList<>();
             final FolderTrashResults mapTrashed = new FolderTrashResults();
             if(!resourceIds.isEmpty()){
                 final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(client);
-                futures.add(resSql.trashForAll(transaction, resourceIds, trashed).onSuccess(resources->{
-                    mapTrashed.resources.putAll(resources);
-                }));
+                futures.add(resSql.trashForAll(sqlConnection, resourceIds, trashed).onSuccess(mapTrashed.resources::putAll));
             }
             if(!folderIds.isEmpty()){
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), folderIds);
                 final String inPlaceholder = PostgresClient.inPlaceholder(folderIds, 2);
                 final String query = String.format("UPDATE explorer.folders SET trashed=$1 WHERE id IN (%s) RETURNING *", inPlaceholder);
-                futures.add(transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+                futures.add(sqlConnection.preparedQuery(query).execute(tuple).onSuccess(rows->{
                     for(final Row row : rows){
                         final Integer id = row.getInteger("id");
                         final Integer parentId = row.getInteger("parent_id");
@@ -355,9 +347,7 @@ public class FolderExplorerDbSql {
                     }
                 }));
             }
-            return transaction.commit().compose(commit->{
-                return CompositeFuture.all(futures);
-            }).map(mapTrashed);
+            return Future.all(futures).map(mapTrashed);
         });
     }
 
