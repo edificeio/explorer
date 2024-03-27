@@ -365,7 +365,8 @@ public class FolderExplorerDbSql {
         final StringBuilder query = new StringBuilder();
         query.append("WITH RECURSIVE ancestors(id,name, parent_id, application) AS ( ");
         query.append(String.format("   SELECT f1.id, f1.name, f1.parent_id, f1.application FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder));
-        query.append("   UNION ALL ");
+        // remove duplicate and avoid infinite loop
+        query.append("   UNION ");
         query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.id = ancestors.parent_id ");
         query.append(") ");
         query.append("SELECT * FROM ancestors;");
@@ -403,7 +404,8 @@ public class FolderExplorerDbSql {
         final StringBuilder query = new StringBuilder();
         query.append("WITH RECURSIVE ancestors(id,name, parent_id, application) AS ( ");
         query.append(String.format("   SELECT f1.id, f1.name, f1.parent_id, f1.application FROM explorer.folders f1 WHERE f1.id IN (%s) ", inPlaceholder));
-        query.append("   UNION ALL ");
+        // remove duplicate and avoid infinite loop
+        query.append("   UNION ");
         query.append("   SELECT f2.id, f2.name, f2.parent_id, f2.application FROM explorer.folders f2, ancestors  WHERE f2.parent_id = ancestors.id ");
         query.append(") ");
         query.append("SELECT * FROM ancestors;");

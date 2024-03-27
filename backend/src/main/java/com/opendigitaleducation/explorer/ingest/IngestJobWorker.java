@@ -23,13 +23,15 @@ public class IngestJobWorker extends AbstractVerticle {
         IngestJobMetricsRecorderFactory.init(vertx, config());
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
         final boolean runjobInWroker = config().getBoolean("worker-job", true);
-        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), runjobInWroker, false);
+        final boolean poolMode = config().getBoolean("postgres-pool-mode", true);
+        final boolean enablePgBus = config().getBoolean("postgres-enable-bus", true);
+        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), runjobInWroker && enablePgBus, poolMode);
         //create ingest job
         final JsonObject ingestConfig = config().getJsonObject("ingest");
         final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);
         final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
         final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder, config());
-        log.info("Starting ingest job worker... ");
+        log.info("Starting ingest job worker. pgBusEnabled="+enablePgBus+ " workerJobEnabled="+runjobInWroker+ " pgPoolEnabled="+poolMode);
         job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
         final List<Future> futures = new ArrayList<>();
         futures.add(job.start());
