@@ -68,7 +68,7 @@ const ResourceCard = ({
               {resource?.thumbnail ? (
                 <Image
                   alt=""
-                  src={resource?.thumbnail}
+                  src={`${resource?.thumbnail}?thumbnail=80x80`}
                   objectFit="cover"
                   className={"h-full w-100"}
                 />
