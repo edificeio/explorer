@@ -28,6 +28,9 @@ i18n
       suffix: "]]",
     },
     debug: false,
+    react: {
+      useSuspense: false,
+    },
   });
 
 export default i18n;

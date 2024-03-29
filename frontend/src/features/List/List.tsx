@@ -50,7 +50,7 @@ export const List = () => {
   const toast = useToast();
 
   const { appCode } = useOdeClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation([appCode]);
   const { setSearchParams, setSearchConfig, setTreeData } = useStoreActions();
   const { data, isError, error, isLoading, isFetching, fetchNextPage } =
     useSearchContext();
@@ -77,7 +77,7 @@ export const List = () => {
             children: folders.map(
               (folder: IFolder) => new TreeNodeFolderWrapper(folder),
             ),
-            name: t("explorer.filters.mine", { ns: appCode }),
+            name: t("explorer.filters.mine"),
           });
         } else {
           setTreeData(
