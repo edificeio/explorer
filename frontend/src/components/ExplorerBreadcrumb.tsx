@@ -13,7 +13,7 @@ import {
 export function ExplorerBreadcrumb() {
   const { appCode } = useOdeClient();
   const { gotoPreviousFolder } = useStoreActions();
-  const { t } = useTranslation();
+  const { t } = useTranslation(["common", appCode]);
   const { inputSearch } = useSearchForm();
 
   const selectedNodesIds = useSelectedNodesIds();
