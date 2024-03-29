@@ -28,13 +28,15 @@ export const TreeViewContainer = () => {
   const queryclient = useQueryClient();
 
   const [isModalOpen, toggle] = useToggle();
+
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
   const selectedNodesIds = useSelectedNodesIds();
+
   const { appCode } = useOdeClient();
-  const { t } = useTranslation(["common", appCode]);
+  const { t } = useTranslation();
 
   const {
     goToTrash,
@@ -58,7 +60,10 @@ export const TreeViewContainer = () => {
   return (
     <>
       <TreeView
-        data={treeData}
+        data={{
+          ...treeData,
+          name: t("explorer.filters.mine", { ns: appCode }),
+        }}
         selectedNodesIds={selectedNodesIds}
         onTreeItemSelect={selectTreeItem}
         onTreeItemFold={foldTreeItem}
