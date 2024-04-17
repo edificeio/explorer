@@ -4,7 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { resolve } from "node:path";
 import dts from "vite-plugin-dts";
 
-import { dependencies, peerDependencies } from "./package.json";
+import { dependencies } from "./package.json";
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -92,10 +92,9 @@ export default ({ mode }: { mode: string }) => {
       formats: ["es"],
     },
     rollupOptions: {
-      treeshake: false,
+      treeshake: true,
       external: [
         ...Object.keys(dependencies || {}),
-        ...Object.keys(peerDependencies || {}),
         "react/jsx-runtime",
         "edifice-ts-client",
         "@edifice-ui/icons/nav",
