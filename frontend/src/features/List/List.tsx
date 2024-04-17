@@ -77,7 +77,7 @@ export const List = () => {
             children: folders.map(
               (folder: IFolder) => new TreeNodeFolderWrapper(folder),
             ),
-            name: t("explorer.filters.mine"),
+            name: t("explorer.filters.mine", { ns: appCode }),
           });
         } else {
           setTreeData(
