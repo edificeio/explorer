@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 
-import { Button, useOdeClient } from "@edifice-ui/react";
+import { Button, useDate, useOdeClient } from "@edifice-ui/react";
 import { useSpring, animated } from "@react-spring/web";
 import { InfiniteData } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -8,7 +8,7 @@ import { type ID, type IResource, ISearchResults } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import ResourceCard from "./ResourceCard";
-import { dayjs } from "~/config";
+// import { dayjs } from "~/config";
 import {
   useStoreActions,
   useResourceIds,
@@ -25,8 +25,10 @@ const ResourcesList = ({
   isFetching: boolean;
   fetchNextPage: () => void;
 }): JSX.Element | null => {
-  const { currentApp, currentLanguage } = useOdeClient();
+  const { currentApp } = useOdeClient();
   const { t } = useTranslation();
+
+  const { fromNow } = useDate();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
@@ -96,9 +98,7 @@ const ResourcesList = ({
             {page.resources.map((resource: IResource) => {
               const { id, updatedAt } = resource;
 
-              const time = dayjs(updatedAt)
-                .locale(currentLanguage as string)
-                .fromNow();
+              const time = fromNow(updatedAt);
 
               return (
                 <animated.li

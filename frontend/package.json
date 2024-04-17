@@ -59,7 +59,7 @@
     "@edifice-ui/icons": "1.5.8",
     "@edifice-ui/react": "1.5.8",
     "@react-spring/web": "9.7.3",
-    "@tanstack/react-query": "5.8.4",
+    "@tanstack/react-query": "5.28.8",
     "clsx": "2.1.0",
     "dayjs": "1.11.10",
     "i18next": "23.8.1",
@@ -75,7 +75,7 @@
   "devDependencies": {
     "@axe-core/react": "4.8.4",
     "@babel/plugin-transform-react-pure-annotations": "7.23.3",
-    "@tanstack/react-query-devtools": "5.8.4",
+    "@tanstack/react-query-devtools": "5.28.8",
     "@types/node": "20.11.10",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
@@ -116,7 +116,7 @@
     "react-i18next": "14.0.1",
     "zustand": "4.5.0"
   },
-  "packageManager": "pnpm@8.6.6",
+  "packageManager": "pnpm@8.15.6",
   "engines": {
     "node": "18 || 20"
   }
