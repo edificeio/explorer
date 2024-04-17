@@ -36,7 +36,7 @@ export const TreeViewContainer = () => {
   const selectedNodesIds = useSelectedNodesIds();
 
   const { appCode } = useOdeClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation(["common", appCode]);
 
   const {
     goToTrash,
