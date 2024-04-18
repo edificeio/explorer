@@ -169,6 +169,9 @@ public class Explorer extends BaseServer {
             log.info("Explorer application started -> " + e.succeeded());
             if (e.failed()) {
                 log.error("Explorer application failed to start", e.cause());
+                startPromise.tryFail(e.cause());
+            } else {
+                startPromise.tryComplete();
             }
         });
     }
