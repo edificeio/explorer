@@ -17,7 +17,7 @@
     <properties>
         <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
         <web-utils.version>3.0-b2school-SNAPSHOT</web-utils.version>
-        <vertxCronTimerVersion>2.0.0</vertxCronTimerVersion>
+        <vertxCronTimerVersion>3.0-b2school-SNAPSHOT</vertxCronTimerVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
         <junitVersion>4.13.2</junitVersion>
@@ -45,23 +45,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-sql-client</artifactId>
-            <version>${vertxVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-micrometer-metrics</artifactId>
-            <version>${vertxVersion}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${web-utils.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>fr.wseduc</groupId>
             <artifactId>vertx-cron-timer</artifactId>
             <version>${vertxCronTimerVersion}</version>
@@ -71,6 +54,7 @@
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
             <version>${entCoreVersion}</version>
+            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -90,12 +74,6 @@
             <artifactId>test</artifactId>
             <version>${entCoreVersion}</version>
             <classifier>fat</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junitVersion}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

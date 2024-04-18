@@ -68,7 +68,7 @@ public class Explorer extends BaseServer {
     private Optional<ExplorerTaskManager> taskManager = Optional.empty();
 
     @Override
-    public void start(Promise startPromise) throws Exception {
+    public void start(Promise<Void> startPromise) throws Exception {
         log.info("Starting explorer...");
         super.start(startPromise);
         final boolean runjobInWroker = config.getBoolean("worker-job", true);
