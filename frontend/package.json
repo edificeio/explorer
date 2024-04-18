@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.1-develop.202403131641",
+  "version": "1.4.2-dev-integration",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -56,8 +56,9 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop",
-    "@edifice-ui/react": "develop",
+    "@edifice-ui/editor": "dev-integration",
+    "@edifice-ui/icons": "dev-integration",
+    "@edifice-ui/react": "dev-integration",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
