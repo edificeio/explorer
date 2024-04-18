@@ -72,6 +72,7 @@ export default ({ mode }: { mode: string }) => {
     "/xiti": proxyObj,
     "/analyticsConf": proxyObj,
     "/explorer": proxyObj,
+    "/zendeskGuide": proxyObj,
   };
 
   const build: BuildOptions = {
