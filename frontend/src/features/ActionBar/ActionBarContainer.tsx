@@ -35,6 +35,7 @@ const UpdateModal = lazy(
 const DeleteModal = lazy(async () => await import("./Delete/DeleteModal"));
 const MoveModal = lazy(async () => await import("./Move/MoveModal"));
 const FolderModal = lazy(async () => await import("./Folder/FolderModal"));
+const ExportModal = lazy(async () => await import("./Export/ExportModal"));
 
 export default function ActionBarContainer() {
   const { appCode } = useOdeClient();
@@ -57,6 +58,9 @@ export default function ActionBarContainer() {
     isShareResourceOpen,
     onShareResourceCancel,
     onShareResourceSuccess,
+    isExportModalOpen,
+    onExportCancel,
+    onExportSuccess,
     onMoveCancel,
     onMoveSuccess,
     onDeleteCancel,
@@ -195,6 +199,13 @@ export default function ActionBarContainer() {
               />
             ) : null}
           </ShareModal>
+        )}
+        {isExportModalOpen && selectedResource && (
+          <ExportModal
+            isOpen={isExportModalOpen}
+            onCancel={onExportCancel}
+            onSuccess={onExportSuccess}
+          ></ExportModal>
         )}
       </Suspense>
     </>
