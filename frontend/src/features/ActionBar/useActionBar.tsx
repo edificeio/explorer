@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { type IAction, ACTION } from "edifice-ts-client";
 
-import { goToEdit, goToExport } from "~/services/api";
+import { goToEdit } from "~/services/api";
 import { useActions, useCopyResource, useRestore } from "~/services/queries";
 import {
   useStoreActions,
@@ -24,6 +24,7 @@ type ModalName =
   | "edit_folder"
   | "edit_resource"
   | "share"
+  | "export"
   | "void";
 
 export default function useActionBar() {
@@ -101,16 +102,12 @@ export default function useActionBar() {
       case ACTION.UPD_PROPS:
       case "edit" as any:
         return onEdit();
-      case "export":
-        if (resourceIds.length > 0) {
-          return onExport();
-        } else {
-          return null;
-        }
       case ACTION.SHARE:
         return setOpenedModalName("share");
       // case ACTION.MANAGE:
       //   return explorer.onManage();
+      case ACTION.EXPORT:
+        return setOpenedModalName("export");
       default:
         throw Error(`Unknown action: ${action.id}`);
     }
@@ -198,6 +195,8 @@ export default function useActionBar() {
   const onEditResourceCancel = onFinish("edit_resource");
   const onShareResourceSuccess = onFinish("share");
   const onShareResourceCancel = onFinish("share");
+  const onExportCancel = onFinish("export");
+  const onExportSuccess = onFinish("export");
 
   async function onCopy() {
     if (selectedResources && selectedResources.length > 0) {
@@ -216,13 +215,6 @@ export default function useActionBar() {
         : setOpenedModalName("edit_resource");
     } else {
       setOpenedModalName("edit_folder");
-    }
-  }
-
-  function onExport() {
-    if (resourceIds && resourceIds.length > 0) {
-      const selectedResource = selectedResources[0].assetId;
-      goToExport({ searchParams, assetId: selectedResource });
     }
   }
 
@@ -261,6 +253,9 @@ export default function useActionBar() {
     isShareResourceOpen: openedModalName === "share",
     onShareResourceCancel,
     onShareResourceSuccess,
+    isExportModalOpen: openedModalName === "export",
+    onExportCancel,
+    onExportSuccess,
     onClearActionBar,
   };
 }
