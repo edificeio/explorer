@@ -905,12 +905,9 @@ export const useCreateResource = () => {
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
-      const { thumbnail } = variables;
       const newResource: IResource = {
         ...variables,
-        thumbnail: thumbnail
-          ? (URL.createObjectURL(thumbnail as Blob | MediaSource) as string)
-          : "",
+        thumbnail: data.thumbnail || "",
         application,
         assetId: data._id || data.entId || "",
         id: data._id || data.entId || "",
