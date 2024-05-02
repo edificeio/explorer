@@ -56,6 +56,7 @@ export default function FolderModal({
                   type="text"
                   {...register("name", {
                     required: true,
+                    maxLength: 60,
                     pattern: {
                       value: /[^ ]/,
                       message: "invalid title",
@@ -64,6 +65,7 @@ export default function FolderModal({
                   placeholder={t("explorer.create.folder.name")}
                   size="md"
                   aria-required={true}
+                  maxLength={60}
                 />
               </FormControl>
             </form>
