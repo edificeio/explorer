@@ -24,7 +24,7 @@ const Library = () => {
           href={libraryUrl}
           target="_blank"
           rel="noreferrer"
-          className="d-inline-flex gap-4 btn btn-ghost-primary py-0 p-0 pe-8"
+          className="d-inline-flex align-items-center gap-4 btn btn-ghost-primary py-0 p-0 pe-8"
         >
           <span>{t("explorer.libray.btn")}</span>
           <ArrowRight />
