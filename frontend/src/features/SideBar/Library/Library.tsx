@@ -1,7 +1,7 @@
-import { useLibrary } from "./useLibrary";
 import { ArrowRight } from "@edifice-ui/icons";
 import { Image } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
+import { useLibrary } from "./useLibrary";
 
 const Library = () => {
   const { libraryUrl, imageFullURL, handleClick } = useLibrary();
