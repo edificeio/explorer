@@ -155,7 +155,8 @@ public class FolderExplorerDbSql {
         //do update on conflict (because of returning)
         queryTpl.append("WITH upserted AS ( ");
         queryTpl.append("  INSERT INTO explorer.folders as r (name,application,resource_type, parent_id, creator_id, creator_name, ent_id, parent_ent_id) ");
-        queryTpl.append("  VALUES %s ON CONFLICT(ent_id) DO UPDATE SET name = r.name RETURNING * ");
+        // keep explorer name if non empty else use migration name else empty name
+        queryTpl.append("  VALUES %s ON CONFLICT(ent_id) DO UPDATE SET name = COALESCE(NULLIF(r.name,''), EXCLUDED.name, '') RETURNING * ");
         queryTpl.append(")  ");
         queryTpl.append("SELECT * FROM upserted ");
         final String query = String.format(queryTpl.toString(), insertPlaceholder);
