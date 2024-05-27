@@ -2,10 +2,10 @@ import { Fragment } from "react";
 
 import { Filter } from "@edifice-ui/icons";
 import {
+  Dropdown,
   FormControl,
   Input,
   SearchButton,
-  Dropdown,
   useOdeClient,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
@@ -33,7 +33,7 @@ export const SearchForm = () => {
   return (
     <form
       noValidate
-      className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16 position-relative z-3 d-flex gap-8"
+      className="bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16 position-relative d-flex gap-8"
       ref={formRef}
     >
       <FormControl id="search" className="input-group">
