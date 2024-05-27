@@ -1,16 +1,16 @@
 import { lazy, Suspense } from "react";
 
 import {
-  Button,
   ActionBar,
-  LoadingScreen,
-  useOdeClient,
-  ShareModal,
-  ShareBlog,
-  isActionAvailable,
   BlogPublic,
+  Button,
+  isActionAvailable,
+  LoadingScreen,
+  ShareBlog,
+  ShareModal,
+  useOdeClient,
 } from "@edifice-ui/react";
-import { useTransition, animated } from "@react-spring/web";
+import { animated, useTransition } from "@react-spring/web";
 import { BlogResource, type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
@@ -89,8 +89,8 @@ export default function ActionBarContainer() {
         return (
           isActionBarOpen && (
             <animated.div
-              className="position-fixed bottom-0 start-0 end-0 z-3"
-              style={style}
+              className="position-fixed bottom-0 start-0 end-0"
+              style={{ ...style, zIndex: 4 }}
             >
               <ActionBar>
                 {actions
