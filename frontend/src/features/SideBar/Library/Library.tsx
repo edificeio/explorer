@@ -3,10 +3,17 @@ import { usePaths, useOdeTheme, useLibraryUrl, Image } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 const Library = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme } = useOdeTheme();
   const libraryUrl = useLibraryUrl();
   const [imagePath] = usePaths();
+
+  // #WB2-1689: add end of year Library gif only for FR users
+  const imageFilename =
+    i18n.resolvedLanguage === "fr"
+      ? "image-library-year-end.gif"
+      : "image-library.svg";
+  const imageFullURL = `${imagePath}/${theme?.bootstrapVersion}/${imageFilename}`;
 
   return (
     libraryUrl && (
@@ -16,7 +23,7 @@ const Library = () => {
           height="140"
           loading="lazy"
           className="rounded"
-          src={`${imagePath}/${theme?.bootstrapVersion}/image-library.svg`}
+          src={imageFullURL}
           alt={t("explorer.libray.img.alt")}
         />
         <p className="m-8">{t("explorer.libray.title")}</p>
