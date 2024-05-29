@@ -15,6 +15,7 @@ import {
   useResourceIsTrash,
   useStoreContext,
   useSearchParams,
+  useResourceOrFolderIsDraggable,
 } from "~/store";
 
 type ModalName =
@@ -44,6 +45,7 @@ export default function useActionBar() {
   const isTrashResource = useResourceIsTrash();
   const searchParams = useSearchParams();
   const copyResource = useCopyResource();
+  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
 
   const {
     openResource,
@@ -61,6 +63,10 @@ export default function useActionBar() {
       return;
     }
     if (isTrashResource) {
+      setIsActionBarOpen(false);
+      return;
+    }
+    if (resourceOrFolderIsDraggable) {
       setIsActionBarOpen(false);
       return;
     }
