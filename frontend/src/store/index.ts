@@ -22,6 +22,16 @@ import { getAncestors } from "~/utils/getAncestors";
 import { hasChildren } from "~/utils/hasChildren";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
+interface ElementDrag {
+  isDrag: boolean;
+  elementDrag: ID | undefined;
+}
+
+interface ElementOver {
+  isOver: boolean;
+  overId: ID | undefined;
+}
+
 interface State {
   config: AppParams | null;
   searchParams: ISearchParameters & IActionParameters;
@@ -33,6 +43,8 @@ interface State {
   folderIds: ID[];
   resourceIds: ID[];
   resourceIsTrash: boolean;
+  resourceOrFolderIsDraggable: ElementDrag;
+  elementDragOver: ElementOver;
   resourceActionDisable: boolean;
   searchConfig: { minLength: number };
   status: string | undefined;
@@ -52,6 +64,10 @@ type Action = {
     setFolderIds: (folderIds: ID[]) => void;
     setResourceIds: (resourceIds: ID[]) => void;
     setResourceIsTrash: (resourceIsTrash: boolean) => void;
+    setResourceOrFolderIsDraggable: (
+      resourceOrFolderIsDraggable: ElementDrag,
+    ) => void;
+    setElementDragOver: (elementDragOver: ElementOver) => void;
     setResourceActionDisable: (resourceActionDisable: boolean) => void;
     clearSelectedItems: () => void;
     clearSelectedIds: () => void;
@@ -110,6 +126,14 @@ const initialState = {
   folderIds: [],
   resourceIds: [],
   resourceIsTrash: false,
+  resourceOrFolderIsDraggable: {
+    isDrag: false,
+    elementDrag: undefined,
+  },
+  elementDragOver: {
+    isOver: false,
+    overId: undefined,
+  },
   resourceActionDisable: false,
   status: undefined,
 };
@@ -180,6 +204,11 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
     setResourceIds: (resourceIds: ID[]) => set(() => ({ resourceIds })),
     setResourceIsTrash: (resourceIsTrash: boolean) =>
       set(() => ({ resourceIsTrash })),
+    setResourceOrFolderIsDraggable: (
+      resourceOrFolderIsDraggable: ElementDrag,
+    ) => set(() => ({ resourceOrFolderIsDraggable })),
+    setElementDragOver: (elementDragOver: ElementOver) =>
+      set(() => ({ elementDragOver })),
     setResourceActionDisable: (resourceActionDisable: boolean) =>
       set(() => ({ resourceActionDisable })),
     setCurrentFolder: (currentFolder: Partial<IFolder>) =>
@@ -387,6 +416,14 @@ export const useIsTrash = () => {
 
 export const useResourceIsTrash = () => {
   return useStoreContext((state) => state.resourceIsTrash);
+};
+
+export const useResourceOrFolderIsDraggable = () => {
+  return useStoreContext((state) => state.resourceOrFolderIsDraggable);
+};
+
+export const useElementDragOver = () => {
+  return useStoreContext((state) => state.elementDragOver);
 };
 
 export const useResourceActionDisable = () => {
