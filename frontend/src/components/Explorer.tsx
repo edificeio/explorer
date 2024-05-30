@@ -8,6 +8,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import {
   useOdeClient,
   useXitiTrackPageLoad,
@@ -145,6 +146,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
         <Grid className="flex-grow-1">
           <DndContext
             sensors={sensors}
+            modifiers={[snapCenterToCursor]}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
