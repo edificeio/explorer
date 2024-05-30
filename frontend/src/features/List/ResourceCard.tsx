@@ -82,17 +82,17 @@ const ResourceCard = ({
         } as React.CSSProperties
       }
     >
-      <Card
-        app={app}
-        isSelected={resourceIsDrag && isSelected}
-        isSelectable={!resourceIsDrag && isSelectable}
-        onClick={onClick}
-        onSelect={onSelect}
-      >
-        {(appCode) => (
-          <>
-            <Card.Body>
-              {!resourceIsDrag ? (
+      {!resourceIsDrag ? (
+        <Card
+          app={app}
+          isSelected={resourceIsDrag && isSelected}
+          isSelectable={!resourceIsDrag && isSelectable}
+          onClick={onClick}
+          onSelect={onSelect}
+        >
+          {(appCode) => (
+            <>
+              <Card.Body>
                 <div className="card-image medium">
                   {resource?.thumbnail ? (
                     <Image
@@ -110,24 +110,13 @@ const ResourceCard = ({
                     />
                   )}
                 </div>
-              ) : (
-                <AppIcon
-                  app={app}
-                  iconFit="ratio"
-                  size="24"
-                  variant="rounded"
-                />
-              )}
-              <div className="text-truncate">
-                <Card.Title>{resource?.name}</Card.Title>
-                {!resourceIsDrag && (
+                <div className="text-truncate">
+                  <Card.Title>{resource?.name}</Card.Title>
                   <Card.Text>
                     <em>{time}</em>
                   </Card.Text>
-                )}
-              </div>
-            </Card.Body>
-            {!resourceIsDrag && (
+                </div>
+              </Card.Body>
               <Card.Footer>
                 <div className="d-inline-flex align-items-center gap-8 text-truncate">
                   {avatar ? (
@@ -163,10 +152,20 @@ const ResourceCard = ({
                   )}
                 </div>
               </Card.Footer>
-            )}
-          </>
-        )}
-      </Card>
+            </>
+          )}
+        </Card>
+      ) : (
+        <div
+          className="d-inline-flex align-items-center card is-selected gap-8"
+          style={{ flexDirection: "row", width: "252px", height: "32px" }}
+        >
+          <div className="ms-8">
+            <AppIcon app={app} iconFit="ratio" size="24" variant="rounded" />
+          </div>
+          <div className="text-truncate">{resource?.name}</div>
+        </div>
+      )}
     </div>
   );
 };
