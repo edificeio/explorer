@@ -6,8 +6,8 @@ import {
   Button,
   isActionAvailable,
   LoadingScreen,
+  // ShareModal,
   ShareBlog,
-  ShareModal,
   useOdeClient,
 } from "@edifice-ui/react";
 import { animated, useTransition } from "@react-spring/web";
@@ -15,6 +15,7 @@ import { BlogResource, type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 // import ShareBlog from "~/components/ShareModal/apps/ShareBlog";
+import ShareModal from "~/components/ShareModal/ShareModal";
 import { AccessControl } from "~/features/AccessControl/AccessControl";
 import useActionBar from "~/features/ActionBar/useActionBar";
 import { useShareResource, useUpdateResource } from "~/services/queries";
@@ -187,8 +188,12 @@ export default function ActionBarContainer() {
         {isShareResourceOpen && selectedResource && (
           <ShareModal
             isOpen={isShareResourceOpen}
-            resourceId={selectedResource.assetId}
             shareResource={shareResource}
+            shareOptions={{
+              resourceCreatorId: selectedResource.creatorId,
+              resourceId: selectedResource.assetId,
+              resourceRights: selectedResource.rights,
+            }}
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
           >
