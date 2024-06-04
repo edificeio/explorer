@@ -56,8 +56,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "1.5.7",
-    "@edifice-ui/react": "1.5.7",
+    "@edifice-ui/icons": "1.5.8",
+    "@edifice-ui/react": "1.5.8",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
