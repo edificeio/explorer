@@ -52,7 +52,8 @@ def main():
         "blog": "blog",
         "exercizer": "subject",
         "mindmap": "mindmap",
-        "scrapbook": "scrapbook"
+        "scrapbook": "scrapbook",
+        "collaborativewall": "collaborativewall"
     }
 
     apps_to_reindex = {k: v for k, v in apps_config.items() if k in arg_apps or args.apps == 'all'}
