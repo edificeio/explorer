@@ -1,13 +1,6 @@
 import { Suspense, lazy, useEffect } from "react";
 
-import {
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import {
   useOdeClient,
@@ -24,10 +17,11 @@ import { ExplorerBreadcrumb } from "./ExplorerBreadcrumb";
 import { AppParams } from "~/config/getExplorerConfig";
 import { useDisableModal } from "~/features/ActionBar/Disable/useDisableModal";
 import { useTrashModal } from "~/features/ActionBar/Trash/useTrashModal";
+import useDndKit from "~/features/DndKit/useDndKit";
 import { List } from "~/features/List/List";
 import { SearchForm } from "~/features/SearchForm/SearchForm";
 import { TreeViewContainer } from "~/features/SideBar/TreeViewContainer";
-import { useActions, useMoveItem } from "~/services/queries";
+import { useActions } from "~/services/queries";
 import { useSearchParams, useStoreActions } from "~/store";
 
 const AppAction = lazy(
@@ -53,16 +47,7 @@ const OnboardingModal = lazy(async () => await import("./OnboardingModal"));
 
 const Explorer = ({ config }: { config: AppParams }) => {
   const searchParams = useSearchParams();
-  const moveItem = useMoveItem();
-  const {
-    setConfig,
-    setSearchParams,
-    setResourceOrFolderIsDraggable,
-    setElementDragOver,
-    setResourceIds,
-    setFolderIds,
-    foldTreeItem,
-  } = useStoreActions();
+  const { setConfig, setSearchParams } = useStoreActions();
 
   useEffect(() => {
     setConfig(config || {});
@@ -78,55 +63,13 @@ const Explorer = ({ config }: { config: AppParams }) => {
   const { data: actions } = useActions();
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } = useDisableModal();
+  const { handleDragEnd, handleDragOver, handleDragStart, sensors } =
+    useDndKit();
 
   useXitiTrackPageLoad();
 
   const canPublish = isActionAvailable("publish", actions);
   const canCreate = isActionAvailable("create", actions);
-
-  const activationConstraint = {
-    delay: 200,
-    tolerance: 5,
-  };
-
-  const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint,
-  });
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint,
-  });
-  const keyboardSensor = useSensor(KeyboardSensor);
-  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
-
-  const handleDragEnd = async (event: any) => {
-    const { over, active } = event;
-    if (over && active.id !== over.id) {
-      try {
-        await moveItem.mutate(over.id);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    setResourceOrFolderIsDraggable({ isDrag: false, elementDrag: undefined });
-  };
-
-  const handleDragStart = (event: any) => {
-    const { active } = event;
-    setResourceOrFolderIsDraggable({ isDrag: true, elementDrag: active.id });
-    if (active.data.current.type === "resource") {
-      setResourceIds([active.id]);
-    } else if (active.data.current.type === "folder") {
-      setFolderIds([active.id]);
-    }
-  };
-
-  const handleDragOver = (event: any) => {
-    const { over } = event;
-    if (over) {
-      foldTreeItem(over.id);
-      setElementDragOver({ isOver: true, overId: over.id });
-    }
-  };
 
   return (
     config && (

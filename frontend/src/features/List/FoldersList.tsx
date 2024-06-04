@@ -46,7 +46,7 @@ const FoldersList = ({
   return data?.pages[0]?.folders.length ? (
     <animated.ul className="grid ps-0 list-unstyled mb-24">
       {data?.pages[0]?.folders.map((folder: IFolder) => {
-        const { id } = folder;
+        const { id, name } = folder;
         return (
           <animated.li
             className="g-col-4 z-1"
@@ -57,7 +57,8 @@ const FoldersList = ({
             }}
           >
             <FolderCard
-              folder={folder}
+              name={name}
+              idFolder={id}
               app={currentApp}
               isSelected={folderIds.includes(folder.id)}
               onClick={() => {

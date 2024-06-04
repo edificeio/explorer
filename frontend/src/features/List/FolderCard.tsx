@@ -1,7 +1,10 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Files } from "@edifice-ui/icons";
 import { CardProps, Card } from "@edifice-ui/react";
-import { IFolder, IWebApp } from "edifice-ts-client";
+import { ID, IWebApp } from "edifice-ts-client";
+
+import { ElementDraggable } from "./ElementDraggable";
+import { useElementDragOver, useResourceOrFolderIsDraggable } from "~/store";
 
 export interface FolderCardProps extends Omit<CardProps, "children"> {
   /**
@@ -11,21 +14,25 @@ export interface FolderCardProps extends Omit<CardProps, "children"> {
   /**
    * Folder's name
    */
-  folder: IFolder;
+  name: string;
+  /**
+   * Folder's id
+   */
+  idFolder: ID;
 }
 
 const FolderCard = ({
   app,
-  folder,
+  name,
+  idFolder,
   isSelected = false,
   isSelectable = true,
   onClick,
   onSelect,
 }: FolderCardProps) => {
   const { setNodeRef: setDroppableRef } = useDroppable({
-    id: folder.id,
+    id: idFolder,
     data: {
-      folder: folder,
       accepts: ["folder", "resource"],
     },
   });
@@ -36,44 +43,53 @@ const FolderCard = ({
     setNodeRef: setDraggableRef,
     transform,
   } = useDraggable({
-    id: folder.id,
+    id: idFolder,
     data: {
       type: "folder",
     },
   });
+
+  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
+  const elementDragOver = useElementDragOver();
 
   const combinedRef = (element: HTMLElement | null) => {
     setDraggableRef(element);
     setDroppableRef(element);
   };
 
+  const folderIsDrag = resourceOrFolderIsDraggable.elementDrag === idFolder;
+  const folderIsOver = elementDragOver.overId === idFolder;
+
+  const styles = {
+    transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
+      (transform?.y ?? 0) / 1
+    }px, 0)`,
+  } as React.CSSProperties;
+
   return (
-    <div
-      {...listeners}
-      {...attributes}
-      style={
-        {
-          transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
-            (transform?.y ?? 0) / 1
-          }px, 0)`,
-        } as React.CSSProperties
-      }
-    >
-      <Card
-        ref={combinedRef}
-        app={app}
-        isSelectable={isSelectable}
-        isSelected={isSelected}
-        onClick={onClick}
-        onSelect={onSelect}
-      >
-        {(appCode) => (
-          <Card.Body>
-            <Files width="48" height="48" className={`color-app-${appCode}`} />
-            <Card.Title>{folder.name}</Card.Title>
-          </Card.Body>
-        )}
-      </Card>
+    <div ref={combinedRef} {...listeners} {...attributes} style={{ ...styles }}>
+      {!folderIsDrag ? (
+        <Card
+          app={app}
+          isSelectable={!folderIsDrag && isSelectable}
+          isSelected={(!folderIsDrag && isSelected) || folderIsOver}
+          onClick={onClick}
+          onSelect={onSelect}
+        >
+          {(appCode) => (
+            <Card.Body>
+              <Files
+                width="48"
+                height="48"
+                className={`color-app-${appCode}`}
+              />
+              <Card.Title>{name}</Card.Title>
+            </Card.Body>
+          )}
+        </Card>
+      ) : (
+        <ElementDraggable name={name} app={app} elementType={"folder"} />
+      )}
     </div>
   );
 };
