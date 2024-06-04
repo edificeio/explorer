@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { UniqueIdentifier, useDraggable } from "@dnd-kit/core";
 import { Globe, Users } from "@edifice-ui/icons";
 import { OneProfile } from "@edifice-ui/icons/nav";
@@ -12,6 +14,7 @@ import {
 import { IResource, IWebApp } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { ElementDraggable } from "./ElementDraggable";
 import { useResourceOrFolderIsDraggable } from "~/store";
 
 type OmitChildren = Omit<CardProps, "children">;
@@ -43,6 +46,7 @@ const ResourceCard = ({
   onSelect,
 }: ResourceCardProps) => {
   const avatar = `/userbook/avatar/${resource?.creatorId}`;
+  const [resourceIsDrag, setResourceIsDrag] = useState<boolean>(false);
 
   function isResourceShared(resource: PickedResource) {
     const { rights, creatorId } = resource || {};
@@ -54,7 +58,6 @@ const ResourceCard = ({
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: resource.id as UniqueIdentifier,
     data: {
-      resource: resource,
       type: "resource",
     },
   });
@@ -65,27 +68,25 @@ const ResourceCard = ({
 
   const { t } = useTranslation();
 
-  const resourceIsDrag =
-    resourceOrFolderIsDraggable.elementDrag === resource.id;
+  const styles = {
+    position: "relative",
+    transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
+      (transform?.y ?? 0) / 1
+    }px, 0)`,
+  } as React.CSSProperties;
+
+  useEffect(() => {
+    const isDrag = resourceOrFolderIsDraggable.elementDrag === resource.id;
+    setResourceIsDrag(isDrag);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceOrFolderIsDraggable]);
 
   return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={
-        {
-          position: "relative",
-          transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
-            (transform?.y ?? 0) / 1
-          }px, 0)`,
-        } as React.CSSProperties
-      }
-    >
+    <div ref={setNodeRef} {...listeners} {...attributes} style={{ ...styles }}>
       {!resourceIsDrag ? (
         <Card
           app={app}
-          isSelected={resourceIsDrag && isSelected}
+          isSelected={!resourceIsDrag && isSelected}
           isSelectable={!resourceIsDrag && isSelectable}
           onClick={onClick}
           onSelect={onSelect}
@@ -156,15 +157,11 @@ const ResourceCard = ({
           )}
         </Card>
       ) : (
-        <div
-          className="d-inline-flex align-items-center card is-selected gap-8"
-          style={{ flexDirection: "row", width: "252px", height: "32px" }}
-        >
-          <div className="ms-8">
-            <AppIcon app={app} iconFit="ratio" size="24" variant="rounded" />
-          </div>
-          <div className="text-truncate">{resource?.name}</div>
-        </div>
+        <ElementDraggable
+          name={resource?.name}
+          app={app}
+          elementType={"resource"}
+        />
       )}
     </div>
   );
