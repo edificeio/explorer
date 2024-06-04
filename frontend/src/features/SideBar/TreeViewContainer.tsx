@@ -18,6 +18,7 @@ import {
   useIsTrash,
   useSelectedNodesIds,
   useTreeData,
+  useElementDragOver,
 } from "~/store";
 
 const CreateFolderModal = lazy(
@@ -34,6 +35,7 @@ export const TreeViewContainer = () => {
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
   const selectedNodesIds = useSelectedNodesIds();
+  const elementDragOver = useElementDragOver();
 
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
@@ -68,6 +70,7 @@ export const TreeViewContainer = () => {
         onTreeItemSelect={selectTreeItem}
         onTreeItemFold={foldTreeItem}
         onTreeItemUnfold={handleTreeItemUnfold}
+        elementDragOver={elementDragOver}
       />
       <TrashButton
         id={FOLDER.BIN}

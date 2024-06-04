@@ -58,6 +58,7 @@ const FoldersList = ({
           >
             <FolderCard
               name={name}
+              idFolder={id}
               app={currentApp}
               isSelected={folderIds.includes(folder.id)}
               onClick={() => {
