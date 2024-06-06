@@ -193,7 +193,7 @@ public class FolderQueryElastic {
         if (text.isPresent()) {
             final JsonObject prefix = new JsonObject();
             prefix.put("query", text.get());
-            must.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("contentAll", prefix)));
+            must.add(new JsonObject().put("match_phrase_prefix", new JsonObject().put("name", prefix)));
         }
         //trashed
         if (trashed.isPresent()) {
