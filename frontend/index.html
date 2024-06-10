@@ -15,22 +15,18 @@
     <script type="module" src="/src/main.tsx"></script>
     <!-- SET INITIALISATION CONFIG -->
     <script>
-      var WORFLOW_ACCESS =
-        "net.atos.entng.mindmap.controllers.MindmapController|view";
+      var WORFLOW_ACCESS = "org.entcore.blog.controllers.BlogController|blog";
       var WORKFLOW_CREATE =
-        "net.atos.entng.mindmap.controllers.MindmapController|create";
-      var WORKFLOW_PRINT =
-        "net.atos.entng.mindmap.controllers.MindmapController|printView";
-      var WORKFLOW_EXPORT_PNG =
-        "net.atos.entng.mindmap.controllers.MindmapController|exportPngMindmap";
-      var WORKFLOW_EXPORT_SVG =
-        "net.atos.entng.mindmap.controllers.MindmapController|exportSvgMindmap";
+        "org.entcore.blog.controllers.BlogController|create";
+      var WORKFLOW_CREATE_PUBLIC =
+        "org.entcore.blog.controllers.BlogController|createPublicBlog";
+      var WORKFLOW_PRINT = "org.entcore.blog.controllers.BlogController|print";
       var WORKFLOW_PUBLISH =
-        "net.atos.entng.mindmap.controllers.MindmapController|publish";
+        "org.entcore.blog.controllers.BlogController|publish";
       var explorerConfig = {
-        app: "mindmap",
-        types: ["mindmap"],
-        libraryAppFilter: "MindMap",
+        app: "blog",
+        types: ["blog"],
+        enableOnboarding: false,
         filters: [
           { id: "owner", defaultValue: true },
           { id: "public", defaultValue: false },
@@ -65,10 +61,9 @@
             target: "tree",
           },
           {
-            id: "copy",
-            workflow: WORFLOW_ACCESS,
-            target: "actionbar",
-            right: "read",
+            id: "createPublic",
+            workflow: WORKFLOW_CREATE_PUBLIC,
+            target: "tree",
           },
           {
             id: "move",
@@ -111,7 +106,6 @@
             right: "manager",
           },
         ],
-        enableOnboarding: true,
       };
       ////
       var rootElement = document.querySelector("[data-explorer-config]");
