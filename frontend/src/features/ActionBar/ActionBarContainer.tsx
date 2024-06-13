@@ -11,7 +11,7 @@ import {
   useOdeClient,
 } from "@edifice-ui/react";
 import { animated, useTransition } from "@react-spring/web";
-import { BlogResource, type IAction } from "edifice-ts-client";
+import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 // import ShareBlog from "~/components/ShareModal/apps/ShareBlog";
@@ -187,14 +187,18 @@ export default function ActionBarContainer() {
         {isShareResourceOpen && selectedResource && (
           <ShareModal
             isOpen={isShareResourceOpen}
-            resourceId={selectedResource.assetId}
             shareResource={shareResource}
+            shareOptions={{
+              resourceCreatorId: selectedResource.creatorId,
+              resourceId: selectedResource.assetId,
+              resourceRights: selectedResource.rights,
+            }}
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
           >
             {appCode === "blog" ? (
               <ShareBlog
-                resource={selectedResource as BlogResource}
+                resourceId={selectedResource.assetId}
                 updateResource={updateResource}
               />
             ) : null}
