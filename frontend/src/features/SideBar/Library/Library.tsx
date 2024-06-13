@@ -1,16 +1,23 @@
 import { ArrowRight } from "@edifice-ui/icons";
-import { usePaths, useOdeTheme, useLibraryUrl, Image } from "@edifice-ui/react";
+import {
+  usePaths,
+  useOdeTheme,
+  useLibraryUrl,
+  Image,
+  useSession,
+} from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 const Library = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const sessionQuery = useSession();
   const { theme } = useOdeTheme();
   const libraryUrl = useLibraryUrl();
   const [imagePath] = usePaths();
 
   // #WB2-1689: add end of year Library gif only for FR users
   const imageFilename =
-    i18n.resolvedLanguage === "fr"
+    sessionQuery?.data?.currentLanguage === "fr"
       ? "image-library-year-end.gif"
       : "image-library.svg";
   const imageFullURL = `${imagePath}/${theme?.bootstrapVersion}/${imageFilename}`;
