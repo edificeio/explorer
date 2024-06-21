@@ -36,12 +36,15 @@ export default function useDndKit() {
 
   const handleDragEnd = async (event: any) => {
     const { over, active } = event;
-    if (over && active.id !== over.id) {
+    if (over && active.data.current.id !== over.data.current.id) {
       try {
-        await moveItem.mutate(over.id);
+        await moveItem.mutate(over.data.current.id);
       } catch (e) {
         console.error(e);
       }
+    } else {
+      setResourceIds([]);
+      setFolderIds([]);
     }
     setResourceOrFolderIsDraggable({ isDrag: false, elementDrag: undefined });
   };
@@ -50,17 +53,17 @@ export default function useDndKit() {
     const { active } = event;
     setResourceOrFolderIsDraggable({ isDrag: true, elementDrag: active.id });
     if (active.data.current.type === "resource") {
-      setResourceIds([active.id]);
+      setResourceIds([active.data.current.id]);
     } else if (active.data.current.type === "folder") {
-      setFolderIds([active.id]);
+      setFolderIds([active.data.current.id]);
     }
   };
 
   const handleDragOver = (event: any) => {
     const { over } = event;
     if (over) {
-      foldTreeItem(over.id);
-      setElementDragOver({ isOver: true, overId: over.id });
+      foldTreeItem(over.data.current.id);
+      setElementDragOver({ isOver: true, overId: over.data.current.id });
     } else {
       setElementDragOver({ isOver: false, overId: undefined });
     }

@@ -58,6 +58,7 @@ const ResourceCard = ({
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: resource.id as UniqueIdentifier,
     data: {
+      id: resource.id,
       type: "resource",
     },
   });

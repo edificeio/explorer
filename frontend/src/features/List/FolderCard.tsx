@@ -31,8 +31,9 @@ const FolderCard = ({
   onSelect,
 }: FolderCardProps) => {
   const { setNodeRef: setDroppableRef } = useDroppable({
-    id: idFolder,
+    id: idFolder + "1",
     data: {
+      id: idFolder,
       accepts: ["folder", "resource"],
     },
   });
@@ -43,8 +44,9 @@ const FolderCard = ({
     setNodeRef: setDraggableRef,
     transform,
   } = useDraggable({
-    id: idFolder,
+    id: idFolder + "1",
     data: {
+      id: idFolder,
       type: "folder",
     },
   });
@@ -71,8 +73,10 @@ const FolderCard = ({
       {!folderIsDrag ? (
         <Card
           app={app}
-          isSelectable={!folderIsDrag && isSelectable}
-          isSelected={(!folderIsDrag && isSelected) || folderIsOver}
+          isSelectable={!resourceOrFolderIsDraggable.isDrag && isSelectable}
+          isSelected={
+            (!resourceOrFolderIsDraggable.isDrag && isSelected) || folderIsOver
+          }
           onClick={onClick}
           onSelect={onSelect}
         >
