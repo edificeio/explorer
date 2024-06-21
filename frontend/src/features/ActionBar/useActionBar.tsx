@@ -66,7 +66,7 @@ export default function useActionBar() {
       setIsActionBarOpen(false);
       return;
     }
-    if (resourceOrFolderIsDraggable) {
+    if (resourceOrFolderIsDraggable.isDrag) {
       setIsActionBarOpen(false);
       return;
     }
