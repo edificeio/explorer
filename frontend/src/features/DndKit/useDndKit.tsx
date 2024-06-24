@@ -51,7 +51,10 @@ export default function useDndKit() {
 
   const handleDragStart = (event: any) => {
     const { active } = event;
-    setResourceOrFolderIsDraggable({ isDrag: true, elementDrag: active.id });
+    setResourceOrFolderIsDraggable({
+      isDrag: true,
+      elementDrag: active.data.current.id,
+    });
     if (active.data.current.type === "resource") {
       setResourceIds([active.data.current.id]);
     } else if (active.data.current.type === "folder") {

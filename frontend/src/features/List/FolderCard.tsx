@@ -1,3 +1,5 @@
+import { useEffect, useId, useState } from "react";
+
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Files } from "@edifice-ui/icons";
 import { CardProps, Card } from "@edifice-ui/react";
@@ -30,8 +32,11 @@ const FolderCard = ({
   onClick,
   onSelect,
 }: FolderCardProps) => {
+  const [folderIsDrag, setFolderIsDrag] = useState<boolean>(false);
+  const newId = useId();
+
   const { setNodeRef: setDroppableRef } = useDroppable({
-    id: idFolder + "1",
+    id: newId,
     data: {
       id: idFolder,
       accepts: ["folder", "resource"],
@@ -44,7 +49,7 @@ const FolderCard = ({
     setNodeRef: setDraggableRef,
     transform,
   } = useDraggable({
-    id: idFolder + "1",
+    id: newId,
     data: {
       id: idFolder,
       type: "folder",
@@ -59,7 +64,6 @@ const FolderCard = ({
     setDroppableRef(element);
   };
 
-  const folderIsDrag = resourceOrFolderIsDraggable.elementDrag === idFolder;
   const folderIsOver = elementDragOver.overId === idFolder;
 
   const styles = {
@@ -68,15 +72,22 @@ const FolderCard = ({
     }px, 0)`,
   } as React.CSSProperties;
 
+  useEffect(() => {
+    const isDrag = resourceOrFolderIsDraggable.elementDrag === idFolder;
+    setFolderIsDrag(isDrag);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceOrFolderIsDraggable]);
+
   return (
     <div ref={combinedRef} {...listeners} {...attributes} style={{ ...styles }}>
       {!folderIsDrag ? (
         <Card
           app={app}
-          isSelectable={!resourceOrFolderIsDraggable.isDrag && isSelectable}
+          isSelectable={!folderIsDrag && isSelectable}
           isSelected={
-            (!resourceOrFolderIsDraggable.isDrag && isSelected) || folderIsOver
+            (!folderIsDrag && isSelected) || (folderIsOver && folderIsDrag)
           }
+          isFocus={folderIsOver}
           onClick={onClick}
           onSelect={onSelect}
         >
