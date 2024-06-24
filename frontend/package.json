@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.12-develop-b2school.202406121446",
+  "version": "1.4.12-develop.202406121446",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -56,8 +56,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop-b2school",
-    "@edifice-ui/react": "develop-b2school",
+    "@edifice-ui/icons": "develop",
+    "@edifice-ui/react": "develop",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
@@ -85,8 +85,8 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "concurrently": "8.2.2",
     "csstype": "3.1.3",
-    "edifice-bootstrap": "develop-b2school",
-    "edifice-ts-client": "develop-b2school",
+    "edifice-bootstrap": "develop",
+    "edifice-ts-client": "develop",
     "eslint": "8.56.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
