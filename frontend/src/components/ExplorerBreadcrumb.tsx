@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 
 import { useSearchForm } from "~/features/SearchForm/useSearchForm";
 import {
-  useStoreActions,
   useCurrentFolder,
   useIsTrash,
   useSelectedNodesIds,
+  useStoreActions,
 } from "~/store";
 
 export function ExplorerBreadcrumb() {
@@ -27,6 +27,7 @@ export function ExplorerBreadcrumb() {
   });
   const previousName: string = currentFolder?.name || rootName;
 
+  console.log({ selectedNodesIds });
   return (
     <div className="py-16">
       {selectedNodesIds.length > 1 && !isTrashFolder ? (

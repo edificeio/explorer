@@ -40,7 +40,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
       nodeId={node.id}
       label={node.name}
       section={node.section}
-      // selectedNodesIds={selectedNodesIds}
+      selectedNodesIds={selectedNodesIds}
       selected={selectedItem === node.id}
       onItemSelect={handleItemSelect}
       onItemFold={handleItemFold}
@@ -56,7 +56,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
               node={item}
               // handlers={handlers}
               selectedItem={selectedItem}
-              // selectedNodesIds={selectedNodesIds}
+              selectedNodesIds={selectedNodesIds}
               handleItemSelect={handleItemSelect}
               handleItemFold={handleItemFold}
               handleItemUnfold={handleItemUnfold}

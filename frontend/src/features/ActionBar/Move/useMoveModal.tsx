@@ -5,9 +5,9 @@ import { type ID } from "edifice-ts-client";
 
 import { useMoveItem } from "~/services/queries";
 import {
-  useStoreActions,
   useSelectedFolders,
   useSelectedResources,
+  useStoreActions,
 } from "~/store";
 
 interface ModalProps {
@@ -23,9 +23,9 @@ export function useMoveModal({ onSuccess }: ModalProps) {
   // ! https://github.com/pmndrs/zustand/discussions/913
   const selectedFolders = useSelectedFolders();
   const selectedResources = useSelectedResources();
-  const { foldTreeItem, unfoldTreeItem } = useStoreActions();
-
   const queryclient = useQueryClient();
+
+  const { foldTreeItem, unfoldTreeItem } = useStoreActions();
 
   async function onMove() {
     try {

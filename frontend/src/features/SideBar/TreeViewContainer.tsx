@@ -34,7 +34,7 @@ export const TreeViewContainer = () => {
   // ! https://github.com/pmndrs/zustand/discussions/913
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
-  const selectedNodesIds = useSelectedNodesIds();
+  // const selectedNodesIds = useSelectedNodesIds();
   const elementDragOver = useElementDragOver();
 
   const { appCode } = useOdeClient();
@@ -53,6 +53,8 @@ export const TreeViewContainer = () => {
     clearSelectedItems,
     clearSelectedIds,
   } = useStoreActions();
+
+  const selectedNodesIds = useSelectedNodesIds();
 
   const handleTreeItemUnfold = async (folderId: ID) => {
     await unfoldTreeItem(folderId, queryClient);
@@ -76,7 +78,7 @@ export const TreeViewContainer = () => {
     <>
       <TreeView
         data={data}
-        // selectedNodesIds={selectedNodesIds}
+        selectedNodesIds={selectedNodesIds}
         onTreeItemSelect={handleTreeItemSelect}
         onTreeItemFold={handleTreeItemFold}
         onTreeItemUnfold={handleTreeItemUnfold}
