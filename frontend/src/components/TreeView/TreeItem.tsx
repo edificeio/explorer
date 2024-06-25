@@ -120,7 +120,7 @@ const TreeItem = (props: TreeItemProps) => {
 
   const isFocus = elementDragOver?.overId === nodeId;
 
-  /* useEffect(() => {
+  useEffect(() => {
     if (selectedNodesIds?.length && selectedNodesIds?.length >= 1) {
       const lastNodeId = selectedNodesIds[
         selectedNodesIds.length - 1
@@ -130,13 +130,13 @@ const TreeItem = (props: TreeItemProps) => {
           setExpanded(true);
           return node === nodeId;
         }
-        setExpanded(false);
-        return false;
+        /* setExpanded(false);
+        return false; */
       });
-    } else {
+    } /*  else {
       setExpanded(false);
-    }
-  }, [nodeId, selectedNodesIds]); */
+    } */
+  }, [nodeId, selectedNodesIds]);
 
   useEffect(() => {
     if (elementDragOver?.overId === nodeId) {

@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { Ref, forwardRef, useEffect, useState } from "react";
 
 import { TreeNode } from "./TreeNode";
 import TreeNodeComponent from "./TreeNodeComponent";
@@ -57,8 +57,8 @@ export interface TreeViewProps {
  * UI TreeView Component
  */
 
-const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
-  (props: TreeViewProps, ref) => {
+const TreeView = forwardRef(
+  (props: TreeViewProps, ref: Ref<HTMLDivElement>) => {
     const {
       data,
       onTreeItemSelect,
@@ -71,6 +71,13 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
     } = props;
 
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
+
+    useEffect(() => {
+      if (selectedNodesIds) {
+        handleSelectedNodesIds(selectedNodesIds[selectedNodesIds.length - 1]);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedNodesIds]);
 
     /* useEffect(() => {
       if (selectedNodesIds?.length && selectedNodesIds?.length >= 1) {
@@ -100,6 +107,12 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
 
     // useImperativeHandle(ref, () => handlers, [handlers]);
 
+    const handleSelectedNodesIds = (nodeId: string) => {
+      onTreeItemUnfold?.(nodeId);
+      onTreeItemSelect?.(nodeId);
+      setSelectedItem(nodeId);
+    };
+
     const handleItemFold = (nodeId: string) => {
       onTreeItemFold?.(nodeId);
     };
@@ -109,6 +122,7 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
     };
 
     const handleItemSelect = (nodeId: string) => {
+      console.log("handleItemSelect", nodeId);
       onTreeItemSelect?.(nodeId);
       setSelectedItem(nodeId);
     };
@@ -124,7 +138,7 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
     console.log({ selectedItem });
 
     return (
-      <div className="treeview">
+      <div className="treeview" ref={ref}>
         <TreeNodeComponent
           node={data}
           // handlers={handlers}
