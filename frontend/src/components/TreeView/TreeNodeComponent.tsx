@@ -1,13 +1,11 @@
 import React from "react";
 
-import { UniqueIdentifier } from "@dnd-kit/core";
-
 import TreeItem from "./TreeItem";
 import { TreeNode } from "./TreeNode";
 
 interface TreeNodeComponentProps {
   node: TreeNode;
-  handlers: {
+  handlers?: {
     unselectAll: () => void;
     select: (nodeId: string) => void;
   };
@@ -15,9 +13,10 @@ interface TreeNodeComponentProps {
   selectedNodesIds?: string[];
   elementDragOver?: {
     isOver: boolean;
-    overId: UniqueIdentifier | undefined;
+    overId: string | undefined;
   };
   handleItemFold: (nodeId: string) => void;
+  handleItemSelect: (nodeId: string) => void;
   handleItemUnfold: (nodeId: string) => void;
   handleItemFocus: (nodeId: string) => void;
   handleItemBlur: (nodeId: string) => void;
@@ -29,6 +28,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   selectedItem,
   selectedNodesIds,
   elementDragOver,
+  handleItemSelect,
   handleItemFold,
   handleItemUnfold,
   handleItemFocus,
@@ -40,9 +40,9 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
       nodeId={node.id}
       label={node.name}
       section={node.section}
-      selectedNodesIds={selectedNodesIds}
+      // selectedNodesIds={selectedNodesIds}
       selected={selectedItem === node.id}
-      onItemSelect={handlers.select}
+      onItemSelect={handleItemSelect}
       onItemFold={handleItemFold}
       onItemUnfold={handleItemUnfold}
       onItemFocus={handleItemFocus}
@@ -54,9 +54,10 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
             <TreeNodeComponent
               key={item.id}
               node={item}
-              handlers={handlers}
+              // handlers={handlers}
               selectedItem={selectedItem}
-              selectedNodesIds={selectedNodesIds}
+              // selectedNodesIds={selectedNodesIds}
+              handleItemSelect={handleItemSelect}
               handleItemFold={handleItemFold}
               handleItemUnfold={handleItemUnfold}
               handleItemFocus={handleItemFocus}

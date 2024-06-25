@@ -13,6 +13,10 @@ export interface TreeNode {
    * @param section: indicate if node is a top section (useful for specific icon)
    */
   section?: boolean;
+  /**
+   * @param selected: if first node is a section, it is selected by default
+   */
+  selected?: boolean;
 
   /**
    * Is this node contains children ?

@@ -118,6 +118,7 @@ const initialState = {
     id: FOLDER.DEFAULT,
     name: t("explorer.filters.mine"),
     section: true,
+    selected: true,
     children: [],
   },
   selectedNodesIds: ["default"],

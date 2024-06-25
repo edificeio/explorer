@@ -7,28 +7,28 @@ import {
   useUser,
 } from "@edifice-ui/react";
 import {
-  useInfiniteQuery,
-  type InfiniteData,
-  useMutation,
-  useQueryClient,
-  useQuery,
-  UseQueryResult,
   UseMutationOptions,
   UseMutationResult,
+  UseQueryResult,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query";
-import { FOLDER } from "edifice-ts-client";
 import {
-  type ISearchResults,
-  type IFolder,
-  type IResource,
-  type ShareRight,
-  IAction,
-  CreateParameters,
-  ResourceType,
   App,
+  CreateParameters,
+  FOLDER,
+  IAction,
+  PutShareResponse,
+  ResourceType,
   UpdateParameters,
   UpdateResult,
-  PutShareResponse,
+  type IFolder,
+  type IResource,
+  type ISearchResults,
+  type ShareRight,
 } from "edifice-ts-client";
 import { t } from "i18next";
 
@@ -45,15 +45,15 @@ import {
   updateFolder,
 } from "~/services/api";
 import {
-  useStoreActions,
-  useSearchParams,
+  useCurrentFolder,
   useFolderIds,
-  useTreeData,
   useResourceAssetIds,
   useResourceIds,
   useResourceWithoutIds,
+  useSearchParams,
+  useStoreActions,
   useStoreContext,
-  useCurrentFolder,
+  useTreeData,
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";

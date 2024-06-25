@@ -1,15 +1,15 @@
-import { useScrollToTop, useOdeClient } from "@edifice-ui/react";
-import { useSpring, animated } from "@react-spring/web";
+import { useOdeClient, useScrollToTop } from "@edifice-ui/react";
+import { animated, useSpring } from "@react-spring/web";
 import { InfiniteData } from "@tanstack/react-query";
-import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
+import { ISearchResults, type ID, type IFolder } from "edifice-ts-client";
 
-import FolderCard from "./FolderCard";
 import {
-  useStoreActions,
   useFolderIds,
-  useSelectedFolders,
   useResourceOrFolderIsDraggable,
+  useSelectedFolders,
+  useStoreActions,
 } from "~/store";
+import FolderCard from "./FolderCard";
 
 const FoldersList = ({
   data,
