@@ -1,15 +1,17 @@
-import { useScrollToTop as scrollToTop } from "@edifice-ui/react";
-import { type TreeNode } from "@edifice-ui/react";
+import {
+  useScrollToTop as scrollToTop,
+  type TreeNode,
+} from "@edifice-ui/react";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import {
   FOLDER,
-  type ISearchParameters,
-  type IFolder,
-  type IResource,
+  SORT_ORDER,
   type IActionParameters,
   type ID,
+  type IFolder,
+  type IResource,
+  type ISearchParameters,
   type ISearchResults,
-  SORT_ORDER,
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { create } from "zustand";
@@ -82,6 +84,7 @@ type Action = {
     }) => void;
     foldTreeItem: (folderId: string) => void;
     selectTreeItem: (folderId: string) => void;
+    overTreeItem: (folderId: string, queryClient: QueryClient) => Promise<void>;
     unfoldTreeItem: (
       folderId: string,
       queryClient: QueryClient,
@@ -309,14 +312,16 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
         }));
       }
     },
+    overTreeItem: async (folderId: string, queryClient: QueryClient) => {
+      const { unfoldTreeItem } = get().updaters;
+      unfoldTreeItem(folderId, queryClient);
+    },
     selectTreeItem: (folderId: string) => {
       const { treeData } = get();
       const { openFolder } = get().updaters;
 
       const folder = findNodeById(folderId, treeData);
-      const goToTop = scrollToTop();
-
-      goToTop();
+      scrollToTop();
 
       set((state) => ({
         ...state,
