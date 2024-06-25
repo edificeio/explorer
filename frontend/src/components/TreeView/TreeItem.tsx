@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 
-import { UniqueIdentifier, useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
 import { Folder, RafterDown, RafterRight } from "@edifice-ui/icons";
 import { useTranslation } from "react-i18next";
 
@@ -67,7 +67,7 @@ export interface TreeItemProps {
    */
   elementDragOver?: {
     isOver: boolean;
-    overId: UniqueIdentifier | undefined;
+    overId: string | undefined;
   };
 }
 
@@ -120,15 +120,11 @@ const TreeItem = (props: TreeItemProps) => {
 
   const isFocus = elementDragOver?.overId === nodeId;
 
-  useEffect(() => {
-    if (!selectedNodesIds) return;
-
-    const selectedNodesCount = selectedNodesIds.length;
-
-    if (selectedNodesCount >= 1) {
-      const lastNodeId = selectedNodesIds[selectedNodesCount - 1] as string;
-      console.log({ selectedNodesIds });
-
+  /* useEffect(() => {
+    if (selectedNodesIds?.length && selectedNodesIds?.length >= 1) {
+      const lastNodeId = selectedNodesIds[
+        selectedNodesIds.length - 1
+      ] as string;
       selectedNodesIds.some((node: string) => {
         if (node === nodeId && nodeId !== lastNodeId) {
           setExpanded(true);
@@ -140,7 +136,7 @@ const TreeItem = (props: TreeItemProps) => {
     } else {
       setExpanded(false);
     }
-  }, [nodeId, selectedNodesIds]);
+  }, [nodeId, selectedNodesIds]); */
 
   useEffect(() => {
     if (elementDragOver?.overId === nodeId) {
@@ -148,10 +144,6 @@ const TreeItem = (props: TreeItemProps) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elementDragOver]);
-
-  useEffect(() => {
-    if (expanded) console.log({ expanded });
-  }, [expanded]);
 
   const rafterSize = section ? 16 : 12;
 

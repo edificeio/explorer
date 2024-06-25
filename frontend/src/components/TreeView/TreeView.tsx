@@ -1,12 +1,4 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from "react";
-
-import { UniqueIdentifier } from "@dnd-kit/core";
+import { forwardRef, useState } from "react";
 
 import { TreeNode } from "./TreeNode";
 import TreeNodeComponent from "./TreeNodeComponent";
@@ -32,7 +24,7 @@ export interface TreeViewProps {
    */
   elementDragOver?: {
     isOver: boolean;
-    overId: UniqueIdentifier | undefined;
+    overId: string | undefined;
   };
 
   /**
@@ -80,30 +72,20 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
 
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-    useEffect(() => {
-      const selectedNodesCount = selectedNodesIds?.length;
-
-      if (!selectedNodesCount) {
+    /* useEffect(() => {
+      if (selectedNodesIds?.length && selectedNodesIds?.length >= 1) {
+        setSelectedItem(selectedNodesIds[selectedNodesIds.length - 1]);
+      } else {
         setSelectedItem(null);
-        return;
       }
+    }, [selectedNodesIds]); */
 
-      const lastSelectedNode = selectedNodesIds[selectedNodesCount - 1];
+    /* useEffect(() => {
+      if (data.id === "default") setSelectedItem("default");
+      console.log(data);
+    }, [data]); */
 
-      if (selectedNodesCount >= 1) {
-        setSelectedItem(lastSelectedNode);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedNodesIds]);
-
-    useEffect(() => {
-      if (typeof selectedItem == "string") {
-        handleItemUnfold(selectedItem);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedItem]);
-
-    const handlers: TreeViewHandlers = useMemo(
+    /* const handlers: TreeViewHandlers = useMemo(
       () => ({
         unselectAll() {
           setSelectedItem(null);
@@ -114,17 +96,21 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
         },
       }),
       [onTreeItemSelect],
-    );
+    ); */
 
-    useImperativeHandle(ref, () => handlers, [handlers]);
+    // useImperativeHandle(ref, () => handlers, [handlers]);
 
     const handleItemFold = (nodeId: string) => {
       onTreeItemFold?.(nodeId);
     };
 
     const handleItemUnfold = (nodeId: string) => {
-      console.log("handleItemUnfold", nodeId);
       onTreeItemUnfold?.(nodeId);
+    };
+
+    const handleItemSelect = (nodeId: string) => {
+      onTreeItemSelect?.(nodeId);
+      setSelectedItem(nodeId);
     };
 
     const handleItemFocus = (nodeId: string) => {
@@ -135,13 +121,16 @@ const TreeView = forwardRef<TreeViewHandlers, TreeViewProps>(
       onTreeItemBlur?.(nodeId);
     };
 
+    console.log({ selectedItem });
+
     return (
       <div className="treeview">
         <TreeNodeComponent
           node={data}
-          handlers={handlers}
+          // handlers={handlers}
           selectedItem={selectedItem}
-          selectedNodesIds={selectedNodesIds}
+          // selectedNodesIds={selectedNodesIds}
+          handleItemSelect={handleItemSelect}
           handleItemFold={handleItemFold}
           handleItemUnfold={handleItemUnfold}
           handleItemFocus={handleItemFocus}

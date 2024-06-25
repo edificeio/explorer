@@ -4,7 +4,6 @@ import { Plus } from "@edifice-ui/icons";
 import {
   Button,
   LoadingScreen,
-  TreeView,
   useOdeClient,
   useToggle,
 } from "@edifice-ui/react";
@@ -12,13 +11,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import TreeView from "~/components/TreeView/TreeView";
 import TrashButton from "~/features/SideBar/TrashButton";
 import {
-  useStoreActions,
+  useElementDragOver,
   useIsTrash,
   useSelectedNodesIds,
+  useStoreActions,
   useTreeData,
-  useElementDragOver,
 } from "~/store";
 
 const CreateFolderModal = lazy(
@@ -26,7 +26,7 @@ const CreateFolderModal = lazy(
 );
 
 export const TreeViewContainer = () => {
-  const queryclient = useQueryClient();
+  const queryClient = useQueryClient();
 
   const [isModalOpen, toggle] = useToggle();
 
@@ -40,6 +40,11 @@ export const TreeViewContainer = () => {
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
 
+  const data = {
+    ...treeData,
+    name: t("explorer.filters.mine", { ns: appCode }),
+  };
+
   const {
     goToTrash,
     selectTreeItem,
@@ -50,7 +55,15 @@ export const TreeViewContainer = () => {
   } = useStoreActions();
 
   const handleTreeItemUnfold = async (folderId: ID) => {
-    await unfoldTreeItem(folderId, queryclient);
+    await unfoldTreeItem(folderId, queryClient);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  };
+
+  const handleTreeItemSelect = (folderId: ID) => {
+    selectTreeItem(folderId);
+  };
+  const handleTreeItemFold = (folderId: ID) => {
+    foldTreeItem(folderId);
   };
 
   const handleOnFolderCreate = () => {
@@ -62,13 +75,10 @@ export const TreeViewContainer = () => {
   return (
     <>
       <TreeView
-        data={{
-          ...treeData,
-          name: t("explorer.filters.mine", { ns: appCode }),
-        }}
-        selectedNodesIds={selectedNodesIds}
-        onTreeItemSelect={selectTreeItem}
-        onTreeItemFold={foldTreeItem}
+        data={data}
+        // selectedNodesIds={selectedNodesIds}
+        onTreeItemSelect={handleTreeItemSelect}
+        onTreeItemFold={handleTreeItemFold}
         onTreeItemUnfold={handleTreeItemUnfold}
         elementDragOver={elementDragOver}
       />
