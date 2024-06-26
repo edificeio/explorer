@@ -24,6 +24,8 @@ import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.impl.ExplorerPlugin;
+import org.entcore.common.explorer.impl.ExplorerResourceDetails;
+import org.entcore.common.explorer.impl.ExplorerResourceDetailsQuery;
 import org.entcore.common.explorer.to.MuteRequest;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.share.ShareRoles;
@@ -358,5 +360,33 @@ public class ResourceServiceElastic implements ResourceService {
     public static String getRoutingKey(final String application) {
         //TODO add resourceType?
         return application;
+    }
+
+    @Override
+    public Future<Optional<ExplorerResourceDetails>> doFindResourceDetails(ExplorerResourceDetailsQuery query) {
+        return sql.getModelByEntIds(Collections.singleton(query.getResourceId()))
+          .map(resources -> resources.stream().map(resource -> new ExplorerResourceDetails(
+            resource.id,
+            resource.entId,
+            resource.application,
+            resource.resourceType,
+            resource.resourceType, // FIXME changeit
+            getParentFolderForUser(resource, query).orElse(null)
+          )).findAny());
+    }
+
+    private Optional<Long> getParentFolderForUser(final ResourceExplorerDbSql.ResouceSql resource,
+                                        final ExplorerResourceDetailsQuery query) {
+        final String userId = query.getUserId();
+        final Optional<Long> parentFolderId;
+        if(resource.folders == null) {
+            parentFolderId = Optional.empty();
+        } else {
+            parentFolderId = resource.folders.stream()
+              .filter(folder -> userId.equals(folder.userId))
+              .map(folder -> Long.valueOf(folder.id))
+              .findAny();
+        }
+        return parentFolderId;
     }
 }

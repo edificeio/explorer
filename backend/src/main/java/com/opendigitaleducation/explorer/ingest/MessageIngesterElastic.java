@@ -12,6 +12,7 @@ import org.entcore.common.explorer.ExplorerMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MessageIngesterElastic implements MessageIngester {
     static Logger log = LoggerFactory.getLogger(MessageIngesterElastic.class);
@@ -48,7 +49,12 @@ public class MessageIngesterElastic implements MessageIngester {
         final List<ExplorerMessageForIngest> failedTransformationToOperation = new ArrayList<>();
         for (ExplorerMessageForIngest message : messages) {
             try {
-                operations.addAll(MessageIngesterElasticOperation.create(message));
+                final List<MessageIngesterElasticOperation> operation = MessageIngesterElasticOperation.create(message);
+                // Exclude move actions from the list of messages to process in OpenSearch, otherwise the resource
+                // appears in 2 different folders : the desired one and rootFolder.
+                if(!ExplorerMessage.ExplorerAction.Move.name().equals(message.getAction())) {
+                    operations.addAll(operation);
+                }
             } catch (Exception e) {
                 message.setError("to.elastic.operation.failed");
                 message.setErrorDetails(e.getMessage());
@@ -57,6 +63,12 @@ public class MessageIngesterElastic implements MessageIngester {
         }
         return executeOperations(operations)
                 .map(result -> {
+                    // Add Move messages to the list of succeeded messages, otherwise they will be considered as failed
+                    // by the ingestion job
+                    final List<ExplorerMessageForIngest> moveMessages = messages.stream()
+                      .filter(m -> ExplorerMessage.ExplorerAction.Move.name().equals(m.getAction()))
+                      .collect(Collectors.toList());
+                    result.succeed.addAll(moveMessages);
                     result.failed.addAll(failedTransformationToOperation);
                     return result;
                 });
@@ -77,6 +89,9 @@ public class MessageIngesterElastic implements MessageIngester {
 
     private Future<IngestJob.IngestJobResult> executeOperations(final List<MessageIngesterElasticOperation> operations) {
         final IngestJob.IngestJobResult ingestJobResult = new IngestJob.IngestJobResult();
+        if(operations.isEmpty()) {
+            return Future.succeededFuture(ingestJobResult);
+        }
         final ElasticBulkBuilder bulk = elasticClient.getClient().bulk(elasticOptions);
         for (MessageIngesterElasticOperation operation : operations) {
             operation.execute(bulk);
