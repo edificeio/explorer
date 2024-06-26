@@ -20,14 +20,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import static org.entcore.common.explorer.IExplorerPlugin.addressForIngestStateUpdate;
-import org.entcore.common.explorer.IngestJobState;
-import org.entcore.common.explorer.IngestJobStateUpdateMessage;
-import org.entcore.common.postgres.IPostgresClient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import org.entcore.common.explorer.*;
+import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
+import org.entcore.common.postgres.IPostgresClient;
+import org.entcore.common.user.UserInfos;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -223,6 +222,11 @@ public class IngestJob {
                     this.ingestJobMetricsRecorder.onIngestCycleResult(ingestResultAndJobResult.getLeft(), ingestResultAndJobResult.getRight(), start);
                     if (ingestResult.size() > 0) {
                         final IngestJobResult transformedJob = transformIngestResult(ingestResult, ingestResultAndJobResult.getRight());
+                        ingestResult.succeed.stream().filter(m -> ExplorerMessage.ExplorerAction.Move.name().equals(m.getAction()))
+                          .forEach(m -> {
+                              final IExplorerPluginClient client = IExplorerPluginClient.withBus(vertx, m.getApplication(), m.getResourceType());
+                              client.reindex(new ExplorerReindexResourcesRequest(Collections.singleton(m.getId())));
+                          });
                         future = this.messageReader.updateStatus(transformedJob, maxAttempt)
                             .compose(e -> {
                                 final List<ExplorerMessageForIngest> permanentlyDeletedMessages =

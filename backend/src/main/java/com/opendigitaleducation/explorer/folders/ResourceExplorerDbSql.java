@@ -216,6 +216,26 @@ public class ResourceExplorerDbSql {
         return mutedByFuture;
     }
 
+    public Future<Map<String, Integer>> getResourceIdByEntId(final Set<String> entIds) {
+        if(entIds == null || entIds.isEmpty()) {
+            return Future.succeededFuture(Collections.emptyMap());
+        } else {
+            final String inPlaceholder = PostgresClient.inPlaceholder(entIds, 1);
+            final String queryTpl = "SELECT id, ent_id FROM explorer.resources WHERE ent_id IN (%s)";
+            final String query = String.format(queryTpl, inPlaceholder);
+            final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), entIds);
+            return client.preparedQuery(query, tuple).map(rows ->{
+                final Map<String, Integer> mapping = new HashMap<>();
+                for(final Row row : rows){ ;
+                    final Integer id = row.getInteger("id");
+                    final String entId = row.getString("ent_id");
+                    mapping.put(entId, id);
+                }
+                return  mapping;
+            });
+        }
+    }
+
     public Future<Set<ResouceSql>> getSharedByEntIds(final Set<String> ids) {
         if (ids.isEmpty()) {
             return Future.succeededFuture(new HashSet<>());
@@ -394,6 +414,60 @@ public class ResourceExplorerDbSql {
         });
     }
 
+
+    /**
+     * Move resources (identified by their ent Id) to a specified folder (identified by its explorer id).
+     * @param links Link between resources and their folder
+     * @return Updated resources (some resources might be missing from this result if they couldn't be found in
+     * the database or if the target folder could not be found.
+     */
+    public Future<List<ResouceSql>> moveExistingResources(final Collection<ResourceLinkByUri> links){
+        if(links.isEmpty()){
+            return Future.succeededFuture(new ArrayList<>());
+        }
+        final Promise<List<ResouceSql>> promise = Promise.promise();
+        getResourceIdByEntId(links.stream().map(l -> l.entId).collect(Collectors.toSet()))
+          .compose(resourceIdByEntId -> {
+              final List<JsonObject> jsons = links.stream()
+                .filter(l -> resourceIdByEntId.get(l.entId) != null)
+                .map(e-> new JsonObject()
+                  .put("folder_id", e.parentId)
+                  .put("resource_id", resourceIdByEntId.get(e.entId))
+                  .put("user_id", e.updaterId))
+                .collect(Collectors.toList());
+              final Tuple tuple = PostgresClient.insertValues(jsons, Tuple.tuple(),"folder_id", "resource_id", "user_id");
+              final String insertPlaceholder = PostgresClient.insertPlaceholders(jsons, 1,"folder_id", "resource_id", "user_id");
+              final StringBuilder queryTpl = new StringBuilder();
+              queryTpl.append("WITH updated AS ( ");
+              queryTpl.append("   INSERT INTO explorer.folder_resources(folder_id, resource_id, user_id) VALUES %s ");
+              queryTpl.append("   ON CONFLICT(resource_id, user_id) DO UPDATE SET folder_id=EXCLUDED.folder_id RETURNING * ");
+              queryTpl.append(") ");
+              queryTpl.append("SELECT upserted.id as resource_id,upserted.ent_id,upserted.resource_unique_id, ");
+              queryTpl.append("       upserted.creator_id, upserted.version, upserted.application, upserted.resource_type, upserted.muted_by,upserted.trashed_by, upserted.rights, ");
+              queryTpl.append("       f.id as folder_id, updated.user_id as user_id, f.trashed as folder_trash ");
+              queryTpl.append("FROM explorer.resources AS upserted ");
+              queryTpl.append("INNER JOIN updated ON updated.resource_id=upserted.id ");
+              queryTpl.append("LEFT JOIN explorer.folders f ON updated.folder_id=f.id ");
+              final String query = String.format(queryTpl.toString(), insertPlaceholder);
+              return client.preparedQuery(query, tuple).map(rows->{
+                  final Map<Integer, ResouceSql> results = new HashMap<>();
+                  final Set<ResouceSql> models = new HashSet<>();
+                  for(final Row row : rows){
+                      models.add(mapRowToModel(row, model -> {
+                          // set if not exists -> ensure uniqueness
+                          results.putIfAbsent(model.id, model);
+                          // get model to update
+                          return results.get(model.id);
+                      }));
+                  }
+                  return new ArrayList<>(models);
+              });
+          })
+          .onSuccess(promise::complete)
+          .onFailure(promise::fail);
+        return promise.future();
+    }
+
     /**
      * Map a ResourceSql java object from an sql Row
      * @param row an sql Row containing result of queries like: SELECT ... FROM resources join resource_folders join folder
@@ -553,6 +627,20 @@ public class ResourceExplorerDbSql {
         return newIds;
     }
 
+    /**
+     * Link between a resource identified by its ent id and the folder it should be in.
+     */
+    public static class ResourceLinkByUri {
+        private final String entId;
+        private final Long parentId;
+        private final String updaterId;
+
+        public ResourceLinkByUri(String entId, Long parentId, String updaterId) {
+        this.entId = entId;
+        this.parentId = parentId;
+          this.updaterId = updaterId;
+        }
+    }
     public static class ResourceLink{
         final Number parentId;
         final Number resourceId;
@@ -566,7 +654,8 @@ public class ResourceExplorerDbSql {
 
     public static class ResouceSql{
 
-        public ResouceSql(String entId, Integer id, String resourceUniqId, String creatorId, String application, String resourceType, final long version) {
+        public ResouceSql(String entId, Integer id, String resourceUniqId, String creatorId, String application, String resourceType,
+                          final long version) {
             this.entId = entId;
             this.id = id;
             this.creatorId = creatorId;

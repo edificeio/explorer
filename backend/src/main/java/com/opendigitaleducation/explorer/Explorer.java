@@ -50,6 +50,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.impl.ExplorerResourceDetailsQuery;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.postgres.IPostgresClient;
 
@@ -170,6 +171,20 @@ public class Explorer extends BaseServer {
             log.info("Explorer application started -> " + e.succeeded());
             if (e.failed()) {
                 log.error("Explorer application failed to start", e.cause());
+            }
+        });
+        vertx.eventBus().consumer("explorer.resources.details", message -> {
+            try {
+                final ExplorerResourceDetailsQuery query = ((JsonObject)message.body()).mapTo(ExplorerResourceDetailsQuery.class);
+                resourceService.findResourceDetails(query)
+                  .onSuccess(details -> message.reply(JsonObject.mapFrom(details)))
+                  .onFailure(th -> {
+                      log.error("An error occurred while fetching resource details query", th);
+                      message.fail(500, th.getMessage());
+                  });
+            } catch (Exception e) {
+                log.error("An error occurred while treating a resource details query", e);
+                message.fail(500, e.getMessage());
             }
         });
     }

@@ -9,28 +9,18 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import static java.util.Collections.emptyList;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.entcore.common.explorer.ExplorerMessage;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.postgres.IPostgresClient;
-import org.entcore.common.share.ShareModel;
 import org.entcore.common.user.UserInfos;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.System.currentTimeMillis;
 
 public class MessageIngesterPostgres implements MessageIngester {
     private static final Logger log = LoggerFactory.getLogger(MessageIngesterPostgres.class);
@@ -82,6 +72,13 @@ public class MessageIngesterPostgres implements MessageIngester {
                                 moveResources.add(new ExplorerMessageWithParent(message.getParentId().get(), message));
                             }
                             upsertResources.add(message);
+                        }
+                        break;
+                    case Move:
+                        try {
+                            moveResources.add(new ExplorerMessageWithParent(message.getParentId().get(), message));
+                        } catch(Exception e) {
+                            log.error(e);
                         }
                         break;
                 }
@@ -309,16 +306,61 @@ public class MessageIngesterPostgres implements MessageIngester {
             return Future.succeededFuture(new ArrayList<>());
         }
         // get resource unique ID
-        final Map<String, ExplorerMessageForIngest> upsertedById = upsertResources.stream().collect(Collectors.toMap(ExplorerMessageForIngest::getId, Function.identity()));
-        final List<ResourceExplorerDbSql.ResourceLink> links = toMoveList.stream().map(toMove -> {
-            final Optional<String> predictibleId = upsertedById.get(toMove.message.getId()).getPredictibleId();
-            final Integer folderId = Integer.valueOf(toMove.parentId);
-            final String updaterId = toMove.message.getUpdaterId();
-            // predictible id has been setted on upsert
-            return new ResourceExplorerDbSql.ResourceLink(folderId, Long.valueOf(predictibleId.get()), updaterId);
-        }).collect(Collectors.toList());
+        return CompositeFuture.join(
+          moveUpsertedResources(toMoveList, upsertResources),
+          moveExistingResources(toMoveList)
+        ).compose(result -> {
+            final List<ExplorerMessageForIngest> elements = new ArrayList<>(result.resultAt(0));
+            elements.addAll(result.resultAt(1));
+            return Future.succeededFuture(elements);
+        });
+    }
+
+    /**
+     * Move resources which were already present in the database and for which we received a MOVE action.
+     * @param toMoveList List of messages to move
+     * @return List of messages that indeed triggered a move (i.e. both the resource and the folder were found in DB).
+     */
+    private Future<List<ExplorerMessageForIngest>> moveExistingResources(List<ExplorerMessageWithParent> toMoveList) {
+        final List<ExplorerMessageWithParent> existingResources = toMoveList.stream()
+          .filter(elt -> ExplorerMessage.ExplorerAction.Move.name().equals(elt.message.getAction()))
+          .collect(Collectors.toList());
+        final Map<String, ResourceExplorerDbSql.ResourceLinkByUri> links = new HashMap<>();
+        for(ExplorerMessageWithParent elt : existingResources) {
+          final ExplorerMessageForIngest message = elt.message;
+          final Long parentId = Long.valueOf(message.getParentId().get());
+          links.put(message.getId(), new ResourceExplorerDbSql.ResourceLinkByUri(message.getId(), parentId, message.getUpdaterId()));
+        }
+        return sql.moveExistingResources(links.values()).map(resourcesSql -> {
+            final Set<String> movedResources = resourcesSql.stream().map(elt -> elt.entId).collect(Collectors.toSet());
+            return existingResources.stream()
+              .filter(elt -> movedResources.contains(elt.message.getId()))
+              .map(elt -> elt.message)
+              .collect(Collectors.toList());
+        });
+    }
+
+    /**
+     * Move resources which may or may not exist in the database and for which we received a UPSERT action.
+     * @param toMoveList List of messages to move
+     * @return List of messages that indeed triggered a move (i.e. the folder was found in DB).
+     */
+    private Future<List<ExplorerMessageForIngest>> moveUpsertedResources(List<ExplorerMessageWithParent> toMoveList, List<ExplorerMessageForIngest> upsertResources) {
+        final Map<String, ExplorerMessageForIngest> upsertedById = upsertResources.stream()
+          .collect(Collectors.toMap(ExplorerMessageForIngest::getId, Function.identity()));
+        final List<ExplorerMessageWithParent> rscs = toMoveList.stream()
+          .filter(toMove -> !ExplorerMessage.ExplorerAction.Move.name().equals(toMove.message.getAction()))
+          .collect(Collectors.toList());
+        final List<ResourceExplorerDbSql.ResourceLink> links = rscs.stream()
+          .map(toMove -> {
+              final Optional<Long> predictibleId = upsertedById.get(toMove.message.getId()).getPredictibleId().map(Long::valueOf);
+              final Integer folderId = Integer.valueOf(toMove.parentId);
+              final String updaterId = toMove.message.getUpdaterId();
+              // predictable id has been set on upsert
+              return new ResourceExplorerDbSql.ResourceLink(folderId, predictibleId.get(), updaterId);
+          }).collect(Collectors.toList());
         return sql.moveTo(links).map(resourcesSql -> {
-            final List<ExplorerMessageForIngest> beforeMap = toMoveList.stream().map(e -> e.message).collect(Collectors.toList());
+            final List<ExplorerMessageForIngest> beforeMap = rscs.stream().map(e -> e.message).collect(Collectors.toList());
             final List<ExplorerMessageForIngest> mapped = mapUpsertResourceToMessage(beforeMap, resourcesSql);
             return mapped;
         });
