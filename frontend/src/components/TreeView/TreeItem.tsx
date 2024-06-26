@@ -113,6 +113,8 @@ const TreeItem = (props: TreeItemProps) => {
     id: useId(),
     data: {
       id: nodeId,
+      name: label,
+      folderTreeview: true,
       accepts: ["folder", "resource"],
     },
   });
