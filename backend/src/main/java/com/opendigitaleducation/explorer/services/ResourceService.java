@@ -1,8 +1,13 @@
 package com.opendigitaleducation.explorer.services;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import org.entcore.common.explorer.impl.ExplorerResourceDetails;
+import org.entcore.common.explorer.impl.ExplorerResourceDetailsQuery;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
 
@@ -38,6 +43,28 @@ public interface ResourceService {
     Future<List<JsonObject>> share(final UserInfos user, final String application, final List<JsonObject> documents, final List<ShareOperation> operation) throws Exception;
 
     void stopConsumer();
+
+    default Future<ExplorerResourceDetails> findResourceDetails(ExplorerResourceDetailsQuery query) {
+        final Future<ExplorerResourceDetails> future;
+        if(query == null) {
+            future = Future.failedFuture("query.mandatory");
+        } else if(isBlank(query.getResourceId())) {
+            future = Future.failedFuture("resourceId.mandatory");
+        } else {
+            final Promise<ExplorerResourceDetails> promise = Promise.promise();
+            doFindResourceDetails(query).onSuccess(details -> {
+                if(details.isPresent()) {
+                    promise.complete(details.get());
+                } else {
+                    promise.fail("resource.not.found");
+                }
+            }).onFailure(promise::fail);
+            future = promise.future();
+        }
+        return future;
+    }
+
+    Future<Optional<ExplorerResourceDetails>> doFindResourceDetails(ExplorerResourceDetailsQuery query);
 
     class FetchResult{
         public final Long count;
