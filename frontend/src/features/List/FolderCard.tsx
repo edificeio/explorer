@@ -89,7 +89,7 @@ const FolderCard = ({
           isSelected={
             (!folderIsDrag && isSelected) || (folderIsOver && folderIsDrag)
           }
-          isFocus={folderIsOver}
+          isFocused={folderIsOver}
           onClick={onClick}
           onSelect={onSelect}
         >
