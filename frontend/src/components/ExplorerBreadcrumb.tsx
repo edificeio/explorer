@@ -6,7 +6,7 @@ import { useSearchForm } from "~/features/SearchForm/useSearchForm";
 import {
   useCurrentFolder,
   useIsTrash,
-  useSelectedNodesIds,
+  useSelectedNodeId,
   useStoreActions,
 } from "~/store";
 
@@ -16,7 +16,7 @@ export function ExplorerBreadcrumb() {
   const { t } = useTranslation(["common", appCode]);
   const { inputSearch } = useSearchForm();
 
-  const selectedNodesIds = useSelectedNodesIds();
+  const selectedNodeId = useSelectedNodeId();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
 
@@ -29,7 +29,9 @@ export function ExplorerBreadcrumb() {
 
   return (
     <div className="py-16">
-      {selectedNodesIds.length > 1 && !isTrashFolder ? (
+      {selectedNodeId !== "bin" &&
+      selectedNodeId !== "default" &&
+      !isTrashFolder ? (
         <div className="d-flex align-items-center gap-8">
           <IconButton
             icon={<ArrowLeft />}

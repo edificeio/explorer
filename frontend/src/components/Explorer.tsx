@@ -3,17 +3,16 @@ import { Suspense, lazy, useEffect } from "react";
 import { DndContext } from "@dnd-kit/core";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import {
-  useOdeClient,
-  useXitiTrackPageLoad,
+  AppHeader,
+  Breadcrumb,
   Grid,
   LoadingScreen,
-  Breadcrumb,
-  AppHeader,
   isActionAvailable,
+  useOdeClient,
+  useXitiTrackPageLoad,
 } from "@edifice-ui/react";
 import { IWebApp } from "edifice-ts-client";
 
-import { ExplorerBreadcrumb } from "./ExplorerBreadcrumb";
 import { AppParams } from "~/config/getExplorerConfig";
 import { useDisableModal } from "~/features/ActionBar/Disable/useDisableModal";
 import { useTrashModal } from "~/features/ActionBar/Trash/useTrashModal";
@@ -23,6 +22,7 @@ import { SearchForm } from "~/features/SearchForm/SearchForm";
 import { TreeViewContainer } from "~/features/SideBar/TreeViewContainer";
 import { useActions } from "~/services/queries";
 import { useSearchParams, useStoreActions } from "~/store";
+import { ExplorerBreadcrumb } from "./ExplorerBreadcrumb";
 
 const AppAction = lazy(
   async () => await import("~/components/AppAction/AppAction"),

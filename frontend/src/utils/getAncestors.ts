@@ -4,7 +4,7 @@ import { FOLDER } from "edifice-ts-client";
 import { findNodeById } from "./findNodeById";
 
 export function getAncestors(folderId: string, treeData: TreeNode): string[] {
-  const findItem = findNodeById(folderId, treeData);
+  const findItem = findNodeById(treeData, folderId);
   if (findItem?.folder?.ancestors) {
     const nodes = findItem?.folder.ancestors || [];
     return [...nodes, folderId];

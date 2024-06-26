@@ -30,7 +30,6 @@ export default function useDndKit() {
     setElementDragOver,
     setResourceIds,
     setFolderIds,
-    foldTreeItem,
     overTreeItem,
   } = useStoreActions();
 
@@ -52,7 +51,7 @@ export default function useDndKit() {
     const { over, active } = event;
     const elementOver = over?.data.current;
     const elementActive = active.data.current;
-    
+
     if (over && elementActive?.id !== elementOver?.id) {
       try {
         await moveItem.mutate(elementOver?.id);
@@ -79,15 +78,16 @@ export default function useDndKit() {
     const { active } = event;
     const elementActive = active.data.current;
 
-    setResourceOrFolderIsDraggable({
-      isDrag: true,
-      elementDrag: elementActive?.id,
-    });
     if (elementActive?.type === "resource") {
       setResourceIds([elementActive?.id]);
     } else if (elementActive?.type === "folder") {
       setFolderIds([elementActive?.id]);
     }
+
+    setResourceOrFolderIsDraggable({
+      isDrag: true,
+      elementDrag: elementActive?.id,
+    });
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -95,13 +95,18 @@ export default function useDndKit() {
     const elementOver = over?.data.current;
 
     if (over) {
-      if (elementOver?.folderTreeview) {
-        overTreeItem(elementOver?.id, queryClient);
-      }
-      foldTreeItem(elementOver?.id);
-      setElementDragOver({ isOver: true, overId: elementOver?.id });
+      overTreeItem(elementOver?.id, queryClient);
+      setElementDragOver({
+        isOver: true,
+        overId: elementOver?.id,
+        isTreeview: elementOver?.folderTreeview,
+      });
     } else {
-      setElementDragOver({ isOver: false, overId: undefined });
+      setElementDragOver({
+        isOver: false,
+        overId: undefined,
+        isTreeview: false,
+      });
     }
   };
 
