@@ -50,16 +50,19 @@ export default function useDndKit() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { over, active } = event;
-    if (over && active.data.current?.id !== over.data.current?.id) {
+    const elementOver = over?.data.current;
+    const elementActive = active.data.current;
+    
+    if (over && elementActive?.id !== elementOver?.id) {
       try {
-        await moveItem.mutate(over.data.current?.id);
+        await moveItem.mutate(elementOver?.id);
         if (active.data.current?.type === "resource") {
           toast.success(
-            `Resource déplacée dans le dossier ${over.data.current?.name ?? rootName}`,
+            `Resource déplacée dans le dossier ${elementOver?.name ?? rootName}`,
           );
         } else {
           toast.success(
-            `Dossier déplacé dans le dossier ${over.data.current?.name ?? rootName}`,
+            `Dossier déplacé dans le dossier ${elementOver?.name ?? rootName}`,
           );
         }
       } catch (e) {
@@ -74,24 +77,29 @@ export default function useDndKit() {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
+    const elementActive = active.data.current;
+
     setResourceOrFolderIsDraggable({
       isDrag: true,
-      elementDrag: active.data.current?.id,
+      elementDrag: elementActive?.id,
     });
-    if (active.data.current?.type === "resource") {
-      setResourceIds([active.data.current?.id]);
-    } else if (active.data.current?.type === "folder") {
-      setFolderIds([active.data.current?.id]);
+    if (elementActive?.type === "resource") {
+      setResourceIds([elementActive?.id]);
+    } else if (elementActive?.type === "folder") {
+      setFolderIds([elementActive?.id]);
     }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
     const { over } = event;
+    const elementOver = over?.data.current;
 
     if (over) {
-      overTreeItem(over.data.current?.id, queryClient);
-      foldTreeItem(over.data.current?.id);
-      setElementDragOver({ isOver: true, overId: over.data.current?.id });
+      if (elementOver?.folderTreeview) {
+        overTreeItem(elementOver?.id, queryClient);
+      }
+      foldTreeItem(elementOver?.id);
+      setElementDragOver({ isOver: true, overId: elementOver?.id });
     } else {
       setElementDragOver({ isOver: false, overId: undefined });
     }
