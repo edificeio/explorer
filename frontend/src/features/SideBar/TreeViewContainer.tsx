@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import TreeView from "~/components/TreeView/TreeView";
 import TrashButton from "~/features/SideBar/TrashButton";
 import {
+  useCurrentFolder,
   useElementDragOver,
   useIsTrash,
   useSelectedNodesIds,
@@ -55,6 +56,7 @@ export const TreeViewContainer = () => {
   } = useStoreActions();
 
   const selectedNodesIds = useSelectedNodesIds();
+  const currentFolder = useCurrentFolder();
 
   const handleTreeItemUnfold = async (folderId: ID) => {
     await unfoldTreeItem(folderId, queryClient);

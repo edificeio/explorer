@@ -73,8 +73,10 @@ const TreeView = forwardRef(
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
     useEffect(() => {
-      if (selectedNodesIds) {
+      if (selectedNodesIds && selectedNodesIds.length >= 1) {
         handleSelectedNodesIds(selectedNodesIds[selectedNodesIds.length - 1]);
+      } else {
+        setSelectedItem(null);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedNodesIds]);
@@ -122,7 +124,6 @@ const TreeView = forwardRef(
     };
 
     const handleItemSelect = (nodeId: string) => {
-      console.log("handleItemSelect", nodeId);
       onTreeItemSelect?.(nodeId);
       setSelectedItem(nodeId);
     };
@@ -135,15 +136,13 @@ const TreeView = forwardRef(
       onTreeItemBlur?.(nodeId);
     };
 
-    console.log({ selectedItem });
-
     return (
       <div className="treeview" ref={ref}>
         <TreeNodeComponent
           node={data}
           // handlers={handlers}
           selectedItem={selectedItem}
-          // selectedNodesIds={selectedNodesIds}
+          selectedNodesIds={selectedNodesIds}
           handleItemSelect={handleItemSelect}
           handleItemFold={handleItemFold}
           handleItemUnfold={handleItemUnfold}

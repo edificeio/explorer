@@ -27,7 +27,6 @@ export function ExplorerBreadcrumb() {
   });
   const previousName: string = currentFolder?.name || rootName;
 
-  console.log({ selectedNodesIds });
   return (
     <div className="py-16">
       {selectedNodesIds.length > 1 && !isTrashFolder ? (
