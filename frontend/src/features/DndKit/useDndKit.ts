@@ -8,8 +8,9 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useToast } from "@edifice-ui/react";
+import { useOdeClient, useToast } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { useMoveItem } from "~/services/queries";
 import { useStoreActions } from "~/store";
@@ -18,6 +19,11 @@ export default function useDndKit() {
   const queryClient = useQueryClient();
   const moveItem = useMoveItem();
   const toast = useToast();
+  const { appCode } = useOdeClient();
+  const { t } = useTranslation(["common", appCode]);
+  const rootName: string = t("explorer.filters.mine", {
+    ns: appCode,
+  });
 
   const {
     setResourceOrFolderIsDraggable,
@@ -48,11 +54,13 @@ export default function useDndKit() {
       try {
         await moveItem.mutate(over.data.current?.id);
         if (active.data.current?.type === "resource") {
-          // TODO récupéré le nom du dossier où est déplacée la ressource
-          toast.success("Resource déplacée ");
+          toast.success(
+            `Resource déplacée dans le dossier ${over.data.current?.name ?? rootName}`,
+          );
         } else {
-          // TODO récupéré le nom du dossier où est déplacée le dossier
-          toast.success("Dossier déplacé ");
+          toast.success(
+            `Dossier déplacé dans le dossier ${over.data.current?.name ?? rootName}`,
+          );
         }
       } catch (e) {
         console.error(e);
