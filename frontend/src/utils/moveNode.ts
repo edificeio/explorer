@@ -1,9 +1,9 @@
 import { type TreeNode } from "@edifice-ui/react";
 
+import type TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
 import { arrayUnique } from "./arrayUnique";
 import { findNodeById } from "./findNodeById";
 import { modifyNode } from "./modifyNode";
-import type TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
 
 export function moveNode(
   treeData: TreeNode,
@@ -21,7 +21,7 @@ export function moveNode(
       for (const folder of folders) {
         // if not in children yet => move on it
         if (!childrenIds.includes(folder)) {
-          const item = findNodeById(folder, treeData);
+          const item = findNodeById(treeData, folder);
 
           item &&
             newChildren.push({

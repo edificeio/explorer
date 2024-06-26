@@ -1,17 +1,17 @@
 import { Suspense, lazy, useEffect } from "react";
 
 import { LoadingScreen, useOdeClient, useToast } from "@edifice-ui/react";
-import { IFolder, FOLDER } from "edifice-ts-client";
+import { FOLDER, IFolder } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useSearchContext } from "~/services/queries";
 import {
+  useCurrentFolder,
   useIsRoot,
   useIsTrash,
-  useHasSelectedNodes,
   useSearchParams,
+  useSelectedNodeId,
   useStoreActions,
-  useCurrentFolder,
   useTreeData,
 } from "~/store";
 import TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
@@ -43,7 +43,7 @@ const ResourcesList = lazy(
 export const List = () => {
   const isRoot = useIsRoot();
   const isTrashFolder = useIsTrash();
-  const hasSelectedNodes = useHasSelectedNodes();
+  const selectedNodeId = useSelectedNodeId();
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
   const treeData = useTreeData();
@@ -130,7 +130,7 @@ export const List = () => {
     );
   }
 
-  if (hasSelectedNodes && hasNoData && !isTrashFolder) {
+  if (selectedNodeId && hasNoData && !isTrashFolder) {
     return (
       <Suspense fallback={<LoadingScreen />}>
         <EmptyScreenNoContentInFolder />

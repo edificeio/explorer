@@ -25,7 +25,7 @@ export function useMoveModal({ onSuccess }: ModalProps) {
   const selectedResources = useSelectedResources();
   const queryclient = useQueryClient();
 
-  const { foldTreeItem, unfoldTreeItem } = useStoreActions();
+  const { unfoldTreeItem } = useStoreActions();
 
   async function onMove() {
     try {
@@ -70,7 +70,6 @@ export function useMoveModal({ onSuccess }: ModalProps) {
         setSelectedFolder(undefined);
       }
     },
-    handleTreeItemFold: foldTreeItem,
     handleTreeItemUnfold: async (folderId: ID) =>
       await unfoldTreeItem(folderId, queryclient),
     onMove: () => {

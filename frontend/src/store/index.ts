@@ -18,9 +18,8 @@ import { create } from "zustand";
 
 import { AppParams } from "~/config/getExplorerConfig";
 import { goToResource, printResource, searchContext } from "~/services/api";
-import { arrayUnique } from "~/utils/arrayUnique";
 import { findNodeById } from "~/utils/findNodeById";
-import { getAncestors } from "~/utils/getAncestors";
+import { findParentNode } from "~/utils/findParentNode";
 import { hasChildren } from "~/utils/hasChildren";
 import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
@@ -31,6 +30,7 @@ interface ElementDrag {
 
 interface ElementOver {
   isOver: boolean;
+  isTreeview: boolean;
   overId: ID | undefined;
 }
 
@@ -38,7 +38,7 @@ interface State {
   config: AppParams | null;
   searchParams: ISearchParameters & IActionParameters;
   treeData: TreeNode;
-  selectedNodesIds: string[];
+  selectedNodeId: string | undefined;
   currentFolder: Partial<IFolder>;
   selectedFolders: IFolder[];
   selectedResources: IResource[];
@@ -118,10 +118,9 @@ const initialState = {
     id: FOLDER.DEFAULT,
     name: t("explorer.filters.mine"),
     section: true,
-    selected: true,
     children: [],
   },
-  selectedNodesIds: ["default"],
+  selectedNodeId: "default",
   currentFolder: {
     id: "default",
   },
@@ -136,6 +135,7 @@ const initialState = {
   },
   elementDragOver: {
     isOver: false,
+    isTreeview: false,
     overId: undefined,
   },
   resourceActionDisable: false,
@@ -160,7 +160,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
             return {
               ...state,
               selectedFolders: [],
-              selectedNodesIds: [],
+              selectedNodeId: undefined,
               selectedResources: [],
               currentFolder: undefined,
               searchParams: {
@@ -178,7 +178,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
             return {
               ...state,
               selectedFolders: [],
-              selectedNodesIds: ["default"],
+              selectedNodeId: "default",
               selectedResources: [],
               currentFolder: {
                 id: "default",
@@ -243,11 +243,9 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       }
     },
     openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
-      console.log("openFolder");
-      const { searchParams, treeData } = get();
+      const { searchParams } = get();
       const previousId = searchParams.filters.folder as string;
-      const ancestors = getAncestors(folderId, treeData);
-      const selectedNodesIds = arrayUnique([...ancestors, folderId]);
+      const selectedNodeId = folderId;
 
       if (previousId === folderId) return;
 
@@ -257,7 +255,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
           // reset selection when changing folder
           folderIds: [],
           resourceIds: [],
-          selectedNodesIds,
+          selectedNodeId,
           currentFolder: folder || {
             id: folderId,
           },
@@ -307,7 +305,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
         set((state) => ({
           ...state,
           treeData: wrapTreeNode(
-            treeData,
+            state.treeData,
             data?.pages[0]?.folders,
             folderId || FOLDER.DEFAULT,
           ),
@@ -322,7 +320,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       const { treeData } = get();
       const { openFolder } = get().updaters;
 
-      const folder = findNodeById(folderId, treeData);
+      const folder = findNodeById(treeData, folderId);
       scrollToTop();
 
       set((state) => ({
@@ -341,17 +339,12 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       });
     },
     gotoPreviousFolder: () => {
-      const { selectedNodesIds, treeData } = get();
+      const { selectedNodeId, treeData } = get();
       const { openFolder } = get().updaters;
 
-      const selectedNodesIdsLength = selectedNodesIds.length;
-      if (selectedNodesIdsLength < 2) {
-        return undefined;
-      }
-      const previousFolder = findNodeById(
-        selectedNodesIds[selectedNodesIdsLength - 2],
-        treeData,
-      );
+      if (!selectedNodeId) return;
+
+      const previousFolder = findParentNode(treeData, selectedNodeId);
 
       openFolder({
         folder: previousFolder as IFolder,
@@ -359,10 +352,9 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       });
     },
     goToTrash: () => {
-      console.log("goToTrash");
       set((state) => ({
         ...state,
-        selectedNodesIds: [],
+        selectedNodeId: undefined,
         selectedResources: [],
         resourceIds: [],
         folderIds: [],
@@ -386,8 +378,8 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
 export const useSearchParams = () =>
   useStoreContext((state) => state.searchParams);
 
-export const useSelectedNodesIds = () =>
-  useStoreContext((state) => state.selectedNodesIds);
+export const useSelectedNodeId = () =>
+  useStoreContext((state) => state.selectedNodeId);
 
 export const useTreeData = () => useStoreContext((state) => state.treeData);
 
@@ -444,9 +436,9 @@ export const useIsRoot = () => {
   return currentFolder?.id === "default";
 };
 
-export const useHasSelectedNodes = () => {
-  const selectedNodesIds = useSelectedNodesIds();
+/* export const useHasSelectedNodes = () => {
+  const selectedNodesIds = useSEl();
   return selectedNodesIds.length > 1;
-};
+}; */
 
 export const useTreeStatus = () => useStoreContext((state) => state.status);

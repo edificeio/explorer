@@ -19,13 +19,8 @@ export default function MoveModal({
 }: MoveModalProps) {
   const { appCode } = useOdeClient();
   const { t } = useTranslation();
-  const {
-    handleTreeItemFold,
-    handleTreeItemSelect,
-    handleTreeItemUnfold,
-    onMove,
-    disableSubmit,
-  } = useMoveModal({ onSuccess });
+  const { handleTreeItemSelect, handleTreeItemUnfold, onMove, disableSubmit } =
+    useMoveModal({ onSuccess });
 
   const treeData = useTreeData();
   const data = {
@@ -42,8 +37,7 @@ export default function MoveModal({
       <Modal.Body>
         <TreeView
           data={data}
-          onTreeItemSelect={handleTreeItemSelect}
-          onTreeItemFold={handleTreeItemFold}
+          onTreeItemClick={handleTreeItemSelect}
           onTreeItemUnfold={handleTreeItemUnfold}
         />
       </Modal.Body>
