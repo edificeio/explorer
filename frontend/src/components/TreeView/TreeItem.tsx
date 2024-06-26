@@ -40,27 +40,27 @@ export interface TreeItemProps {
   /**
    * Callback function to provide selected item to parent component (TreeView)
    */
-  onItemSelect?: Function;
+  onItemSelect?: (nodeId: string) => void;
 
   /**
    * Callback function to provide folded item to parent component (TreeView)
    */
-  onItemFold?: Function;
+  onItemFold?: (nodeId: string) => void;
 
   /**
    * Callback function to provide unfolded item to parent component (TreeView)
    */
-  onItemUnfold?: Function;
+  onItemUnfold?: (nodeId: string) => void;
 
   /**
    * Callback function to provide focused item to parent component (TreeView)
    */
-  onItemFocus?: Function;
+  onItemFocus?: (nodeId: string) => void;
 
   /**
    * Callback function to provide blured item to parent component (TreeView)
    */
-  onItemBlur?: Function;
+  onItemBlur?: (nodeId: string) => void;
 
   /**
    * Sate element who is drag
@@ -97,10 +97,9 @@ const TreeItem = (props: TreeItemProps) => {
     handleItemFoldUnfoldKeyDown,
     handleItemFocus,
     handleItemBlur,
-    itemFoldDrag,
+    handleItemFoldDrag,
   } = useTreeItemEvents(
     nodeId,
-    label,
     expanded,
     setExpanded,
     onItemSelect,
@@ -121,27 +120,7 @@ const TreeItem = (props: TreeItemProps) => {
   const isFocus = elementDragOver?.overId === nodeId;
 
   useEffect(() => {
-    if (selectedNodesIds?.length && selectedNodesIds?.length >= 1) {
-      const lastNodeId = selectedNodesIds[
-        selectedNodesIds.length - 1
-      ] as string;
-      selectedNodesIds.some((node: string) => {
-        if (node === nodeId && nodeId !== lastNodeId) {
-          setExpanded(true);
-          return node === nodeId;
-        }
-        /* setExpanded(false);
-        return false; */
-      });
-    } /*  else {
-      setExpanded(false);
-    } */
-  }, [nodeId, selectedNodesIds]);
-
-  useEffect(() => {
-    if (elementDragOver?.overId === nodeId) {
-      itemFoldDrag();
-    }
+    if (elementDragOver?.overId === nodeId) handleItemFoldDrag();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elementDragOver]);
 

@@ -243,6 +243,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       }
     },
     openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
+      console.log("openFolder");
       const { searchParams, treeData } = get();
       const previousId = searchParams.filters.folder as string;
       const ancestors = getAncestors(folderId, treeData);
@@ -357,7 +358,8 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
         folderId: previousFolder?.id || FOLDER.DEFAULT,
       });
     },
-    goToTrash: () =>
+    goToTrash: () => {
+      console.log("goToTrash");
       set((state) => ({
         ...state,
         selectedNodesIds: [],
@@ -376,7 +378,8 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
         currentFolder: {
           id: FOLDER.BIN,
         },
-      })),
+      }));
+    },
   },
 }));
 

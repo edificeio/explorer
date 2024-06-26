@@ -1,36 +1,35 @@
 export default function useTreeItemEvents(
   nodeId: string,
-  label: string,
   expanded: boolean,
-  setExpanded: Function,
-  onItemSelect: Function | undefined,
-  onItemFold: Function | undefined,
-  onItemUnfold: Function | undefined,
-  onItemFocus: Function | undefined,
-  onItemBlur: Function | undefined,
+  setExpanded: (value: boolean) => void,
+  onItemSelect?: (nodeId: string) => void,
+  onItemFold?: (nodeId: string) => void,
+  onItemUnfold?: (nodeId: string) => void,
+  onItemFocus?: (nodeId: string) => void,
+  onItemBlur?: (nodeId: string) => void,
 ) {
   const handleItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     onItemSelect?.(nodeId);
-    itemFoldUnfold();
+    handleItemFoldUnfold();
     event.stopPropagation();
   };
 
   const handleItemKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      onItemSelect?.(nodeId);
-      itemFoldUnfold();
       event.stopPropagation();
+      onItemSelect?.(nodeId);
+      handleItemFoldUnfold();
     }
   };
 
-  const itemFoldUnfold = () => {
+  const handleItemFoldUnfold = () => {
     setExpanded(!expanded);
     expanded ? onItemFold?.(nodeId) : onItemUnfold?.(nodeId);
   };
 
-  const itemFoldDrag = () => {
+  const handleItemFoldDrag = () => {
     setExpanded(true);
     onItemFold?.(nodeId);
   };
@@ -39,8 +38,8 @@ export default function useTreeItemEvents(
     event: React.MouseEvent<HTMLDivElement>,
   ) => {
     event.preventDefault();
-    itemFoldUnfold();
     event.stopPropagation();
+    handleItemFoldUnfold();
   };
 
   const handleItemFoldUnfoldKeyDown = (
@@ -48,8 +47,8 @@ export default function useTreeItemEvents(
   ) => {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      itemFoldUnfold();
       event.stopPropagation();
+      handleItemFoldUnfold();
     }
   };
 
@@ -72,7 +71,7 @@ export default function useTreeItemEvents(
     handleItemFoldUnfoldKeyDown,
     handleItemFocus,
     handleItemBlur,
-    itemFoldUnfold,
-    itemFoldDrag,
+    handleItemFoldUnfold,
+    handleItemFoldDrag,
   };
 }
