@@ -39,6 +39,7 @@ const FolderCard = ({
     id: newId,
     data: {
       id: idFolder,
+      name: name,
       accepts: ["folder", "resource"],
     },
   });
