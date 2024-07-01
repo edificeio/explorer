@@ -2,7 +2,7 @@ import { Button, Modal, useOdeClient } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-import TreeView from "~/components/TreeView/TreeView";
+import TreeView from "~/components/Treeview/TreeView";
 import { useTreeData } from "~/store";
 import { useMoveModal } from "./useMoveModal";
 

@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { type IAction, ACTION } from "edifice-ts-client";
+import { ACTION, type IAction } from "edifice-ts-client";
 
 import { goToEdit } from "~/services/api";
 import { useActions, useCopyResource, useRestore } from "~/services/queries";
 import {
-  useStoreActions,
   useCurrentFolder,
   useFolderIds,
   useIsTrash,
   useResourceIds,
+  useResourceIsTrash,
+  useResourceOrFolderIsDraggable,
+  useSearchParams,
   useSelectedFolders,
   useSelectedResources,
-  useResourceIsTrash,
+  useStoreActions,
   useStoreContext,
-  useSearchParams,
-  useResourceOrFolderIsDraggable,
 } from "~/store";
 
 type ModalName =
@@ -55,7 +55,7 @@ export default function useActionBar() {
     clearSelectedIds,
   } = useStoreActions();
 
-  const { data: actions } = useActions();
+  const { data: actions } = useActions(config?.actions as IAction[]);
 
   useEffect(() => {
     if (resourceIds.length === 0 && folderIds.length === 0) {

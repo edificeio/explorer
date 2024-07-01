@@ -60,7 +60,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
   }, [config]);
 
   const { currentApp } = useOdeClient();
-  const { data: actions } = useActions();
+  const { data: actions } = useActions(config.actions);
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } = useDisableModal();
   const { handleDragEnd, handleDragOver, handleDragStart, sensors } =

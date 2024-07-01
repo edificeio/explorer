@@ -9,10 +9,8 @@ import {
 import {
   UseMutationOptions,
   UseMutationResult,
-  UseQueryResult,
   useInfiniteQuery,
   useMutation,
-  useQuery,
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
@@ -20,7 +18,6 @@ import {
   App,
   CreateParameters,
   FOLDER,
-  IAction,
   PutShareResponse,
   ResourceType,
   UpdateParameters,
@@ -40,7 +37,6 @@ import {
   moveToFolder,
   restoreAll,
   searchContext,
-  sessionHasWorkflowRights,
   trashAll,
   updateFolder,
 } from "~/services/api";
@@ -60,33 +56,7 @@ import { deleteNode } from "~/utils/deleteNode";
 import { moveNode } from "~/utils/moveNode";
 import { updateNode } from "~/utils/updateNode";
 
-/**
- * useActions query
- * set actions correctly with workflow rights
- * @returns actions data
- */
-export const useActions = (): UseQueryResult<IAction[], Error> => {
-  const config = useStoreContext((state) => state.config);
-
-  return useQuery<Record<string, boolean>, Error, IAction[]>({
-    queryKey: ["actions"],
-    queryFn: async () => {
-      const actionRights = config?.actions.map((action) => action.workflow);
-      const availableRights = await sessionHasWorkflowRights(
-        actionRights as string[],
-      );
-      return availableRights;
-    },
-    select: (data) => {
-      return config?.actions.map((action) => ({
-        ...action,
-        available: data[action.workflow],
-      })) as IAction[];
-    },
-    staleTime: Infinity,
-    enabled: !!config,
-  });
-};
+export * from "./actions";
 
 /**
  * useSearchContext query

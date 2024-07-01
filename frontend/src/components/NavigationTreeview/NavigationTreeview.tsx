@@ -87,6 +87,11 @@ interface TreeItemProps {
   /**
    * Callback function to provide selected item to parent component (TreeView)
    */
+  onToggleNode?: (nodeId: string) => void;
+
+  /**
+   * Callback function to provide selected item to parent component (TreeView)
+   */
   onItemDrag?: (nodeId: string) => void;
 
   /**
@@ -102,7 +107,7 @@ interface TreeItemProps {
   /**
    * Sate element who is drag
    */
-  elementDragOver?: {
+  draggedNode?: {
     isOver: boolean;
     overId: string | undefined;
   };
@@ -117,6 +122,7 @@ const TreeItem = (props: TreeItemProps) => {
     selected,
     expanded,
     focused,
+    onToggleNode,
     onItemClick,
   } = props;
 
@@ -143,7 +149,19 @@ const TreeItem = (props: TreeItemProps) => {
     }
   };
 
+  const handleItemToggleKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      onToggleNode?.(nodeId);
+    }
+  };
+
   const handleItemClick = () => onItemClick?.(nodeId);
+  const handleToggleNode = () => onToggleNode?.(nodeId);
 
   const treeItemClasses = {
     action: clsx("action-container d-flex align-items-center gap-8 px-2", {
@@ -161,22 +179,31 @@ const TreeItem = (props: TreeItemProps) => {
     Array.isArray(children) && !!children.length && expanded;
 
   const renderSection = () => (
-    <ul role="tree" className="m-0 p-0">
+    <ul role="tree" className="m-0 p-0" aria-label={label}>
       {renderItem()}
     </ul>
   );
+
   const renderItem = () => (
     <li
       key={nodeId}
       ref={setNodeRef}
-      id={`listitem_${nodeId}`}
+      id={`treeitem-${nodeId}`}
       role="treeitem"
       aria-selected={selected}
+      aria-owns={`id-${nodeId}-subtree`}
       aria-expanded={expanded}
     >
       <div>
         <div className={treeItemClasses.action}>
-          <div className={treeItemClasses.arrow} aria-label={t("foldUnfold")}>
+          <div
+            className={treeItemClasses.arrow}
+            tabIndex={0}
+            role="button"
+            onClick={handleToggleNode}
+            onKeyDown={handleItemToggleKeyDown}
+            aria-label={t("foldUnfold")}
+          >
             {Array.isArray(children) && !!children.length && !expanded && (
               <RafterRight
                 title={t("foldUnfold")}
@@ -215,7 +242,11 @@ const TreeItem = (props: TreeItemProps) => {
           </div>
         </div>
 
-        {showExpandedNodeChildren && <ul role="group">{children}</ul>}
+        {showExpandedNodeChildren && (
+          <ul role="group" id={`id-${nodeId}-subtree`} aria-label={label}>
+            {children}
+          </ul>
+        )}
       </div>
     </li>
   );
@@ -237,7 +268,7 @@ export interface TreeViewProps {
   /**
    * Sate element who is drag
    */
-  elementDragOver?: {
+  draggedNode?: {
     isOver: boolean;
     overId: string | undefined;
   };
@@ -262,10 +293,8 @@ interface TreeNodeProps {
   node: TreeNodeData;
   selectedNodeId: string | undefined;
   expandedNodes: Set<string>;
-  elementDragOver?: {
-    isOver: boolean;
-    overId: string | undefined;
-  };
+  draggedNodeId?: string | undefined;
+  handleToggleNode: (nodeId: string) => void;
   handleItemClick: (nodeId: string) => void;
 }
 
@@ -273,11 +302,14 @@ const TreeNode = ({
   node,
   selectedNodeId,
   expandedNodes,
-  elementDragOver,
+  draggedNodeId,
+  handleToggleNode,
   handleItemClick,
 }: TreeNodeProps) => {
   const selected = selectedNodeId === node.id;
   const expanded = expandedNodes.has(node.id);
+  const focused = draggedNodeId === node.id;
+
   return (
     <TreeItem
       key={node.id}
@@ -286,9 +318,9 @@ const TreeNode = ({
       section={node.section}
       selected={selected}
       expanded={expanded}
-      focused={elementDragOver?.overId === node.id}
+      focused={focused}
+      onToggleNode={handleToggleNode}
       onItemClick={handleItemClick}
-      elementDragOver={elementDragOver}
     >
       {Array.isArray(node.children)
         ? node.children.map((item) => (
@@ -298,7 +330,7 @@ const TreeNode = ({
               selectedNodeId={selectedNodeId}
               expandedNodes={expandedNodes}
               handleItemClick={handleItemClick}
-              elementDragOver={elementDragOver}
+              handleToggleNode={handleToggleNode}
             />
           ))
         : null}
@@ -310,13 +342,13 @@ const TreeNode = ({
  * UI TreeView Component
  */
 
-const TreeView = forwardRef(
+const NavigationTreeview = forwardRef(
   (props: TreeViewProps, ref: Ref<TreeViewHandlers>) => {
     const {
       data,
       onTreeItemClick,
       onTreeItemUnfold,
-      elementDragOver,
+      draggedNode,
       selectedNodeId: externalSelectedNodeId,
     } = props;
 
@@ -327,13 +359,11 @@ const TreeView = forwardRef(
     const expandedNodes = useRef<Set<string>>(new Set());
 
     useEffect(() => {
-      if (elementDragOver?.isOver) {
-        elementDragOver.overId
-          ? handleItemDrag(elementDragOver.overId)
-          : undefined;
+      if (draggedNode?.isOver) {
+        draggedNode.overId ? handleItemDrag(draggedNode.overId) : undefined;
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [elementDragOver]);
+    }, [draggedNode]);
 
     /**
      * Doesn't work with lazy loaded data
@@ -375,11 +405,17 @@ const TreeView = forwardRef(
 
       if (!isNodeExist) return;
 
-      if (externalSelectedNodeId === "default") {
+      /* if (externalSelectedNodeId === "default") {
         expandedNodes.current.forEach((node) => onTreeItemUnfold?.(node));
         return;
-      }
-      handleExpandNode(nodeId);
+      } */
+      const updatedExpandedNodes = new Set(expandedNodes.current);
+      const ancestors = getAncestors(data, nodeId).filter(
+        (node) => node !== nodeId,
+      );
+      ancestors.forEach((ancestor) => updatedExpandedNodes.add(ancestor));
+      updatedExpandedNodes.forEach((node) => onTreeItemUnfold?.(node));
+      expandedNodes.current = updatedExpandedNodes;
     };
 
     /**
@@ -436,33 +472,40 @@ const TreeView = forwardRef(
      */
     const handleItemClick = (nodeId: string) => {
       handleSelectedItem(nodeId);
+      // handleToggleNode(nodeId);
+      onTreeItemClick?.(nodeId);
+    };
+
+    const handleToggle = (nodeId: string) => {
+      handleSelectedItem(nodeId);
       handleToggleNode(nodeId);
       onTreeItemClick?.(nodeId);
     };
 
     const handleItemDrag = (nodeId: string) => {
-      const isNodeExist = findNodeById(data, externalSelectedNodeId as string);
+      const isNodeExist = findNodeById(data, selectedNodeId as string);
       if (!isNodeExist) return;
       handleExpandNode(nodeId);
     };
 
     return (
-      <div className="treeview">
+      <nav aria-label="LABEL" className="treeview">
         <TreeNode
           node={data}
           selectedNodeId={selectedNodeId}
           expandedNodes={expandedNodes.current}
           handleItemClick={handleItemClick}
-          elementDragOver={elementDragOver}
+          handleToggleNode={handleToggle}
+          draggedNodeId={draggedNode?.overId}
         />
-      </div>
+      </nav>
     );
   },
 );
 
-TreeView.displayName = "TreeView";
+NavigationTreeview.displayName = "NavigationTreeview";
 
-export default TreeView;
+export default NavigationTreeview;
 
 const getAncestors = (data: TreeNodeData, nodeId: string): string[] => {
   const findItem = findNodeById(data, nodeId);
