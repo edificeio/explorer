@@ -8,14 +8,17 @@ import { type IAction } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import { useActions } from "~/services/queries";
+import { useStoreContext } from "~/store";
 
 export default function EmptyScreenApp(): JSX.Element {
+  const [imagePath] = usePaths();
+
   const { appCode } = useOdeClient();
   const { theme } = useOdeTheme();
-  const [imagePath] = usePaths();
   const { t } = useTranslation();
 
-  const { data: actions } = useActions();
+  const config = useStoreContext((state) => state.config);
+  const { data: actions } = useActions(config?.actions as IAction[]);
 
   const canCreate = actions?.find((action: IAction) => action.id === "create");
   const labelEmptyScreenApp = () => {

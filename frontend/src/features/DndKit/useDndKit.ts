@@ -99,7 +99,7 @@ export default function useDndKit() {
       setElementDragOver({
         isOver: true,
         overId: elementOver?.id,
-        isTreeview: elementOver?.folderTreeview,
+        isTreeview: elementOver?.isTreeview,
       });
     } else {
       setElementDragOver({

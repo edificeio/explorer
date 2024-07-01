@@ -40,7 +40,7 @@ const FolderCard = ({
     data: {
       id: idFolder,
       name: name,
-      folderTreeview: false,
+      isTreeview: false,
       accepts: ["folder", "resource"],
     },
   });

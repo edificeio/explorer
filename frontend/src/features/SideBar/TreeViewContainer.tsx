@@ -11,7 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import TreeView from "~/components/TreeView/TreeView";
+import NavigationTreeview from "~/components/NavigationTreeview/NavigationTreeview";
 import TrashButton from "~/features/SideBar/TrashButton";
 import {
   useElementDragOver,
@@ -67,14 +67,12 @@ export const TreeViewContainer = () => {
 
   return (
     <>
-      <TreeView
+      <NavigationTreeview
         data={data}
         selectedNodeId={currentSelectedNodeId}
         onTreeItemClick={handleTreeItemClick}
         onTreeItemUnfold={handleTreeItemUnfold}
-        elementDragOver={
-          elementDragOver?.isTreeview ? elementDragOver : undefined
-        }
+        draggedNode={elementDragOver?.isTreeview ? elementDragOver : undefined}
       />
       <TrashButton
         id={FOLDER.BIN}

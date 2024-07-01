@@ -1,12 +1,12 @@
-import { type ReactNode, type ReactElement } from "react";
+import { type ReactElement, type ReactNode } from "react";
 
 import { Button } from "@edifice-ui/react";
 import { IAction, RightRole } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
 import {
-  useAccessControl,
   IObjectWithRights,
+  useAccessControl,
 } from "~/features/AccessControl/useAccessControl";
 import useActionBar from "~/features/ActionBar/useActionBar";
 import { useIsTrash, useStoreActions } from "~/store";

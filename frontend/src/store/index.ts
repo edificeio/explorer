@@ -35,7 +35,7 @@ interface ElementOver {
 }
 
 interface State {
-  config: AppParams | null;
+  config: AppParams | undefined;
   searchParams: ISearchParameters & IActionParameters;
   treeData: TreeNode;
   selectedNodeId: string | undefined;
@@ -95,7 +95,7 @@ type Action = {
 };
 
 const initialState = {
-  config: null,
+  config: undefined,
   searchConfig: { minLength: 1 },
   searchParams: {
     filters: {

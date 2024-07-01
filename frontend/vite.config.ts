@@ -1,8 +1,8 @@
-import { BuildOptions, defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { resolve } from "node:path";
+import { BuildOptions, defineConfig, loadEnv } from "vite";
 import dts from "vite-plugin-dts";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 import { dependencies } from "./package.json";
 
@@ -61,18 +61,6 @@ export default ({ mode }: { mode: string }) => {
       external: ["edifice-ts-client"],
       output: {
         inlineDynamicImports: true,
-        /* manualChunks: {
-          react: [
-            "react",
-            "react-dom",
-            "react-error-boundary",
-            "react-hook-form",
-            "react-intersection-observer",
-            "react-i18next",
-          ],
-          "edifice-react": ["@edifice-ui/react"],
-          "edifice-icons": ["@edifice-ui/icons"],
-        }, */
         paths: {
           "edifice-ts-client": "/assets/js/edifice-ts-client/index.js",
         },
