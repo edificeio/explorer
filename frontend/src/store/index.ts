@@ -1,6 +1,6 @@
 import {
   useScrollToTop as scrollToTop,
-  type TreeNode,
+  type TreeData,
 } from "@edifice-ui/react";
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import {
@@ -37,7 +37,7 @@ interface ElementOver {
 interface State {
   config: AppParams | undefined;
   searchParams: ISearchParameters & IActionParameters;
-  treeData: TreeNode;
+  treeData: TreeData;
   selectedNodeId: string | undefined;
   currentFolder: Partial<IFolder>;
   selectedFolders: IFolder[];
@@ -56,7 +56,7 @@ type Action = {
   updaters: {
     setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
-    setTreeData: (treeData: TreeNode) => void;
+    setTreeData: (treeData: TreeData) => void;
     setSearchParams: (
       searchParams: Partial<ISearchParameters & IActionParameters>,
     ) => void;
@@ -150,7 +150,7 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       set((state) => ({
         searchConfig: { ...state.searchConfig, ...searchConfig },
       })),
-    setTreeData: (treeData: TreeNode) => set(() => ({ treeData })),
+    setTreeData: (treeData: TreeData) => set(() => ({ treeData })),
     setSearchParams: (searchParams: Partial<ISearchParameters>) => {
       set((state) => {
         const { searchParams: previousSearchParams } = state;

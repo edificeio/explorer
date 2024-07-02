@@ -1,12 +1,12 @@
-import { type TreeNode } from "@edifice-ui/react";
+import { type TreeData } from "@edifice-ui/react";
 
-export function findNodeById(data: TreeNode, id: string): TreeNode | undefined {
-  let res: TreeNode | undefined;
+export function findNodeById(data: TreeData, id: string): TreeData | undefined {
+  let res: TreeData | undefined;
   if (data?.id === id) {
     return data;
   }
   if (data?.children?.length) {
-    data?.children?.every((childNode: TreeNode) => {
+    data?.children?.every((childNode: TreeData) => {
       res = findNodeById(childNode, id);
       return res === undefined; // break loop if res is found
     });
