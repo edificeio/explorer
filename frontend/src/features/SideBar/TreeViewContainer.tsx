@@ -4,6 +4,7 @@ import { Plus } from "@edifice-ui/icons";
 import {
   Button,
   LoadingScreen,
+  TreeView,
   useOdeClient,
   useToggle,
 } from "@edifice-ui/react";
@@ -11,7 +12,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FOLDER, type ID } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import NavigationTreeview from "~/components/NavigationTreeview/NavigationTreeview";
 import TrashButton from "~/features/SideBar/TrashButton";
 import {
   useElementDragOver,
@@ -67,12 +67,12 @@ export const TreeViewContainer = () => {
 
   return (
     <>
-      <NavigationTreeview
+      <TreeView
         data={data}
         selectedNodeId={currentSelectedNodeId}
+        draggedNode={elementDragOver?.isTreeview ? elementDragOver : undefined}
         onTreeItemClick={handleTreeItemClick}
         onTreeItemUnfold={handleTreeItemUnfold}
-        draggedNode={elementDragOver?.isTreeview ? elementDragOver : undefined}
       />
       <TrashButton
         id={FOLDER.BIN}

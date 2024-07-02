@@ -1,8 +1,8 @@
-import { TreeNode } from "@edifice-ui/react";
+import { type TreeData } from "@edifice-ui/react";
 import { type IFolder } from "edifice-ts-client";
 
-/** Utility inner class that wraps an IFolder into a TreeNode. */
-export default class TreeNodeFolderWrapper implements TreeNode {
+/** Utility inner class that wraps an IFolder into a TreeData. */
+export default class TreeNodeFolderWrapper implements TreeData {
   constructor(public readonly folder: IFolder) {
     this.id = folder.id;
     this.name = folder.name;
@@ -15,5 +15,5 @@ export default class TreeNodeFolderWrapper implements TreeNode {
 
   public section = false;
 
-  public readonly children: TreeNode[] = [];
+  public readonly children: TreeData[] = [];
 }

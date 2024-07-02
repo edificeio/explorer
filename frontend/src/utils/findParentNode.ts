@@ -1,9 +1,9 @@
-import { TreeNode } from "@edifice-ui/react";
+import { TreeData } from "@edifice-ui/react";
 
 export const findParentNode = (
-  parentNode: TreeNode,
+  parentNode: TreeData,
   childId: string,
-): TreeNode | undefined => {
+): TreeData | undefined => {
   if (parentNode.children) {
     for (const child of parentNode.children) {
       if (child.id === childId) {
