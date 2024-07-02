@@ -59,7 +59,7 @@
     "@dnd-kit/core": "6.1.0",
     "@dnd-kit/modifiers": "7.0.0",
     "@edifice-ui/icons": "develop-pedago",
-    "@edifice-ui/react": "file:edifice-ui-react-1.5.8-develop-pedago.0.tgz",
+    "@edifice-ui/react": "develop-pedago",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
