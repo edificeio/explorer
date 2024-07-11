@@ -4,18 +4,18 @@ import { UniqueIdentifier, useDraggable } from "@dnd-kit/core";
 import { Globe, Users } from "@edifice-ui/icons";
 import { OneProfile } from "@edifice-ui/icons/nav";
 import {
-  CardProps,
-  Card,
   AppIcon,
   Avatar,
-  Tooltip,
+  Card,
+  CardProps,
   Image,
+  Tooltip,
 } from "@edifice-ui/react";
 import { IResource, IWebApp } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { ElementDraggable } from "./ElementDraggable";
 import { useResourceOrFolderIsDraggable } from "~/store";
+import { DraggableCard } from "./DraggableCard";
 
 type OmitChildren = Omit<CardProps, "children">;
 
@@ -45,8 +45,9 @@ const ResourceCard = ({
   onClick,
   onSelect,
 }: ResourceCardProps) => {
-  const avatar = `/userbook/avatar/${resource?.creatorId}`;
   const [resourceIsDrag, setResourceIsDrag] = useState<boolean>(false);
+
+  const avatar = `/userbook/avatar/${resource?.creatorId}`;
 
   function isResourceShared(resource: PickedResource) {
     const { rights, creatorId } = resource || {};
@@ -70,7 +71,8 @@ const ResourceCard = ({
   const { t } = useTranslation();
 
   const styles = {
-    position: "relative",
+    position: resourceIsDrag ? "absolute" : "relative",
+    zIndex: resourceIsDrag ? 2000 : 1,
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
     }px, 0)`,
@@ -158,11 +160,7 @@ const ResourceCard = ({
           )}
         </Card>
       ) : (
-        <ElementDraggable
-          name={resource?.name}
-          app={app}
-          elementType={"resource"}
-        />
+        <DraggableCard app={app} type="resource" name={resource?.name} />
       )}
     </div>
   );

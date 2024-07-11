@@ -6,7 +6,7 @@ import { Card, CardProps } from "@edifice-ui/react";
 import { ID, IWebApp } from "edifice-ts-client";
 
 import { useElementDragOver, useResourceOrFolderIsDraggable } from "~/store";
-import { ElementDraggable } from "./ElementDraggable";
+import { DraggableCard } from "./DraggableCard";
 
 export interface FolderCardProps extends Omit<CardProps, "children"> {
   /**
@@ -105,7 +105,7 @@ const FolderCard = ({
           )}
         </Card>
       ) : (
-        <ElementDraggable name={name} app={app} elementType={"folder"} />
+        <DraggableCard name={name} app={app} type="folder" />
       )}
     </div>
   );

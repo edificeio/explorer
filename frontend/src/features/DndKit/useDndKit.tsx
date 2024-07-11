@@ -34,7 +34,7 @@ export default function useDndKit() {
   } = useStoreActions();
 
   const activationConstraint = {
-    delay: 200,
+    delay: 100,
     tolerance: 5,
   };
 
@@ -53,19 +53,31 @@ export default function useDndKit() {
     const elementActive = active.data.current;
 
     if (over && elementActive?.id !== elementOver?.id) {
+      const folderName = elementOver?.name ?? rootName;
       try {
         await moveItem.mutate(elementOver?.id);
+
         if (active.data.current?.type === "resource") {
           toast.success(
-            `Resource déplacée dans le dossier ${elementOver?.name ?? rootName}`,
+            <>
+              {t("explorer.dragged.resource")} <strong>{folderName}</strong>
+            </>,
           );
         } else {
           toast.success(
-            `Dossier déplacé dans le dossier ${elementOver?.name ?? rootName}`,
+            <>
+              {t("explorer.dragged.folder")} <strong>{folderName}</strong>
+            </>,
           );
         }
       } catch (e) {
         console.error(e);
+      } finally {
+        setElementDragOver({
+          isOver: false,
+          overId: undefined,
+          isTreeview: false,
+        });
       }
     } else {
       setResourceIds([]);
