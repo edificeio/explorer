@@ -534,6 +534,8 @@ export const useMoveItem = () => {
           return undefined;
         });
       }
+
+      queryClient.invalidateQueries();
     },
     onSettled: () => {
       clearSelectedItems();

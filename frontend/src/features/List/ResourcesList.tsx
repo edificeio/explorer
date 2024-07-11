@@ -101,7 +101,7 @@ const ResourcesList = ({
 
               return (
                 <animated.li
-                  className="g-col-4 z-1"
+                  className="g-col-4"
                   key={id}
                   style={{
                     position: "relative",
