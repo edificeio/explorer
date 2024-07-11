@@ -1,11 +1,11 @@
-import { type TreeNode } from "@edifice-ui/react";
+import { type TreeData } from "@edifice-ui/react";
 
 import { modifyNode } from "./modifyNode";
 
 export function deleteNode(
-  treeData: TreeNode,
+  treeData: TreeData,
   { folders }: { folders: string[] },
-): TreeNode {
+): TreeData {
   return modifyNode(treeData, (node) => {
     if (folders.includes(node.id)) {
       return undefined;

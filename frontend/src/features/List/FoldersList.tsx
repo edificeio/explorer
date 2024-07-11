@@ -1,10 +1,15 @@
-import { useScrollToTop, useOdeClient } from "@edifice-ui/react";
-import { useSpring, animated } from "@react-spring/web";
+import { useOdeClient, useScrollToTop } from "@edifice-ui/react";
+import { animated, useSpring } from "@react-spring/web";
 import { InfiniteData } from "@tanstack/react-query";
-import { type ID, type IFolder, ISearchResults } from "edifice-ts-client";
+import { ISearchResults, type ID, type IFolder } from "edifice-ts-client";
 
+import {
+  useFolderIds,
+  useResourceOrFolderIsDraggable,
+  useSelectedFolders,
+  useStoreActions,
+} from "~/store";
 import FolderCard from "./FolderCard";
-import { useStoreActions, useFolderIds, useSelectedFolders } from "~/store";
 
 const FoldersList = ({
   data,
@@ -19,6 +24,7 @@ const FoldersList = ({
   const selectedFolders = useSelectedFolders();
   const folderIds = useFolderIds();
   const { setSelectedFolders, setFolderIds, openFolder } = useStoreActions();
+  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
 
   function toggleSelect(folder: IFolder) {
     if (folderIds.includes(folder.id)) {
@@ -47,9 +53,11 @@ const FoldersList = ({
     <animated.ul className="grid ps-0 list-unstyled mb-24">
       {data?.pages[0]?.folders.map((folder: IFolder) => {
         const { id, name } = folder;
+        const isDrag = resourceOrFolderIsDraggable.elementDrag === id;
+
         return (
           <animated.li
-            className="g-col-4 z-1"
+            className={`g-col-4 ${isDrag ? "z-2000" : "z-1"}`}
             key={id}
             style={{
               position: "relative",
@@ -58,6 +66,7 @@ const FoldersList = ({
           >
             <FolderCard
               name={name}
+              idFolder={id}
               app={currentApp}
               isSelected={folderIds.includes(folder.id)}
               onClick={() => {

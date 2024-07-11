@@ -14,9 +14,10 @@ import { useTranslation } from "react-i18next";
 
 import TrashButton from "~/features/SideBar/TrashButton";
 import {
-  useStoreActions,
+  useElementDragOver,
   useIsTrash,
-  useSelectedNodesIds,
+  useSelectedNodeId,
+  useStoreActions,
   useTreeData,
 } from "~/store";
 
@@ -25,31 +26,38 @@ const CreateFolderModal = lazy(
 );
 
 export const TreeViewContainer = () => {
-  const queryclient = useQueryClient();
-
   const [isModalOpen, toggle] = useToggle();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
+  const queryClient = useQueryClient();
   const treeData = useTreeData();
   const isTrashFolder = useIsTrash();
-  const selectedNodesIds = useSelectedNodesIds();
+  const selectedNodeId = useSelectedNodeId();
+  const elementDragOver = useElementDragOver();
+
+  const currentSelectedNodeId = !isTrashFolder ? selectedNodeId : "bin";
 
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
+
+  const data = {
+    ...treeData,
+    name: t("explorer.filters.mine", { ns: appCode }),
+  };
 
   const {
     goToTrash,
     selectTreeItem,
     unfoldTreeItem,
-    foldTreeItem,
     clearSelectedItems,
     clearSelectedIds,
   } = useStoreActions();
 
-  const handleTreeItemUnfold = async (folderId: ID) => {
-    await unfoldTreeItem(folderId, queryclient);
-  };
+  const handleTreeItemUnfold = async (folderId: ID) =>
+    await unfoldTreeItem(folderId, queryClient);
+
+  const handleTreeItemClick = (folderId: ID) => selectTreeItem(folderId);
 
   const handleOnFolderCreate = () => {
     clearSelectedItems();
@@ -60,13 +68,10 @@ export const TreeViewContainer = () => {
   return (
     <>
       <TreeView
-        data={{
-          ...treeData,
-          name: t("explorer.filters.mine", { ns: appCode }),
-        }}
-        selectedNodesIds={selectedNodesIds}
-        onTreeItemSelect={selectTreeItem}
-        onTreeItemFold={foldTreeItem}
+        data={data}
+        selectedNodeId={currentSelectedNodeId}
+        draggedNode={elementDragOver?.isTreeview ? elementDragOver : undefined}
+        onTreeItemClick={handleTreeItemClick}
         onTreeItemUnfold={handleTreeItemUnfold}
       />
       <TrashButton
@@ -86,7 +91,6 @@ export const TreeViewContainer = () => {
           {t("explorer.folder.new")}
         </Button>
       </div>
-
       <Suspense fallback={<LoadingScreen />}>
         {isModalOpen && (
           <CreateFolderModal
