@@ -1,9 +1,9 @@
-import { Modal, Button, TreeView } from "@edifice-ui/react";
+import { Button, Modal, TreeView, useOdeClient } from "@edifice-ui/react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-import { useMoveModal } from "./useMoveModal";
 import { useTreeData } from "~/store";
+import { useMoveModal } from "./useMoveModal";
 
 interface MoveModalProps {
   isOpen: boolean;
@@ -16,16 +16,16 @@ export default function MoveModal({
   onSuccess,
   onCancel,
 }: MoveModalProps) {
+  const { appCode } = useOdeClient();
   const { t } = useTranslation();
-  const {
-    handleTreeItemFold,
-    handleTreeItemSelect,
-    handleTreeItemUnfold,
-    onMove,
-    disableSubmit,
-  } = useMoveModal({ onSuccess });
+  const { handleTreeItemSelect, handleTreeItemUnfold, onMove, disableSubmit } =
+    useMoveModal({ onSuccess });
 
   const treeData = useTreeData();
+  const data = {
+    ...treeData,
+    name: t("explorer.filters.mine", { ns: appCode }),
+  };
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
@@ -35,9 +35,8 @@ export default function MoveModal({
       <Modal.Subtitle>{t("explorer.move.subtitle")}</Modal.Subtitle>
       <Modal.Body>
         <TreeView
-          data={treeData}
-          onTreeItemSelect={handleTreeItemSelect}
-          onTreeItemFold={handleTreeItemFold}
+          data={data}
+          onTreeItemClick={handleTreeItemSelect}
           onTreeItemUnfold={handleTreeItemUnfold}
         />
       </Modal.Body>

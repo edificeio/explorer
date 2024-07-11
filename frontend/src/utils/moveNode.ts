@@ -1,14 +1,14 @@
-import { type TreeNode } from "@edifice-ui/react";
+import { type TreeData } from "@edifice-ui/react";
 
+import type TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
 import { arrayUnique } from "./arrayUnique";
 import { findNodeById } from "./findNodeById";
 import { modifyNode } from "./modifyNode";
-import type TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
 
 export function moveNode(
-  treeData: TreeNode,
+  treeData: TreeData,
   { destinationId, folders }: { destinationId: string; folders: string[] },
-): TreeNode {
+): TreeData {
   return modifyNode(treeData, (node, parent) => {
     if (destinationId === node.id) {
       const parentAncestors = [
@@ -21,7 +21,7 @@ export function moveNode(
       for (const folder of folders) {
         // if not in children yet => move on it
         if (!childrenIds.includes(folder)) {
-          const item = findNodeById(folder, treeData);
+          const item = findNodeById(treeData, folder);
 
           item &&
             newChildren.push({
@@ -33,7 +33,7 @@ export function moveNode(
             });
         }
       }
-      const newNode: TreeNode = {
+      const newNode: TreeData = {
         ...node,
         children: newChildren,
       };

@@ -1,11 +1,11 @@
-import { type TreeNode } from "@edifice-ui/react";
+import { type TreeData } from "@edifice-ui/react";
 import { type IFolder } from "edifice-ts-client";
 
 import { modifyNode } from "./modifyNode";
 import TreeNodeFolderWrapper from "./TreeNodeFolderWrapper";
 
 export const wrapTreeNode = (
-  treeNode: TreeNode,
+  treeNode: TreeData,
   folders: IFolder[] | undefined,
   parentId: string,
 ) => {
