@@ -7,28 +7,25 @@ import {
   useUser,
 } from "@edifice-ui/react";
 import {
-  useInfiniteQuery,
-  type InfiniteData,
-  useMutation,
-  useQueryClient,
-  useQuery,
-  UseQueryResult,
   UseMutationOptions,
   UseMutationResult,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query";
-import { FOLDER } from "edifice-ts-client";
 import {
-  type ISearchResults,
-  type IFolder,
-  type IResource,
-  type ShareRight,
-  IAction,
-  CreateParameters,
-  ResourceType,
   App,
+  CreateParameters,
+  FOLDER,
+  PutShareResponse,
+  ResourceType,
   UpdateParameters,
   UpdateResult,
-  PutShareResponse,
+  type IFolder,
+  type IResource,
+  type ISearchResults,
+  type ShareRight,
 } from "edifice-ts-client";
 import { t } from "i18next";
 
@@ -40,53 +37,26 @@ import {
   moveToFolder,
   restoreAll,
   searchContext,
-  sessionHasWorkflowRights,
   trashAll,
   updateFolder,
 } from "~/services/api";
 import {
-  useStoreActions,
-  useSearchParams,
+  useCurrentFolder,
   useFolderIds,
-  useTreeData,
   useResourceAssetIds,
   useResourceIds,
   useResourceWithoutIds,
+  useSearchParams,
+  useStoreActions,
   useStoreContext,
-  useCurrentFolder,
+  useTreeData,
 } from "~/store";
 import { addNode } from "~/utils/addNode";
 import { deleteNode } from "~/utils/deleteNode";
 import { moveNode } from "~/utils/moveNode";
 import { updateNode } from "~/utils/updateNode";
 
-/**
- * useActions query
- * set actions correctly with workflow rights
- * @returns actions data
- */
-export const useActions = (): UseQueryResult<IAction[], Error> => {
-  const config = useStoreContext((state) => state.config);
-
-  return useQuery<Record<string, boolean>, Error, IAction[]>({
-    queryKey: ["actions"],
-    queryFn: async () => {
-      const actionRights = config?.actions.map((action) => action.workflow);
-      const availableRights = await sessionHasWorkflowRights(
-        actionRights as string[],
-      );
-      return availableRights;
-    },
-    select: (data) => {
-      return config?.actions.map((action) => ({
-        ...action,
-        available: data[action.workflow],
-      })) as IAction[];
-    },
-    staleTime: Infinity,
-    enabled: !!config,
-  });
-};
+export * from "./actions";
 
 /**
  * useSearchContext query
