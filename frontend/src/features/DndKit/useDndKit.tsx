@@ -11,6 +11,7 @@ import {
 import { useOdeClient, useToast } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { DELAY, TOLERANCE } from "~/config/dndkit";
 
 import { useMoveItem } from "~/services/queries";
 import { useStoreActions } from "~/store";
@@ -34,8 +35,8 @@ export default function useDndKit() {
   } = useStoreActions();
 
   const activationConstraint = {
-    delay: 100,
-    tolerance: 5,
+    delay: DELAY,
+    tolerance: TOLERANCE,
   };
 
   const mouseSensor = useSensor(MouseSensor, {
