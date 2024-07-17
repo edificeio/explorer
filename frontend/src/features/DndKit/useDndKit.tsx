@@ -1,4 +1,5 @@
 import {
+  Active,
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
@@ -31,7 +32,7 @@ export default function useDndKit() {
     setElementDragOver,
     setResourceIds,
     setFolderIds,
-    overTreeItem,
+    fetchTreeData,
   } = useStoreActions();
 
   const activationConstraint = {
@@ -48,6 +49,22 @@ export default function useDndKit() {
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
 
+  const notifySuccess = (active: Active, folderName: string) => {
+    if (active.data.current?.type === "resource") {
+      toast.success(
+        <>
+          {t("explorer.dragged.resource")} <strong>{folderName}</strong>
+        </>,
+      );
+    } else {
+      toast.success(
+        <>
+          {t("explorer.dragged.folder")} <strong>{folderName}</strong>
+        </>,
+      );
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { over, active } = event;
     const elementOver = over?.data.current;
@@ -57,20 +74,7 @@ export default function useDndKit() {
       const folderName = elementOver?.name ?? rootName;
       try {
         await moveItem.mutate(elementOver?.id);
-
-        if (active.data.current?.type === "resource") {
-          toast.success(
-            <>
-              {t("explorer.dragged.resource")} <strong>{folderName}</strong>
-            </>,
-          );
-        } else {
-          toast.success(
-            <>
-              {t("explorer.dragged.folder")} <strong>{folderName}</strong>
-            </>,
-          );
-        }
+        notifySuccess(active, folderName);
       } catch (e) {
         console.error(e);
       } finally {
@@ -108,7 +112,7 @@ export default function useDndKit() {
     const elementOver = over?.data.current;
 
     if (over) {
-      overTreeItem(elementOver?.id, queryClient);
+      fetchTreeData(elementOver?.id, queryClient);
       setElementDragOver({
         isOver: true,
         overId: elementOver?.id,

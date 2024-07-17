@@ -1,9 +1,9 @@
-import { Suspense, lazy, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import { LoadingScreen, useOdeClient, useToast } from "@edifice-ui/react";
-import { FOLDER, IFolder } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useSearchContext } from "~/services/queries";
 import {
   useCurrentFolder,
@@ -12,10 +12,7 @@ import {
   useSearchParams,
   useSelectedNodeId,
   useStoreActions,
-  useTreeData,
 } from "~/store";
-import TreeNodeFolderWrapper from "~/utils/TreeNodeFolderWrapper";
-import { wrapTreeNode } from "~/utils/wrapTreeNode";
 
 const EmptyScreenApp = lazy(
   async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
@@ -46,49 +43,29 @@ export const List = () => {
   const selectedNodeId = useSelectedNodeId();
   const searchParams = useSearchParams();
   const currentFolder = useCurrentFolder();
-  const treeData = useTreeData();
   const toast = useToast();
+  const queryClient = useQueryClient();
 
   const { appCode } = useOdeClient();
   const { t } = useTranslation([appCode]);
-  const { setSearchParams, setSearchConfig, setTreeData } = useStoreActions();
+  const { setSearchParams, setSearchConfig, fetchTreeData } = useStoreActions();
   const { data, isError, error, isLoading, isFetching, fetchNextPage } =
     useSearchContext();
 
   const hasNoFolders = data?.pages[0].folders.length === 0;
   const hasNoResources = data?.pages[0].resources.length === 0;
-
   const hasNoData = hasNoFolders && hasNoResources;
 
   useEffect(() => {
     if (data) {
-      const folders: IFolder[] = [...(data?.pages[0]?.folders ?? [])];
-
       if (data?.pages[0]?.searchConfig) {
         setSearchConfig(data.pages[0].searchConfig);
       }
 
-      if (!searchParams.search) {
-        // set tree data only if we are not searching
-        if (currentFolder?.id === "default") {
-          setTreeData({
-            id: FOLDER.DEFAULT,
-            section: true,
-            children: folders.map(
-              (folder: IFolder) => new TreeNodeFolderWrapper(folder),
-            ),
-            name: t("explorer.filters.mine", { ns: appCode }),
-          });
-        } else {
-          setTreeData(
-            wrapTreeNode(
-              treeData,
-              folders,
-              searchParams.filters.folder || FOLDER.DEFAULT,
-            ),
-          );
-        }
+      if (!searchParams.search && currentFolder.id === "default") {
+        fetchTreeData(currentFolder.id as string, queryClient);
       }
+
       setSearchParams({
         ...searchParams,
         pagination: data?.pages[data?.pages.length - 1]?.pagination,
