@@ -54,7 +54,6 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const build: BuildOptions = {
-    minify: false,
     assetsDir: "assets/js/ode-explorer/",
     cssCodeSplit: false,
     rollupOptions: {
