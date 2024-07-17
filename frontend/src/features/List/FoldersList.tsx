@@ -39,8 +39,8 @@ const FoldersList = ({
         ),
       );
     } else {
-      setFolderIds([...folderIds, folder.id]);
-      setSelectedFolders([...selectedFolders, folder]);
+      setFolderIds([folder.id, ...folderIds]);
+      setSelectedFolders([folder, ...selectedFolders]);
     }
   }
 
