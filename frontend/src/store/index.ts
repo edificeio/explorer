@@ -1,8 +1,10 @@
 import {
-  useScrollToTop as scrollToTop,
+  findNodeById,
+  findParentNode,
+  wrapTreeNode,
   type TreeData,
 } from "@edifice-ui/react";
-import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
+import { type QueryClient } from "@tanstack/react-query";
 import {
   FOLDER,
   SORT_ORDER,
@@ -11,17 +13,20 @@ import {
   type IFolder,
   type IResource,
   type ISearchParameters,
-  type ISearchResults,
 } from "edifice-ts-client";
 import { t } from "i18next";
-import { create } from "zustand";
+import { createStore, useStore } from "zustand";
 
 import { AppParams } from "~/config/getExplorerConfig";
 import { goToResource, printResource, searchContext } from "~/services/api";
-import { findNodeById } from "~/utils/findNodeById";
-import { findParentNode } from "~/utils/findParentNode";
-import { hasChildren } from "~/utils/hasChildren";
-import { wrapTreeNode } from "~/utils/wrapTreeNode";
+
+export type ExtractState<S> = S extends {
+  getState: () => infer T;
+}
+  ? T
+  : never;
+
+type Params<U> = Parameters<typeof useStore<typeof store, U>>;
 
 interface ElementDrag {
   isDrag: boolean;
@@ -34,7 +39,7 @@ interface ElementOver {
   overId: ID | undefined;
 }
 
-interface State {
+type State = {
   config: AppParams | undefined;
   searchParams: ISearchParameters & IActionParameters;
   treeData: TreeData;
@@ -50,17 +55,16 @@ interface State {
   resourceActionDisable: boolean;
   searchConfig: { minLength: number };
   status: string | undefined;
-}
+};
 
 type Action = {
-  updaters: {
+  actions: {
     setConfig: (config: AppParams) => void;
     setSearchConfig: (config: { minLength: number }) => void;
     setTreeData: (treeData: TreeData) => void;
     setSearchParams: (
       searchParams: Partial<ISearchParameters & IActionParameters>,
     ) => void;
-    setCurrentFolder: (folder: Partial<IFolder>) => void;
     setSelectedFolders: (selectedFolders: IFolder[]) => void;
     setSelectedResources: (selectedResources: IResource[]) => void;
     setFolderIds: (folderIds: ID[]) => void;
@@ -78,20 +82,28 @@ type Action = {
     openFolder: ({
       folderId,
       folder,
+      queryClient,
     }: {
       folderId: ID;
       folder?: IFolder;
+      queryClient?: QueryClient;
     }) => void;
     foldTreeItem: (folderId: string) => void;
-    selectTreeItem: (folderId: string) => void;
-    overTreeItem: (folderId: string, queryClient: QueryClient) => Promise<void>;
-    unfoldTreeItem: (
+    selectTreeItem: (folderId: string, queryClient: QueryClient) => void;
+    fetchTreeData: (
       folderId: string,
       queryClient: QueryClient,
     ) => Promise<void>;
     gotoPreviousFolder: () => void;
     goToTrash: () => void;
   };
+};
+
+const defaultFolder = {
+  id: FOLDER.DEFAULT,
+  name: t("explorer.filters.mine"),
+  section: true,
+  children: [],
 };
 
 const initialState = {
@@ -114,12 +126,7 @@ const initialState = {
     },
     trashed: false,
   },
-  treeData: {
-    id: FOLDER.DEFAULT,
-    name: t("explorer.filters.mine"),
-    section: true,
-    children: [],
-  },
+  treeData: defaultFolder,
   selectedNodeId: "default",
   currentFolder: {
     id: "default",
@@ -142,15 +149,18 @@ const initialState = {
   status: undefined,
 };
 
-export const useStoreContext = create<State & Action>()((set, get) => ({
+const store = createStore<State & Action>()((set, get) => ({
   ...initialState,
-  updaters: {
+  actions: {
     setConfig: (config) => set({ config }),
     setSearchConfig: (searchConfig: { minLength: number }) =>
       set((state) => ({
         searchConfig: { ...state.searchConfig, ...searchConfig },
       })),
-    setTreeData: (treeData: TreeData) => set(() => ({ treeData })),
+    setTreeData: (treeData: TreeData) =>
+      set(() => ({
+        treeData,
+      })),
     setSearchParams: (searchParams: Partial<ISearchParameters>) => {
       set((state) => {
         const { searchParams: previousSearchParams } = state;
@@ -215,8 +225,6 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       set(() => ({ elementDragOver })),
     setResourceActionDisable: (resourceActionDisable: boolean) =>
       set(() => ({ resourceActionDisable })),
-    setCurrentFolder: (currentFolder: Partial<IFolder>) =>
-      set(() => ({ currentFolder })),
     clearSelectedItems: () =>
       set(() => ({ selectedFolders: [], selectedResources: [] })),
     clearSelectedIds: () => set(() => ({ resourceIds: [], folderIds: [] })),
@@ -242,12 +250,25 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
         console.error("explorer print failed: ", error);
       }
     },
-    openFolder: ({ folderId, folder }: { folderId: ID; folder?: IFolder }) => {
+    openFolder: ({
+      folderId,
+      folder,
+      queryClient,
+    }: {
+      folderId: ID;
+      folder?: IFolder;
+      queryClient?: QueryClient;
+    }) => {
       const { searchParams } = get();
       const previousId = searchParams.filters.folder as string;
       const selectedNodeId = folderId;
 
       if (previousId === folderId) return;
+
+      get().actions.fetchTreeData(
+        folderId as string,
+        queryClient as QueryClient,
+      );
 
       set((state) => {
         return {
@@ -272,56 +293,45 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       });
     },
     foldTreeItem: () => set((state) => ({ ...state, status: "fold" })),
-    unfoldTreeItem: async (folderId: string, queryClient: QueryClient) => {
-      const { treeData, searchParams } = get();
-      set((state) => ({ ...state, status: "unfold" }));
-      // fetch subfolders
-      if (!hasChildren(folderId, treeData)) {
-        await queryClient.prefetchInfiniteQuery({
-          initialPageParam: 0,
-          queryKey: [
-            "prefetchContext",
-            {
-              folderId,
-              trashed: false,
-            },
-          ],
-          queryFn: async () =>
-            await searchContext({
-              ...searchParams,
-              filters: {
-                ...searchParams.filters,
-                folder: folderId,
-              },
-            }),
-        });
-        const data = queryClient.getQueryData<InfiniteData<ISearchResults>>([
+    fetchTreeData: async (nodeId: string, queryClient: QueryClient) => {
+      const folder = findNodeById(get().treeData, nodeId);
+      const folderId = folder?.id as string;
+
+      if (Array.isArray(folder?.children) && !!folder.children.length) return;
+
+      const getQueryData = await queryClient.fetchQuery({
+        queryKey: [
           "prefetchContext",
           {
             folderId,
             trashed: false,
           },
-        ]);
-        set((state) => ({
-          ...state,
-          treeData: wrapTreeNode(
-            state.treeData,
-            data?.pages[0]?.folders,
-            folderId || FOLDER.DEFAULT,
-          ),
-        }));
-      }
+        ],
+        queryFn: async () =>
+          await searchContext({
+            ...get().searchParams,
+            filters: {
+              ...get().searchParams.filters,
+              folder: folderId,
+            },
+          }),
+      });
+
+      get().actions.setTreeData(
+        wrapTreeNode(
+          get().treeData,
+          getQueryData?.folders,
+          folderId || FOLDER.DEFAULT,
+        ),
+      );
     },
-    overTreeItem: async (folderId: string, queryClient: QueryClient) => {
-      const { unfoldTreeItem } = get().updaters;
-      unfoldTreeItem(folderId, queryClient);
-    },
-    selectTreeItem: (folderId: string) => {
+    selectTreeItem: (folderId: string, queryClient: QueryClient) => {
       const { treeData } = get();
-      const { openFolder } = get().updaters;
+      const { openFolder, fetchTreeData } = get().actions;
 
       const folder = findNodeById(treeData, folderId);
-      scrollToTop();
+
+      fetchTreeData(folderId, queryClient);
 
       set((state) => ({
         ...state,
@@ -339,8 +349,15 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
       });
     },
     gotoPreviousFolder: () => {
-      const { selectedNodeId, treeData } = get();
-      const { openFolder } = get().updaters;
+      const { selectedNodeId, treeData, searchParams } = get();
+      const { openFolder } = get().actions;
+
+      if (searchParams.search) {
+        openFolder({
+          folder: defaultFolder as unknown as IFolder,
+          folderId: FOLDER.DEFAULT,
+        });
+      }
 
       if (!selectedNodeId) return;
 
@@ -375,13 +392,28 @@ export const useStoreContext = create<State & Action>()((set, get) => ({
   },
 }));
 
+// React Custom Hook
+export function useStoreContext<U>(selector: Params<U>[1]) {
+  return useStore(store, selector);
+}
+
+// Selectors
+const treeData = (state: ExtractState<typeof store>) => state.treeData;
+const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
+
+// Getters
+export const getTreeData = () => treeData(store.getState());
+export const getStoreActions = () => actionsSelector(store.getState());
+
+// Hooks
+export const useTreeData = () => useStoreContext(treeData);
+export const useStoreActions = () => useStoreContext(actionsSelector);
+
 export const useSearchParams = () =>
   useStoreContext((state) => state.searchParams);
 
 export const useSelectedNodeId = () =>
   useStoreContext((state) => state.selectedNodeId);
-
-export const useTreeData = () => useStoreContext((state) => state.treeData);
 
 export const useSelectedFolders = () =>
   useStoreContext((state) => state.selectedFolders);
@@ -408,8 +440,6 @@ export const useResourceWithoutIds = () =>
 export const useCurrentFolder = () =>
   useStoreContext((state) => state.currentFolder);
 
-export const useStoreActions = () => useStoreContext((state) => state.updaters);
-
 export const useIsTrash = () => {
   const currentFolder = useCurrentFolder();
   return currentFolder?.id === FOLDER.BIN;
@@ -435,10 +465,5 @@ export const useIsRoot = () => {
   const currentFolder = useCurrentFolder();
   return currentFolder?.id === "default";
 };
-
-/* export const useHasSelectedNodes = () => {
-  const selectedNodesIds = useSEl();
-  return selectedNodesIds.length > 1;
-}; */
 
 export const useTreeStatus = () => useStoreContext((state) => state.status);

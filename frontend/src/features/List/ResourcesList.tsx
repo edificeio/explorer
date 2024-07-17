@@ -26,7 +26,6 @@ const ResourcesList = ({
 }): JSX.Element | null => {
   const { currentApp } = useOdeClient();
   const { t } = useTranslation();
-
   const { fromNow } = useDate();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
@@ -58,7 +57,7 @@ const ResourcesList = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const clickOnResource = (resource: IResource) => {
+  const handleOnResourceClick = (resource: IResource) => {
     if (isTrashFolder) {
       setResourceIsTrash(true);
       setResourceIds([resource.id]);
@@ -68,7 +67,7 @@ const ResourcesList = ({
     }
   };
 
-  async function toggleSelect(resource: IResource) {
+  async function handleOnSelectToggle(resource: IResource) {
     if (resourceIds.includes(resource.id)) {
       setResourceIds(
         resourceIds.filter(
@@ -114,8 +113,8 @@ const ResourcesList = ({
                     time={time}
                     isSelectable={true}
                     isSelected={resourceIds.includes(resource.id)}
-                    onClick={() => clickOnResource(resource)}
-                    onSelect={() => toggleSelect(resource)}
+                    onClick={() => handleOnResourceClick(resource)}
+                    onSelect={() => handleOnSelectToggle(resource)}
                   />
                 </animated.li>
               );
@@ -135,7 +134,6 @@ const ResourcesList = ({
           </Button>
         </div>
       )}
-      {/* {hasMoreResources && <LoadMore />} */}
     </React.Fragment>
   );
 };
