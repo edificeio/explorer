@@ -27,9 +27,12 @@ export function ExplorerBreadcrumb() {
   });
   const previousName: string = currentFolder?.name || rootName;
 
+  console.log({ searchName, selectedNodeId, isTrashFolder });
+
   return (
     <div className="py-16">
-      {selectedNodeId !== "bin" &&
+      {selectedNodeId &&
+      selectedNodeId !== "bin" &&
       selectedNodeId !== "default" &&
       !isTrashFolder ? (
         <div className="d-flex align-items-center gap-8">
