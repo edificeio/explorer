@@ -1,6 +1,6 @@
 import { useOdeClient, useScrollToTop } from "@edifice-ui/react";
 import { animated, useSpring } from "@react-spring/web";
-import { InfiniteData } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ISearchResults, type ID, type IFolder } from "edifice-ts-client";
 
 import {
@@ -17,16 +17,18 @@ const FoldersList = ({
   data: InfiniteData<ISearchResults> | undefined;
   isFetching: boolean;
 }) => {
-  const { currentApp } = useOdeClient();
-
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
+  const queryClient = useQueryClient();
   const selectedFolders = useSelectedFolders();
   const folderIds = useFolderIds();
-  const { setSelectedFolders, setFolderIds, openFolder } = useStoreActions();
   const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
+  const scrollToTop = useScrollToTop();
 
-  function toggleSelect(folder: IFolder) {
+  const { currentApp } = useOdeClient();
+  const { setSelectedFolders, setFolderIds, openFolder } = useStoreActions();
+
+  function handleOnSelectToggle(folder: IFolder) {
     if (folderIds.includes(folder.id)) {
       setFolderIds(
         folderIds.filter((selectedFolder: ID) => selectedFolder !== folder.id),
@@ -42,12 +44,15 @@ const FoldersList = ({
     }
   }
 
+  function handleOnFolderClick(folder: IFolder) {
+    scrollToTop();
+    openFolder({ folder, folderId: folder.id, queryClient });
+  }
+
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
   });
-
-  const scrollToTop = useScrollToTop();
 
   return data?.pages[0]?.folders.length ? (
     <animated.ul className="grid ps-0 list-unstyled mb-24">
@@ -69,11 +74,8 @@ const FoldersList = ({
               idFolder={id}
               app={currentApp}
               isSelected={folderIds.includes(folder.id)}
-              onClick={() => {
-                scrollToTop();
-                openFolder({ folder, folderId: folder.id });
-              }}
-              onSelect={() => toggleSelect(folder)}
+              onClick={() => handleOnFolderClick(folder)}
+              onSelect={() => handleOnSelectToggle(folder)}
             />
           </animated.li>
         );

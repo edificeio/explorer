@@ -3,9 +3,11 @@ import { lazy, Suspense } from "react";
 import { Plus } from "@edifice-ui/icons";
 import {
   Button,
+  findNodeById,
   LoadingScreen,
   TreeView,
   useOdeClient,
+  useScrollToTop,
   useToggle,
 } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,8 +37,8 @@ export const TreeViewContainer = () => {
   const isTrashFolder = useIsTrash();
   const selectedNodeId = useSelectedNodeId();
   const elementDragOver = useElementDragOver();
-
-  const currentSelectedNodeId = !isTrashFolder ? selectedNodeId : "bin";
+  const scrollToTop = useScrollToTop();
+  const currentSelectedNodeId = !isTrashFolder ? selectedNodeId : FOLDER.BIN;
 
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
@@ -49,15 +51,27 @@ export const TreeViewContainer = () => {
   const {
     goToTrash,
     selectTreeItem,
-    unfoldTreeItem,
     clearSelectedItems,
     clearSelectedIds,
+    fetchTreeData,
   } = useStoreActions();
 
-  const handleTreeItemUnfold = async (folderId: ID) =>
-    await unfoldTreeItem(folderId, queryClient);
+  const handleTreeItemClick = (folderId: ID) => {
+    selectTreeItem(folderId, queryClient);
+    scrollToTop();
+  };
 
-  const handleTreeItemClick = (folderId: ID) => selectTreeItem(folderId);
+  const handleOnTreeItemUnfold = (nodeId: string) => {
+    const folder = findNodeById(treeData, nodeId);
+    const hasSomeChildrenWithChildren = folder?.children?.some(
+      (child) => Array.isArray(child?.children) && child.children?.length > 0,
+    );
+
+    folder?.children?.forEach((child) => {
+      if (hasSomeChildrenWithChildren) return;
+      fetchTreeData(child.id as string, queryClient);
+    });
+  };
 
   const handleOnFolderCreate = () => {
     clearSelectedItems();
@@ -72,7 +86,7 @@ export const TreeViewContainer = () => {
         selectedNodeId={currentSelectedNodeId}
         draggedNode={elementDragOver?.isTreeview ? elementDragOver : undefined}
         onTreeItemClick={handleTreeItemClick}
-        onTreeItemUnfold={handleTreeItemUnfold}
+        onTreeItemUnfold={handleOnTreeItemUnfold}
       />
       <TrashButton
         id={FOLDER.BIN}
