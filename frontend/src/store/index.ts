@@ -16,8 +16,8 @@ import {
 } from "edifice-ts-client";
 import { t } from "i18next";
 import { createStore, useStore } from "zustand";
+import { AppParams } from "~/config";
 
-import { AppParams } from "~/config/getExplorerConfig";
 import { goToResource, printResource, searchContext } from "~/services/api";
 
 export type ExtractState<S> = S extends {
