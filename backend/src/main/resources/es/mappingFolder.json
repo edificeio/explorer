@@ -1,80 +1,9 @@
 {
   "settings": {
     "number_of_shards": 1,
-    "number_of_replicas": 0,
-    "analysis": {
-      "analyzer": {
-        "html_analyzer": {
-          "tokenizer": "keyword",
-          "char_filter": [
-            "html_strip"
-          ]
-        },
-        "custom_lowercase_analyzer": {
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase",
-            "my_ascii_folding"
-          ]
-        }
-      },
-      "filter": {
-        "my_ascii_folding": {
-          "type": "asciifolding",
-          "preserve_original": true
-        }
-      }
-    }
+    "number_of_replicas": 0
   },
   "mappings": {
-    "dynamic": false,
-    "properties": {
-      "name": {
-        "type": "text",
-        "copy_to": "contentAll"
-      },
-      "application": {
-        "type": "keyword"
-      },
-      "resourceType": {
-        "type": "keyword"
-      },
-      "parentId": {
-        "type": "keyword"
-      },
-      "ancestors": {
-        "type": "keyword"
-      },
-      "trashed": {
-        "type": "boolean"
-      },
-      "creatorId": {
-        "type": "keyword"
-      },
-      "creatorName": {
-        "type": "text",
-        "copy_to": "contentAll"
-      },
-      "createdAt": {
-        "type": "date"
-      },
-      "updatedAt": {
-        "type": "date"
-      },
-      "trashedAt": {
-        "type": "date"
-      },
-      "childrenIds": {
-        "type": "keyword"
-      },
-      "version": {
-        "type": "long"
-      },
-      "contentAll": {
-        "type": "text",
-        "store": true,
-        "analyzer": "custom_lowercase_analyzer"
-      }
-    }
+    "dynamic": true
   }
 }
