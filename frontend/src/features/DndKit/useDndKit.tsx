@@ -12,7 +12,7 @@ import {
 import { useOdeClient, useToast } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { DELAY, TOLERANCE } from "~/config/dndkit";
+import { DELAY, TOLERANCE } from "~/config";
 
 import { useMoveItem } from "~/services/queries";
 import { useStoreActions } from "~/store";
