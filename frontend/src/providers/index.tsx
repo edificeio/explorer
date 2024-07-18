@@ -7,7 +7,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ERROR_CODE } from "edifice-ts-client";
 import { ReactNode } from "react";
-import { getExplorerConfig } from "~/config/getExplorerConfig";
+import { getExplorerConfig } from "~/config";
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({

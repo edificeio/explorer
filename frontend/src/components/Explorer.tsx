@@ -13,7 +13,7 @@ import {
 } from "@edifice-ui/react";
 import { IWebApp } from "edifice-ts-client";
 
-import { AppParams } from "~/config/getExplorerConfig";
+import { AppParams } from "~/config";
 import { useDisableModal } from "~/features/ActionBar/Disable/useDisableModal";
 import { useTrashModal } from "~/features/ActionBar/Trash/useTrashModal";
 import useDndKit from "~/features/DndKit/useDndKit";

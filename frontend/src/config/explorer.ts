@@ -1,14 +1,19 @@
 import {
+  ResourceService,
   type App,
-  type ResourceType,
   type IAction,
   type IFilter,
   type IOrder,
+  type ResourceType,
 } from "edifice-ts-client";
 
 export interface AppParams {
   /** Application code */
   app: App;
+  /**
+   * Initialize App Resource Service
+   */
+  service: typeof ResourceService;
   /** Array of ResourceType */
   types: ResourceType[];
   /** Array of IFilter */
