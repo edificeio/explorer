@@ -1,31 +1,37 @@
-import { useState } from "react";
-
+import { findNodeById, getAncestors } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { type ID } from "edifice-ts-client";
+import { IFolder } from "edifice-ts-client";
+import { useState } from "react";
 
 import { useMoveItem } from "~/services/queries";
 import {
   useSelectedFolders,
   useSelectedResources,
   useStoreActions,
+  useTreeData,
 } from "~/store";
 
 interface ModalProps {
   onSuccess?: () => void;
 }
 
+interface SelectedFolder extends IFolder {
+  childrenIds?: string[];
+}
+
 export function useMoveModal({ onSuccess }: ModalProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | undefined>();
 
+  const queryClient = useQueryClient();
   const moveItem = useMoveItem();
 
   // * https://github.com/pmndrs/zustand#fetching-everything
   // ! https://github.com/pmndrs/zustand/discussions/913
-  const selectedFolders = useSelectedFolders();
+  const selectedFolders = useSelectedFolders() as SelectedFolder[];
   const selectedResources = useSelectedResources();
-  const queryclient = useQueryClient();
+  const treeData = useTreeData();
 
-  const { unfoldTreeItem } = useStoreActions();
+  const { fetchTreeData } = useStoreActions();
 
   async function onMove() {
     try {
@@ -40,10 +46,14 @@ export function useMoveModal({ onSuccess }: ModalProps) {
   }
 
   const canMove = (destination: string) => {
+    const ancestors = getAncestors(treeData, destination);
+
     for (const selectedFolder of selectedFolders) {
       if (
         destination === selectedFolder.id ||
-        destination === selectedFolder.parentId
+        destination === selectedFolder.parentId ||
+        selectedFolder.childrenIds?.includes(destination) ||
+        ancestors.includes(selectedFolder.id)
       ) {
         return false;
       }
@@ -62,6 +72,7 @@ export function useMoveModal({ onSuccess }: ModalProps) {
   };
 
   return {
+    treeData,
     disableSubmit: !selectedFolder,
     handleTreeItemSelect: (folderId: string) => {
       if (canMove(folderId)) {
@@ -70,10 +81,17 @@ export function useMoveModal({ onSuccess }: ModalProps) {
         setSelectedFolder(undefined);
       }
     },
-    handleTreeItemUnfold: async (folderId: ID) =>
-      await unfoldTreeItem(folderId, queryclient),
-    onMove: () => {
-      onMove();
+    handleOnTreeItemUnfold: (nodeId: string) => {
+      const folder = findNodeById(treeData, nodeId);
+      const hasSomeChildrenWithChildren = folder?.children?.some(
+        (child) => Array.isArray(child?.children) && child.children?.length > 0,
+      );
+
+      folder?.children?.forEach((child) => {
+        if (hasSomeChildrenWithChildren) return;
+        fetchTreeData(child.id as string, queryClient);
+      });
     },
+    onMove: () => onMove(),
   };
 }

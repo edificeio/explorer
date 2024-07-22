@@ -36,6 +36,7 @@ interface ElementDrag {
 interface ElementOver {
   isOver: boolean;
   isTreeview: boolean;
+  canMove?: boolean;
   overId: ID | undefined;
 }
 
@@ -143,6 +144,7 @@ const initialState = {
   elementDragOver: {
     isOver: false,
     isTreeview: false,
+    canMove: true,
     overId: undefined,
   },
   resourceActionDisable: false,
