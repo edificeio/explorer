@@ -6,6 +6,7 @@ import {
   type IOrder,
   type ResourceType,
 } from "edifice-ts-client";
+import { BlogResourceService } from "~/services/resource/service";
 
 export interface AppParams {
   /** Application code */
@@ -44,6 +45,7 @@ export function getExplorerConfig(): AppParams {
       const parsedConfig = JSON.parse(explorerConfig);
       config = {
         ...parsedConfig,
+        service: BlogResourceService,
         enableOnboarding:
           parsedConfig.enableOnboarding !== undefined
             ? parsedConfig.enableOnboarding

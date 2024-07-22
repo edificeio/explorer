@@ -68,10 +68,18 @@ const FolderCard = ({
 
   const folderIsOver = elementDragOver.overId === idFolder;
 
+  const cursor =
+    !elementDragOver.canMove && elementDragOver.isTreeview
+      ? "no-drop"
+      : folderIsDrag
+        ? "grabbing"
+        : "default";
+
   const styles = {
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
     }px, 0)`,
+    cursor,
   } as React.CSSProperties;
 
   useEffect(() => {
