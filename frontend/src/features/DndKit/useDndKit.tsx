@@ -9,18 +9,20 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useOdeClient, useToast } from "@edifice-ui/react";
+import { getAncestors, useOdeClient, useToast } from "@edifice-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { DELAY, TOLERANCE } from "~/config";
 
 import { useMoveItem } from "~/services/queries";
-import { useStoreActions } from "~/store";
+import { useStoreActions, useTreeData } from "~/store";
+import { getChildrenIds } from "~/utils/getChildrenIds";
 
 export default function useDndKit() {
   const queryClient = useQueryClient();
   const moveItem = useMoveItem();
   const toast = useToast();
+
   const { appCode } = useOdeClient();
   const { t } = useTranslation(["common", appCode]);
   const rootName: string = t("explorer.filters.mine", {
@@ -34,6 +36,8 @@ export default function useDndKit() {
     setFolderIds,
     fetchTreeData,
   } = useStoreActions();
+
+  const treeData = useTreeData();
 
   const activationConstraint = {
     delay: DELAY,
@@ -67,11 +71,22 @@ export default function useDndKit() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { over, active } = event;
+
     const elementOver = over?.data.current;
     const elementActive = active.data.current;
+    const ancestors = getAncestors(treeData, elementOver?.id);
+    const childrenIds = getChildrenIds(treeData, elementOver?.id);
 
-    if (over && elementActive?.id !== elementOver?.id) {
+    if (
+      elementActive?.id == elementOver?.id ||
+      ancestors.includes(elementActive?.id) ||
+      childrenIds.includes(elementActive?.id)
+    ) {
+      setResourceIds([]);
+      setFolderIds([]);
+    } else {
       const folderName = elementOver?.name ?? rootName;
+
       try {
         await moveItem.mutate(elementOver?.id);
         notifySuccess(active, folderName);
@@ -81,12 +96,10 @@ export default function useDndKit() {
         setElementDragOver({
           isOver: false,
           overId: undefined,
+          canMove: true,
           isTreeview: false,
         });
       }
-    } else {
-      setResourceIds([]);
-      setFolderIds([]);
     }
     setResourceOrFolderIsDraggable({ isDrag: false, elementDrag: undefined });
   };
@@ -108,20 +121,36 @@ export default function useDndKit() {
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
+    const { over, active } = event;
+
     const elementOver = over?.data.current;
+    const elementActive = active?.data.current;
+    const ancestors = getAncestors(treeData, elementOver?.id);
+    const childrenIds = getChildrenIds(treeData, elementOver?.id);
 
     if (over) {
-      fetchTreeData(elementOver?.id, queryClient);
-      setElementDragOver({
+      const dragOver = {
         isOver: true,
+        canMove: false,
         overId: elementOver?.id,
         isTreeview: elementOver?.isTreeview,
-      });
+      };
+
+      if (
+        elementActive?.id === elementOver?.id ||
+        ancestors.includes(elementActive?.id) ||
+        childrenIds.includes(elementActive?.id)
+      ) {
+        setElementDragOver({ ...dragOver, canMove: false });
+      } else {
+        fetchTreeData(elementOver?.id, queryClient);
+        setElementDragOver({ ...dragOver, canMove: true });
+      }
     } else {
       setElementDragOver({
         isOver: false,
         overId: undefined,
+        canMove: true,
         isTreeview: false,
       });
     }
