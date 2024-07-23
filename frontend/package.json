@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.12-develop-pedago.202406101923",
+  "version": "1.4.14-develop.202407231207",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -56,8 +56,8 @@
     ]
   },
   "dependencies": {
-    "@edifice-ui/icons": "develop-pedago",
-    "@edifice-ui/react": "develop-pedago",
+    "@edifice-ui/icons": "develop",
+    "@edifice-ui/react": "develop",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.8.4",
     "clsx": "2.1.0",
@@ -85,8 +85,8 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "concurrently": "8.2.2",
     "csstype": "3.1.3",
-    "edifice-bootstrap": "develop-pedago",
-    "edifice-ts-client": "develop-pedago",
+    "edifice-bootstrap": "develop",
+    "edifice-ts-client": "develop",
     "eslint": "8.56.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
@@ -98,7 +98,7 @@
     "lint-staged": "15.2.0",
     "prettier": "3.2.4",
     "typescript": "5.3.3",
-    "vite": "5.0.13",
+    "vite": "5.0.12",
     "vite-plugin-dts": "3.7.2",
     "vite-tsconfig-paths": "4.3.1"
   },
