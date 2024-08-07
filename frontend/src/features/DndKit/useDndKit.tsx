@@ -87,20 +87,18 @@ export default function useDndKit() {
     } else {
       const folderName = elementOver?.name ?? rootName;
 
-      if (over) {
-        try {
-          await moveItem.mutate(elementOver?.id);
-          notifySuccess(active, folderName);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setElementDragOver({
-            isOver: false,
-            overId: undefined,
-            canMove: true,
-            isTreeview: false,
-          });
-        }
+      try {
+        await moveItem.mutate(elementOver?.id);
+        notifySuccess(active, folderName);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setElementDragOver({
+          isOver: false,
+          overId: undefined,
+          canMove: true,
+          isTreeview: false,
+        });
       }
     }
     setResourceOrFolderIsDraggable({ isDrag: false, elementDrag: undefined });
