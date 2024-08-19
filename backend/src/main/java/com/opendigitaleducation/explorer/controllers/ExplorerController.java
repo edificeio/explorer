@@ -619,6 +619,13 @@ public class ExplorerController extends BaseController {
         }
     }
 
+    @Get("config")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void getConfiguration(final HttpServerRequest request) {
+        renderJson(request, new JsonObject().put("applications", config.getJsonArray("applications")));
+    }
+
     //TODO on batch delete / update / return list of succeed and list of failed
     private ResourceSearchOperation toResourceSearch(final JsonObject queryParams) {
         ///application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y&search_after=name|createdAt
