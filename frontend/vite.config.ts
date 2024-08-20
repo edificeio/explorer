@@ -1,10 +1,31 @@
-import { BuildOptions, defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { resolve } from "node:path";
+import { BuildOptions, defineConfig, loadEnv, Plugin } from "vite";
 import dts from "vite-plugin-dts";
+import tsconfigPaths from "vite-tsconfig-paths";
 
+import { createHash } from "node:crypto";
 import { dependencies } from "./package.json";
+
+const hash = createHash("md5")
+  .update(Date.now().toString())
+  .digest("hex")
+  .substring(0, 8);
+
+const queryHashVersion = `v=${hash}`;
+
+function hashEdificeBootstrap(): Plugin {
+  return {
+    name: "vite-plugin-edifice",
+    apply: "build",
+    transformIndexHtml(html) {
+      return html.replace(
+        "/assets/themes/edifice-bootstrap/index.css",
+        `/assets/themes/edifice-bootstrap/index.css?${queryHashVersion}`,
+      );
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -74,7 +95,7 @@ export default ({ mode }: { mode: string }) => {
           "edifice-icons": ["@edifice-ui/icons"],
         }, */
         paths: {
-          "edifice-ts-client": "/assets/js/edifice-ts-client/index.js",
+          "edifice-ts-client": `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
         },
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
@@ -119,7 +140,12 @@ export default ({ mode }: { mode: string }) => {
 
   const dtsPlugin = isLibMode && dts();
 
-  const plugins = [reactPlugin, dtsPlugin, tsconfigPaths()];
+  const plugins = [
+    reactPlugin,
+    dtsPlugin,
+    tsconfigPaths(),
+    hashEdificeBootstrap(),
+  ];
 
   const server = {
     proxy,
