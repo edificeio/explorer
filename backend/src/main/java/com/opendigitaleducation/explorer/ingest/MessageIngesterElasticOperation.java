@@ -41,9 +41,6 @@ abstract class MessageIngesterElasticOperation {
                         //folder are not indexed
                         return Arrays.asList(new MessageIngesterElasticOperationDelete(message));
                     }else{
-                        //break folder/resource link
-                        message.getMessage().put("folderIds", new JsonArray());
-                        message.getMessage().put("usersForFolderIds", new JsonArray());
                         return Arrays.asList(new MessageIngesterElasticOperationUpsert(message));
                     }
                 }else{
