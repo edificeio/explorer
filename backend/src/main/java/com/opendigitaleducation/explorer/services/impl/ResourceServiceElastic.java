@@ -166,12 +166,13 @@ public class ResourceServiceElastic implements ResourceService {
                 return Future.failedFuture("resource.trash.id.invalid");
             }
             final Set<Integer> idsToTrashForAll = new HashSet<>();
-            final Set<IdAndVersion> idsToTrashForUserOnly = new HashSet<>();
+            final Set<ResourceExplorerDbSql.ResourceIdAndVersion> idsToTrashForUserOnly = new HashSet<>();
             for (JsonObject row : fetch.rows) {
+                final Integer openSearchId = Integer.parseInt(row.getString("_id"));
                 if (isManager(row, user)) {
-                    idsToTrashForAll.add(Integer.parseInt(row.getString("_id")));
+                    idsToTrashForAll.add(openSearchId);
                 } else {
-                    idsToTrashForUserOnly.add(new IdAndVersion(row.getString("assetId"), row.getLong("version")));
+                    idsToTrashForUserOnly.add(new ResourceExplorerDbSql.ResourceIdAndVersion(openSearchId, row.getString("assetId"), row.getLong("version")));
                 }
             }
             //TODO remove previous parent if it is not trashed
