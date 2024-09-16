@@ -583,22 +583,22 @@ public class ResourceExplorerDbSql {
      * @param trashed whether a resource has to be trashed or restored
      * @return basic resources info after trash status update
      */
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<IdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final Collection<ResourceIdAndVersion> idsToTrashForUser, final String userId, final boolean trashed) {
         return client.transaction().compose(transaction->{
             final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = this.trashForUser(transaction, idsToTrashForUser, userId, trashed);
             return transaction.commit().compose(commit -> future);
         });
     }
 
-    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final IPostgresTransaction transaction, final Collection<IdAndVersion> resourceIds, final String userId, final boolean trashed){
+    public Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> trashForUser(final IPostgresTransaction transaction, final Collection<ResourceIdAndVersion> resourceIds, final String userId, final boolean trashed){
         if (resourceIds.isEmpty()) {
             return Future.succeededFuture(new HashMap<>());
         }
-        final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
-        final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(IdAndVersion::getId).collect(Collectors.toSet()));
+        final Tuple tuple = PostgresClient.inTuple(Tuple.of(new JsonObject().put(userId, trashed)), resourceIds.stream().map(ResourceIdAndVersion::getId).collect(Collectors.toSet()));
         final String inPlaceholder = PostgresClient.inPlaceholder(resourceIds, 2);
         final String query = String.format("UPDATE explorer.resources SET trashed_by = trashed_by || $1 WHERE ent_id IN (%s) RETURNING *", inPlaceholder);
-        final Future<RowSet<Row>> future = transaction.addPreparedQuery(query, tuple).onSuccess(rows->{
+        final Future<Map<Integer, FolderExplorerDbSql.FolderTrashResult>> future = transaction.addPreparedQuery(query, tuple).map(rows->{
+            final Map<Integer, FolderExplorerDbSql.FolderTrashResult> mapTrashed = new HashMap<>();
             for(final Row row : rows){
                 final Integer id = row.getInteger("id");
                 final String application = row.getString("application");
@@ -611,8 +611,13 @@ public class ResourceExplorerDbSql {
                         .collect(Collectors.toList());
                 mapTrashed.put(id, new FolderExplorerDbSql.FolderTrashResult(id, parentOpt, application, resource_type, ent_id, trashedBy));
             }
+            return mapTrashed;
         });
-        return future.map(mapTrashed);
+        // delete user/folder link
+        final String queryDelete = String.format("DELETE FROM explorer.folder_resources WHERE user_id = $1 AND resource_id IN (%s)", inPlaceholder);
+        final Tuple tupleDelete = PostgresClient.inTuple(Tuple.of(userId), resourceIds.stream().map(ResourceIdAndVersion::getOpenSearchId).collect(Collectors.toSet()));
+        transaction.addPreparedQuery(queryDelete, tupleDelete);
+        return future;
     }
 
     private Map<Integer, ExplorerMessage> resourcesToMap(final Collection<? extends ExplorerMessage> resources, final RowSet<Row> rows){
@@ -714,6 +719,18 @@ public class ResourceExplorerDbSql {
         public final Integer id;
         public final String entId;
     }
+    public static class ResourceIdAndVersion extends IdAndVersion {
+        private final Integer openSearchId;
+
+        public ResourceIdAndVersion(final Integer id, String entId, long version) {
+            super(entId, version);
+            this.openSearchId = id;
+        }
+
+        public Integer getOpenSearchId() {
+            return openSearchId;
+        }
+    }
 
     private static final String UPSERT_RESOURCE_QUERY = "WITH upserted AS ( " +
             "  INSERT INTO explorer.resources as r (ent_id, name,application,resource_type, resource_unique_id, creator_id, version, muted_by) " +
@@ -733,4 +750,5 @@ public class ResourceExplorerDbSql {
             "       fr.folder_id as folder_id, fr.user_id as user_id, muted_by " +
             "FROM updated " +
             "LEFT JOIN explorer.folder_resources fr ON updated.id=fr.resource_id ";
+
 }
