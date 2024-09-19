@@ -51,6 +51,7 @@ def main():
     apps_config = {
         "blog": "blog",
         "exercizer": "subject",
+        "explorer": "folder",
         "mindmap": "mindmap",
         "scrapbook": "scrapbook",
         "collaborativewall": "collaborativewall"
