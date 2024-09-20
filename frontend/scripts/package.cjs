@@ -28,6 +28,11 @@ function getCorrectVersion(lib) {
       break;
     }
 
+    case "develop-integration": {
+      branch = "develop-integration";
+      break;
+    }
+
     default: {
       branch = 'develop';
       break;
