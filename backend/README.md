@@ -17,7 +17,7 @@ Add this piece of configuration for module infra :
 
 ```json
 {
-  "name": "org.entcore~infra~4.12-develop-pedago-SNAPSHOT",
+  "name": "org.entcore~infra~4.12-develop-integration-SNAPSHOT",
   ...
   "config": {
     ...
