@@ -1,23 +1,12 @@
-import {
-  useLibraryUrl,
-  useOdeClient,
-  useOdeTheme,
-  usePaths,
-} from "@edifice-ui/react";
+import { useLibraryUrl, useOdeTheme, usePaths } from "@edifice-ui/react";
 import { odeServices } from "edifice-ts-client";
 
 export const useLibrary = () => {
-  const { currentLanguage } = useOdeClient();
   const { theme } = useOdeTheme();
   const [imagePath] = usePaths();
   const libraryUrl = useLibraryUrl();
 
-  // #WB2-1689: add end of year Library gif only for FR users
-  const imageFilename =
-    currentLanguage === "fr"
-      ? "image-library-year-end.gif"
-      : "image-library.svg";
-  const imageFullURL = `${imagePath}/${theme?.bootstrapVersion}/${imageFilename}`;
+  const imageFullURL = `${imagePath}/${theme?.bootstrapVersion}/image-library.svg`;
 
   /**
    * Open Library in new tab and Track access (event: ACCESS_LIBRARY_FROM_EXPLORER).
