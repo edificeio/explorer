@@ -1,8 +1,8 @@
-import { useToast } from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+import { useToast } from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
-import { goToExport } from "~/services/api";
-import { useSearchParams, useSelectedResources } from "~/store";
+import { goToExport } from '~/services/api';
+import { useSearchParams, useSelectedResources } from '~/store';
 
 export const useExportModal = (onSuccess: () => void) => {
   const selectedResources = useSelectedResources();
@@ -17,7 +17,7 @@ export const useExportModal = (onSuccess: () => void) => {
       goToExport({ searchParams, assetId: selectedResources[0].assetId });
       onSuccess();
     } else {
-      toast.error(t("explorer.error.noResourceSelected"));
+      toast.error(t('explorer.error.noResourceSelected'));
     }
   };
 

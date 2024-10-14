@@ -1,7 +1,7 @@
-import { forwardRef, type Ref } from "react";
+import { forwardRef, type Ref } from 'react';
 
-import { Button } from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+import { Button } from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
 const LoadMore = forwardRef((_props, ref: Ref<HTMLButtonElement>) => {
   const { t } = useTranslation();
@@ -14,12 +14,12 @@ const LoadMore = forwardRef((_props, ref: Ref<HTMLButtonElement>) => {
         variant="filled"
         // style={{ visibility: "hidden" }}
       >
-        {t("explorer.see.more")}
+        {t('explorer.see.more')}
       </Button>
     </div>
   );
 });
 
-if (import.meta.env.MODE === "dev") LoadMore.displayName = "LoadMore";
+if (import.meta.env.MODE === 'dev') LoadMore.displayName = 'LoadMore';
 
 export default LoadMore;

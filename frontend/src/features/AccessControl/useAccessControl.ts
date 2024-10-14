@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { useUser } from "@edifice-ui/react";
-import { type RightRole, odeServices, IResource } from "edifice-ts-client";
+import { useUser } from '@edifice-ui/react';
+import { type RightRole, odeServices, IResource } from 'edifice-ts-client';
 
-import { useIsTrash } from "~/store";
+import { useIsTrash } from '~/store';
 
 // TODO move it to ode-react-ui with AccessControl
 
@@ -72,7 +72,7 @@ export function useAccessControl({
     if (
       isTrashFolder &&
       (rights as IResource[])[0]?.trashedBy?.includes(user?.userId as string) &&
-      action === "restore" &&
+      action === 'restore' &&
       !(rights as IResource[])[0]?.trashed
     ) {
       setVisible(true);
@@ -82,7 +82,7 @@ export function useAccessControl({
     if (rights instanceof Array) {
       // rights are of type Array
       if (rights.length > 0) {
-        if (typeof rights[0] === "string") {
+        if (typeof rights[0] === 'string') {
           // rights are of type string[]
           await checkRights(rights as string[]);
         } else {
@@ -98,7 +98,7 @@ export function useAccessControl({
       }
     } else {
       // rights are not of type Array
-      if (typeof rights === "string") {
+      if (typeof rights === 'string') {
         await checkRights(rights);
       } else {
         // rights are of type IResource

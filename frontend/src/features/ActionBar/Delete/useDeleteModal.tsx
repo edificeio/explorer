@@ -1,5 +1,5 @@
-import { useDelete, useTrash } from "~/services/queries";
-import { useIsTrash } from "~/store";
+import { useDelete, useTrash } from '~/services/queries';
+import { useIsTrash } from '~/store';
 
 interface ModalProps {
   onSuccess?: () => void;

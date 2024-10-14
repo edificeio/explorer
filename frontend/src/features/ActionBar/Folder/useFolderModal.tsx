@@ -1,10 +1,10 @@
-import { useId } from "react";
+import { useId } from 'react';
 
-import { FOLDER } from "edifice-ts-client";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { FOLDER } from 'edifice-ts-client';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useCreateFolder, useUpdatefolder } from "~/services/queries";
-import { useCurrentFolder, useSelectedFolders } from "~/store";
+import { useCreateFolder, useUpdatefolder } from '~/services/queries';
+import { useCurrentFolder, useSelectedFolders } from '~/store';
 
 interface useFolderModalProps {
   edit: boolean;
@@ -37,8 +37,8 @@ export function useFolderModal({
     setFocus,
     formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<HandlerProps>({
-    mode: "onChange",
-    values: { name: name || "" },
+    mode: 'onChange',
+    values: { name: name || '' },
   });
 
   const id = useId();

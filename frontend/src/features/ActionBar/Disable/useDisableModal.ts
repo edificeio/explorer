@@ -1,4 +1,4 @@
-import { useResourceActionDisable, useStoreActions } from "~/store";
+import { useResourceActionDisable, useStoreActions } from '~/store';
 
 export const useDisableModal = () => {
   const isActionDisableModalOpen = useResourceActionDisable();

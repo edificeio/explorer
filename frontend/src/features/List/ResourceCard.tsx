@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { UniqueIdentifier, useDraggable } from "@dnd-kit/core";
-import { Globe, Users } from "@edifice-ui/icons";
-import { OneProfile } from "@edifice-ui/icons/nav";
+import { UniqueIdentifier, useDraggable } from '@dnd-kit/core';
+import { Globe, Users } from '@edifice-ui/icons';
+import { OneProfile } from '@edifice-ui/icons/nav';
 import {
   AppIcon,
   Avatar,
@@ -10,14 +10,14 @@ import {
   CardProps,
   Image,
   Tooltip,
-} from "@edifice-ui/react";
-import { IResource, IWebApp } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+} from '@edifice-ui/react';
+import { IResource, IWebApp } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
-import { useResourceOrFolderIsDraggable } from "~/store";
-import { DraggableCard } from "./DraggableCard";
+import { useResourceOrFolderIsDraggable } from '~/store';
+import { DraggableCard } from './DraggableCard';
 
-type OmitChildren = Omit<CardProps, "children">;
+type OmitChildren = Omit<CardProps, 'children'>;
 
 export interface ResourceCardProps extends OmitChildren {
   /**
@@ -34,7 +34,7 @@ export interface ResourceCardProps extends OmitChildren {
   time: string;
 }
 
-type PickedResource = Pick<IResource, "rights" | "creatorId">;
+type PickedResource = Pick<IResource, 'rights' | 'creatorId'>;
 
 const ResourceCard = ({
   app,
@@ -60,7 +60,7 @@ const ResourceCard = ({
     id: resource.id as UniqueIdentifier,
     data: {
       id: resource.id,
-      type: "resource",
+      type: 'resource',
     },
   });
 
@@ -71,7 +71,7 @@ const ResourceCard = ({
   const { t } = useTranslation();
 
   const styles = {
-    position: resourceIsDrag ? "absolute" : "relative",
+    position: resourceIsDrag ? 'absolute' : 'relative',
     zIndex: resourceIsDrag ? 2000 : 1,
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
@@ -103,7 +103,7 @@ const ResourceCard = ({
                       alt=""
                       src={`${resource?.thumbnail}?thumbnail=80x80`}
                       objectFit="cover"
-                      className={"h-full w-100"}
+                      className={'h-full w-100'}
                     />
                   ) : (
                     <AppIcon
@@ -125,7 +125,7 @@ const ResourceCard = ({
                 <div className="d-inline-flex align-items-center gap-8 text-truncate">
                   {avatar ? (
                     <Avatar
-                      alt={resource?.creatorName || ""}
+                      alt={resource?.creatorName || ''}
                       size="xs"
                       src={avatar}
                       variant="circle"
@@ -140,7 +140,7 @@ const ResourceCard = ({
                 <div className="d-inline-flex align-items-center gap-8">
                   {isShared && (
                     <Tooltip
-                      message={t("tooltip.shared", { ns: appCode })}
+                      message={t('tooltip.shared', { ns: appCode })}
                       placement="top"
                     >
                       <Users width={16} height={16} />
@@ -148,7 +148,7 @@ const ResourceCard = ({
                   )}
                   {isPublic && (
                     <Tooltip
-                      message={t("tooltip.public", { ns: appCode })}
+                      message={t('tooltip.public', { ns: appCode })}
                       placement="top"
                     >
                       <Globe width={16} height={16} />
@@ -166,6 +166,6 @@ const ResourceCard = ({
   );
 };
 
-ResourceCard.displayName = "ResourceCard";
+ResourceCard.displayName = 'ResourceCard';
 
 export default ResourceCard;

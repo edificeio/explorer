@@ -1,6 +1,6 @@
-import { Modal, Button } from "@edifice-ui/react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Modal, Button } from '@edifice-ui/react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function TrashModal({
   isOpen,
@@ -14,10 +14,10 @@ export default function TrashModal({
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="trash_resource">
       <Modal.Header onModalClose={() => onCancel()}>
-        {t("explorer.trash.modal.title")}
+        {t('explorer.trash.modal.title')}
       </Modal.Header>
       <Modal.Body>
-        <p className="body">{t("explorer.trash.modal.text")}</p>
+        <p className="body">{t('explorer.trash.modal.text')}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -26,10 +26,10 @@ export default function TrashModal({
           type="button"
           variant="outline"
         >
-          {t("close")}
+          {t('close')}
         </Button>
       </Modal.Footer>
     </Modal>,
-    document.getElementById("portal") as HTMLElement,
+    document.getElementById('portal') as HTMLElement,
   );
 }

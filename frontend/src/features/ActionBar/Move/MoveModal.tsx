@@ -1,8 +1,8 @@
-import { Button, Modal, TreeView, useOdeClient } from "@edifice-ui/react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Button, Modal, TreeView, useOdeClient } from '@edifice-ui/react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
-import { useMoveModal } from "./useMoveModal";
+import { useMoveModal } from './useMoveModal';
 
 interface MoveModalProps {
   isOpen: boolean;
@@ -29,15 +29,15 @@ export default function MoveModal({
 
   const data = {
     ...treeData,
-    name: t("explorer.filters.mine", { ns: appCode }),
+    name: t('explorer.filters.mine', { ns: appCode }),
   };
 
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="moveModal">
       <Modal.Header onModalClose={onCancel}>
-        {t("explorer.move.title")}
+        {t('explorer.move.title')}
       </Modal.Header>
-      <Modal.Subtitle>{t("explorer.move.subtitle")}</Modal.Subtitle>
+      <Modal.Subtitle>{t('explorer.move.subtitle')}</Modal.Subtitle>
       <Modal.Body>
         <TreeView
           data={data}
@@ -52,7 +52,7 @@ export default function MoveModal({
           type="button"
           variant="ghost"
         >
-          {t("explorer.cancel")}
+          {t('explorer.cancel')}
         </Button>
         <Button
           color="primary"
@@ -61,10 +61,10 @@ export default function MoveModal({
           variant="filled"
           disabled={disableSubmit}
         >
-          {t("explorer.move")}
+          {t('explorer.move')}
         </Button>
       </Modal.Footer>
     </Modal>,
-    document.getElementById("portal") as HTMLElement,
+    document.getElementById('portal') as HTMLElement,
   );
 }

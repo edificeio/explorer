@@ -1,5 +1,5 @@
-import { EmptyScreen, useOdeClient, usePaths } from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+import { EmptyScreen, useOdeClient, usePaths } from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
 export default function EmptyScreenTrash() {
   const { appCode } = useOdeClient();
@@ -9,9 +9,9 @@ export default function EmptyScreenTrash() {
   return (
     <EmptyScreen
       imageSrc={`${imagePath}/emptyscreen/illu-trash.svg`}
-      imageAlt={t("explorer.emptyScreen.trash.alt")}
-      title={t("explorer.emptyScreen.trash.title")}
-      text={t("explorer.emptyScreen.trash.empty", { ns: appCode })}
+      imageAlt={t('explorer.emptyScreen.trash.alt')}
+      title={t('explorer.emptyScreen.trash.title')}
+      text={t('explorer.emptyScreen.trash.empty', { ns: appCode })}
     />
   );
 }

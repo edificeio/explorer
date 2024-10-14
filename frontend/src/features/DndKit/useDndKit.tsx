@@ -8,15 +8,15 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import { getAncestors, useOdeClient, useToast } from "@edifice-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { DELAY, TOLERANCE } from "~/config";
+} from '@dnd-kit/core';
+import { getAncestors, useOdeClient, useToast } from '@edifice-ui/react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { DELAY, TOLERANCE } from '~/config';
 
-import { useMoveItem } from "~/services/queries";
-import { useStoreActions, useTreeData } from "~/store";
-import { getChildrenIds } from "~/utils/getChildrenIds";
+import { useMoveItem } from '~/services/queries';
+import { useStoreActions, useTreeData } from '~/store';
+import { getChildrenIds } from '~/utils/getChildrenIds';
 
 export default function useDndKit() {
   const queryClient = useQueryClient();
@@ -24,8 +24,8 @@ export default function useDndKit() {
   const toast = useToast();
 
   const { appCode } = useOdeClient();
-  const { t } = useTranslation(["common", appCode]);
-  const rootName: string = t("explorer.filters.mine", {
+  const { t } = useTranslation(['common', appCode]);
+  const rootName: string = t('explorer.filters.mine', {
     ns: appCode,
   });
 
@@ -54,16 +54,16 @@ export default function useDndKit() {
   const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
 
   const notifySuccess = (active: Active, folderName: string) => {
-    if (active.data.current?.type === "resource") {
+    if (active.data.current?.type === 'resource') {
       toast.success(
         <>
-          {t("explorer.dragged.resource")} <strong>{folderName}</strong>
+          {t('explorer.dragged.resource')} <strong>{folderName}</strong>
         </>,
       );
     } else {
       toast.success(
         <>
-          {t("explorer.dragged.folder")} <strong>{folderName}</strong>
+          {t('explorer.dragged.folder')} <strong>{folderName}</strong>
         </>,
       );
     }
@@ -110,9 +110,9 @@ export default function useDndKit() {
     const { active } = event;
     const elementActive = active.data.current;
 
-    if (elementActive?.type === "resource") {
+    if (elementActive?.type === 'resource') {
       setResourceIds([elementActive?.id]);
-    } else if (elementActive?.type === "folder") {
+    } else if (elementActive?.type === 'folder') {
       setFolderIds([elementActive?.id]);
     }
 

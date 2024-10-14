@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-import { Modal, Button, FormControl, Label, Input } from "@edifice-ui/react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Modal, Button, FormControl, Label, Input } from '@edifice-ui/react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
-import { useFolderModal } from "~/features/ActionBar/Folder/useFolderModal";
+import { useFolderModal } from '~/features/ActionBar/Folder/useFolderModal';
 
 interface FolderModalProps {
   isOpen: boolean;
@@ -38,31 +38,31 @@ export default function FolderModal({
 
   useEffect(() => {
     if (isOpen) {
-      setFocus("name");
+      setFocus('name');
     }
   }, [isOpen, setFocus]);
 
   return isOpen
     ? createPortal(
-        <Modal isOpen={isOpen} onModalClose={onCancel} id={"modal_" + formId}>
+        <Modal isOpen={isOpen} onModalClose={onCancel} id={'modal_' + formId}>
           <Modal.Header onModalClose={onCancel}>
-            {t(edit ? "explorer.rename.folder" : "explorer.create.folder")}
+            {t(edit ? 'explorer.rename.folder' : 'explorer.create.folder')}
           </Modal.Header>
           <Modal.Body>
             <form id={formId} onSubmit={handleSubmit(onSubmit)}>
               <FormControl id="nameFolder" isRequired>
-                <Label>{t("explorer.create.folder.name")}</Label>
+                <Label>{t('explorer.create.folder.name')}</Label>
                 <Input
                   type="text"
-                  {...register("name", {
+                  {...register('name', {
                     required: true,
                     maxLength: 60,
                     pattern: {
                       value: /[^ ]/,
-                      message: "invalid title",
+                      message: 'invalid title',
                     },
                   })}
-                  placeholder={t("explorer.create.folder.name")}
+                  placeholder={t('explorer.create.folder.name')}
                   size="md"
                   aria-required={true}
                   maxLength={60}
@@ -77,7 +77,7 @@ export default function FolderModal({
               type="button"
               variant="ghost"
             >
-              {t("explorer.cancel")}
+              {t('explorer.cancel')}
             </Button>
             <Button
               form={formId}
@@ -86,11 +86,11 @@ export default function FolderModal({
               variant="filled"
               disabled={!isDirty || !isValid || isSubmitting}
             >
-              {t(edit ? "explorer.rename" : "explorer.create")}
+              {t(edit ? 'explorer.rename' : 'explorer.create')}
             </Button>
           </Modal.Footer>
         </Modal>,
-        document.getElementById("portal") as HTMLElement,
+        document.getElementById('portal') as HTMLElement,
       )
     : null;
 }

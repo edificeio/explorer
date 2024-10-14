@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { ACTION, type IAction } from "edifice-ts-client";
+import { ACTION, type IAction } from 'edifice-ts-client';
 
-import { goToEdit } from "~/services/api";
-import { useActions, useCopyResource, useRestore } from "~/services/queries";
+import { goToEdit } from '~/services/api';
+import { useActions, useCopyResource, useRestore } from '~/services/queries';
 import {
   useCurrentFolder,
   useFolderIds,
@@ -16,21 +16,21 @@ import {
   useSelectedResources,
   useStoreActions,
   useStoreContext,
-} from "~/store";
+} from '~/store';
 
 type ModalName =
-  | "move"
-  | "delete"
-  | "publish"
-  | "edit_folder"
-  | "edit_resource"
-  | "share"
-  | "export"
-  | "void";
+  | 'move'
+  | 'delete'
+  | 'publish'
+  | 'edit_folder'
+  | 'edit_resource'
+  | 'share'
+  | 'export'
+  | 'void';
 
 export default function useActionBar() {
   const [isActionBarOpen, setIsActionBarOpen] = useState<boolean>(false);
-  const [openedModalName, setOpenedModalName] = useState<ModalName>("void");
+  const [openedModalName, setOpenedModalName] = useState<ModalName>('void');
   const [clickedAction, setClickedAction] = useState<IAction>();
 
   const config = useStoreContext((state) => state.config);
@@ -77,7 +77,7 @@ export default function useActionBar() {
   async function handleClick(action: IAction) {
     // A11Y: fix Screen readers can read parent page content outside the modal
     // https://docs.deque.com/issue-help/1.0.0/en/reading-order-browse-outside-modal
-    document.getElementById("root")?.setAttribute("aria-hidden", "true");
+    document.getElementById('root')?.setAttribute('aria-hidden', 'true');
 
     // A11Y: save clicked action to set focus to clicked button after modal is dismissed
     setClickedAction(action);
@@ -95,25 +95,25 @@ export default function useActionBar() {
       case ACTION.COPY:
         return onCopy();
       case ACTION.MOVE:
-        return setOpenedModalName("move");
+        return setOpenedModalName('move');
       case ACTION.PRINT:
         return printSelectedResource();
       case ACTION.DELETE:
-        return setOpenedModalName("delete");
+        return setOpenedModalName('delete');
       case ACTION.RESTORE:
         return await onRestore();
       case ACTION.PUBLISH:
-        return setOpenedModalName("publish");
+        return setOpenedModalName('publish');
       // TODO fix in ode-ts
       case ACTION.UPD_PROPS:
-      case "edit" as any:
+      case 'edit' as any:
         return onEdit();
       case ACTION.SHARE:
-        return setOpenedModalName("share");
+        return setOpenedModalName('share');
       // case ACTION.MANAGE:
       //   return explorer.onManage();
       case ACTION.EXPORT:
-        return setOpenedModalName("export");
+        return setOpenedModalName('export');
       default:
         throw Error(`Unknown action: ${action.id}`);
     }
@@ -143,11 +143,11 @@ export default function useActionBar() {
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.SHARE:
         return noFolderSelected && onlyOneItemSelected;
-      case "export":
+      case 'export':
         return onlyOneItemSelected && noFolderSelected;
       case ACTION.PRINT:
         return onlyOneItemSelected && noFolderSelected;
-      case "edit" as any:
+      case 'edit' as any:
         return onlyOneSelected;
       default:
         return true;
@@ -160,7 +160,7 @@ export default function useActionBar() {
       if (isTrashFolder) {
         await restoreItem.mutate();
       } else {
-        throw new Error("Cannot restore untrashed resources");
+        throw new Error('Cannot restore untrashed resources');
       }
       onClearActionBar();
     } catch (e) {
@@ -170,7 +170,7 @@ export default function useActionBar() {
   }
 
   function onClearActionBar() {
-    setOpenedModalName("void");
+    setOpenedModalName('void');
     // a11y: set focus to action button after modal is dismissed
     if (clickedAction?.id) {
       document.getElementById(clickedAction?.id)?.focus();
@@ -189,20 +189,20 @@ export default function useActionBar() {
     }
   };
 
-  const onMoveCancel = onFinish("move");
-  const onMoveSuccess = onFinish("move");
-  const onDeleteSuccess = onFinish("delete");
-  const onDeleteCancel = onFinish("delete");
-  const onPublishSuccess = onFinish("publish");
-  const onPublishCancel = onFinish("publish");
-  const onEditFolderSuccess = onFinish("edit_folder");
-  const onEditFolderCancel = onFinish("edit_folder");
-  const onEditResourceSuccess = onFinish("edit_resource");
-  const onEditResourceCancel = onFinish("edit_resource");
-  const onShareResourceSuccess = onFinish("share");
-  const onShareResourceCancel = onFinish("share");
-  const onExportCancel = onFinish("export");
-  const onExportSuccess = onFinish("export");
+  const onMoveCancel = onFinish('move');
+  const onMoveSuccess = onFinish('move');
+  const onDeleteSuccess = onFinish('delete');
+  const onDeleteCancel = onFinish('delete');
+  const onPublishSuccess = onFinish('publish');
+  const onPublishCancel = onFinish('publish');
+  const onEditFolderSuccess = onFinish('edit_folder');
+  const onEditFolderCancel = onFinish('edit_folder');
+  const onEditResourceSuccess = onFinish('edit_resource');
+  const onEditResourceCancel = onFinish('edit_resource');
+  const onShareResourceSuccess = onFinish('share');
+  const onShareResourceCancel = onFinish('share');
+  const onExportCancel = onFinish('export');
+  const onExportSuccess = onFinish('export');
 
   async function onCopy() {
     if (selectedResources && selectedResources.length > 0) {
@@ -216,17 +216,19 @@ export default function useActionBar() {
   function onEdit() {
     if (resourceIds && resourceIds.length > 0) {
       const selectedResource = selectedResources[0].assetId;
-      config?.app == "scrapbook"
-        ? goToEdit({ searchParams, assetId: selectedResource })
-        : setOpenedModalName("edit_resource");
+      if (config?.app === 'scrapbook') {
+        goToEdit({ searchParams, assetId: selectedResource });
+      } else {
+        setOpenedModalName('edit_resource');
+      }
     } else {
-      setOpenedModalName("edit_folder");
+      setOpenedModalName('edit_folder');
     }
   }
 
   function overrideLabel(action: IAction) {
-    if ((action.id as any) === "edit" && folderIds.length > 0) {
-      return "explorer.rename";
+    if ((action.id as any) === 'edit' && folderIds.length > 0) {
+      return 'explorer.rename';
     }
 
     return `explorer.actions.${action.id}`;
@@ -241,25 +243,25 @@ export default function useActionBar() {
     handleClick,
     isActivable: isTrashFolder ? isActivableForTrash : isActivable,
     isActionBarOpen,
-    isMoveModalOpen: openedModalName === "move",
+    isMoveModalOpen: openedModalName === 'move',
     onMoveCancel,
     onMoveSuccess,
-    isDeleteModalOpen: openedModalName === "delete",
+    isDeleteModalOpen: openedModalName === 'delete',
     onDeleteCancel,
     onDeleteSuccess,
-    isPublishModalOpen: openedModalName === "publish",
+    isPublishModalOpen: openedModalName === 'publish',
     onPublishCancel,
     onPublishSuccess,
-    isEditFolderOpen: openedModalName === "edit_folder",
+    isEditFolderOpen: openedModalName === 'edit_folder',
     onEditFolderCancel,
     onEditFolderSuccess,
-    isEditResourceOpen: openedModalName === "edit_resource",
+    isEditResourceOpen: openedModalName === 'edit_resource',
     onEditResourceCancel,
     onEditResourceSuccess,
-    isShareResourceOpen: openedModalName === "share",
+    isShareResourceOpen: openedModalName === 'share',
     onShareResourceCancel,
     onShareResourceSuccess,
-    isExportModalOpen: openedModalName === "export",
+    isExportModalOpen: openedModalName === 'export',
     onExportCancel,
     onExportSuccess,
     onClearActionBar,

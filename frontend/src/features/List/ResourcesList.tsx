@@ -1,11 +1,11 @@
-import React, { useCallback } from "react";
+import React, { useCallback } from 'react';
 
-import { Button, useDate, useOdeClient } from "@edifice-ui/react";
-import { animated, useSpring } from "@react-spring/web";
-import { InfiniteData } from "@tanstack/react-query";
-import clsx from "clsx";
-import { ISearchResults, type ID, type IResource } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+import { Button, useDate, useOdeClient } from '@edifice-ui/react';
+import { animated, useSpring } from '@react-spring/web';
+import { InfiniteData } from '@tanstack/react-query';
+import clsx from 'clsx';
+import { ISearchResults, type ID, type IResource } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
 import {
   useIsTrash,
@@ -13,8 +13,8 @@ import {
   useSearchParams,
   useSelectedResources,
   useStoreActions,
-} from "~/store";
-import ResourceCard from "./ResourceCard";
+} from '~/store';
+import ResourceCard from './ResourceCard';
 
 const ResourcesList = ({
   data,
@@ -85,13 +85,12 @@ const ResourcesList = ({
     setSelectedResources([...selectedResources, resource]);
   }
 
-  const classes = clsx("grid ps-0 list-unstyled");
+  const classes = clsx('grid ps-0 list-unstyled');
 
   return (
     <React.Fragment>
       <animated.ul className={classes}>
         {data?.pages.map((page: { resources: IResource[] }, index: number) => (
-          // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={index}>
             {page.resources.map((resource: IResource) => {
               const { id, updatedAt } = resource;
@@ -103,7 +102,7 @@ const ResourcesList = ({
                   className="g-col-4"
                   key={id}
                   style={{
-                    position: "relative",
+                    position: 'relative',
                     ...springs,
                   }}
                 >
@@ -130,7 +129,7 @@ const ResourcesList = ({
             variant="filled"
             onClick={handleNextPage}
           >
-            {t("explorer.see.more")}
+            {t('explorer.see.more')}
           </Button>
         </div>
       )}

@@ -1,10 +1,10 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect } from 'react';
 
-import { LoadingScreen, useOdeClient, useToast } from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+import { LoadingScreen, useOdeClient, useToast } from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useSearchContext } from "~/services/queries";
+import { useQueryClient } from '@tanstack/react-query';
+import { useSearchContext } from '~/services/queries';
 import {
   useCurrentFolder,
   useIsRoot,
@@ -12,29 +12,29 @@ import {
   useSearchParams,
   useSelectedNodeId,
   useStoreActions,
-} from "~/store";
+} from '~/store';
 
 const EmptyScreenApp = lazy(
-  async () => await import("~/components/EmptyScreens/EmptyScreenApp"),
+  async () => await import('~/components/EmptyScreens/EmptyScreenApp'),
 );
 const EmptyScreenSearch = lazy(
-  async () => await import("~/components/EmptyScreens/EmptyScreenSearch"),
+  async () => await import('~/components/EmptyScreens/EmptyScreenSearch'),
 );
 const EmptyScreenError = lazy(
-  async () => await import("~/components/EmptyScreens/EmptyScreenError"),
+  async () => await import('~/components/EmptyScreens/EmptyScreenError'),
 );
 const EmptyScreenNoContentInFolder = lazy(
   async () =>
-    await import("~/components/EmptyScreens/EmptyScreenNoContentInFolder"),
+    await import('~/components/EmptyScreens/EmptyScreenNoContentInFolder'),
 );
 const EmptyScreenTrash = lazy(
-  async () => await import("~/components/EmptyScreens/EmptyScreenTrash"),
+  async () => await import('~/components/EmptyScreens/EmptyScreenTrash'),
 );
 const FoldersList = lazy(
-  async () => await import("~/features/List/FoldersList"),
+  async () => await import('~/features/List/FoldersList'),
 );
 const ResourcesList = lazy(
-  async () => await import("~/features/List/ResourcesList"),
+  async () => await import('~/features/List/ResourcesList'),
 );
 
 export const List = () => {
@@ -62,7 +62,7 @@ export const List = () => {
         setSearchConfig(data.pages[0].searchConfig);
       }
 
-      if (!searchParams.search && currentFolder.id === "default") {
+      if (!searchParams.search && currentFolder.id === 'default') {
         fetchTreeData(currentFolder.id as string, queryClient);
       }
 
@@ -75,7 +75,7 @@ export const List = () => {
   }, [data]);
 
   useEffect(() => {
-    if (error && typeof error === "string") {
+    if (error && typeof error === 'string') {
       toast.error(t(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

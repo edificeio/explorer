@@ -5,8 +5,8 @@ import {
   type IFilter,
   type IOrder,
   type ResourceType,
-} from "edifice-ts-client";
-import { BlogResourceService } from "~/services/resource/service";
+} from 'edifice-ts-client';
+import { BlogResourceService } from '~/services/resource/service';
 
 export interface AppParams {
   /** Application code */
@@ -32,7 +32,7 @@ export interface AppParams {
 }
 
 const rootElement = document.querySelector<HTMLElement>(
-  "[data-explorer-config]",
+  '[data-explorer-config]',
 );
 
 let config: AppParams;
@@ -53,7 +53,7 @@ export function getExplorerConfig(): AppParams {
       };
     } catch (e) {
       console.error(
-        "[Explorer Config] could not parse app params from root data attributes:",
+        '[Explorer Config] could not parse app params from root data attributes:',
         rootElement?.dataset,
         e,
       );

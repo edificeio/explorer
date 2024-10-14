@@ -1,4 +1,4 @@
-import { useResourceIsTrash, useStoreActions } from "~/store";
+import { useResourceIsTrash, useStoreActions } from '~/store';
 
 export const useTrashModal = () => {
   const isTrashedModalOpen = useResourceIsTrash();

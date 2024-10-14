@@ -1,15 +1,15 @@
-import { useOdeClient, useScrollToTop } from "@edifice-ui/react";
-import { animated, useSpring } from "@react-spring/web";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { ISearchResults, type ID, type IFolder } from "edifice-ts-client";
+import { useOdeClient, useScrollToTop } from '@edifice-ui/react';
+import { animated, useSpring } from '@react-spring/web';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
+import { ISearchResults, type ID, type IFolder } from 'edifice-ts-client';
 
 import {
   useFolderIds,
   useResourceOrFolderIsDraggable,
   useSelectedFolders,
   useStoreActions,
-} from "~/store";
-import FolderCard from "./FolderCard";
+} from '~/store';
+import FolderCard from './FolderCard';
 
 const FoldersList = ({
   data,
@@ -62,10 +62,10 @@ const FoldersList = ({
 
         return (
           <animated.li
-            className={`g-col-4 ${isDrag ? "z-2000" : "z-1"}`}
+            className={`g-col-4 ${isDrag ? 'z-2000' : 'z-1'}`}
             key={id}
             style={{
-              position: "relative",
+              position: 'relative',
               ...springs,
             }}
           >

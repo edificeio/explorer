@@ -1,2 +1,2 @@
-export { default as Explorer } from "./components/Explorer";
-export * from "./config/explorer";
+export { default as Explorer } from './components/Explorer';
+export * from './config/explorer';
