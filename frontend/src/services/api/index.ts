@@ -14,7 +14,7 @@ import {
   IActionParameters,
   GetContextParameters,
   PublishParameters,
-} from "edifice-ts-client";
+} from 'edifice-ts-client';
 
 /**
  * searchContext API
@@ -101,7 +101,7 @@ export const trashAll = async ({
   useAssetIds: boolean;
   folderIds: ID[];
 }) => {
-  const trashParameters: Omit<TrashParameters, "trash"> = {
+  const trashParameters: Omit<TrashParameters, 'trash'> = {
     application: searchParams.application,
     resourceType: searchParams.types[0],
     resourceIds,
@@ -155,7 +155,7 @@ export const restoreAll = async ({
   useAssetIds: boolean;
   folderIds: ID[];
 }) => {
-  const trashParameters: Omit<TrashParameters, "trash"> = {
+  const trashParameters: Omit<TrashParameters, 'trash'> = {
     application: searchParams.application,
     resourceType: searchParams.types[0],
     resourceIds,
@@ -263,7 +263,7 @@ export const goToResource = ({
   const url = odeServices
     .resource(searchParams.application)
     .getViewUrl(assetId);
-  window.open(url, "_self");
+  window.open(url, '_self');
 };
 
 export const createResource = ({
@@ -287,7 +287,7 @@ export const printResource = ({
   const url = odeServices
     .resource(searchParams.application)
     .getPrintUrl(assetId);
-  return window.open(url, "_blank");
+  return window.open(url, '_blank');
 };
 
 export const goToCreate = ({
@@ -300,7 +300,7 @@ export const goToCreate = ({
   const url = odeServices
     .resource(searchParams.application)
     .getFormUrl(folderId);
-  return window.open(url, "_self");
+  return window.open(url, '_self');
 };
 
 export const goToEdit = ({
@@ -314,7 +314,7 @@ export const goToEdit = ({
     .resource(searchParams.application)
     .getEditUrl(assetId);
 
-  return window.open(url, "_self");
+  return window.open(url, '_self');
 };
 
 export const goToExport = ({
@@ -328,7 +328,7 @@ export const goToExport = ({
     .resource(searchParams.application)
     .getExportUrl(assetId);
 
-  return window.open(url, "_self");
+  return window.open(url, '_self');
 };
 
 export const publishResource = async ({

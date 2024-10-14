@@ -1,7 +1,7 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect } from 'react';
 
-import { DndContext } from "@dnd-kit/core";
-import { snapCenterToCursor } from "@dnd-kit/modifiers";
+import { DndContext } from '@dnd-kit/core';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import {
   AppHeader,
   Breadcrumb,
@@ -10,40 +10,40 @@ import {
   isActionAvailable,
   useOdeClient,
   useXitiTrackPageLoad,
-} from "@edifice-ui/react";
-import { IWebApp } from "edifice-ts-client";
+} from '@edifice-ui/react';
+import { IWebApp } from 'edifice-ts-client';
 
-import { AppParams } from "~/config";
-import { useDisableModal } from "~/features/ActionBar/Disable/useDisableModal";
-import { useTrashModal } from "~/features/ActionBar/Trash/useTrashModal";
-import useDndKit from "~/features/DndKit/useDndKit";
-import { List } from "~/features/List/List";
-import { SearchForm } from "~/features/SearchForm/SearchForm";
-import { TreeViewContainer } from "~/features/SideBar/TreeViewContainer";
-import { useActions } from "~/services/queries";
-import { useSearchParams, useStoreActions } from "~/store";
-import { ExplorerBreadcrumb } from "./ExplorerBreadcrumb";
+import { AppParams } from '~/config';
+import { useDisableModal } from '~/features/ActionBar/Disable/useDisableModal';
+import { useTrashModal } from '~/features/ActionBar/Trash/useTrashModal';
+import useDndKit from '~/features/DndKit/useDndKit';
+import { List } from '~/features/List/List';
+import { SearchForm } from '~/features/SearchForm/SearchForm';
+import { TreeViewContainer } from '~/features/SideBar/TreeViewContainer';
+import { useActions } from '~/services/queries';
+import { useSearchParams, useStoreActions } from '~/store';
+import { ExplorerBreadcrumb } from './ExplorerBreadcrumb';
 
 const AppAction = lazy(
-  async () => await import("~/components/AppAction/AppAction"),
+  async () => await import('~/components/AppAction/AppAction'),
 );
 
 const Library = lazy(
-  async () => await import("~/features/SideBar/Library/Library"),
+  async () => await import('~/features/SideBar/Library/Library'),
 );
 
 const ActionBar = lazy(
-  async () => await import("~/features/ActionBar/ActionBarContainer"),
+  async () => await import('~/features/ActionBar/ActionBarContainer'),
 );
 const DisableModal = lazy(
-  async () => await import("~/features/ActionBar/Disable/DisableModal"),
+  async () => await import('~/features/ActionBar/Disable/DisableModal'),
 );
 
 const TrashModal = lazy(
-  async () => await import("~/features/ActionBar/Trash/TrashModal"),
+  async () => await import('~/features/ActionBar/Trash/TrashModal'),
 );
 
-const OnboardingModal = lazy(async () => await import("./OnboardingModal"));
+const OnboardingModal = lazy(async () => await import('./OnboardingModal'));
 
 const Explorer = ({ config }: { config: AppParams }) => {
   const searchParams = useSearchParams();
@@ -68,8 +68,8 @@ const Explorer = ({ config }: { config: AppParams }) => {
 
   useXitiTrackPageLoad();
 
-  const canPublish = isActionAvailable("publish", actions);
-  const canCreate = isActionAvailable("create", actions);
+  const canPublish = isActionAvailable('publish', actions);
+  const canCreate = isActionAvailable('create', actions);
 
   return (
     config && (
@@ -118,26 +118,26 @@ const Explorer = ({ config }: { config: AppParams }) => {
                   id="showOnboardingTrash"
                   items={[
                     {
-                      src: "onboarding/illu-trash-menu.svg",
-                      alt: "explorer.modal.onboarding.trash.screen1.alt",
-                      text: "explorer.modal.onboarding.trash.screen1.title",
+                      src: 'onboarding/illu-trash-menu.svg',
+                      alt: 'explorer.modal.onboarding.trash.screen1.alt',
+                      text: 'explorer.modal.onboarding.trash.screen1.title',
                     },
                     {
-                      src: "onboarding/illu-trash-notif.svg",
-                      alt: "explorer.modal.onboarding.trash.screen2.alt",
-                      text: "explorer.modal.onboarding.trash.screen2.alt",
+                      src: 'onboarding/illu-trash-notif.svg',
+                      alt: 'explorer.modal.onboarding.trash.screen2.alt',
+                      text: 'explorer.modal.onboarding.trash.screen2.alt',
                     },
                     {
-                      src: "onboarding/illu-trash-delete.svg",
-                      alt: "explorer.modal.onboarding.trash.screen3.alt",
-                      text: "explorer.modal.onboarding.trash.screen3.title",
+                      src: 'onboarding/illu-trash-delete.svg',
+                      alt: 'explorer.modal.onboarding.trash.screen3.alt',
+                      text: 'explorer.modal.onboarding.trash.screen3.title',
                     },
                   ]}
                   modalOptions={{
-                    title: "explorer.modal.onboarding.trash.title",
-                    prevText: "explorer.modal.onboarding.trash.prev",
-                    nextText: "explorer.modal.onboarding.trash.next",
-                    closeText: "explorer.modal.onboarding.trash.close",
+                    title: 'explorer.modal.onboarding.trash.title',
+                    prevText: 'explorer.modal.onboarding.trash.prev',
+                    nextText: 'explorer.modal.onboarding.trash.next',
+                    closeText: 'explorer.modal.onboarding.trash.close',
                   }}
                 />
               )}

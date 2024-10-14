@@ -1,6 +1,6 @@
-import { Modal, Button } from "@edifice-ui/react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Modal, Button } from '@edifice-ui/react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function DisableModal({
   isOpen,
@@ -18,10 +18,10 @@ export default function DisableModal({
       id="trash_action_disable_resource"
     >
       <Modal.Header onModalClose={() => onCancel()}>
-        {t("explorer.trash.action.modal.title")}
+        {t('explorer.trash.action.modal.title')}
       </Modal.Header>
       <Modal.Body>
-        <p className="body">{t("explorer.trash.action.modal.text")}</p>
+        <p className="body">{t('explorer.trash.action.modal.text')}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -30,10 +30,10 @@ export default function DisableModal({
           type="button"
           variant="outline"
         >
-          {t("close")}
+          {t('close')}
         </Button>
       </Modal.Footer>
     </Modal>,
-    document.getElementById("portal") as HTMLElement,
+    document.getElementById('portal') as HTMLElement,
   );
 }

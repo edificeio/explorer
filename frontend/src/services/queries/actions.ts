@@ -1,8 +1,8 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
-import { IAction } from "edifice-ts-client";
-import { AppParams } from "~/config";
-import { useStoreContext } from "~/store";
-import { sessionHasWorkflowRights } from "../api";
+import { queryOptions, useQuery } from '@tanstack/react-query';
+import { IAction } from 'edifice-ts-client';
+import { AppParams } from '~/config';
+import { useStoreContext } from '~/store';
+import { sessionHasWorkflowRights } from '../api';
 
 /**
  * actionsQueryOptions: check action availability depending on workflow right

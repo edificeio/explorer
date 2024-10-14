@@ -1,15 +1,15 @@
-import { type ReactElement, type ReactNode } from "react";
+import { type ReactElement, type ReactNode } from 'react';
 
-import { Button } from "@edifice-ui/react";
-import { IAction, RightRole } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+import { Button } from '@edifice-ui/react';
+import { IAction, RightRole } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
 import {
   IObjectWithRights,
   useAccessControl,
-} from "~/features/AccessControl/useAccessControl";
-import useActionBar from "~/features/ActionBar/useActionBar";
-import { useIsTrash, useStoreActions } from "~/store";
+} from '~/features/AccessControl/useAccessControl';
+import useActionBar from '~/features/ActionBar/useActionBar';
+import { useIsTrash, useStoreActions } from '~/store';
 
 // TODO move it to ode-react-ui with useAccessControl
 

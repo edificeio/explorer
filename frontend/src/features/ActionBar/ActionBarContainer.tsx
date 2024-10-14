@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense } from 'react';
 
 import {
   ActionBar,
@@ -9,33 +9,33 @@ import {
   ShareBlog,
   ShareModal,
   useOdeClient,
-} from "@edifice-ui/react";
-import { animated, useTransition } from "@react-spring/web";
-import { type IAction } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+} from '@edifice-ui/react';
+import { animated, useTransition } from '@react-spring/web';
+import { type IAction } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
 // import ShareBlog from "~/components/ShareModal/apps/ShareBlog";
-import { AccessControl } from "~/features/AccessControl/AccessControl";
-import useActionBar from "~/features/ActionBar/useActionBar";
-import { useShareResource, useUpdateResource } from "~/services/queries";
-import { useSelectedResources } from "~/store";
+import { AccessControl } from '~/features/AccessControl/AccessControl';
+import useActionBar from '~/features/ActionBar/useActionBar';
+import { useShareResource, useUpdateResource } from '~/services/queries';
+import { useSelectedResources } from '~/store';
 
 /* const ShareModal = lazy(
   async () => await import("~/features/ActionBar/Share/ShareModal"),
 ); */
 
 const PublishModal = lazy(
-  async () => await import("~/features/ActionBar/Publish/PublishModal"),
+  async () => await import('~/features/ActionBar/Publish/PublishModal'),
 );
 
 const UpdateModal = lazy(
-  async () => await import("~/features/ActionBar/Resource/ResourceModal"),
+  async () => await import('~/features/ActionBar/Resource/ResourceModal'),
 );
 
-const DeleteModal = lazy(async () => await import("./Delete/DeleteModal"));
-const MoveModal = lazy(async () => await import("./Move/MoveModal"));
-const FolderModal = lazy(async () => await import("./Folder/FolderModal"));
-const ExportModal = lazy(async () => await import("./Export/ExportModal"));
+const DeleteModal = lazy(async () => await import('./Delete/DeleteModal'));
+const MoveModal = lazy(async () => await import('./Move/MoveModal'));
+const FolderModal = lazy(async () => await import('./Folder/FolderModal'));
+const ExportModal = lazy(async () => await import('./Export/ExportModal'));
 
 export default function ActionBarContainer() {
   const { appCode } = useOdeClient();
@@ -78,9 +78,9 @@ export default function ActionBarContainer() {
   const updateResource = useUpdateResource(appCode);
 
   const transition = useTransition(isActionBarOpen, {
-    from: { opacity: 0, transform: "translateY(100%)" },
-    enter: { opacity: 1, transform: "translateY(0)" },
-    leave: { opacity: 0, transform: "translateY(100%)" },
+    from: { opacity: 0, transform: 'translateY(100%)' },
+    enter: { opacity: 1, transform: 'translateY(0)' },
+    leave: { opacity: 0, transform: 'translateY(100%)' },
   });
 
   return (
@@ -96,7 +96,7 @@ export default function ActionBarContainer() {
                 {actions
                   ?.filter(
                     (action: IAction) =>
-                      action.available && action.target === "actionbar",
+                      action.available && action.target === 'actionbar',
                   )
                   .map((action: IAction) => {
                     return (
@@ -170,8 +170,8 @@ export default function ActionBarContainer() {
             onSuccess={onEditResourceSuccess}
           >
             {(resource, isUpdating, watch, setValue, register) =>
-              appCode === "blog" &&
-              isActionAvailable("createPublic", actions) && (
+              appCode === 'blog' &&
+              isActionAvailable('createPublic', actions) && (
                 <BlogPublic
                   appCode={appCode}
                   isUpdating={isUpdating}
@@ -196,7 +196,7 @@ export default function ActionBarContainer() {
             onCancel={onShareResourceCancel}
             onSuccess={onShareResourceSuccess}
           >
-            {appCode === "blog" ? (
+            {appCode === 'blog' ? (
               <ShareBlog
                 resourceId={selectedResource.assetId}
                 updateResource={updateResource}

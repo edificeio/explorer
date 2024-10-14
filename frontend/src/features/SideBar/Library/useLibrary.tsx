@@ -1,5 +1,5 @@
-import { useLibraryUrl, useOdeTheme, usePaths } from "@edifice-ui/react";
-import { odeServices } from "edifice-ts-client";
+import { useLibraryUrl, useOdeTheme, usePaths } from '@edifice-ui/react';
+import { odeServices } from 'edifice-ts-client';
 
 export const useLibrary = () => {
   const { theme } = useOdeTheme();
@@ -14,7 +14,7 @@ export const useLibrary = () => {
    */
   const handleClick = () => {
     if (libraryUrl) {
-      window.open(libraryUrl, "_blank");
+      window.open(libraryUrl, '_blank');
       odeServices.data().trackAccessLibraryFromExplorer();
     }
   };

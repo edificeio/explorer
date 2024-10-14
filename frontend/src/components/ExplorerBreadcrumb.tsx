@@ -1,28 +1,28 @@
-import { ArrowLeft } from "@edifice-ui/icons";
-import { IconButton, useOdeClient } from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+import { ArrowLeft } from '@edifice-ui/icons';
+import { IconButton, useOdeClient } from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
-import { useSearchForm } from "~/features/SearchForm/useSearchForm";
+import { useSearchForm } from '~/features/SearchForm/useSearchForm';
 import {
   useCurrentFolder,
   useIsTrash,
   useSelectedNodeId,
   useStoreActions,
-} from "~/store";
+} from '~/store';
 
 export function ExplorerBreadcrumb() {
   const { appCode } = useOdeClient();
   const { gotoPreviousFolder } = useStoreActions();
-  const { t } = useTranslation(["common", appCode]);
+  const { t } = useTranslation(['common', appCode]);
   const { inputSearch } = useSearchForm();
 
   const selectedNodeId = useSelectedNodeId();
   const isTrashFolder = useIsTrash();
   const currentFolder = useCurrentFolder();
 
-  const trashName: string = t("explorer.tree.trash");
-  const searchName: string = t("explorer.tree.search");
-  const rootName: string = t("explorer.filters.mine", {
+  const trashName: string = t('explorer.tree.trash');
+  const searchName: string = t('explorer.tree.search');
+  const rootName: string = t('explorer.filters.mine', {
     ns: appCode,
   });
   const previousName: string = currentFolder?.name || rootName;
@@ -30,15 +30,15 @@ export function ExplorerBreadcrumb() {
   return (
     <div className="py-16">
       {selectedNodeId &&
-      selectedNodeId !== "bin" &&
-      selectedNodeId !== "default" &&
+      selectedNodeId !== 'bin' &&
+      selectedNodeId !== 'default' &&
       !isTrashFolder ? (
         <div className="d-flex align-items-center gap-8">
           <IconButton
             icon={<ArrowLeft />}
             variant="ghost"
             color="tertiary"
-            aria-label={t("back")}
+            aria-label={t('back')}
             className="ms-n16"
             onClick={gotoPreviousFolder}
           />

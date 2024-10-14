@@ -1,8 +1,8 @@
-import { Alert, Button, Modal } from "@edifice-ui/react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Alert, Button, Modal } from '@edifice-ui/react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
-import { useExportModal } from "./useExportModal";
+import { useExportModal } from './useExportModal';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -24,15 +24,15 @@ export default function ExportModal({
   return createPortal(
     <Modal isOpen={isOpen} onModalClose={onCancel} id="exportModal">
       <Modal.Header onModalClose={onCancel}>
-        {t("explorer.export.title")}
+        {t('explorer.export.title')}
       </Modal.Header>
       <Modal.Body>
         <ul>
-          <li>{t("explorer.export.body.info.1")}</li>
-          <li>{t("explorer.export.body.info.2")}</li>
-          <li>{t("explorer.export.body.info.3")}</li>
+          <li>{t('explorer.export.body.info.1')}</li>
+          <li>{t('explorer.export.body.info.2')}</li>
+          <li>{t('explorer.export.body.info.3')}</li>
         </ul>
-        <Alert type="warning">{t("explorer.export.body.warning")}</Alert>
+        <Alert type="warning">{t('explorer.export.body.warning')}</Alert>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -41,7 +41,7 @@ export default function ExportModal({
           type="button"
           variant="ghost"
         >
-          {t("explorer.cancel")}
+          {t('explorer.cancel')}
         </Button>
         <Button
           color="primary"
@@ -49,10 +49,10 @@ export default function ExportModal({
           type="button"
           variant="filled"
         >
-          {t("explorer.actions.export")}
+          {t('explorer.actions.export')}
         </Button>
       </Modal.Footer>
     </Modal>,
-    document.getElementById("portal") as HTMLElement,
+    document.getElementById('portal') as HTMLElement,
   );
 }

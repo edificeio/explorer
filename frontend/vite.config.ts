@@ -1,31 +1,14 @@
-import react from "@vitejs/plugin-react";
-import { resolve } from "node:path";
-import { BuildOptions, defineConfig, loadEnv, Plugin } from "vite";
-import dts from "vite-plugin-dts";
-import tsconfigPaths from "vite-tsconfig-paths";
+import react from '@vitejs/plugin-react';
+import { resolve } from 'node:path';
+import { BuildOptions, defineConfig, loadEnv } from 'vite';
+import dts from 'vite-plugin-dts';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
-import { createHash } from "node:crypto";
-import { dependencies } from "./package.json";
-
-const hash = createHash("md5")
-  .update(Date.now().toString())
-  .digest("hex")
-  .substring(0, 8);
-
-const queryHashVersion = `v=${hash}`;
-
-function hashEdificeBootstrap(): Plugin {
-  return {
-    name: "vite-plugin-edifice",
-    apply: "build",
-    transformIndexHtml(html) {
-      return html.replace(
-        "/assets/themes/edifice-bootstrap/index.css",
-        `/assets/themes/edifice-bootstrap/index.css?${queryHashVersion}`,
-      );
-    },
-  };
-}
+import { dependencies } from './package.json';
+import {
+  hashEdificeBootstrap,
+  queryHashVersion,
+} from './plugins/vite-plugin-edifice';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -34,17 +17,17 @@ export default ({ mode }: { mode: string }) => {
   const envs = { ...process.env, ...envFile };
   const hasEnvFile = Object.keys(envFile).length;
 
-  const isProduction = mode === "production";
-  const isLibMode = mode === "lib";
+  const isProduction = mode === 'production';
+  const isLibMode = mode === 'lib';
 
   // Proxy variables
   const headers = hasEnvFile
     ? {
-        "set-cookie": [
+        'set-cookie': [
           `oneSessionId=${envs.VITE_ONE_SESSION_ID}`,
           `XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
         ],
-        "Cache-Control": "public, max-age=300",
+        'Cache-Control': 'public, max-age=300',
       }
     : {};
 
@@ -57,32 +40,32 @@ export default ({ mode }: { mode: string }) => {
         },
       }
     : {
-        target: envs.VITE_LOCALHOST || "http://localhost:8090",
+        target: envs.VITE_LOCALHOST || 'http://localhost:8090',
         changeOrigin: false,
       };
 
   const proxy = {
-    "/applications-list": proxyObj,
-    "/conf/public": proxyObj,
-    "^/(?=help-1d|help-2d)": proxyObj,
-    "^/(?=assets|theme|locale|i18n|skin)": proxyObj,
-    "^/(?=archive|auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)":
+    '/applications-list': proxyObj,
+    '/conf/public': proxyObj,
+    '^/(?=help-1d|help-2d)': proxyObj,
+    '^/(?=assets|theme|locale|i18n|skin)': proxyObj,
+    '^/(?=archive|auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)':
       proxyObj,
-    "^/(?=blog|mindmap|scrapbook|collaborativewall)": proxyObj,
-    "/xiti": proxyObj,
-    "/analyticsConf": proxyObj,
-    "/explorer": proxyObj,
+    '^/(?=blog|mindmap|scrapbook|collaborativewall)': proxyObj,
+    '/xiti': proxyObj,
+    '/analyticsConf': proxyObj,
+    '/explorer': proxyObj,
   };
 
   const build: BuildOptions = {
-    assetsDir: "assets/js/ode-explorer/",
+    assetsDir: 'assets/js/ode-explorer/',
     cssCodeSplit: false,
     rollupOptions: {
-      external: ["edifice-ts-client"],
+      external: ['edifice-ts-client'],
       output: {
         inlineDynamicImports: true,
         paths: {
-          "edifice-ts-client": `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
+          'edifice-ts-client': `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
         },
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
@@ -92,20 +75,20 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const buildLib: BuildOptions = {
-    outDir: "lib",
+    outDir: 'lib',
     lib: {
       entry: {
-        index: resolve(__dirname, "src/index.ts"),
+        index: resolve(__dirname, 'src/index.ts'),
       },
-      formats: ["es"],
+      formats: ['es'],
     },
     rollupOptions: {
       treeshake: true,
       external: [
         ...Object.keys(dependencies || {}),
-        "react/jsx-runtime",
-        "edifice-ts-client",
-        "@edifice-ui/icons/nav",
+        'react/jsx-runtime',
+        'edifice-ts-client',
+        '@edifice-ui/icons/nav',
       ],
       output: {
         entryFileNames: `[name].js`,
@@ -119,25 +102,27 @@ export default ({ mode }: { mode: string }) => {
     isLibMode
       ? {
           babel: {
-            plugins: ["@babel/plugin-transform-react-pure-annotations"],
+            plugins: ['@babel/plugin-transform-react-pure-annotations'],
           },
         }
       : {},
   );
 
-  const dtsPlugin = isLibMode && dts();
+  const dtsPlugin = isLibMode && dts({ tsconfigPath: './tsconfig.app.json' });
 
   const plugins = [
     reactPlugin,
     dtsPlugin,
     tsconfigPaths(),
-    hashEdificeBootstrap(),
+    hashEdificeBootstrap({
+      hash: queryHashVersion,
+    }),
   ];
 
   const server = {
     proxy,
-    host: "0.0.0.0",
-    port: 3000,
+    host: 'localhost',
+    port: 4200,
     headers,
   };
 

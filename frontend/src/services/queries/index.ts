@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import {
   addNode,
   deleteNode,
@@ -9,7 +8,7 @@ import {
   useToast,
   useUpdateMutation,
   useUser,
-} from "@edifice-ui/react";
+} from '@edifice-ui/react';
 import {
   UseMutationOptions,
   UseMutationResult,
@@ -17,7 +16,7 @@ import {
   useMutation,
   useQueryClient,
   type InfiniteData,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 import {
   App,
   CreateParameters,
@@ -30,8 +29,8 @@ import {
   type IResource,
   type ISearchResults,
   type ShareRight,
-} from "edifice-ts-client";
-import { t } from "i18next";
+} from 'edifice-ts-client';
+import { t } from 'i18next';
 
 import {
   copyResource,
@@ -43,7 +42,7 @@ import {
   searchContext,
   trashAll,
   updateFolder,
-} from "~/services/api";
+} from '~/services/api';
 import {
   useCurrentFolder,
   useFolderIds,
@@ -54,9 +53,9 @@ import {
   useStoreActions,
   useStoreContext,
   useTreeData,
-} from "~/store";
+} from '~/store';
 
-export * from "./actions";
+export * from './actions';
 
 /**
  * useSearchContext query
@@ -69,7 +68,7 @@ export const useSearchContext = () => {
   const { filters, trashed, search } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -120,7 +119,7 @@ export const useTrash = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -132,14 +131,14 @@ export const useTrash = () => {
     mutationFn: async () =>
       await trashAll({ searchParams, folderIds, resourceIds, useAssetIds }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async (data) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       if (previousData) {
-        toast.success(t("explorer.trash.title"));
+        toast.success(t('explorer.trash.title'));
 
         return queryClient.setQueryData<
           InfiniteData<ISearchResults> | undefined
@@ -219,7 +218,7 @@ export const useRestore = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -231,14 +230,14 @@ export const useRestore = () => {
     mutationFn: async () =>
       await restoreAll({ searchParams, folderIds, resourceIds, useAssetIds }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       if (previousData) {
-        toast.success(t("explorer.trash.toast"));
+        toast.success(t('explorer.trash.toast'));
 
         return queryClient.setQueryData<
           InfiniteData<ISearchResults> | undefined
@@ -293,7 +292,7 @@ export const useDelete = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -305,14 +304,14 @@ export const useDelete = () => {
     mutationFn: async () =>
       await deleteAll({ searchParams, folderIds, resourceIds, useAssetIds }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
 
       if (previousData) {
-        toast.success(t("explorer.removed.from.trash"));
+        toast.success(t('explorer.removed.from.trash'));
 
         return queryClient.setQueryData<
           InfiniteData<ISearchResults> | undefined
@@ -362,10 +361,10 @@ export const useCopyResource = () => {
   const currentFolder = useCurrentFolder();
 
   const { filters, trashed } = searchParams;
-  const TOAST_INFO_ID = "duplicate_start";
+  const TOAST_INFO_ID = 'duplicate_start';
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -375,29 +374,29 @@ export const useCopyResource = () => {
 
   return useMutation({
     mutationFn: async (resource: IResource) => {
-      toast.info(t("duplicate.start"), {
+      toast.info(t('duplicate.start'), {
         id: TOAST_INFO_ID,
       });
       return await copyResource(searchParams, resource.assetId);
     },
     onSuccess: async (data, variables) => {
       toast.remove(TOAST_INFO_ID);
-      toast.success(t("duplicate.done"));
+      toast.success(t('duplicate.done'));
 
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
       const newResource: IResource = {
         ...variables,
-        name: `${variables.name}${t("duplicate.suffix")}`,
+        name: `${variables.name}${t('duplicate.suffix')}`,
         assetId: data.duplicateId,
         id: data.duplicateId,
         creatorId: user?.userId as string,
         creatorName: user?.username as string,
         createdAt: Date.now() as unknown as string,
-        slug: variables.slug || "",
+        slug: variables.slug || '',
         modifiedAt: Date.now() as unknown as string,
-        modifierId: user?.userId || "",
-        modifierName: user?.username || "",
+        modifierId: user?.userId || '',
+        modifierName: user?.username || '',
         updatedAt: Date.now() as unknown as string,
         trashed: false,
         rights: [`creator:${user?.userId}`],
@@ -437,8 +436,8 @@ export const useCopyResource = () => {
     },
     onError: (error) => {
       toast.remove(TOAST_INFO_ID);
-      if (typeof error === "string") {
-        toast.error(`${t("duplicate.error")}: ${error}`);
+      if (typeof error === 'string') {
+        toast.error(`${t('duplicate.error')}: ${error}`);
       }
     },
   });
@@ -461,7 +460,7 @@ export const useMoveItem = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -479,7 +478,7 @@ export const useMoveItem = () => {
         useAssetIds,
       }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async (data, variables) => {
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
@@ -553,7 +552,7 @@ export const useCreateFolder = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -570,7 +569,7 @@ export const useCreateFolder = () => {
       parentId: string;
     }) => await createFolder({ searchParams, name, parentId }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
@@ -623,7 +622,7 @@ export const useUpdatefolder = () => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -642,7 +641,7 @@ export const useUpdatefolder = () => {
       parentId: string;
     }) => await updateFolder({ searchParams, folderId, parentId, name }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
@@ -701,7 +700,7 @@ export const useShareResource = (application: string) => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -776,7 +775,7 @@ export const useUpdateResource = (application: string) => {
   const { filters, trashed } = searchParams;
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: filters.folder,
       filters,
@@ -816,7 +815,7 @@ export const useUpdateResource = (application: string) => {
                           ...others, // add any custom field
                           name,
                           thumbnail:
-                            typeof thumbnail === "string"
+                            typeof thumbnail === 'string'
                               ? thumbnail
                               : URL.createObjectURL(
                                   thumbnail as Blob | MediaSource,
@@ -860,7 +859,7 @@ export const useCreateResource = () => {
   const { appCode: application } = useOdeClient();
 
   const queryKey = [
-    "context",
+    'context',
     {
       folderId: searchParams.filters.folder,
       filters: searchParams.filters,
@@ -872,24 +871,24 @@ export const useCreateResource = () => {
     mutationFn: async (params: CreateParameters) =>
       await createResource({ searchParams, params }),
     onError(error) {
-      if (typeof error === "string") toast.error(t(error));
+      if (typeof error === 'string') toast.error(t(error));
     },
     onSuccess: async (data, variables) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData<ISearchResults>(queryKey);
       const newResource: IResource = {
         ...variables,
-        thumbnail: data.thumbnail || "",
+        thumbnail: data.thumbnail || '',
         application,
-        assetId: data._id || data.entId || "",
-        id: data._id || data.entId || "",
+        assetId: data._id || data.entId || '',
+        id: data._id || data.entId || '',
         creatorId: user?.userId as string,
         creatorName: user?.username as string,
         createdAt: Date.now() as unknown as string,
-        slug: variables.slug || "",
-        modifiedAt: data.modified?.$date || "",
-        modifierId: data.author?.userId || "",
-        modifierName: data.author?.username || "",
+        slug: variables.slug || '',
+        modifiedAt: data.modified?.$date || '',
+        modifierId: data.author?.userId || '',
+        modifierName: data.author?.username || '',
         updatedAt: Date.now() as unknown as string,
         trashed: false,
         rights: [`creator:${user?.userId}`],

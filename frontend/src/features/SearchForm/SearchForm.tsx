@@ -1,17 +1,17 @@
-import { Fragment } from "react";
+import { Fragment } from 'react';
 
-import { Filter } from "@edifice-ui/icons";
+import { Filter } from '@edifice-ui/icons';
 import {
   Dropdown,
   FormControl,
   Input,
   SearchButton,
   useOdeClient,
-} from "@edifice-ui/react";
-import { useTranslation } from "react-i18next";
+} from '@edifice-ui/react';
+import { useTranslation } from 'react-i18next';
 
-import { useSearchForm } from "./useSearchForm";
-import { useSelectedFilters } from "./useSelectedFilters";
+import { useSearchForm } from './useSearchForm';
+import { useSelectedFilters } from './useSelectedFilters';
 
 export const SearchForm = () => {
   const { appCode } = useOdeClient();
@@ -39,7 +39,7 @@ export const SearchForm = () => {
       <FormControl id="search" className="input-group">
         <Input
           type="search"
-          placeholder={t("explorer.label.search", { ns: appCode })}
+          placeholder={t('explorer.label.search', { ns: appCode })}
           size="lg"
           noValidationIcon
           value={inputSearch}
@@ -48,20 +48,20 @@ export const SearchForm = () => {
         />
         <SearchButton
           type="submit"
-          aria-label={t("explorer.label.search", { ns: appCode })}
+          aria-label={t('explorer.label.search', { ns: appCode })}
           onClick={handleSearchSubmit}
         />
       </FormControl>
       <Dropdown placement="bottom-end">
         <Dropdown.Trigger
-          label={t("explorer.filters")}
+          label={t('explorer.filters')}
           icon={<Filter width={20} />}
           variant="ghost"
           badgeContent={count}
         />
         <Dropdown.Menu>
           {options.map((option) => {
-            if (option.value === "0") {
+            if (option.value === '0') {
               return (
                 <Fragment key="0">
                   <Dropdown.RadioItem

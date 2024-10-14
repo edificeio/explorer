@@ -1,3 +1,3 @@
-import { PublishModal } from "@edifice-ui/react";
+import { PublishModal } from '@edifice-ui/react';
 
 export default PublishModal;

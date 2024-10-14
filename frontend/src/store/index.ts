@@ -3,8 +3,8 @@ import {
   findParentNode,
   wrapTreeNode,
   type TreeData,
-} from "@edifice-ui/react";
-import { type QueryClient } from "@tanstack/react-query";
+} from '@edifice-ui/react';
+import { type QueryClient } from '@tanstack/react-query';
 import {
   FOLDER,
   SORT_ORDER,
@@ -13,12 +13,12 @@ import {
   type IFolder,
   type IResource,
   type ISearchParameters,
-} from "edifice-ts-client";
-import { t } from "i18next";
-import { createStore, useStore } from "zustand";
-import { AppParams } from "~/config";
+} from 'edifice-ts-client';
+import { t } from 'i18next';
+import { createStore, useStore } from 'zustand';
+import { AppParams } from '~/config';
 
-import { goToResource, printResource, searchContext } from "~/services/api";
+import { goToResource, printResource, searchContext } from '~/services/api';
 
 export type ExtractState<S> = S extends {
   getState: () => infer T;
@@ -102,7 +102,7 @@ type Action = {
 
 const defaultFolder = {
   id: FOLDER.DEFAULT,
-  name: t("explorer.filters.mine"),
+  name: t('explorer.filters.mine'),
   section: true,
   children: [],
 };
@@ -118,7 +118,7 @@ const initialState = {
       public: undefined,
     },
     orders: { updatedAt: SORT_ORDER.DESC },
-    application: "",
+    application: '',
     types: [],
     pagination: {
       startIdx: 0,
@@ -128,9 +128,9 @@ const initialState = {
     trashed: false,
   },
   treeData: defaultFolder,
-  selectedNodeId: "default",
+  selectedNodeId: 'default',
   currentFolder: {
-    id: "default",
+    id: 'default',
   },
   selectedFolders: [],
   selectedResources: [],
@@ -190,10 +190,10 @@ const store = createStore<State & Action>()((set, get) => ({
             return {
               ...state,
               selectedFolders: [],
-              selectedNodeId: "default",
+              selectedNodeId: 'default',
               selectedResources: [],
               currentFolder: {
-                id: "default",
+                id: 'default',
               },
               searchParams: {
                 ...previousSearchParams,
@@ -235,21 +235,21 @@ const store = createStore<State & Action>()((set, get) => ({
         const { searchParams } = get();
         goToResource({ searchParams, assetId: resource.assetId });
       } catch (error) {
-        console.error("explorer open failed: ", error);
+        console.error('explorer open failed: ', error);
       }
     },
     printSelectedResource: () => {
       try {
         const { searchParams, selectedResources, resourceIds } = get();
         if (selectedResources.length !== 1) {
-          throw new Error("Cannot open more than 1 resource");
+          throw new Error('Cannot open more than 1 resource');
         }
         const item = selectedResources.find(
           (resource: IResource) => resource.id === resourceIds[0],
         )!;
         printResource({ searchParams, assetId: item.assetId });
       } catch (error) {
-        console.error("explorer print failed: ", error);
+        console.error('explorer print failed: ', error);
       }
     },
     openFolder: ({
@@ -294,7 +294,7 @@ const store = createStore<State & Action>()((set, get) => ({
         };
       });
     },
-    foldTreeItem: () => set((state) => ({ ...state, status: "fold" })),
+    foldTreeItem: () => set((state) => ({ ...state, status: 'fold' })),
     fetchTreeData: async (nodeId: string, queryClient: QueryClient) => {
       const folder = findNodeById(get().treeData, nodeId);
       const folderId = folder?.id as string;
@@ -303,7 +303,7 @@ const store = createStore<State & Action>()((set, get) => ({
 
       const getQueryData = await queryClient.fetchQuery({
         queryKey: [
-          "prefetchContext",
+          'prefetchContext',
           {
             folderId,
             trashed: false,
@@ -341,7 +341,7 @@ const store = createStore<State & Action>()((set, get) => ({
           ...state.searchParams,
           search: undefined,
         },
-        status: "select",
+        status: 'select',
         selectedResources: [],
       }));
 
@@ -377,7 +377,7 @@ const store = createStore<State & Action>()((set, get) => ({
         selectedResources: [],
         resourceIds: [],
         folderIds: [],
-        status: "select",
+        status: 'select',
         searchParams: {
           ...state.searchParams,
           search: undefined,
@@ -465,7 +465,7 @@ export const useResourceActionDisable = () => {
 
 export const useIsRoot = () => {
   const currentFolder = useCurrentFolder();
-  return currentFolder?.id === "default";
+  return currentFolder?.id === 'default';
 };
 
 export const useTreeStatus = () => useStoreContext((state) => state.status);

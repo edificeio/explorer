@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 
 import {
   useSearchConfig,
   useSearchParams,
   useStoreActions,
   useTreeStatus,
-} from "~/store";
+} from '~/store';
 
 export const useSearchForm = () => {
   const searchParams = useSearchParams();
-  const [inputSearch, setInputSearch] = useState<string>("");
+  const [inputSearch, setInputSearch] = useState<string>('');
   // const debounceInputSearch = useDebounce<string>(inputSearch, 500);
   const searchConfig = useSearchConfig();
   const status = useTreeStatus();
@@ -27,7 +27,7 @@ export const useSearchForm = () => {
   };
 
   const handleKeyPress = (event: React.KeyboardEvent): void => {
-    if (event.key === "Enter" || event.key === "Return") {
+    if (event.key === 'Enter' || event.key === 'Return') {
       event.preventDefault();
       setSearchParams({
         search: inputSearch ? inputSearch : undefined,
@@ -60,11 +60,11 @@ export const useSearchForm = () => {
   }, [inputSearch, searchConfig.minLength]);
 
   useEffect(() => {
-    if (status === "select") setInputSearch("");
+    if (status === 'select') setInputSearch('');
   }, [status]);
 
   useEffect(() => {
-    setInputSearch(() => searchParams.search?.toString() ?? "");
+    setInputSearch(() => searchParams.search?.toString() ?? '');
   }, [searchParams]);
 
   return {

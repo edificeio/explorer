@@ -1,6 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense } from 'react';
 
-import { Plus } from "@edifice-ui/icons";
+import { Plus } from '@edifice-ui/icons';
 import {
   Button,
   findNodeById,
@@ -9,22 +9,22 @@ import {
   useOdeClient,
   useScrollToTop,
   useToggle,
-} from "@edifice-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { FOLDER, type ID } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+} from '@edifice-ui/react';
+import { useQueryClient } from '@tanstack/react-query';
+import { FOLDER, type ID } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
-import TrashButton from "~/features/SideBar/TrashButton";
+import TrashButton from '~/features/SideBar/TrashButton';
 import {
   useElementDragOver,
   useIsTrash,
   useSelectedNodeId,
   useStoreActions,
   useTreeData,
-} from "~/store";
+} from '~/store';
 
 const CreateFolderModal = lazy(
-  async () => await import("../ActionBar/Folder/FolderModal"),
+  async () => await import('../ActionBar/Folder/FolderModal'),
 );
 
 export const TreeViewContainer = () => {
@@ -41,11 +41,11 @@ export const TreeViewContainer = () => {
   const currentSelectedNodeId = !isTrashFolder ? selectedNodeId : FOLDER.BIN;
 
   const { appCode } = useOdeClient();
-  const { t } = useTranslation(["common", appCode]);
+  const { t } = useTranslation(['common', appCode]);
 
   const data = {
     ...treeData,
-    name: t("explorer.filters.mine", { ns: appCode }),
+    name: t('explorer.filters.mine', { ns: appCode }),
   };
 
   const {
@@ -102,7 +102,7 @@ export const TreeViewContainer = () => {
           leftIcon={<Plus />}
           onClick={handleOnFolderCreate}
         >
-          {t("explorer.folder.new")}
+          {t('explorer.folder.new')}
         </Button>
       </div>
       <Suspense fallback={<LoadingScreen />}>

@@ -1,1 +1,1 @@
-export * from "./dist/ode-explorer";
+export * from './dist/ode-explorer';

@@ -1,35 +1,35 @@
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 const now = new Date();
 
-const BRANCH = executeGitCommand("git rev-parse --abbrev-ref HEAD");
+const BRANCH = executeGitCommand('git rev-parse --abbrev-ref HEAD');
 
 function getCorrectVersion(lib) {
   let branch;
   switch (BRANCH) {
-    case "main": {
+    case 'main': {
       branch = executeGitCommand(`npm view ${lib} version`);
       break;
     }
 
-    case "develop": {
-      branch = "develop";
+    case 'develop': {
+      branch = 'develop';
       break;
     }
 
-    case "develop-pedago": {
-      branch = "develop-pedago";
+    case 'develop-pedago': {
+      branch = 'develop-pedago';
       break;
     }
 
-    case "develop-b2school": {
-      branch = "develop-b2school";
+    case 'develop-b2school': {
+      branch = 'develop-b2school';
       break;
     }
 
     default: {
-      branch = "develop";
+      branch = 'develop';
       break;
     }
   }
@@ -39,8 +39,8 @@ function getCorrectVersion(lib) {
 
 function executeGitCommand(command) {
   return execSync(command)
-    .toString("utf8")
-    .replace(/[\n\r\s]+$/, "");
+    .toString('utf8')
+    .replace(/[\n\r\s]+$/, '');
 }
 
 function generateVersion() {
@@ -49,7 +49,7 @@ function generateVersion() {
   let days = now.getDate();
   let hours = now.getHours();
   let minutes = now.getMinutes();
-  let format = "";
+  let format = '';
 
   month = month + 1;
   if (month < 10) month = `0${month}`;
@@ -66,7 +66,7 @@ function findPackageLatest(lib) {
 
 function generatePackage(content) {
   fs.writeFile(
-    path.resolve(__dirname, "../package.json"),
+    path.resolve(__dirname, '../package.json'),
     JSON.stringify(content, null, 2),
     (err) => {
       if (err) {
@@ -80,22 +80,22 @@ function generatePackage(content) {
 function generateDeps(content) {
   return {
     ...content.dependencies,
-    "@edifice-ui/icons": getCorrectVersion("@edifice-ui/icons"),
-    "@edifice-ui/react": getCorrectVersion("@edifice-ui/react"),
+    '@edifice-ui/icons': getCorrectVersion('@edifice-ui/icons'),
+    '@edifice-ui/react': getCorrectVersion('@edifice-ui/react'),
   };
 }
 
 function generateDevDeps(content) {
   return {
     ...content.devDependencies,
-    "edifice-bootstrap": getCorrectVersion("edifice-bootstrap"),
-    "edifice-ts-client": getCorrectVersion("edifice-ts-client"),
+    'edifice-bootstrap': getCorrectVersion('edifice-bootstrap'),
+    'edifice-ts-client': getCorrectVersion('edifice-ts-client'),
   };
 }
 
 function createPackage() {
   fs.readFile(
-    path.resolve(__dirname, "../package.json.template"),
+    path.resolve(__dirname, '../package.json.template'),
     (err, data) => {
       if (err) {
         console.error(err);
@@ -105,8 +105,8 @@ function createPackage() {
       let content = JSON.parse(data);
       let version = content.version;
 
-      version = version.replace("%branch%", BRANCH);
-      version = version.replace("%generateVersion%", generateVersion());
+      version = version.replace('%branch%', BRANCH);
+      version = version.replace('%generateVersion%', generateVersion());
 
       content.version = version;
       content.dependencies = generateDeps(content);

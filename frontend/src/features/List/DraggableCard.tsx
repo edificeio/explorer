@@ -1,15 +1,15 @@
-import { Files } from "@edifice-ui/icons";
-import { AppIcon } from "@edifice-ui/react";
-import { IWebApp } from "edifice-ts-client";
+import { Files } from '@edifice-ui/icons';
+import { AppIcon } from '@edifice-ui/react';
+import { IWebApp } from 'edifice-ts-client';
 
 function CardIcon({
   app,
   type,
 }: {
   app?: IWebApp;
-  type: "folder" | "resource";
+  type: 'folder' | 'resource';
 }) {
-  if (type === "folder") {
+  if (type === 'folder') {
     return (
       <Files
         width="24"
@@ -19,7 +19,7 @@ function CardIcon({
     );
   }
 
-  if (type === "resource") {
+  if (type === 'resource') {
     return <AppIcon app={app} iconFit="ratio" size="24" variant="rounded" />;
   }
 
@@ -32,14 +32,14 @@ export const DraggableCard = ({
   name,
 }: {
   app?: IWebApp;
-  type: "folder" | "resource";
+  type: 'folder' | 'resource';
   name?: string;
 }) => {
   const draggableCardStyles = {
-    flexDirection: "row",
-    width: "252px",
-    height: "32px",
-    boxShadow: "0 0.2rem 0.6em rgba(0, 0, 0, 0.15)",
+    flexDirection: 'row',
+    width: '252px',
+    height: '32px',
+    boxShadow: '0 0.2rem 0.6em rgba(0, 0, 0, 0.15)',
   } as React.CSSProperties;
 
   return (

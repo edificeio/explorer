@@ -1,14 +1,14 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from 'react';
 
-import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { Files } from "@edifice-ui/icons";
-import { Card, CardProps } from "@edifice-ui/react";
-import { ID, IWebApp } from "edifice-ts-client";
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { Files } from '@edifice-ui/icons';
+import { Card, CardProps } from '@edifice-ui/react';
+import { ID, IWebApp } from 'edifice-ts-client';
 
-import { useElementDragOver, useResourceOrFolderIsDraggable } from "~/store";
-import { DraggableCard } from "./DraggableCard";
+import { useElementDragOver, useResourceOrFolderIsDraggable } from '~/store';
+import { DraggableCard } from './DraggableCard';
 
-export interface FolderCardProps extends Omit<CardProps, "children"> {
+export interface FolderCardProps extends Omit<CardProps, 'children'> {
   /**
    * IWeb App
    */
@@ -41,7 +41,7 @@ const FolderCard = ({
       id: idFolder,
       name: name,
       isTreeview: false,
-      accepts: ["folder", "resource"],
+      accepts: ['folder', 'resource'],
     },
   });
 
@@ -54,7 +54,7 @@ const FolderCard = ({
     id: newId,
     data: {
       id: idFolder,
-      type: "folder",
+      type: 'folder',
     },
   });
 
@@ -70,10 +70,10 @@ const FolderCard = ({
 
   const cursor =
     !elementDragOver.canMove && elementDragOver.isTreeview
-      ? "no-drop"
+      ? 'no-drop'
       : folderIsDrag
-        ? "grabbing"
-        : "default";
+        ? 'grabbing'
+        : 'default';
 
   const styles = {
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
@@ -119,6 +119,6 @@ const FolderCard = ({
   );
 };
 
-FolderCard.displayName = "FolderCard";
+FolderCard.displayName = 'FolderCard';
 
 export default FolderCard;

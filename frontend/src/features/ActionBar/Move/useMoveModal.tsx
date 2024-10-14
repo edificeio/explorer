@@ -1,15 +1,15 @@
-import { findNodeById, getAncestors } from "@edifice-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { IFolder } from "edifice-ts-client";
-import { useState } from "react";
+import { findNodeById, getAncestors } from '@edifice-ui/react';
+import { useQueryClient } from '@tanstack/react-query';
+import { IFolder } from 'edifice-ts-client';
+import { useState } from 'react';
 
-import { useMoveItem } from "~/services/queries";
+import { useMoveItem } from '~/services/queries';
 import {
   useSelectedFolders,
   useSelectedResources,
   useStoreActions,
   useTreeData,
-} from "~/store";
+} from '~/store';
 
 interface ModalProps {
   onSuccess?: () => void;
@@ -35,7 +35,7 @@ export function useMoveModal({ onSuccess }: ModalProps) {
 
   async function onMove() {
     try {
-      if (!selectedFolder) throw new Error("explorer.move.selection.empty");
+      if (!selectedFolder) throw new Error('explorer.move.selection.empty');
 
       await moveItem.mutate(selectedFolder);
       await onSuccess?.();
@@ -63,7 +63,7 @@ export function useMoveModal({ onSuccess }: ModalProps) {
       if (
         destination ===
           (selectedResource?.folderIds && selectedResource.folderIds[0]) ||
-        (selectedResource?.folderIds?.length === 0 && destination === "default")
+        (selectedResource?.folderIds?.length === 0 && destination === 'default')
       ) {
         return false;
       }

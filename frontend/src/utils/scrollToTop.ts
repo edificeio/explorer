@@ -1,8 +1,10 @@
 export const refScrollTo = () => {
-  const refToTop = document.querySelector("html");
+  const refToTop = document.querySelector('html');
 
   const scrollToTop = () => {
-    refToTop && refToTop.scrollIntoView();
+    if (refToTop) {
+      refToTop.scrollIntoView();
+    }
   };
   return scrollToTop;
 };

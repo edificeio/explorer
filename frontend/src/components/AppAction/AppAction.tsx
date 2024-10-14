@@ -1,6 +1,6 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy } from 'react';
 
-import { Plus } from "@edifice-ui/icons";
+import { Plus } from '@edifice-ui/icons';
 import {
   BlogPublic,
   Button,
@@ -8,21 +8,21 @@ import {
   isActionAvailable,
   useOdeClient,
   useToggle,
-} from "@edifice-ui/react";
-import { IAction } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
+} from '@edifice-ui/react';
+import { IAction } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
 
-import { goToCreate } from "~/services/api";
-import { useActions, useCreateResource } from "~/services/queries";
+import { goToCreate } from '~/services/api';
+import { useActions, useCreateResource } from '~/services/queries';
 import {
   useCurrentFolder,
   useSearchParams,
   useStoreActions,
   useStoreContext,
-} from "~/store";
+} from '~/store';
 
 const CreateModal = lazy(
-  async () => await import("~/features/ActionBar/Resource/ResourceModal"),
+  async () => await import('~/features/ActionBar/Resource/ResourceModal'),
 );
 
 export default function AppAction() {
@@ -36,14 +36,14 @@ export default function AppAction() {
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
   const { data: actions } = useActions(config?.actions as IAction[]);
 
-  const canCreate = actions?.find((action: IAction) => action.id === "create");
+  const canCreate = actions?.find((action: IAction) => action.id === 'create');
 
   const currentFolder = useCurrentFolder();
   const createResource = useCreateResource();
   const searchParams = useSearchParams();
 
   const handleOnResourceCreate = () => {
-    if (appCode == "scrapbook") {
+    if (appCode == 'scrapbook') {
       goToCreate({ searchParams, folderId: currentFolder.id });
       return;
     }
@@ -62,7 +62,7 @@ export default function AppAction() {
         className="ms-auto"
         onClick={handleOnResourceCreate}
       >
-        {t("explorer.create.title")}
+        {t('explorer.create.title')}
       </Button>
 
       <Suspense fallback={<LoadingScreen />}>
@@ -76,8 +76,8 @@ export default function AppAction() {
             onCancel={toggle}
           >
             {(resource, isUpdating, watch, setValue, register) =>
-              appCode === "blog" &&
-              isActionAvailable("createPublic", actions) && (
+              appCode === 'blog' &&
+              isActionAvailable('createPublic', actions) && (
                 <BlogPublic
                   appCode={appCode}
                   isUpdating={isUpdating}
