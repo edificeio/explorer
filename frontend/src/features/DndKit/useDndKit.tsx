@@ -4,7 +4,7 @@ import {
   DragOverEvent,
   DragStartEvent,
   KeyboardSensor,
-  MouseSensor,
+  PointerSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -44,7 +44,7 @@ export default function useDndKit() {
     tolerance: TOLERANCE,
   };
 
-  const mouseSensor = useSensor(MouseSensor, {
+  const mouseSensor = useSensor(PointerSensor, {
     activationConstraint,
   });
   const touchSensor = useSensor(TouchSensor, {

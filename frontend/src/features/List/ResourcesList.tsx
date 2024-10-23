@@ -112,7 +112,10 @@ const ResourcesList = ({
                     time={time}
                     isSelectable={true}
                     isSelected={resourceIds.includes(resource.id)}
-                    onClick={() => handleOnResourceClick(resource)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleOnResourceClick(resource);
+                    }}
                     onSelect={() => handleOnSelectToggle(resource)}
                   />
                 </animated.li>
