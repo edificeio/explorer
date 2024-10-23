@@ -74,7 +74,10 @@ const FoldersList = ({
               idFolder={id}
               app={currentApp}
               isSelected={folderIds.includes(folder.id)}
-              onClick={() => handleOnFolderClick(folder)}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleOnFolderClick(folder);
+              }}
               onSelect={() => handleOnSelectToggle(folder)}
             />
           </animated.li>
