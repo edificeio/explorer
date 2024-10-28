@@ -82,11 +82,6 @@
     "@vitejs/plugin-react": "^4.3.2",
     "@vitest/coverage-v8": "^2.1.2",
     "@vitest/ui": "^2.1.2",
-<<<<<<< HEAD
-=======
-    "edifice-bootstrap": "develop-b2school",
-    "edifice-ts-client": "develop-b2school",
->>>>>>> df1d31fb (chore: prepare next development iteration)
     "eslint": "^9.11.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.12",
