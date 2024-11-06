@@ -48,7 +48,6 @@ const ResourceCard = ({
 }: ResourceCardProps) => {
   const [resourceIsDrag, setResourceIsDrag] = useState<boolean>(false);
 
-  const isTrashFolder = useIsTrash();
   const { lg } = useBreakpoint();
   const avatar = `/userbook/avatar/${resource?.creatorId}`;
 
@@ -59,6 +58,13 @@ const ResourceCard = ({
     return filteredRights.length >= 1;
   }
 
+  const isTrashFolder = useIsTrash();
+  const isShared = isResourceShared(resource as PickedResource);
+  const isPublic = resource?.public;
+  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
+
+  const { t } = useTranslation();
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: resource.id as UniqueIdentifier,
     data: {
@@ -67,12 +73,6 @@ const ResourceCard = ({
     },
     disabled: !!isTrashFolder || !lg,
   });
-
-  const isShared = isResourceShared(resource as PickedResource);
-  const isPublic = resource?.public;
-  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
-
-  const { t } = useTranslation();
 
   const styles = {
     position: resourceIsDrag ? 'absolute' : 'relative',
