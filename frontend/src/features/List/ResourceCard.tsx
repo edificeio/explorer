@@ -14,7 +14,7 @@ import {
 import { IResource, IWebApp } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
 
-import { useResourceOrFolderIsDraggable } from '~/store';
+import { useIsTrash, useResourceOrFolderIsDraggable } from '~/store';
 import { DraggableCard } from './DraggableCard';
 
 type OmitChildren = Omit<CardProps, 'children'>;
@@ -56,19 +56,21 @@ const ResourceCard = ({
     return filteredRights.length >= 1;
   }
 
+  const isTrashFolder = useIsTrash();
+  const isShared = isResourceShared(resource as PickedResource);
+  const isPublic = resource?.public;
+  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
+
+  const { t } = useTranslation();
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: resource.id as UniqueIdentifier,
     data: {
       id: resource.id,
       type: 'resource',
     },
+    disabled: !!isTrashFolder,
   });
-
-  const isShared = isResourceShared(resource as PickedResource);
-  const isPublic = resource?.public;
-  const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
-
-  const { t } = useTranslation();
 
   const styles = {
     position: resourceIsDrag ? 'absolute' : 'relative',
