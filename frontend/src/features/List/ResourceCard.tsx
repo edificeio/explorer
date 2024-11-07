@@ -10,6 +10,7 @@ import {
   CardProps,
   Image,
   Tooltip,
+  useBreakpoint,
 } from '@edifice-ui/react';
 import { IResource, IWebApp } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +49,7 @@ const ResourceCard = ({
   const [resourceIsDrag, setResourceIsDrag] = useState<boolean>(false);
 
   const isTrashFolder = useIsTrash();
+  const { lg } = useBreakpoint();
   const avatar = `/userbook/avatar/${resource?.creatorId}`;
 
   function isResourceShared(resource: PickedResource) {
@@ -63,7 +65,7 @@ const ResourceCard = ({
       id: resource.id,
       type: 'resource',
     },
-    disabled: !!isTrashFolder,
+    disabled: !!isTrashFolder || !lg,
   });
 
   const isShared = isResourceShared(resource as PickedResource);
@@ -78,6 +80,7 @@ const ResourceCard = ({
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
     }px, 0)`,
+    touchAction: 'none',
   } as React.CSSProperties;
 
   useEffect(() => {

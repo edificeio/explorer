@@ -2,7 +2,7 @@ import { useEffect, useId, useState } from 'react';
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Files } from '@edifice-ui/icons';
-import { Card, CardProps } from '@edifice-ui/react';
+import { Card, CardProps, useBreakpoint } from '@edifice-ui/react';
 import { ID, IWebApp } from 'edifice-ts-client';
 
 import { useElementDragOver, useResourceOrFolderIsDraggable } from '~/store';
@@ -35,6 +35,8 @@ const FolderCard = ({
   const [folderIsDrag, setFolderIsDrag] = useState<boolean>(false);
   const newId = useId();
 
+  const { lg } = useBreakpoint();
+
   const { setNodeRef: setDroppableRef } = useDroppable({
     id: newId,
     data: {
@@ -56,6 +58,7 @@ const FolderCard = ({
       id: idFolder,
       type: 'folder',
     },
+    disabled: !lg,
   });
 
   const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
