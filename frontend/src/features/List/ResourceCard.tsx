@@ -14,7 +14,7 @@ import {
 import { IResource, IWebApp } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
 
-import { useResourceOrFolderIsDraggable } from '~/store';
+import { useIsTrash, useResourceOrFolderIsDraggable } from '~/store';
 import { DraggableCard } from './DraggableCard';
 
 type OmitChildren = Omit<CardProps, 'children'>;
@@ -47,6 +47,7 @@ const ResourceCard = ({
 }: ResourceCardProps) => {
   const [resourceIsDrag, setResourceIsDrag] = useState<boolean>(false);
 
+  const isTrashFolder = useIsTrash();
   const avatar = `/userbook/avatar/${resource?.creatorId}`;
 
   function isResourceShared(resource: PickedResource) {
@@ -62,6 +63,7 @@ const ResourceCard = ({
       id: resource.id,
       type: 'resource',
     },
+    disabled: !!isTrashFolder,
   });
 
   const isShared = isResourceShared(resource as PickedResource);
@@ -72,7 +74,6 @@ const ResourceCard = ({
 
   const styles = {
     position: resourceIsDrag ? 'absolute' : 'relative',
-    touchAction: 'none',
     zIndex: resourceIsDrag ? 2000 : 1,
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
