@@ -404,7 +404,8 @@ public class FolderServiceElastic implements FolderService {
             final Collection<Integer> ids = id.stream().map(e -> Integer.valueOf(e)).collect(Collectors.toSet());
             final Optional<String> dest = (destOrig.isPresent() && ExplorerConfig.ROOT_FOLDER_ID.equals(destOrig.get()))? Optional.empty():destOrig;
             return this.dbHelper.move(ids, dest).compose(oldParent->{
-                final List<JsonObject> sources = new ArrayList<>();
+                final List<JsonObject> foldersToUpsert = new ArrayList<>();
+                // iterate on old parent ids and for each old parent, add the old parent and the children of the old parent into foldersToUpsert
                 for(final Integer key : oldParent.keySet()){
                     final FolderExplorerDbSql.FolderMoveResult move = oldParent.get(key);
                     final Optional<Integer> parentOpt = move.parentId;
@@ -412,28 +413,36 @@ public class FolderServiceElastic implements FolderService {
                     if(move.application.isPresent()){
                         source.put("application", move.application.get());
                     }
-                    //add
-                    sources.add(plugin.setIdForModel(source.copy(), key.toString()));
-                    //update children of oldParent
+                    // add current to foldersToUpsert
+                    foldersToUpsert.add(plugin.setIdForModel(source.copy(), key.toString()));
+                    // add parent to foldersToUpsert if it exists
                     if(parentOpt.isPresent()){
-                        sources.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
+                        foldersToUpsert.add(plugin.setIdForModel(source.copy(), parentOpt.get().toString()));
                     }
-                    //update children of newParent
+                    // add new parent to foldersToUpsert
                     if(dest.isPresent()){
-                        sources.add(plugin.setIdForModel(source.copy(), dest.get()));
+                        foldersToUpsert.add(plugin.setIdForModel(source.copy(), dest.get()));
+                    }
+                    // add old parent to foldersToUpsert
+                    if(move.oldParentId.isPresent()){
+                        foldersToUpsert.add(plugin.setIdForModel(source.copy(), move.oldParentId.get().toString()));
                     }
                 }
+                // transform id to int and get descendants
                 final Set<Integer> idAsInt = id.stream().map(e -> NumberUtils.toInt(e,-1)).filter(e -> e!= -1).collect(Collectors.toSet());
                 return this.dbHelper.getDescendants(idAsInt).compose(descendants -> {
+                    // iterate on descendants and for each descendant, add the descendant into foldersToUpsert
                     for(final FolderExplorerDbSql.FolderDescendant folderWithDescendant : descendants.values()) {
                         for(final String descendantId : folderWithDescendant.descendantIds) {
-                            sources.add(plugin.setIdForModel(new JsonObject().put("application", application), descendantId));
+                            foldersToUpsert.add(plugin.setIdForModel(new JsonObject().put("application", application), descendantId));
                         }
                     }
-                    plugin.setVersion(sources, now);
-                    return plugin.notifyUpsert(creator, sources);
+                    plugin.setVersion(foldersToUpsert, now);
+                    // notify upsert
+                    return plugin.notifyUpsert(creator, foldersToUpsert);
                 });
             }).compose(e -> {
+                // get the moved folders
                 return plugin.get(creator, id);
             });
         });

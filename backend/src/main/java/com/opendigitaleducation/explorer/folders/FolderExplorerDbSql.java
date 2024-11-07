@@ -276,6 +276,16 @@ public class FolderExplorerDbSql {
     public Future<Map<Integer, FolderMoveResult>> move(final Collection<Integer> ids, final Optional<String> newParent){
         return client.transaction().compose(transaction->{
             final List<Future> futures = new ArrayList<>();
+            // get all old parents and store in map
+            final Map<Integer, Integer> oldParentById = new HashMap<>();
+            final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+            final String queryOldParent = String.format("SELECT id, parent_id FROM explorer.folders WHERE id IN (%s) ", inPlaceholder);
+            futures.add(transaction.addPreparedQuery(queryOldParent, PostgresClient.inTuple(Tuple.tuple(), ids)).onSuccess(rows->{
+                for(final Row row : rows){
+                    oldParentById.put(row.getInteger("id"), row.getInteger("parent_id"));
+                }
+            }));
+            // iterate on each id to update parent
             for(final Integer numId: ids){
                 final StringBuilder query = new StringBuilder();
                 final Integer numParentId = newParent.map(e->{
@@ -290,6 +300,7 @@ public class FolderExplorerDbSql {
             }
             final Tuple tuple = PostgresClient.inTuple(Tuple.tuple(), ids);
             final String placeholder = PostgresClient.inPlaceholder(ids, 1);
+            // get all new parents
             final String query = String.format("SELECT id, parent_id, application FROM explorer.folders WHERE id IN (%s) ", placeholder);
             final Future<RowSet<Row>> promiseRows = transaction.addPreparedQuery(query.toString(), tuple);
             futures.add(promiseRows);
@@ -302,7 +313,8 @@ public class FolderExplorerDbSql {
                        final Integer parentId = row.getInteger("parent_id");
                        final String application = row.getString("application");
                        final Optional<Integer> parentOpt = Optional.ofNullable(parentId);
-                       mappingParentByChild.put(id, new FolderMoveResult(id, parentOpt, application));
+                       final Optional<Integer> oldParentOpt = Optional.ofNullable(oldParentById.get(id));
+                       mappingParentByChild.put(id, new FolderMoveResult(id, parentOpt, oldParentOpt, application));
                    }
                    return mappingParentByChild;
                });
@@ -546,15 +558,21 @@ public class FolderExplorerDbSql {
     public static class FolderMoveResult {
         public final Integer id;
         public final Optional<Integer> parentId;
+        public final Optional<Integer> oldParentId;
         public final Optional<String> application;
 
         public FolderMoveResult(Integer id, Optional<Integer> parentId, String application) {
-            this(id, parentId, Optional.ofNullable(application));
+            this(id, parentId, Optional.empty(), Optional.ofNullable(application));
         }
 
-        public FolderMoveResult(Integer id, Optional<Integer> parentId, Optional<String> application) {
+        public FolderMoveResult(Integer id, Optional<Integer> parentId, Optional<Integer> oldParentId, String application) {
+            this(id, parentId, oldParentId, Optional.ofNullable(application));
+        }
+
+        public FolderMoveResult(Integer id, Optional<Integer> parentId, Optional<Integer> oldParentId, Optional<String> application) {
             this.id = id;
             this.parentId = parentId;
+            this.oldParentId = oldParentId;
             this.application = application;
         }
     }
