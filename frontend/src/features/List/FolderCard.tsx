@@ -79,6 +79,7 @@ const FolderCard = ({
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
     }px, 0)`,
+    touchAction: 'none',
     cursor,
   } as React.CSSProperties;
 
