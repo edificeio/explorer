@@ -5,7 +5,6 @@ import {
   DragStartEvent,
   KeyboardSensor,
   PointerSensor,
-  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -47,11 +46,8 @@ export default function useDndKit() {
   const mouseSensor = useSensor(PointerSensor, {
     activationConstraint,
   });
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint,
-  });
   const keyboardSensor = useSensor(KeyboardSensor);
-  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
+  const sensors = useSensors(mouseSensor, keyboardSensor);
 
   const notifySuccess = (active: Active, folderName: string) => {
     if (active.data.current?.type === 'resource') {

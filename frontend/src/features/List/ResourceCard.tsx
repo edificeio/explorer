@@ -72,6 +72,7 @@ const ResourceCard = ({
 
   const styles = {
     position: resourceIsDrag ? 'absolute' : 'relative',
+    touchAction: 'none',
     zIndex: resourceIsDrag ? 2000 : 1,
     transform: `translate3d(${(transform?.x ?? 0) / 1}px, ${
       (transform?.y ?? 0) / 1
