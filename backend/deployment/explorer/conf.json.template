@@ -1,5 +1,5 @@
     {
-      "name": "com.opendigitaleducation~explorer~1.5-SNAPSHOT",
+      "name": "com.opendigitaleducation~explorer~1.5.1",
       "config": {
         "main" : "com.opendigitaleducation.explorer.Explorer",
         "port" : 8068,
