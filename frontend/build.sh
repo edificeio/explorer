@@ -25,10 +25,6 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
-MVN_MOD_GROUPID=`grep 'modowner=' gradle.properties | sed 's/modowner=//'`
-MVN_MOD_NAME=`grep 'modname=' gradle.properties | sed 's/modname=//'`
-MVN_MOD_VERSION=`grep 'version=' gradle.properties | sed 's/version=//'`
-
 if [ ! -e node_modules ]
 then
   mkdir node_modules
@@ -38,14 +34,6 @@ if [ -z ${USER_UID:+x} ]
 then
   export USER_UID=1000
   export GROUP_GID=1000
-fi
-
-if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
-then
-  echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
-  echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
-  echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
-  echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
 fi
 
 # options
@@ -74,12 +62,6 @@ doInit () {
     echo "[init] Get branch name from git..."
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
-
-  # echo "[init] Generate deployment file from conf.deployment..."
-  # mkdir -p deployment/$MVN_MOD_NAME
-  # cp conf.deployment deployment/$MVN_MOD_NAME/conf.json.template
-  # sed -i "s/%MODNAME%/${MVN_MOD_NAME}/" deployment/$MVN_MOD_NAME/conf.json.template
-  # sed -i "s/%VERSION%/${MVN_MOD_VERSION}/" deployment/$MVN_MOD_NAME/conf.json.template
 
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
@@ -132,9 +114,46 @@ build () {
   then
     exit $status
   fi
+}
 
-  VERSION=`grep "version="  gradle.properties| sed 's/version=//g'`
-  echo "ode-explorer=$VERSION `date +'%d/%m/%Y %H:%M:%S'`" >> dist/version.txt
+linkDependencies () {
+  # Check if the edifice-frontend-framework directory exists
+  if [ ! -d "$PWD/../../edifice-frontend-framework/packages" ]; then
+    echo "Directory edifice-frontend-framework/packages does not exist."
+    exit 1
+  else
+    echo "Directory edifice-frontend-framework/packages exists."
+  fi
+
+
+  # # Extract dependencies from package.json using sed
+  DEPENDENCIES=$(sed -n '/"dependencies": {/,/}/p' package.json | sed -n 's/ *"@edifice\.io\/\([^"]*\)":.*/\1/p')
+
+  # # Link each dependency if it exists in the edifice-frontend-framework
+  for dep in $DEPENDENCIES; do
+    # Handle special case for ts-client
+    package_path="$PWD/../../edifice-frontend-framework/packages/$dep"
+
+    if [ -d "$package_path" ]; then
+      echo "Linking package: $dep"
+      (cd "$package_path" && pnpm link --global)
+    else
+      echo "Package $dep not found in edifice-frontend-framework."
+    fi
+  done
+
+  # # Link the packages in the current application
+  echo "Linking packages in the current application..."
+  Link each dependency from package.json
+  for dep in $DEPENDENCIES; do
+    pnpm link --global "@edifice.io/$dep"
+  done
+
+  echo "All specified packages have been linked successfully."
+}
+
+cleanDependencies() {
+  rm -rf node_modules && rm -f pnpm-lock.yaml && pnpm install
 }
 
 publishNPM () {
@@ -176,6 +195,12 @@ do
       ;;
     install)
       build && archive && publishMavenLocal && rm -rf build
+      ;;
+    linkDependencies)
+      linkDependencies
+      ;;
+    cleanDependencies)
+      cleanDependencies
       ;;
     watch)
       watch

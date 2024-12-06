@@ -1,4 +1,4 @@
-import { useToast } from '@edifice-ui/react';
+import { useToast } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 
 import { goToExport } from '~/services/api';

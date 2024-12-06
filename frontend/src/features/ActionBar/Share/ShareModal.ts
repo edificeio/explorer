@@ -1,3 +1,3 @@
-import { ShareModal } from '@edifice-ui/react';
+import { ShareModal } from '@edifice.io/react';
 
 export default ShareModal;

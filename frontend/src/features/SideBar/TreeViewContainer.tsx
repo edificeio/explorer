@@ -1,17 +1,17 @@
 import { lazy, Suspense } from 'react';
 
-import { Plus } from '@edifice-ui/icons';
+import { FOLDER, type ID } from '@edifice.io/client';
 import {
   Button,
   findNodeById,
   LoadingScreen,
   TreeView,
-  useOdeClient,
+  useEdificeClient,
   useScrollToTop,
   useToggle,
-} from '@edifice-ui/react';
+} from '@edifice.io/react';
+import { IconPlus } from '@edifice.io/react/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { FOLDER, type ID } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
 
 import TrashButton from '~/features/SideBar/TrashButton';
@@ -40,7 +40,7 @@ export const TreeViewContainer = () => {
   const scrollToTop = useScrollToTop();
   const currentSelectedNodeId = !isTrashFolder ? selectedNodeId : FOLDER.BIN;
 
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation(['common', appCode]);
 
   const data = {
@@ -99,7 +99,7 @@ export const TreeViewContainer = () => {
           type="button"
           color="primary"
           variant="outline"
-          leftIcon={<Plus />}
+          leftIcon={<IconPlus />}
           onClick={handleOnFolderCreate}
         >
           {t('explorer.folder.new')}

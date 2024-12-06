@@ -1,9 +1,9 @@
 import { useEffect, useId, useState } from 'react';
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { Files } from '@edifice-ui/icons';
-import { Card, CardProps, useBreakpoint } from '@edifice-ui/react';
-import { ID, IWebApp } from 'edifice-ts-client';
+import { ID, IWebApp } from '@edifice.io/client';
+import { Card, CardProps, useBreakpoint } from '@edifice.io/react';
+import { IconFiles } from '@edifice.io/react/icons';
 
 import { useElementDragOver, useResourceOrFolderIsDraggable } from '~/store';
 import { DraggableCard } from './DraggableCard';
@@ -106,7 +106,7 @@ const FolderCard = ({
         >
           {(appCode) => (
             <Card.Body>
-              <Files
+              <IconFiles
                 width="48"
                 height="48"
                 className={`color-app-${appCode}`}

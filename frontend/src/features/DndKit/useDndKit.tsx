@@ -8,7 +8,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { getAncestors, useOdeClient, useToast } from '@edifice-ui/react';
+import { getAncestors, useEdificeClient, useToast } from '@edifice.io/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { DELAY, TOLERANCE } from '~/config';
@@ -22,7 +22,7 @@ export default function useDndKit() {
   const moveItem = useMoveItem();
   const toast = useToast();
 
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation(['common', appCode]);
   const rootName: string = t('explorer.filters.mine', {
     ns: appCode,

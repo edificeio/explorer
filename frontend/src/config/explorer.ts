@@ -5,7 +5,7 @@ import {
   type IFilter,
   type IOrder,
   type ResourceType,
-} from 'edifice-ts-client';
+} from '@edifice.io/client';
 import { BlogResourceService } from '~/services/resource/service';
 
 export interface AppParams {

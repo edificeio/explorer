@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 
-import { LoadingScreen, useOdeClient, useToast } from '@edifice-ui/react';
+import { LoadingScreen, useEdificeClient, useToast } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '@tanstack/react-query';
@@ -46,7 +46,7 @@ export const List = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation([appCode]);
   const { setSearchParams, setSearchConfig, fetchTreeData } = useStoreActions();
   const { data, isError, error, isLoading, isFetching, fetchNextPage } =

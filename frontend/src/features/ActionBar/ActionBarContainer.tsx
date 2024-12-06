@@ -1,17 +1,16 @@
 import { lazy, Suspense } from 'react';
 
+import { type IAction, isActionAvailable } from '@edifice.io/client';
 import {
   ActionBar,
   BlogPublic,
   Button,
-  isActionAvailable,
   LoadingScreen,
   ShareBlog,
   ShareModal,
-  useOdeClient,
-} from '@edifice-ui/react';
+  useEdificeClient,
+} from '@edifice.io/react';
 import { animated, useTransition } from '@react-spring/web';
-import { type IAction } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
 
 // import ShareBlog from "~/components/ShareModal/apps/ShareBlog";
@@ -19,10 +18,6 @@ import { AccessControl } from '~/features/AccessControl/AccessControl';
 import useActionBar from '~/features/ActionBar/useActionBar';
 import { useShareResource, useUpdateResource } from '~/services/queries';
 import { useSelectedResources } from '~/store';
-
-/* const ShareModal = lazy(
-  async () => await import("~/features/ActionBar/Share/ShareModal"),
-); */
 
 const PublishModal = lazy(
   async () => await import('~/features/ActionBar/Publish/PublishModal'),
@@ -38,7 +33,7 @@ const FolderModal = lazy(async () => await import('./Folder/FolderModal'));
 const ExportModal = lazy(async () => await import('./Export/ExportModal'));
 
 export default function ActionBarContainer() {
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
 
   const { t } = useTranslation();
   const {
