@@ -1,7 +1,7 @@
 import { type ReactElement, type ReactNode } from 'react';
 
-import { Button } from '@edifice-ui/react';
-import { IAction, RightRole } from 'edifice-ts-client';
+import { Button } from '@edifice.io/react';
+import { IAction, RightRole } from '@edifice.io/ts-client';
 import { useTranslation } from 'react-i18next';
 
 import {

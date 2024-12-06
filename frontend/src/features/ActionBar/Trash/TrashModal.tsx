@@ -1,4 +1,4 @@
-import { Modal, Button } from '@edifice-ui/react';
+import { Modal, Button } from '@edifice.io/react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 

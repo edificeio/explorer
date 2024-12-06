@@ -3,20 +3,11 @@ import {
   deleteNode,
   moveNode,
   updateNode,
-  useOdeClient,
-  useShareMutation,
+  useEdificeClient,
   useToast,
-  useUpdateMutation,
   useUser,
-} from '@edifice-ui/react';
-import {
-  UseMutationOptions,
-  UseMutationResult,
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-  type InfiniteData,
-} from '@tanstack/react-query';
+} from '@edifice.io/react';
+import { useShareMutation, useUpdateMutation } from '@edifice.io/react/modals';
 import {
   App,
   CreateParameters,
@@ -29,7 +20,15 @@ import {
   type IResource,
   type ISearchResults,
   type ShareRight,
-} from 'edifice-ts-client';
+} from '@edifice.io/ts-client';
+import {
+  UseMutationOptions,
+  UseMutationResult,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import {
@@ -856,7 +855,7 @@ export const useCreateResource = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { user } = useUser();
-  const { appCode: application } = useOdeClient();
+  const { appCode: application } = useEdificeClient();
 
   const queryKey = [
     'context',

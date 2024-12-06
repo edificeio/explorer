@@ -3,8 +3,7 @@ import {
   findParentNode,
   wrapTreeNode,
   type TreeData,
-} from '@edifice-ui/react';
-import { type QueryClient } from '@tanstack/react-query';
+} from '@edifice.io/react';
 import {
   FOLDER,
   SORT_ORDER,
@@ -13,7 +12,8 @@ import {
   type IFolder,
   type IResource,
   type ISearchParameters,
-} from 'edifice-ts-client';
+} from '@edifice.io/ts-client';
+import { type QueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { createStore, useStore } from 'zustand';
 import { AppParams } from '~/config';

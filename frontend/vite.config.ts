@@ -58,15 +58,12 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const build: BuildOptions = {
-    assetsDir: 'assets/js/ode-explorer/',
+    //assetsDir: 'assets',
+    assetsDir: 'public',
     cssCodeSplit: false,
     rollupOptions: {
-      external: ['edifice-ts-client'],
       output: {
         inlineDynamicImports: true,
-        paths: {
-          'edifice-ts-client': `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
-        },
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
         assetFileNames: `[name].[ext]`,
@@ -84,13 +81,9 @@ export default ({ mode }: { mode: string }) => {
     },
     rollupOptions: {
       treeshake: true,
-      external: [
-        ...Object.keys(dependencies || {}),
-        'react/jsx-runtime',
-        'edifice-ts-client',
-        '@edifice-ui/icons/nav',
-      ],
+      external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
       output: {
+        inlineDynamicImports: true,
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
         assetFileNames: `[name].[ext]`,
@@ -130,5 +123,13 @@ export default ({ mode }: { mode: string }) => {
     build: isProduction ? build : buildLib,
     plugins,
     server,
+    resolve: {
+      alias: {
+        '@images': resolve(
+          __dirname,
+          'node_modules/@edifice.io/bootstrap/dist/images',
+        ),
+      },
+    },
   });
 };

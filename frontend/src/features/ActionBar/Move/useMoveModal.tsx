@@ -1,6 +1,6 @@
-import { findNodeById, getAncestors } from '@edifice-ui/react';
+import { findNodeById, getAncestors } from '@edifice.io/react';
+import { IFolder } from '@edifice.io/ts-client';
 import { useQueryClient } from '@tanstack/react-query';
-import { IFolder } from 'edifice-ts-client';
 import { useState } from 'react';
 
 import { useMoveItem } from '~/services/queries';

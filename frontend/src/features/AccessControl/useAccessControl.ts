@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { useUser } from '@edifice-ui/react';
-import { type RightRole, odeServices, IResource } from 'edifice-ts-client';
+import { useUser } from '@edifice.io/react';
+import { IResource, type RightRole, odeServices } from '@edifice.io/ts-client';
 
 import { useIsTrash } from '~/store';
 

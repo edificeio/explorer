@@ -7,11 +7,10 @@ import {
   Breadcrumb,
   Grid,
   LoadingScreen,
-  isActionAvailable,
-  useOdeClient,
+  useEdificeClient,
   useXitiTrackPageLoad,
-} from '@edifice-ui/react';
-import { IWebApp } from 'edifice-ts-client';
+} from '@edifice.io/react';
+import { IWebApp, isActionAvailable } from '@edifice.io/ts-client';
 
 import { AppParams } from '~/config';
 import { useDisableModal } from '~/features/ActionBar/Disable/useDisableModal';
@@ -59,7 +58,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  const { currentApp } = useOdeClient();
+  const { currentApp } = useEdificeClient();
   const { data: actions } = useActions(config.actions);
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } = useDisableModal();
