@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useOdeClient } from '@edifice-ui/react';
+import { useEdificeClient } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 
 import { useCurrentFolder, useSearchParams, useStoreActions } from '~/store';
 
 export const useSelectedFilters = () => {
-  const { appCode, currentApp } = useOdeClient();
+  const { appCode, currentApp } = useEdificeClient();
   const { t } = useTranslation();
 
   const [selectedFilters, setSelectedFilters] = useState<string>('');

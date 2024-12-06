@@ -14,7 +14,7 @@ import {
   type TrashParameters,
   type UpdateFolderParameters,
   type UpdateParameters,
-} from 'edifice-ts-client';
+} from '@edifice.io/client';
 
 /**
  * searchContext API
@@ -326,6 +326,7 @@ export const goToExport = ({
 }) => {
   const url = odeServices
     .resource(searchParams.application)
+    // @ts-ignore
     .getExportUrl(assetId);
 
   return window.open(url, '_self');

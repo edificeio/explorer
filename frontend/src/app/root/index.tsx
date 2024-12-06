@@ -1,10 +1,10 @@
-import { Layout, LoadingScreen, useOdeClient } from '@edifice-ui/react';
+import { Layout, LoadingScreen, useEdificeClient } from '@edifice.io/react';
 
 import Explorer from '~/components/Explorer';
 import { getExplorerConfig } from '~/config';
 
 function Root() {
-  const { init } = useOdeClient();
+  const { init } = useEdificeClient();
 
   const getHTMLConfig = getExplorerConfig();
 

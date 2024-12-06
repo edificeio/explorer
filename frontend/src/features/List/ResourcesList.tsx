@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 
-import { Button, useDate, useOdeClient } from '@edifice-ui/react';
+import { ISearchResults, type ID, type IResource } from '@edifice.io/client';
+import { Button, useDate, useEdificeClient } from '@edifice.io/react';
 import { animated, useSpring } from '@react-spring/web';
 import { InfiniteData } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { ISearchResults, type ID, type IResource } from 'edifice-ts-client';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -24,7 +24,7 @@ const ResourcesList = ({
   isFetching: boolean;
   fetchNextPage: () => void;
 }): JSX.Element | null => {
-  const { currentApp } = useOdeClient();
+  const { currentApp } = useEdificeClient();
   const { t } = useTranslation();
   const { fromNow } = useDate();
 

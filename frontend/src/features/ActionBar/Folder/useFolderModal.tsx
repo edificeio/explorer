@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-import { FOLDER } from 'edifice-ts-client';
+import { FOLDER } from '@edifice.io/client';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useCreateFolder, useUpdatefolder } from '~/services/queries';

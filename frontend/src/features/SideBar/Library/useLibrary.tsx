@@ -1,12 +1,23 @@
-import { useLibraryUrl, useOdeTheme, usePaths } from '@edifice-ui/react';
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
+import { useEdificeTheme, useLibraryUrl } from '@edifice.io/react';
+import { useEffect, useState } from 'react';
 
 export const useLibrary = () => {
-  const { theme } = useOdeTheme();
-  const [imagePath] = usePaths();
   const libraryUrl = useLibraryUrl();
 
-  const imageFullURL = `${imagePath}/${theme?.bootstrapVersion}/image-library.svg`;
+  const { theme } = useEdificeTheme();
+
+  const [imageFullURL, setImageFullURL] = useState('');
+
+  useEffect(() => {
+    const getImageLibrary = async () => {
+      const imageLibrary = await import(
+        `@images/${theme?.bootstrapVersion}/image-library.svg`
+      );
+      setImageFullURL(imageLibrary.default);
+    };
+    getImageLibrary();
+  }, [theme]);
 
   /**
    * Open Library in new tab and Track access (event: ACCESS_LIBRARY_FROM_EXPLORER).
