@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { Modal, Button, FormControl, Label, Input } from '@edifice-ui/react';
+import { Modal, Button, FormControl, Label, Input } from '@edifice.io/react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 

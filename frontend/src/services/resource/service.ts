@@ -6,7 +6,7 @@ import {
   ResourceService,
   ResourceType,
   UpdateResult,
-} from 'edifice-ts-client';
+} from '@edifice.io/client';
 
 const APP = 'blog';
 const RESOURCE = 'blog';

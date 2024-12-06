@@ -1,15 +1,14 @@
 import { Suspense, lazy } from 'react';
 
-import { Plus } from '@edifice-ui/icons';
+import { IAction, isActionAvailable } from '@edifice.io/client';
 import {
-  BlogPublic,
   Button,
   LoadingScreen,
-  isActionAvailable,
-  useOdeClient,
+  useEdificeClient,
   useToggle,
-} from '@edifice-ui/react';
-import { IAction } from 'edifice-ts-client';
+} from '@edifice.io/react';
+import { IconPlus } from '@edifice.io/react/icons';
+import { BlogPublic } from '@edifice.io/react/modals';
 import { useTranslation } from 'react-i18next';
 
 import { goToCreate } from '~/services/api';
@@ -30,7 +29,7 @@ export default function AppAction() {
 
   const config = useStoreContext((state) => state.config);
 
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
 
   const { clearSelectedItems, clearSelectedIds } = useStoreActions();
@@ -58,7 +57,7 @@ export default function AppAction() {
         type="button"
         color="primary"
         variant="filled"
-        leftIcon={<Plus />}
+        leftIcon={<IconPlus />}
         className="ms-auto"
         onClick={handleOnResourceCreate}
       >
