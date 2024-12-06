@@ -1,21 +1,31 @@
+import { type IAction } from '@edifice.io/client';
 import {
   EmptyScreen,
-  useOdeClient,
-  useOdeTheme,
-  usePaths,
-} from '@edifice-ui/react';
-import { type IAction } from 'edifice-ts-client';
+  useEdificeClient,
+  useEdificeTheme,
+} from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 
+import { useEffect, useState } from 'react';
 import { useActions } from '~/services/queries';
 import { useStoreContext } from '~/store';
 
 export default function EmptyScreenApp(): JSX.Element {
-  const [imagePath] = usePaths();
-
-  const { appCode } = useOdeClient();
-  const { theme } = useOdeTheme();
+  const { appCode } = useEdificeClient();
+  const { theme } = useEdificeTheme();
   const { t } = useTranslation();
+
+  const [imageFullURL, setImageFullURL] = useState('');
+
+  useEffect(() => {
+    const getImageLibrary = async () => {
+      const imageLibrary = await import(
+        `@images/emptyscreen/illu-${appCode}.svg`
+      );
+      setImageFullURL(imageLibrary.default);
+    };
+    getImageLibrary();
+  }, [appCode]);
 
   const config = useStoreContext((state) => state.config);
   const { data: actions } = useActions(config?.actions as IAction[]);
@@ -48,7 +58,7 @@ export default function EmptyScreenApp(): JSX.Element {
 
   return (
     <EmptyScreen
-      imageSrc={`${imagePath}/emptyscreen/illu-${appCode}.svg`}
+      imageSrc={imageFullURL}
       imageAlt={t('explorer.emptyScreen.app.alt', { ns: appCode })}
       title={labelEmptyScreenTitleApp()}
       text={labelEmptyScreenApp()}

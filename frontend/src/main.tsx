@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client';
 import Root from './app/root';
 import { Providers } from './providers';
 
+import '@edifice.io/bootstrap/dist/index.css';
+
 const root = document.getElementById('root');
 
 if (process.env.NODE_ENV !== 'production') {

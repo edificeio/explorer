@@ -1,7 +1,7 @@
-import { useOdeClient, useScrollToTop } from '@edifice-ui/react';
+import { ISearchResults, type ID, type IFolder } from '@edifice.io/client';
+import { useEdificeClient, useScrollToTop } from '@edifice.io/react';
 import { animated, useSpring } from '@react-spring/web';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
-import { ISearchResults, type ID, type IFolder } from 'edifice-ts-client';
 
 import {
   useFolderIds,
@@ -25,7 +25,7 @@ const FoldersList = ({
   const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
   const scrollToTop = useScrollToTop();
 
-  const { currentApp } = useOdeClient();
+  const { currentApp } = useEdificeClient();
   const { setSelectedFolders, setFolderIds, openFolder } = useStoreActions();
 
   function handleOnSelectToggle(folder: IFolder) {

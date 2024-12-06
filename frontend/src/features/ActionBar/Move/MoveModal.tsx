@@ -1,4 +1,4 @@
-import { Button, Modal, TreeView, useOdeClient } from '@edifice-ui/react';
+import { Button, Modal, TreeView, useEdificeClient } from '@edifice.io/react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +15,7 @@ export default function MoveModal({
   onSuccess,
   onCancel,
 }: MoveModalProps) {
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation();
   const {
     treeData,

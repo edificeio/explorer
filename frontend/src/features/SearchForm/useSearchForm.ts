@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   useSearchConfig,
@@ -37,6 +37,7 @@ export const useSearchForm = () => {
 
   const handleSearchSubmit = (e: React.MouseEvent): void => {
     e.preventDefault();
+
     setSearchParams({
       search: inputSearch ? inputSearch : undefined,
     });

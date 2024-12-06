@@ -2,16 +2,15 @@ import { Suspense, lazy, useEffect } from 'react';
 
 import { DndContext } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
+import { IWebApp, isActionAvailable } from '@edifice.io/client';
 import {
   AppHeader,
   Breadcrumb,
   Grid,
   LoadingScreen,
-  isActionAvailable,
-  useOdeClient,
+  useEdificeClient,
   useXitiTrackPageLoad,
-} from '@edifice-ui/react';
-import { IWebApp } from 'edifice-ts-client';
+} from '@edifice.io/react';
 
 import { AppParams } from '~/config';
 import { useDisableModal } from '~/features/ActionBar/Disable/useDisableModal';
@@ -23,6 +22,10 @@ import { TreeViewContainer } from '~/features/SideBar/TreeViewContainer';
 import { useActions } from '~/services/queries';
 import { useSearchParams, useStoreActions } from '~/store';
 import { ExplorerBreadcrumb } from './ExplorerBreadcrumb';
+
+import illuTrashDelete from '@images/onboarding/illu-trash-delete.svg';
+import illuTrashMenu from '@images/onboarding/illu-trash-menu.svg';
+import illuTrashNotif from '@images/onboarding/illu-trash-notif.svg';
 
 const AppAction = lazy(
   async () => await import('~/components/AppAction/AppAction'),
@@ -59,7 +62,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  const { currentApp } = useOdeClient();
+  const { currentApp } = useEdificeClient();
   const { data: actions } = useActions(config.actions);
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } = useDisableModal();
@@ -118,17 +121,17 @@ const Explorer = ({ config }: { config: AppParams }) => {
                   id="showOnboardingTrash"
                   items={[
                     {
-                      src: 'onboarding/illu-trash-menu.svg',
+                      src: illuTrashMenu,
                       alt: 'explorer.modal.onboarding.trash.screen1.alt',
                       text: 'explorer.modal.onboarding.trash.screen1.title',
                     },
                     {
-                      src: 'onboarding/illu-trash-notif.svg',
+                      src: illuTrashNotif,
                       alt: 'explorer.modal.onboarding.trash.screen2.alt',
                       text: 'explorer.modal.onboarding.trash.screen2.alt',
                     },
                     {
-                      src: 'onboarding/illu-trash-delete.svg',
+                      src: illuTrashDelete,
                       alt: 'explorer.modal.onboarding.trash.screen3.alt',
                       text: 'explorer.modal.onboarding.trash.screen3.title',
                     },
