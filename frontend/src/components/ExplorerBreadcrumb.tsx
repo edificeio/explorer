@@ -1,5 +1,5 @@
-import { ArrowLeft } from '@edifice-ui/icons';
-import { IconButton, useOdeClient } from '@edifice-ui/react';
+import { IconButton, useEdificeClient } from '@edifice.io/react';
+import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 
 import { useSearchForm } from '~/features/SearchForm/useSearchForm';
@@ -11,7 +11,7 @@ import {
 } from '~/store';
 
 export function ExplorerBreadcrumb() {
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { gotoPreviousFolder } = useStoreActions();
   const { t } = useTranslation(['common', appCode]);
   const { inputSearch } = useSearchForm();
@@ -35,7 +35,7 @@ export function ExplorerBreadcrumb() {
       !isTrashFolder ? (
         <div className="d-flex align-items-center gap-8">
           <IconButton
-            icon={<ArrowLeft />}
+            icon={<IconArrowLeft />}
             variant="ghost"
             color="tertiary"
             aria-label={t('back')}

@@ -1,5 +1,5 @@
-import { TreeData, findNodeById } from '@edifice-ui/react';
-import { FOLDER } from 'edifice-ts-client';
+import { FOLDER } from '@edifice.io/client';
+import { TreeData, findNodeById } from '@edifice.io/react';
 
 export function getChildrenIds(data: TreeData, folderId: string): string[] {
   const findItem = findNodeById(data, folderId);

@@ -58,19 +58,30 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const build: BuildOptions = {
-    assetsDir: 'assets/js/ode-explorer/',
+    emptyOutDir: true,
+    assetsDir: '', // Put assets at root of dist
     cssCodeSplit: false,
     rollupOptions: {
-      external: ['edifice-ts-client'],
-      output: {
-        inlineDynamicImports: true,
-        paths: {
-          'edifice-ts-client': `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
+      output: [
+        {
+          inlineDynamicImports: true,
+          entryFileNames: `[name].js`,
+          chunkFileNames: `[name].js`,
+          assetFileNames: `[name].[ext]`, // Assets at root
         },
-        entryFileNames: `[name].js`,
-        chunkFileNames: `[name].js`,
-        assetFileNames: `[name].[ext]`,
-      },
+        {
+          inlineDynamicImports: true,
+          entryFileNames: `[name].js`,
+          chunkFileNames: `[name].js`,
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name?.endsWith('.css')) {
+              return '[name].[ext]';
+            }
+            // Prefix asset paths with assets/js/ode-explorer/
+            return 'assets/js/ode-explorer/[name].[ext]';
+          },
+        },
+      ],
     },
   };
 
@@ -84,12 +95,7 @@ export default ({ mode }: { mode: string }) => {
     },
     rollupOptions: {
       treeshake: true,
-      external: [
-        ...Object.keys(dependencies || {}),
-        'react/jsx-runtime',
-        'edifice-ts-client',
-        '@edifice-ui/icons/nav',
-      ],
+      external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
       output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
@@ -120,6 +126,13 @@ export default ({ mode }: { mode: string }) => {
   ];
 
   const server = {
+    fs: {
+      /**
+       * Allow the server to access the node_modules folder (for the images)
+       * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
+       */
+      allow: ['../../'],
+    },
     proxy,
     host: 'localhost',
     port: 4200,
@@ -130,5 +143,13 @@ export default ({ mode }: { mode: string }) => {
     build: isProduction ? build : buildLib,
     plugins,
     server,
+    resolve: {
+      alias: {
+        '@images': resolve(
+          __dirname,
+          'node_modules/@edifice.io/bootstrap/dist/images',
+        ),
+      },
+    },
   });
 };

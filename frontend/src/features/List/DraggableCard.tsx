@@ -1,6 +1,6 @@
-import { Files } from '@edifice-ui/icons';
-import { AppIcon } from '@edifice-ui/react';
-import { IWebApp } from 'edifice-ts-client';
+import { IWebApp } from '@edifice.io/client';
+import { AppIcon } from '@edifice.io/react';
+import { IconFiles } from '@edifice.io/react/icons';
 
 function CardIcon({
   app,
@@ -11,7 +11,7 @@ function CardIcon({
 }) {
   if (type === 'folder') {
     return (
-      <Files
+      <IconFiles
         width="24"
         height="24"
         className={`color-app-${app?.displayName}`}

@@ -60,10 +60,6 @@ function generateVersion() {
   return format;
 }
 
-function findPackageLatest(lib) {
-  return executeGitCommand(`npm view ${lib} version`);
-}
-
 function generatePackage(content) {
   fs.writeFile(
     path.resolve(__dirname, '../package.json'),
@@ -78,19 +74,16 @@ function generatePackage(content) {
 }
 
 function generateDeps(content) {
-  return {
-    ...content.dependencies,
-    '@edifice-ui/icons': getCorrectVersion('@edifice-ui/icons'),
-    '@edifice-ui/react': getCorrectVersion('@edifice-ui/react'),
-  };
-}
+  const deps = { ...content.dependencies };
 
-function generateDevDeps(content) {
-  return {
-    ...content.devDependencies,
-    'edifice-bootstrap': getCorrectVersion('edifice-bootstrap'),
-    'edifice-ts-client': getCorrectVersion('edifice-ts-client'),
-  };
+  // Find all @edifice.io dependencies and update their versions
+  Object.keys(deps).forEach((dep) => {
+    if (dep.startsWith('@edifice.io/')) {
+      deps[dep] = getCorrectVersion(dep);
+    }
+  });
+
+  return deps;
 }
 
 function createPackage() {
@@ -110,7 +103,6 @@ function createPackage() {
 
       content.version = version;
       content.dependencies = generateDeps(content);
-      content.devDependencies = generateDevDeps(content);
 
       generatePackage(content);
     },

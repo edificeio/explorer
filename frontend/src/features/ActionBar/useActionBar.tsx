@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { ACTION, type IAction } from 'edifice-ts-client';
+import { ACTION, type IAction } from '@edifice.io/client';
 
 import { goToEdit } from '~/services/api';
 import { useActions, useCopyResource, useRestore } from '~/services/queries';

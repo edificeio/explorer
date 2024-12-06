@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { UniqueIdentifier, useDraggable } from '@dnd-kit/core';
-import { Globe, Users } from '@edifice-ui/icons';
-import { OneProfile } from '@edifice-ui/icons/nav';
+import { IResource, IWebApp } from '@edifice.io/client';
 import {
   AppIcon,
   Avatar,
@@ -11,8 +10,9 @@ import {
   Image,
   Tooltip,
   useBreakpoint,
-} from '@edifice-ui/react';
-import { IResource, IWebApp } from 'edifice-ts-client';
+} from '@edifice.io/react';
+import { IconGlobe, IconUsers } from '@edifice.io/react/icons';
+import { IconOneProfile } from '@edifice.io/react/icons/nav';
 import { useTranslation } from 'react-i18next';
 
 import { useIsTrash, useResourceOrFolderIsDraggable } from '~/store';
@@ -137,7 +137,7 @@ const ResourceCard = ({
                       height="24"
                     />
                   ) : (
-                    <OneProfile />
+                    <IconOneProfile />
                   )}
                   <Card.Text>{resource?.creatorName}</Card.Text>
                 </div>
@@ -147,7 +147,7 @@ const ResourceCard = ({
                       message={t('tooltip.shared', { ns: appCode })}
                       placement="top"
                     >
-                      <Users width={16} height={16} />
+                      <IconUsers width={16} height={16} />
                     </Tooltip>
                   )}
                   {isPublic && (
@@ -155,7 +155,7 @@ const ResourceCard = ({
                       message={t('tooltip.public', { ns: appCode })}
                       placement="top"
                     >
-                      <Globe width={16} height={16} />
+                      <IconGlobe width={16} height={16} />
                     </Tooltip>
                   )}
                 </div>

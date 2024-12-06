@@ -1,11 +1,11 @@
-import { OdeClientProvider, ThemeProvider } from '@edifice-ui/react';
+import { ERROR_CODE } from '@edifice.io/client';
+import { EdificeClientProvider, EdificeThemeProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ERROR_CODE } from 'edifice-ts-client';
 import { ReactNode } from 'react';
 import { getExplorerConfig } from '~/config';
 
@@ -32,13 +32,13 @@ const getHTMLConfig = getExplorerConfig();
 export const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider
+      <EdificeClientProvider
         params={{
           app: getHTMLConfig.app,
         }}
       >
-        <ThemeProvider>{children}</ThemeProvider>
-      </OdeClientProvider>
+        <EdificeThemeProvider>{children}</EdificeThemeProvider>
+      </EdificeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

@@ -1,4 +1,4 @@
-import { Delete } from '@edifice-ui/icons';
+import { IconDelete } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 
 export interface TrashButtonProps {
@@ -22,7 +22,7 @@ export const TrashButton = ({
             <div className="action-container">
               <div onClick={onSelect} role="button" tabIndex={0}>
                 <div className="d-flex align-items-center gap-8 py-8 ps-24">
-                  <Delete width="20" height="20" />
+                  <IconDelete width="20" height="20" />
                   <span>{t('explorer.tree.trash')}</span>
                 </div>
               </div>

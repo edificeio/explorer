@@ -1,11 +1,4 @@
 import {
-  findNodeById,
-  findParentNode,
-  wrapTreeNode,
-  type TreeData,
-} from '@edifice-ui/react';
-import { type QueryClient } from '@tanstack/react-query';
-import {
   FOLDER,
   SORT_ORDER,
   type IActionParameters,
@@ -13,7 +6,14 @@ import {
   type IFolder,
   type IResource,
   type ISearchParameters,
-} from 'edifice-ts-client';
+} from '@edifice.io/client';
+import {
+  findNodeById,
+  findParentNode,
+  wrapTreeNode,
+  type TreeData,
+} from '@edifice.io/react';
+import { type QueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { createStore, useStore } from 'zustand';
 import { AppParams } from '~/config';
