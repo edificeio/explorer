@@ -516,18 +516,21 @@ public class ResourceExplorerDbSql {
 
 
     public Future<Set<ResouceSql>> moveToRoot(final Set<Integer> ids, final UserInfos user){
+        // check if ids is empty
         if(ids.isEmpty()){
             return Future.succeededFuture(new HashSet<>());
         }
-        final Tuple tuple = PostgresClient.inTuple( Tuple.tuple(),ids);
-        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 1);
+        // first delete all links to resources
+        final Tuple tuple = PostgresClient.inTuple(Tuple.of(user.getUserId()), ids);
+        final String inPlaceholder = PostgresClient.inPlaceholder(ids, 2);
         final StringBuilder queryTpl = new StringBuilder();
         queryTpl.append("WITH deleted AS ( ");
-        queryTpl.append("   DELETE FROM explorer.folder_resources WHERE resource_id IN (%s) RETURNING * ");
+        queryTpl.append("   DELETE FROM explorer.folder_resources WHERE user_id = $1 AND resource_id IN (%s) RETURNING * ");
         queryTpl.append(") SELECT * FROM explorer.resources WHERE id IN (SELECT resource_id FROM deleted) ");
         final String query = String.format(queryTpl.toString(), inPlaceholder);
         return client.preparedQuery(query, tuple).map(rows ->{
             final Set<ResouceSql> resources = new HashSet<>();
+            // iterate on rows and add to resources
             for(final Row row : rows){ ;
                 final Integer id = row.getInteger("id");
                 final String entId = row.getString("ent_id");
