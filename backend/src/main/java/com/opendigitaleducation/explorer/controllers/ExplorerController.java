@@ -642,6 +642,10 @@ public class ExplorerController extends BaseController {
         op.setTrashed(queryParams.getBoolean("trashed"));
         // in case of search search everywhere
         op.setSearchEverywhere(op.getSearch().isPresent());
+        // if the folder is the bin folder, search everywhere
+        if(ExplorerConfig.BIN_FOLDER_ID.equals(queryParams.getValue("folder", ""))){
+            op.setSearchEverywhere(true);
+        }
         return op;
     }
 
