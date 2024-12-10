@@ -364,7 +364,9 @@ public class ResourceQueryElastic {
         }
         if (trashed.isPresent()) {
             if(trashed.get()){
+                // case 1: trashed for everyone
                 should.add(new JsonObject().put("term", new JsonObject().put("trashed", true)));
+                // case 2: trashed for user
                 if(this.user.isPresent()){
                     should.add(new JsonObject().put("term", new JsonObject().put("trashedBy", this.user.get().getUserId())));
                 }
