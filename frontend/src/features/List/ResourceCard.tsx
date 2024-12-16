@@ -7,11 +7,12 @@ import {
   Avatar,
   Card,
   CardProps,
+  IconButton,
   Image,
   Tooltip,
   useBreakpoint,
 } from '@edifice.io/react';
-import { IconGlobe, IconUsers } from '@edifice.io/react/icons';
+import { IconGlobe, IconMove, IconUsers } from '@edifice.io/react/icons';
 import { IconOneProfile } from '@edifice.io/react/icons/nav';
 import { useTranslation } from 'react-i18next';
 
@@ -89,7 +90,7 @@ const ResourceCard = ({
   }, [resourceOrFolderIsDraggable]);
 
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={{ ...styles }}>
+    <div ref={setNodeRef} style={{ ...styles }}>
       {!resourceIsDrag ? (
         <Card
           app={app}
@@ -100,6 +101,21 @@ const ResourceCard = ({
         >
           {(appCode) => (
             <>
+              {!resourceIsDrag && lg && (
+                <div
+                  className="card-header z-3"
+                  style={{ position: 'fixed', left: '37px' }}
+                >
+                  <IconButton
+                    {...listeners}
+                    {...attributes}
+                    className="bg-white z-3"
+                    color="secondary"
+                    icon={<IconMove />}
+                    variant="ghost"
+                  />
+                </div>
+              )}
               <Card.Body>
                 <div className="card-image medium">
                   {resource?.thumbnail ? (
