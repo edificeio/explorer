@@ -2,8 +2,8 @@ import { useEffect, useId, useState } from 'react';
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ID, IWebApp } from '@edifice.io/client';
-import { Card, CardProps, useBreakpoint } from '@edifice.io/react';
-import { IconFiles } from '@edifice.io/react/icons';
+import { Card, CardProps, IconButton, useBreakpoint } from '@edifice.io/react';
+import { IconFiles, IconMove } from '@edifice.io/react/icons';
 
 import { useElementDragOver, useResourceOrFolderIsDraggable } from '~/store';
 import { DraggableCard } from './DraggableCard';
@@ -92,7 +92,7 @@ const FolderCard = ({
   }, [resourceOrFolderIsDraggable]);
 
   return (
-    <div ref={combinedRef} {...listeners} {...attributes} style={{ ...styles }}>
+    <div ref={combinedRef} style={{ ...styles }}>
       {!folderIsDrag ? (
         <Card
           app={app}
@@ -105,14 +105,31 @@ const FolderCard = ({
           onSelect={onSelect}
         >
           {(appCode) => (
-            <Card.Body>
-              <IconFiles
-                width="48"
-                height="48"
-                className={`color-app-${appCode}`}
-              />
-              <Card.Title>{name}</Card.Title>
-            </Card.Body>
+            <>
+              {!folderIsDrag && lg && (
+                <div
+                  className="card-header z-3"
+                  style={{ position: 'fixed', left: '37px' }}
+                >
+                  <IconButton
+                    {...listeners}
+                    {...attributes}
+                    className="bg-white z-3"
+                    color="secondary"
+                    icon={<IconMove />}
+                    variant="ghost"
+                  />
+                </div>
+              )}
+              <Card.Body>
+                <IconFiles
+                  width="48"
+                  height="48"
+                  className={`color-app-${appCode}`}
+                />
+                <Card.Title>{name}</Card.Title>
+              </Card.Body>
+            </>
           )}
         </Card>
       ) : (
