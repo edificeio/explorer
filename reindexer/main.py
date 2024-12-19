@@ -54,7 +54,8 @@ def main():
         "explorer": "folder",
         "mindmap": "mindmap",
         "scrapbook": "scrapbook",
-        "collaborativewall": "collaborativewall"
+        "collaborativewall": "collaborativewall",
+        "homeworks": "homeworks"
     }
 
     apps_to_reindex = {k: v for k, v in apps_config.items() if k in arg_apps or args.apps == 'all'}
