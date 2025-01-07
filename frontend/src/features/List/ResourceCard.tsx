@@ -101,7 +101,7 @@ const ResourceCard = ({
         >
           {(appCode) => (
             <>
-              {!resourceIsDrag && lg && (
+              {!resourceIsDrag && lg && !isTrashFolder && (
                 <div
                   className="card-header z-3"
                   style={{ position: 'fixed', left: '37px' }}
