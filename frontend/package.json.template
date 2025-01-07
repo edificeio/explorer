@@ -20,7 +20,7 @@
     }
   },
   "files": [
-    "dist",
+    "dist/!(assets)"
     "lib",
     "*.d.ts"
   ],
