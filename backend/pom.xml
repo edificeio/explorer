@@ -15,7 +15,7 @@
     <version>2.0-develop-pedago-SNAPSHOT</version>
 
     <properties>
-        <entCoreVersion>6.0-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.0-develop-pedago-SNAPSHOT</entCoreVersion>
         <web-utils.version>3.0-SNAPSHOT</web-utils.version>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <scramVersion>2.1</scramVersion>
