@@ -42,7 +42,7 @@ export default function AppAction() {
   const searchParams = useSearchParams();
 
   const handleOnResourceCreate = () => {
-    if (appCode == 'scrapbook') {
+    if (appCode == 'scrapbook' || appCode == 'timelinegenerator') {
       goToCreate({ searchParams, folderId: currentFolder.id });
       return;
     }

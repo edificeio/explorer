@@ -216,7 +216,7 @@ export default function useActionBar() {
   function onEdit() {
     if (resourceIds && resourceIds.length > 0) {
       const selectedResource = selectedResources[0].assetId;
-      if (config?.app === 'scrapbook') {
+      if (config?.app === 'scrapbook' || config?.app === 'timelinegenerator') {
         goToEdit({ searchParams, assetId: selectedResource });
       } else {
         setOpenedModalName('edit_resource');
