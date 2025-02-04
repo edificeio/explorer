@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.5.3-develop-pedago.202412121357",
+  "version": "2.1.1-develop-wl.20250241728",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -51,9 +51,9 @@
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "^7.0.0",
-    "@edifice.io/react": "develop-pedago",
-    "@edifice.io/bootstrap": "develop-pedago",
-    "@edifice.io/client": "develop-pedago",
+    "@edifice.io/react": "develop",
+    "@edifice.io/bootstrap": "develop",
+    "@edifice.io/client": "develop",
     "@react-spring/web": "^9.7.3",
     "@tanstack/react-query": "5.62.7",
     "clsx": "^2.1.1",
@@ -102,9 +102,6 @@
   "packageManager": "pnpm@9.12.2",
   "engines": {
     "node": "18 || 20"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "nx": {}
 }
