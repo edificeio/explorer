@@ -12,7 +12,7 @@
 
     <groupId>com.opendigitaleducation</groupId>
     <artifactId>explorer</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.1-objectstorage-SNAPSHOT</version>
 
     <properties>
         <entCoreVersion>6.0-objectstorage-SNAPSHOT</entCoreVersion>
