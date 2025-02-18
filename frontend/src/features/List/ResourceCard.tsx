@@ -11,6 +11,7 @@ import {
   Image,
   Tooltip,
   useBreakpoint,
+  useEdificeClient,
 } from '@edifice.io/react';
 import { IconGlobe, IconMove, IconUsers } from '@edifice.io/react/icons';
 import { IconOneProfile } from '@edifice.io/react/icons/nav';
@@ -72,6 +73,7 @@ const ResourceCard = ({
   const isShared = isResourceShared(resource as PickedResource);
   const isPublic = resource?.public;
   const resourceOrFolderIsDraggable = useResourceOrFolderIsDraggable();
+  const { appCode } = useEdificeClient();
 
   const { t } = useTranslation();
 
@@ -99,7 +101,7 @@ const ResourceCard = ({
           onClick={onClick}
           onSelect={onSelect}
         >
-          {(appCode) => (
+          {() => (
             <>
               {!resourceIsDrag && lg && !isTrashFolder && (
                 <div
