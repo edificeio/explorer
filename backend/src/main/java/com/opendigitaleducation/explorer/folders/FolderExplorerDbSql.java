@@ -321,17 +321,13 @@ public class FolderExplorerDbSql {
         return resSql.getIdsByFolderIds(folderIds);
     }
 
-    public Future<FolderTrashResults> trash(final Collection<Integer> folderIds, final Collection<Integer> resourceIds, final boolean trashed){
-        if(resourceIds.isEmpty() && folderIds.isEmpty()){
+    public Future<FolderTrashResults> trash(final Collection<Integer> folderIds, final boolean trashed){
+        if(folderIds.isEmpty()){
             return Future.succeededFuture(new FolderTrashResults());
         }
         return client.transaction(sqlConnection -> {
             final List<Future<?>> futures = new ArrayList<>();
             final FolderTrashResults mapTrashed = new FolderTrashResults();
-            if(!resourceIds.isEmpty()){
-                final ResourceExplorerDbSql resSql = new ResourceExplorerDbSql(client);
-                futures.add(resSql.trashForAll(sqlConnection, resourceIds, trashed).onSuccess(mapTrashed.resources::putAll));
-            }
             if(!folderIds.isEmpty()){
                 final Tuple tuple = PostgresClient.inTuple(Tuple.of(trashed), folderIds);
                 final String inPlaceholder = PostgresClient.inPlaceholder(folderIds, 2);
@@ -569,7 +565,6 @@ public class FolderExplorerDbSql {
 
     public static class FolderTrashResults {
         public final Map<Integer, FolderTrashResult> folders = new HashMap<>();
-        public final Map<Integer, FolderTrashResult> resources = new HashMap<>();
     }
 
     public static class FolderTrashResult {

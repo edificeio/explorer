@@ -7,6 +7,7 @@ import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
 import com.opendigitaleducation.explorer.services.ResourceSearchOperation;
+import com.opendigitaleducation.explorer.services.ResourceService;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -32,11 +33,13 @@ public class FolderServiceElastic implements FolderService {
     final FolderExplorerPlugin plugin;
     final FolderExplorerDbSql dbHelper;
     final MessageConsumer messageConsumer;
+    final ResourceService resourceService;
 
-    public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin) {
+    public FolderServiceElastic(final ElasticClientManager aManager, final FolderExplorerPlugin plugin, final ResourceService resourceService) {
         this.manager = aManager;
         this.plugin = plugin;
         this.dbHelper =  plugin.getDbHelper();
+        this.resourceService = resourceService;
         this.messageConsumer = plugin.getCommunication().vertx().eventBus().consumer(ExplorerPlugin.FOLDERS_ADDRESS, message->{
             try {
                 final String actionName = message.headers().get("action");
@@ -342,41 +345,31 @@ public class FolderServiceElastic implements FolderService {
                 }
                 return this.dbHelper.getResourcesIdsForFolders(all).compose(resourcesIds ->{
                     final Set<Integer> resourceIdInt = resourcesIds.stream().map(e->e.id).collect(Collectors.toSet());
-                    return this.dbHelper.trash(all, resourceIdInt, isTrash).compose(trashed -> {
-                        final List<JsonObject> sources = new ArrayList<>();
-                        for (final Integer key : all) {
-                            final JsonObject source = new JsonObject().put("trashed", isTrash);
-                            final FolderExplorerDbSql.FolderTrashResult trash = trashed.folders.get(key);
-                            if(trash == null){
-                                //folder does not exists anymore in postgres but exists in elastic
+                    // trash resources
+                    return this.resourceService.trash(creator, application, resourceIdInt, isTrash).compose(trashedResources -> {
+                        // trash folders and subfolders
+                        return this.dbHelper.trash(all, isTrash).compose(trashed -> {
+                            final List<JsonObject> sources = new ArrayList<>();
+                            for (final Integer key : all) {
+                                final JsonObject source = new JsonObject().put("trashed", isTrash);
+                                final FolderExplorerDbSql.FolderTrashResult trash = trashed.folders.get(key);
+                                if(trash == null){
+                                    //folder does not exists anymore in postgres but exists in elastic
+                                    sources.add(plugin.setIdForModel(source.copy(), key.toString()));
+                                    continue;
+                                }
+                                final Optional<Integer> parentOpt = trash.parentId;
+                                if (trash.application.isPresent()) {
+                                    source.put("application", trash.application.get());
+                                }
+                                //add
                                 sources.add(plugin.setIdForModel(source.copy(), key.toString()));
-                                continue;
                             }
-                            final Optional<Integer> parentOpt = trash.parentId;
-                            if (trash.application.isPresent()) {
-                                source.put("application", trash.application.get());
-                            }
-                            //add
-                            sources.add(plugin.setIdForModel(source.copy(), key.toString()));
-                        }
-                        plugin.setVersion(sources, now);
-                        Future<Void> futureUpsertFolder = plugin.notifyUpsert(creator, sources);
-                        //resources
-                        final List<ExplorerMessage> messages = new ArrayList<>();
-                        for(final FolderExplorerDbSql.FolderTrashResult trash : trashed.resources.values()){
-                            //use entid to push resource message
-                            // TODO JBER check version
-                            final ExplorerMessage mess = ExplorerMessage.upsert(
-                                    new IdAndVersion(trash.entId.get(), now), creator, false,
-                                    trash.application.get(), trash.resourceType.get(), trash.resourceType.get()).withVersion(System.currentTimeMillis()).withSkipCheckVersion(true);
-                            // TODO JBER check entityType
-                            mess.withType(trash.application.get(), trash.resourceType.get(), trash.resourceType.get());
-                            mess.withTrashed(isTrash);
-                            messages.add(mess);
-                        }
-                        Future<Void> futureUpsertRes = plugin.getCommunication().pushMessage(messages);
-                        //notify folders
-                        return CompositeFuture.all(futureUpsertFolder, futureUpsertRes);
+                            plugin.setVersion(sources, now);
+                            Future<Void> futureUpsertFolder = plugin.notifyUpsert(creator, sources);
+                            //notify folders
+                            return futureUpsertFolder;
+                        });
                     });
                 });
             }).compose(e -> {

@@ -119,14 +119,14 @@ public class Explorer extends BaseServer {
 
             futures.add(createUpsertScript(config.getString("upsert-resource-script", "explorer-upsert-ressource"), elasticClientManager));
         }
-        //create folder service
-        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create();
-        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
         //create resources service
+        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create();
         final ShareTableManager shareTableManager = new DefaultShareTableManager();
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final MuteService muteService = new DefaultMuteService(vertx, new ResourceExplorerDbSql(postgresClient));
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
+        //create folder service
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
         //create controller
         final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
         addController(explorerController);

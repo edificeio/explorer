@@ -55,7 +55,7 @@ public abstract class IngestJobTest {
 
     protected FolderService getFolderService() {
         final FolderExplorerPlugin folderPlugin = new FolderExplorerPlugin(getExplorerPlugin().getCommunication(), getPostgresClient());
-        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, getResourceService());
         return folderService;
     }
 
@@ -75,8 +75,7 @@ public abstract class IngestJobTest {
         final Promise<Void> promiseScript = Promise.promise();
         createMapping(elasticClientManager, context, esIndex).onComplete(r -> promiseMapping.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
-        all(Arrays.asList(promiseMapping.future(), promiseScript.future(), promiseScript.future()))
-                .onComplete(e -> async.complete());
+        all(promiseMapping.future(), promiseScript.future(), promiseScript.future()).onComplete(e -> async.complete());
 
     }
 

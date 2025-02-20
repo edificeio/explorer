@@ -83,7 +83,7 @@ public class ExplorerTestHelper implements TestRule {
             job = IngestJob.createForTest(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
             final JsonObject config = new JsonObject().put("stream", "postgres");
             final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(testHelper.vertx(), config, postgresClient);
-            folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+            folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
         }catch(Exception e){
             throw new RuntimeException(e);
         }

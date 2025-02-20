@@ -113,7 +113,7 @@ public class FullExplorerStackTest {
         final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
         muteHelper = new MuteHelper(test.vertx());
         resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
-        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+        final FolderService folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
         plugin = FakeMongoPlugin.withRedisStream(test.vertx(), redisClient, mongoClient);
         plugin.start();
         application = plugin.getApplication();
@@ -123,7 +123,7 @@ public class FullExplorerStackTest {
         final Promise<Void> promiseMongo = Promise.promise();
         final Promise<Void> promiseRedis = Promise.promise();
         final Promise<Void> promiseScript = Promise.promise();
-        all(Arrays.asList(promiseRedis.future(), promiseRedis.future(), promiseScript.future())).onComplete(e -> async.complete());
+        all(promiseRedis.future(), promiseRedis.future(), promiseScript.future()).onComplete(e -> async.complete());
         ExplorerTestHelper.createMapping(test.vertx(), elasticClientManager, resourceIndex).onComplete(r -> promiseMongo.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         test.http().mockJsonValidator();

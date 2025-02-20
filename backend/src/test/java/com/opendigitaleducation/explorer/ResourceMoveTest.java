@@ -86,14 +86,13 @@ public class ResourceMoveTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
-        folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+        folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
         helper = folderPlugin.getDbHelper();
         final Async async = context.async();
         final Promise<Void> promiseMapping = Promise.promise();
         final Promise<Void> promiseMappingResource = Promise.promise();
         final Promise<Void> promiseScript = Promise.promise();
-        all(Arrays.asList(promiseMapping.future(), promiseScript.future(),promiseMappingResource.future()))
-                .onComplete(e -> async.complete());
+        all(promiseMapping.future(), promiseScript.future(),promiseMappingResource.future()).onComplete(e -> async.complete());
         createMapping(elasticClientManager, context, indexFolder).onComplete(r -> promiseMapping.complete());
         createMappingResource(elasticClientManager, context, indexResource).onComplete(r -> promiseMappingResource.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());

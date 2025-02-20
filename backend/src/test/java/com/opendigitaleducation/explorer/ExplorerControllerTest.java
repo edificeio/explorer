@@ -83,9 +83,9 @@ public class ExplorerControllerTest {
         esClientManager = new ElasticClientManager(test.vertx(), uris);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
-        final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin);
         final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
         final ResourceService resourceService = new ResourceServiceElastic(esClientManager, shareTableManager, communication, postgresClient, muteService);
+        final FolderService folderService = new FolderServiceElastic(esClientManager, folderPlugin, resourceService);
         controller = new ExplorerController(folderService, resourceService);
         controller.init(test.vertx(), new JsonObject(), null, null);
         fakePlugin = FakePostgresPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);

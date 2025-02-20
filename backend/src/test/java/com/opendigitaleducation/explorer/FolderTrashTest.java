@@ -2,12 +2,19 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.folders.FolderExplorerDbSql;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
+import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
 import com.opendigitaleducation.explorer.ingest.IngestJob;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.ingest.MessageReader;
 import com.opendigitaleducation.explorer.services.FolderSearchOperation;
 import com.opendigitaleducation.explorer.services.FolderService;
+import com.opendigitaleducation.explorer.services.MuteService;
+import com.opendigitaleducation.explorer.services.ResourceService;
+import com.opendigitaleducation.explorer.services.impl.DefaultMuteService;
 import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
+import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
+import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
+import com.opendigitaleducation.explorer.share.ShareTableManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -75,13 +82,15 @@ public class FolderTrashTest {
         final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
         final PostgresClient postgresClient = new PostgresClient(test.vertx(), postgresqlConfig);
         final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.withRedisStream(test.vertx(), redisClient, postgresClient);
-        folderService = new FolderServiceElastic(elasticClientManager, folderPlugin);
+        final ShareTableManager shareTableManager = new DefaultShareTableManager();
+        final MuteService muteService = new DefaultMuteService(test.vertx(), new ResourceExplorerDbSql(postgresClient));
+        final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, folderPlugin.getCommunication(), postgresClient, muteService);
+        folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
         helper = folderPlugin.getDbHelper();
         final Async async = context.async();
         final Promise<Void> promiseMapping = Promise.promise();
         final Promise<Void> promiseScript = Promise.promise();
-        all(Arrays.asList(promiseMapping.future(), promiseScript.future()))
-                .onComplete(e -> async.complete());
+        all(promiseMapping.future(), promiseScript.future()).onComplete(e -> async.complete());
         createMapping(elasticClientManager, context, index).onComplete(r -> promiseMapping.complete());
         createScript(test.vertx(), elasticClientManager).onComplete(r -> promiseScript.complete());
         final JsonObject jobConfig = new JsonObject().put("opensearch-options", new JsonObject().put("wait-for", true));
