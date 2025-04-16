@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "1.4.19-develop-b2school.202410281621",
+  "version": "2.2.1-develop-b2school.202504161057",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -102,9 +102,6 @@
   "packageManager": "pnpm@9.12.2",
   "engines": {
     "node": "18 || 20"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "nx": {}
 }
