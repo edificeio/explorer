@@ -28,6 +28,11 @@ function getCorrectVersion(lib) {
       break;
     }
 
+    case 'develop-enabling': {
+      branch = 'develop-enabling';
+      break;
+    }
+
     default: {
       branch = 'develop';
       break;
