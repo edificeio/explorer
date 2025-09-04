@@ -12,11 +12,10 @@
 
     <groupId>com.opendigitaleducation</groupId>
     <artifactId>explorer</artifactId>
-    <version>2.3-SNAPSHOT</version>
+    <version>2.3-zookeeper-SNAPSHOT</version>
 
     <properties>
-        <entCoreVersion>6.9-SNAPSHOT</entCoreVersion>
-        <web-utils.version>3.2-SNAPSHOT</web-utils.version>
+        <entCoreVersion>6.8-zookeeper-SNAPSHOT</entCoreVersion>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
