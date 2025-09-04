@@ -14,14 +14,13 @@ public class IngestJobMetricsRecorderFactory {
     private static MetricsOptions metricsOptions;
     private static IngestJobMetricsRecorder ingestJobMetricsRecorder;
     private static JsonObject config;
-    public static void init(final Vertx vertx, final JsonObject config){
+    public static void init(final String metricsConfig, final JsonObject config){
         IngestJobMetricsRecorderFactory.config = config;
         if(config.getJsonObject("metricsOptions") == null) {
-            final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
-            if(metricsOptions == null){
+            if(metricsConfig == null){
                 IngestJobMetricsRecorderFactory.metricsOptions = new MetricsOptions().setEnabled(false);
             }else{
-                IngestJobMetricsRecorderFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
+                IngestJobMetricsRecorderFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsConfig));
             }
         } else {
             metricsOptions = new MetricsOptions(config.getJsonObject("metricsOptions"));
