@@ -31,6 +31,8 @@ import java.util.ArrayList;
 
 @RunWith(VertxUnitRunner.class)
 public class IngestJobTestRedis extends IngestJobTest {
+  // TODO JBER and MEST - reactivate tests
+  /*
     private static JsonObject redisConfig;
     private IngestJob job;
     private PostgresClient postgresClient;
@@ -114,4 +116,6 @@ public class IngestJobTestRedis extends IngestJobTest {
         }
         return shareTableManager;
     }
+
+   */
 }

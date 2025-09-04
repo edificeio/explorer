@@ -1,6 +1,7 @@
 package com.opendigitaleducation.explorer.ingest;
 
 import com.opendigitaleducation.explorer.Explorer;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -20,26 +21,48 @@ public class IngestJobWorker extends AbstractVerticle {
 
     @Override
     public void start(final Promise<Void> startPromise) throws Exception {
-        IngestJobMetricsRecorderFactory.init(vertx, config());
+        final Promise<Void> promise = Promise.promise();
+        super.start(promise);
+        promise.future()
+                .compose(init -> SharedDataHelper.getInstance().getLocalMulti("server", "metricsOptions")
+                        .onSuccess(ingestJobMap -> {
+                            try {
+                                initIngestJobWorker(startPromise, ingestJobMap);
+                            } catch (Exception e) {
+                                startPromise.fail(e);
+                                log.error("Error when start IngestJobWorker", e);
+                            }
+                        }))
+                .onFailure(ex -> log.error("Error when start IngestJobWorker server super classes", ex));
+    }
+
+    public void initIngestJobWorker(final Promise<Void> startPromise, final java.util.Map<String, Object> ingestJobMap) throws Exception {
+        IngestJobMetricsRecorderFactory.init((String) ingestJobMap.get("metricsOptions"), config());
         final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config());
         final boolean runjobInWroker = config().getBoolean("worker-job", true);
         final boolean poolMode = config().getBoolean("postgres-pool-mode", true);
         final boolean enablePgBus = config().getBoolean("postgres-enable-bus", true);
-        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), runjobInWroker && enablePgBus, poolMode);
-        //create ingest job
-        final JsonObject ingestConfig = config().getJsonObject("ingest");
-        final MessageReader reader = MessageReader.create(vertx, config(), ingestConfig);
-        final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
-        final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder, config());
-        log.info("Starting ingest job worker. pgBusEnabled="+enablePgBus+ " workerJobEnabled="+runjobInWroker+ " pgPoolEnabled="+poolMode);
-        job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
-        final List<Future> futures = new ArrayList<>();
-        futures.add(job.start());
-        //call start promise
-        CompositeFuture.all(futures).onComplete(e->{
-            log.info("Ingest job started -> "+e.succeeded());
-            startPromise.handle(e.mapEmpty());
-        });
+        IPostgresClient.create(vertx, config(), runjobInWroker && enablePgBus, poolMode).onSuccess(postgresClient -> {
+          //create ingest job
+          final JsonObject ingestConfig = config().getJsonObject("ingest");
+          try {
+            MessageReader.create(vertx, config(), ingestConfig).onSuccess(reader -> {
+              final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+              final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder, config());
+              log.info("Starting ingest job worker. pgBusEnabled=" + enablePgBus + " workerJobEnabled=" + runjobInWroker + " pgPoolEnabled=" + poolMode);
+              job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
+              final List<Future> futures = new ArrayList<>();
+              futures.add(job.start());
+              //call start promise
+              CompositeFuture.all(futures).onComplete(e -> {
+                log.info("Ingest job started -> " + e.succeeded());
+                startPromise.handle(e.mapEmpty());
+              });
+            }).onFailure(startPromise::fail);
+          } catch (Exception e) {
+            startPromise.fail(e);
+          }
+        }).onFailure(startPromise::fail);
     }
 
     @Override

@@ -7,16 +7,16 @@
     <parent>
         <groupId>io.edifice</groupId>
         <artifactId>app-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.opendigitaleducation</groupId>
     <artifactId>explorer</artifactId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.4-zookeeper-SNAPSHOT</version>
 
     <properties>
-        <entCoreVersion>6.12-SNAPSHOT</entCoreVersion>
-        <web-utils.version>3.2-SNAPSHOT</web-utils.version>
+        <entCoreVersion>6.10-zookeeper-SNAPSHOT</entCoreVersion>
+        <web-utils.version>3.2-zookeeper-SNAPSHOT</web-utils.version>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
@@ -76,6 +76,13 @@
             <version>${entCoreVersion}</version>
             <classifier>fat</classifier>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-postgresql</artifactId>
+            <version>2.0-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
         </dependency>
     </dependencies>
 </project>

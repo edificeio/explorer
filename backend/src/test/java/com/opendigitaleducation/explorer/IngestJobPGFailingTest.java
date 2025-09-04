@@ -85,7 +85,7 @@ public class IngestJobPGFailingTest {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + System.currentTimeMillis();
-        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
+        IngestJobMetricsRecorderFactory.init(null, new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         System.out.println("Using index: " + resourceIndex);
         ExplorerConfig.getInstance().setEsIndex(FakeMongoPlugin.FAKE_APPLICATION, resourceIndex);
