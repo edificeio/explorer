@@ -71,7 +71,14 @@ public class Explorer extends BaseServer {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         log.info("Starting explorer...");
-        super.start(startPromise);
+        final Promise<Void> promise = Promise.promise();
+        super.start(promise);
+        promise.future()
+		        .compose(init -> initExplorer())
+		        .onComplete(startPromise);
+    }
+
+    public Future<Void> initExplorer() {
         final boolean poolMode = config.getBoolean("postgres-pool-mode", true);
         final List<Future> futures = new ArrayList<>();
         //create postgres client
@@ -79,10 +86,20 @@ public class Explorer extends BaseServer {
         if (runjobInWroker && enablePgBus) {
             IPostgresClient.initPostgresConsumer(vertx, config, poolMode);
         }*/
-        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
-        //create es client
-        final ElasticClientManager elasticClientManager = ElasticClientManager.create(vertx, config);
-        //set skip folder
+	    final IPostgresClient postgresClient;
+	    try {
+		    postgresClient = IPostgresClient.create(vertx, config, false, poolMode);
+	    } catch (Exception e) {
+		    return Future.failedFuture(e);
+	    }
+	    //create es client
+	    final ElasticClientManager elasticClientManager;
+	    try {
+		    elasticClientManager = ElasticClientManager.create(vertx, config);
+	    } catch (Exception e) {
+		    return Future.failedFuture(e);
+	    }
+	    //set skip folder
         ExplorerConfig.getInstance().setSkipIndexOfTrashedFolders(config.getBoolean(DELETE_FOLDER_CONFIG, DELETE_FOLDER_CONFIG_DEFAULT));
         //init indexes
         ExplorerConfig.getInstance().setEsPrefix(config.getString("index-prefix", ExplorerConfig.DEFAULT_RESOURCE_INDEX));
@@ -120,8 +137,13 @@ public class Explorer extends BaseServer {
             futures.add(createUpsertScript(config.getString("upsert-resource-script", "explorer-upsert-ressource"), elasticClientManager));
         }
         //create resources service
-        final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create();
-        final ShareTableManager shareTableManager = new DefaultShareTableManager();
+	    final FolderExplorerPlugin folderPlugin;
+	    try {
+		    folderPlugin = FolderExplorerPlugin.create();
+	    } catch (Exception e) {
+		    return Future.failedFuture(e);
+	    }
+	    final ShareTableManager shareTableManager = new DefaultShareTableManager();
         final IExplorerPluginCommunication communication = folderPlugin.getCommunication();
         final MuteService muteService = new DefaultMuteService(vertx, new ResourceExplorerDbSql(postgresClient));
         final ResourceService resourceService = new ResourceServiceElastic(elasticClientManager, shareTableManager, communication, postgresClient, muteService);
@@ -145,7 +167,11 @@ public class Explorer extends BaseServer {
             vertx.deployVerticle(new IngestJobWorker(), dep, onWorkerDeploy);
             futures.add(onWorkerDeploy.future());
             if (ExplorerConfig.getInstance().skipIndexOfTrashedFolders) {
-                this.taskManager = Optional.of(new ExplorerTaskManager().start(vertx, config, postgresClient));
+	            try {
+		            this.taskManager = Optional.of(new ExplorerTaskManager().start(vertx, config, postgresClient));
+	            } catch (ParseException e) {
+		            return Future.failedFuture(e);
+	            }
             }
         }
         try {
@@ -165,13 +191,14 @@ public class Explorer extends BaseServer {
             log.error("Failed to start migrate cron.");
         }
         //call start promise
+		Promise<Void> returnPromise = Promise.promise();
         CompositeFuture.all(futures).onComplete(e -> {
             log.info("Explorer application started -> " + e.succeeded());
             if (e.failed()) {
                 log.error("Explorer application failed to start", e.cause());
-                startPromise.tryFail(e.cause());
+                returnPromise.tryFail(e.cause());
             } else {
-                startPromise.tryComplete();
+                returnPromise.tryComplete();
             }
         });
         vertx.eventBus().consumer("explorer.resources.details", message -> {
@@ -188,6 +215,7 @@ public class Explorer extends BaseServer {
                 message.fail(500, e.getMessage());
             }
         });
+		return returnPromise.future();
     }
 
     private Future createUpsertScript(final String scriptId, final ElasticClientManager elasticClientManager) {
