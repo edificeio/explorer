@@ -17,6 +17,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.resources.ResourcesTrashedDTO;
+import org.entcore.broker.api.publisher.BrokerPublisherFactory;
+import org.entcore.broker.api.utils.AddressParameter;
+import org.entcore.broker.proxy.ResourceBrokerPublisher;
 import org.entcore.common.elasticsearch.ElasticClient;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.explorer.ExplorerMessage;
@@ -30,7 +34,6 @@ import org.entcore.common.explorer.to.MuteRequest;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.user.UserInfos;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -202,12 +205,29 @@ public class ResourceServiceElastic implements ResourceService {
                         .collect(Collectors.toList()));
                 return communication.pushMessage(messagesToIngest);
             }).compose(a -> {
+                // Notify broker when resources are trashed
+                notifyResourcesTrashed(application, ids);        
                 final ResourceSearchOperation search2 = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(Object::toString).collect(Collectors.toSet()));
                 return fetch(user, application, search2);
             });
         });
     }
-
+    /**
+     * Sends a broker notification for trashed resources.
+     * @param application the application name
+     * @param ids resource identifiers
+     */
+    private void notifyResourcesTrashed(String application, Set<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        final ResourceBrokerPublisher publisher = BrokerPublisherFactory.create(
+            ResourceBrokerPublisher.class,
+            communication.vertx(),
+            new AddressParameter("application", application)
+        );
+        final List<String> resourceIds = ids.stream().map(String::valueOf).collect(Collectors.toList());
+        final ResourcesTrashedDTO notification = new ResourcesTrashedDTO(resourceIds, application, application);
+        publisher.notifyResourcesTrashed(notification);
+    }
     // TODO JBER move to a more central location
     /**
      * @param resource
