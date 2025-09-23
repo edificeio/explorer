@@ -205,8 +205,16 @@ public class ResourceServiceElastic implements ResourceService {
                         .collect(Collectors.toList()));
                 return communication.pushMessage(messagesToIngest);
             }).compose(a -> {
-                // Notify broker when resources are trashed
-                notifyResourcesTrashed(application, ids);        
+                // Notify broker when resources are trashed - collect entIds from trashForAll result
+                if (isTrash) {
+                    final Set<String> trashedEntIds = trashedForAllFuture.result().values().stream()
+                            .filter(folderTrashResult -> folderTrashResult.entId.isPresent())
+                            .map(folderTrashResult -> folderTrashResult.entId.get())
+                            .collect(Collectors.toSet());
+                    
+                    notifyResourcesTrashed(application, trashedEntIds);
+                }
+                
                 final ResourceSearchOperation search2 = new ResourceSearchOperation().setWaitFor(true).setIds(ids.stream().map(Object::toString).collect(Collectors.toSet()));
                 return fetch(user, application, search2);
             });
@@ -215,16 +223,16 @@ public class ResourceServiceElastic implements ResourceService {
     /**
      * Sends a broker notification for trashed resources.
      * @param application the application name
-     * @param ids resource identifiers
+     * @param entIds resource entity identifiers
      */
-    private void notifyResourcesTrashed(String application, Set<Integer> ids) {
-        if (ids == null || ids.isEmpty()) return;
+    private void notifyResourcesTrashed(String application, Set<String> entIds) {
+        if (entIds == null || entIds.isEmpty()) return;
         final ResourceBrokerPublisher publisher = BrokerPublisherFactory.create(
             ResourceBrokerPublisher.class,
             communication.vertx(),
             new AddressParameter("application", application)
         );
-        final List<String> resourceIds = ids.stream().map(String::valueOf).collect(Collectors.toList());
+        final List<String> resourceIds = new ArrayList<>(entIds);
         final ResourcesTrashedDTO notification = new ResourcesTrashedDTO(resourceIds, application, application);
         publisher.notifyResourcesTrashed(notification);
     }
