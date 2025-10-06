@@ -33,9 +33,9 @@ public class FakePostgresPlugin extends ExplorerPluginResourceSql {
 
     protected FakePostgresPlugin(final IExplorerPluginCommunication communication, final IPostgresClient pgClient) {
         super(communication, pgClient);
-        securedActions.put(ShareRoles.Read.key, new SecuredAction(ShareRoles.Read.key,ShareRoles.Read.key,"resource"));
-        securedActions.put(ShareRoles.Manager.key, new SecuredAction(ShareRoles.Manager.key,ShareRoles.Manager.key,"resource"));
-        securedActions.put(ShareRoles.Contrib.key, new SecuredAction(ShareRoles.Contrib.key,ShareRoles.Contrib.key,"resource"));
+        securedActions.put(ShareRoles.Read.key, new SecuredAction(ShareRoles.Read.key,ShareRoles.Read.key,"resource", "test.read"));
+        securedActions.put(ShareRoles.Manager.key, new SecuredAction(ShareRoles.Manager.key,ShareRoles.Manager.key,"resource", "test.manage"));
+        securedActions.put(ShareRoles.Contrib.key, new SecuredAction(ShareRoles.Contrib.key,ShareRoles.Contrib.key,"resource", "test.contribute"));
     }
 
     @Override
