@@ -17,6 +17,7 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 
+import static io.vertx.core.Future.succeededFuture;
 import static java.util.Collections.emptyList;
 
 import static org.entcore.common.explorer.ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder;
@@ -51,19 +52,17 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
     }
 
 
-    public static FolderExplorerPlugin create() throws Exception {
-        final IExplorerPlugin plugin =  ExplorerPluginFactory.createPostgresPlugin((params)->{
+    public static Future<FolderExplorerPlugin> create()  {
+        return ExplorerPluginFactory.createPostgresPlugin((params)->{
             return new FolderExplorerPlugin(params.getCommunication(), params.getDb());
-        });
-        return (FolderExplorerPlugin) plugin;
+        }).map(plugin -> (FolderExplorerPlugin) plugin);
     }
 
-    public static FolderExplorerPlugin create(final Vertx vertx, final JsonObject config, final IPostgresClient postgres) throws Exception {
+    public static Future<FolderExplorerPlugin> create(final Vertx vertx, final JsonObject config, final IPostgresClient postgres) {
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
-            final RedisClient redis = RedisClient.create(vertx, config);
-            return withRedisStream(vertx, redis, postgres);
+            return RedisClient.create(vertx, config).map(redis -> withRedisStream(vertx, redis, postgres));
         }else{
-            return withPgStream(vertx, postgres);
+            return succeededFuture(withPgStream(vertx, postgres));
         }
     }
 
@@ -126,7 +125,7 @@ public class FolderExplorerPlugin extends ExplorerPluginResourceSql {
 
     @Override
     protected Future<ExplorerMessage> doToMessage(final ExplorerMessage message, final JsonObject source) {
-        return Future.succeededFuture(transform(message, source));
+        return succeededFuture(transform(message, source));
     }
 
     @Override

@@ -67,7 +67,7 @@ public abstract class IngestJobTest {
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final Async async = context.async();
         esIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + currentTimeMillis();
-        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
+        IngestJobMetricsRecorderFactory.init(null, new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         ExplorerConfig.getInstance().setEsIndex(FakePostgresPlugin.FAKE_APPLICATION, esIndex);
         System.out.println("Using index: " + esIndex);
