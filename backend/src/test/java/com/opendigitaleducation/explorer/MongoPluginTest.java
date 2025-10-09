@@ -75,7 +75,7 @@ public class MongoPluginTest {
     public static void setUp(TestContext context) throws Exception {
         test.database().initNeo4j(context, neo4jContainer);
         test.database().initMongo(context, mongoDBContainer);
-        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
+        IngestJobMetricsRecorderFactory.init(null, new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);

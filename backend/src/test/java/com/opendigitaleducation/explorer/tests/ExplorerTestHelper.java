@@ -71,7 +71,7 @@ public class ExplorerTestHelper implements TestRule {
             resourceIndex = ExplorerConfig.DEFAULT_RESOURCE_INDEX + System.currentTimeMillis();
             logger.info("Using index: " + resourceIndex);
             ExplorerPluginMetricsFactory.init(testHelper.vertx(), new JsonObject());
-            IngestJobMetricsRecorderFactory.init(testHelper.vertx(), new JsonObject());
+            IngestJobMetricsRecorderFactory.init(null, new JsonObject());
             ExplorerConfig.getInstance().setEsIndex(application, resourceIndex);
             final JsonObject postgresqlConfig = new JsonObject().put("host", pgContainer.getHost()).put("database", pgContainer.getDatabaseName()).put("user", pgContainer.getUsername()).put("password", pgContainer.getPassword()).put("port", pgContainer.getMappedPort(5432));
             final PostgresClient postgresClient = new PostgresClient(testHelper.vertx(), postgresqlConfig);
@@ -82,8 +82,9 @@ public class ExplorerTestHelper implements TestRule {
             final MessageReader reader = MessageReader.postgres(postgresClient, new JsonObject());
             job = IngestJob.createForTest(testHelper.vertx(), elasticClientManager, postgresClient, new JsonObject(), reader);
             final JsonObject config = new JsonObject().put("stream", "postgres");
-            final FolderExplorerPlugin folderPlugin = FolderExplorerPlugin.create(testHelper.vertx(), config, postgresClient);
-            folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService);
+            FolderExplorerPlugin.create(testHelper.vertx(), config, postgresClient)
+            .onSuccess(folderPlugin -> folderService = new FolderServiceElastic(elasticClientManager, folderPlugin, resourceService))
+            .onFailure(th -> logger.warn("Error while starting EUR", th));
         }catch(Exception e){
             throw new RuntimeException(e);
         }
