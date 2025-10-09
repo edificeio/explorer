@@ -12,17 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static io.vertx.core.Future.succeededFuture;
+
 public interface MessageReader {
 
 
-    static MessageReader create(final Vertx vertx, final JsonObject config, final JsonObject ingestConfig) throws Exception {
+    static Future<MessageReader> create(final Vertx vertx, final JsonObject config, final JsonObject ingestConfig) throws Exception {
         ExplorerPluginFactory.init(vertx, config);
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
-            final RedisClient redis = RedisClient.create(vertx, ExplorerPluginFactory.getRedisConfig());
-            return redis(vertx, redis, ingestConfig);
+            return RedisClient.create(vertx, ExplorerPluginFactory.getRedisConfig()).map(redis -> redis(vertx, redis, ingestConfig));
         }else{
             final IPostgresClient postgres = IPostgresClient.create(vertx, ExplorerPluginFactory.getPostgresConfig(), true, false);
-            return postgres(postgres, ingestConfig);
+            return succeededFuture(postgres(postgres, ingestConfig));
         }
     }
 

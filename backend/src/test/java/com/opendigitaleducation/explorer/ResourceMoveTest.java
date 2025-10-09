@@ -73,7 +73,7 @@ public class ResourceMoveTest {
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         final URI[] uris = new URI[]{new URI("http://" + esContainer.getHttpHostAddress())};
-        IngestJobMetricsRecorderFactory.init(test.vertx(), new JsonObject());
+        IngestJobMetricsRecorderFactory.init(null, new JsonObject());
         ExplorerPluginMetricsFactory.init(test.vertx(), new JsonObject());
         elasticClientManager = new ElasticClientManager(test.vertx(), uris);
         final String indexFolder = ExplorerConfig.DEFAULT_FOLDER_INDEX + "_" + System.currentTimeMillis();
