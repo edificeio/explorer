@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static io.vertx.core.Future.succeededFuture;
-
 public interface MessageReader {
 
 
@@ -22,8 +20,8 @@ public interface MessageReader {
         if(config.getString("stream", "redis").equalsIgnoreCase("redis")){
             return RedisClient.create(vertx, ExplorerPluginFactory.getRedisConfig()).map(redis -> redis(vertx, redis, ingestConfig));
         }else{
-            final IPostgresClient postgres = IPostgresClient.create(vertx, ExplorerPluginFactory.getPostgresConfig(), true, false);
-            return succeededFuture(postgres(postgres, ingestConfig));
+            return IPostgresClient.create(vertx, ExplorerPluginFactory.getPostgresConfig(), true, false)
+              .map(postgres -> postgres(postgres, ingestConfig));
         }
     }
 
