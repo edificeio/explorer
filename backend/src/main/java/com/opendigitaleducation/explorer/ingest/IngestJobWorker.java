@@ -15,8 +15,6 @@ import org.entcore.common.postgres.IPostgresClient;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.vertx.core.Future.succeededFuture;
-
 public class IngestJobWorker extends AbstractVerticle {
     static Logger log = LoggerFactory.getLogger(Explorer.class);
     private IngestJob job;
@@ -44,21 +42,26 @@ public class IngestJobWorker extends AbstractVerticle {
         final boolean runjobInWroker = config().getBoolean("worker-job", true);
         final boolean poolMode = config().getBoolean("postgres-pool-mode", true);
         final boolean enablePgBus = config().getBoolean("postgres-enable-bus", true);
-        final IPostgresClient postgresClient = IPostgresClient.create(vertx, config(), runjobInWroker && enablePgBus, poolMode);
-        //create ingest job
-        final JsonObject ingestConfig = config().getJsonObject("ingest");
-        MessageReader.create(vertx, config(), ingestConfig).onSuccess(reader -> {
-          final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
-          final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder, config());
-          log.info("Starting ingest job worker. pgBusEnabled="+enablePgBus+ " workerJobEnabled="+runjobInWroker+ " pgPoolEnabled="+poolMode);
-          job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
-          final List<Future> futures = new ArrayList<>();
-          futures.add(job.start());
-          //call start promise
-          CompositeFuture.all(futures).onComplete(e->{
-            log.info("Ingest job started -> "+e.succeeded());
-            startPromise.handle(e.mapEmpty());
-          });
+        IPostgresClient.create(vertx, config(), runjobInWroker && enablePgBus, poolMode).onSuccess(postgresClient -> {
+          //create ingest job
+          final JsonObject ingestConfig = config().getJsonObject("ingest");
+          try {
+            MessageReader.create(vertx, config(), ingestConfig).onSuccess(reader -> {
+              final IngestJobMetricsRecorder metricsRecorder = IngestJobMetricsRecorderFactory.getIngestJobMetricsRecorder();
+              final MessageIngester ingester = MessageIngester.elasticWithPgBackup(elasticClientManager, postgresClient, metricsRecorder, config());
+              log.info("Starting ingest job worker. pgBusEnabled=" + enablePgBus + " workerJobEnabled=" + runjobInWroker + " pgPoolEnabled=" + poolMode);
+              job = new IngestJob(vertx, reader, ingester, metricsRecorder, ingestConfig);
+              final List<Future> futures = new ArrayList<>();
+              futures.add(job.start());
+              //call start promise
+              CompositeFuture.all(futures).onComplete(e -> {
+                log.info("Ingest job started -> " + e.succeeded());
+                startPromise.handle(e.mapEmpty());
+              });
+            }).onFailure(startPromise::fail);
+          } catch (Exception e) {
+            startPromise.fail(e);
+          }
         }).onFailure(startPromise::fail);
     }
 
