@@ -1,4 +1,5 @@
 import {
+  IResource,
   ResourceService,
   type App,
   type IAction,
@@ -29,6 +30,8 @@ export interface AppParams {
   libraryAppFilter?: string;
   /** Enable or disable Explorer Onboarding Modal */
   enableOnboarding?: boolean;
+  /** Callback function triggered when a resource is created */
+  onResourceCreated?: (resource: IResource) => void;
 }
 
 const rootElement = document.querySelector<HTMLElement>(

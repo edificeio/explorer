@@ -81,7 +81,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
           render={() =>
             canCreate ? (
               <Suspense fallback={<LoadingScreen />}>
-                <AppAction />
+                <AppAction onResourceCreated={config.onResourceCreated} />
               </Suspense>
             ) : null
           }
