@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 
-import { IAction, isActionAvailable } from '@edifice.io/client';
+import { IAction, IResource, isActionAvailable } from '@edifice.io/client';
 import {
   BlogPublic,
   Button,
@@ -24,7 +24,11 @@ const CreateModal = lazy(
   async () => await import('~/features/ActionBar/Resource/ResourceModal'),
 );
 
-export default function AppAction() {
+export default function AppAction({
+  onResourceCreated,
+}: {
+  onResourceCreated?: (resource: IResource) => void;
+}) {
   const [isCreateResourceOpen, toggle] = useToggle();
 
   const config = useStoreContext((state) => state.config);
@@ -38,10 +42,10 @@ export default function AppAction() {
   const canCreate = actions?.find((action: IAction) => action.id === 'create');
 
   const currentFolder = useCurrentFolder();
-  const createResource = useCreateResource();
+  const createResource = useCreateResource({ onResourceCreated });
   const searchParams = useSearchParams();
 
-  const handleOnResourceCreate = () => {
+  const handleOpenResourceCreation = () => {
     if (appCode == 'scrapbook') {
       goToCreate({ searchParams, folderId: currentFolder.id });
       return;
@@ -59,7 +63,7 @@ export default function AppAction() {
         variant="filled"
         leftIcon={<IconPlus />}
         className="ms-auto"
-        onClick={handleOnResourceCreate}
+        onClick={handleOpenResourceCreation}
       >
         {t('explorer.create.title')}
       </Button>
