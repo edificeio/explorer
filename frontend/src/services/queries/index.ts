@@ -851,7 +851,11 @@ export const useCustomMutation = <
   return useMutation(options);
 };
 
-export const useCreateResource = () => {
+export const useCreateResource = ({
+  onResourceCreated,
+}: {
+  onResourceCreated?: (resource: IResource) => void;
+}) => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -893,6 +897,9 @@ export const useCreateResource = () => {
         trashed: false,
         rights: [`creator:${user?.userId}`],
       };
+
+      // Call the callback function after resource creation
+      onResourceCreated?.(newResource);
 
       if (previousData) {
         return queryClient.setQueryData<
