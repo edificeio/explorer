@@ -24,7 +24,7 @@ public class IngestJobWorker extends AbstractVerticle {
         final Promise<Void> promise = Promise.promise();
         super.start(promise);
         promise.future()
-                .compose(init -> SharedDataHelper.getInstance().getMulti("server", "metricsOptions")
+                .compose(init -> SharedDataHelper.getInstance().getLocalMulti("server", "metricsOptions")
                         .onSuccess(ingestJobMap -> {
                             try {
                                 initIngestJobWorker(startPromise, ingestJobMap);
