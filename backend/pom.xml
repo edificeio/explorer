@@ -15,9 +15,9 @@
     <version>2.4-develop-b2school-SNAPSHOT</version>
 
     <properties>
-        <entCoreVersion>6.10-SNAPSHOT</entCoreVersion>
-        <web-utils.version>3.2-SNAPSHOT</web-utils.version>
-        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
+        <entCoreVersion>6.10-develop-b2school-SNAPSHOT</entCoreVersion>
+        <web-utils.version>3.2-develop-b2school-SNAPSHOT</web-utils.version>
+        <vertxCronTimerVersion>3.0-develop-b2school-SNAPSHOT</vertxCronTimerVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
         <junitVersion>4.13.2</junitVersion>
