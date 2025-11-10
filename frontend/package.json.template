@@ -1,6 +1,6 @@
 {
   "name": "ode-explorer",
-  "version": "2.3.2-%branch%.%generateVersion%",
+  "version": "2.4.0",
   "description": "Edifice Explorer",
   "homepage": "https://github.com/edificeio/explorer#readme",
   "bugs": {
@@ -51,9 +51,9 @@
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "^7.0.0",
-    "@edifice.io/react": "%packageVersion%",
-    "@edifice.io/bootstrap": "%packageVersion%",
-    "@edifice.io/client": "%packageVersion%",
+    "@edifice.io/react": "2.5.0",
+    "@edifice.io/bootstrap": "2.5.0",
+    "@edifice.io/client": "2.5.0",
     "@react-spring/web": "^9.7.3",
     "@tanstack/react-query": "5.62.7",
     "clsx": "^2.1.1",
