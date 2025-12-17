@@ -32,6 +32,7 @@ export class BlogResourceService extends ResourceService {
       'slug': parameters.public ? parameters.slug : '',
       'publish-type': parameters.publishType || 'RESTRAINT',
       'comment-type': 'IMMEDIATE',
+      'allowReplies': parameters.allowReplies,
     });
 
     this.checkHttpResponse(res);
@@ -53,6 +54,7 @@ export class BlogResourceService extends ResourceService {
       'slug': parameters.public ? parameters.slug : '',
       'publish-type': parameters['publish-type'] || 'RESTRAINT',
       'comment-type': 'IMMEDIATE',
+      'allowReplies': parameters.allowReplies,
     });
     this.checkHttpResponse(res);
     return { thumbnail, entId: parameters.entId } as UpdateResult;
