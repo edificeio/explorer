@@ -1,0 +1,55 @@
+{
+  "name": "com.opendigitaleducation~explorer",
+  "config": {
+    "main" : "com.opendigitaleducation.explorer.Explorer",
+    "sql": true,
+    "delete-folder-definitely": true,
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+        "clean-folder-cron": "0 0 5 * * ? 2099",
+    {% else %}
+        "clean-folder-cron": "0 0 5 * * ? *",
+    {% endif %}
+    "port" : 8068,
+    "auto-redeploy": false,
+    "ssl": true,
+    "app-name" : "Explorer",
+    "app-address" : "/explorer",
+    "app-type" : "END_USER",
+    "host": "https://{{ host }}",
+    "userbook-host": "https://{{ host }}",
+    "mode": "prod",
+    "max-workertime-minutes":15,
+    "stream": "redis",
+    "create-index": {{ explorerCreateIndex | default('false') }},
+    {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}
+      "enable-job": {{ explorerEnableJob | default('true') }},
+  	{% else %}
+      "enable-job": false,
+    {% endif %}
+    {% if explorerMessageTransformers is defined %}
+      "messageTransformers": {{ explorerMessageTransformers }},
+    {% endif %}
+    "metrics": {
+      "sla": [1000, 1500, 2000, 3000, 5000, 6000, 8000, 10000]
+    },
+    "elasticsearchConfig":{
+      "uris": {{ explorerEsUris }},
+      "poolSize": {{ explorerEsPoolSize | default(10) }},
+      "keepAlive": {{ explorerEsKeepAlive | default('true') }},
+      "user": "{{ explorerEsUser | default('') }}",
+      "password": "{{ credentials_elasticsearch_ent }}"
+    },
+    "indexes": {{ explorerIndexes | default({}) }},
+    "index-prefix": "{{ explorerIndexPrefix }}",
+    "worker-job": {{ explorerWorkerJob | default('true') }},
+    "postgres-enable-bus": {{ explorerPostgresEnableBus | default('true') }},
+    "ingest": {
+      "consumer-block-ms": 0,
+      "max-attempt": 10,
+      "batch-size": {{ explorerBatchSize | default(10) }},
+      "max-delay-ms": 2000,
+      "messageTransformers": [{"id": "htmlAnalyse", "minLength": 0}]
+    },
+    "applications": ["blog", "exercizer", "mindmap", "collaborativewall", "scrapbook", "timelinegenerator", "wiki", "homeworks", "collaborativeeditor"]
+  }
+}
