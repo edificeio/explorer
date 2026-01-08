@@ -1,4 +1,3 @@
-import { Image } from '@edifice.io/react';
 import { IconArrowRight } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useLibrary } from './useLibrary';
@@ -10,7 +9,7 @@ const Library = () => {
   return (
     libraryUrl && (
       <div className="p-16">
-        <Image
+        <img
           width="270"
           height="140"
           loading="lazy"
