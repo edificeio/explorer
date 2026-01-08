@@ -1,8 +1,6 @@
 import { odeServices } from '@edifice.io/client';
 import { useEdificeTheme, useLibraryUrl } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
-import imageLibraryNeo from '@images/neo/image-library.svg';
-import imageLibraryOne from '@images/one/image-library.svg';
 
 export const useLibrary = () => {
   const libraryUrl = useLibraryUrl();
@@ -13,12 +11,14 @@ export const useLibrary = () => {
 
   useEffect(() => {
     const imageMap: Record<string, string> = {
-      neo: imageLibraryNeo,
-      one: imageLibraryOne,
+      neo: '/explorer/public/img/image-library-neo.svg',
+      one: '/explorer/public/img/image-library-one.svg',
     };
     const currentTheme =
       theme?.bootstrapVersion?.toString()?.toLowerCase() || 'neo';
-    setImageFullURL(imageMap[currentTheme] || imageLibraryNeo);
+    setImageFullURL(
+      imageMap[currentTheme] || '/explorer/public/img/image-library.svg',
+    );
   }, [theme]);
 
   /**

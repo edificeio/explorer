@@ -122,7 +122,7 @@ const FolderCard = ({
                 </div>
               )}
               <Card.Body>
-              <IconFiles
+                <IconFiles
                   width="48"
                   height="48"
                   className={`color-app-${appCode}`}
