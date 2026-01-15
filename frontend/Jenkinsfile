@@ -19,11 +19,17 @@ pipeline {
         sh "cd frontend && ./build.sh build"
       }
     }
-    stage('Publish NPM') {
+    stage('Publish') {
+      when {
+        expression {
+          return env.DRY_RUN != 'true'
+        }
+      }
       steps {
-        configFileProvider([configFile(fileId: '.npmrc-infra-front', variable: 'NPMRC')]) {
-          sh "cd frontend && cp $NPMRC .npmrc"
-          sh "cd frontend && ./build.sh publishNPM"
+        withEnv(["NPM_TOKEN=${env.NPM_PUBLIC_TOKEN}"]) {
+          script {
+            sh 'cd frontend && ./build.sh publishNPM'
+          }
         }
       }
     }
