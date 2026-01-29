@@ -18,6 +18,7 @@
         <entCoreVersion>6.13.0</entCoreVersion>
         <web-utils.version>3.3.0</web-utils.version>
         <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
+        <modPostgresVersion>2.1.0</modPostgresVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
         <junitVersion>4.13.2</junitVersion>
