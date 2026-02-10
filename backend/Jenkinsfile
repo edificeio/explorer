@@ -2,6 +2,12 @@
 
 pipeline {
     agent any
+
+    environment {
+        NEXUS_SONATYPE_PASSWORD = credentials('nexus-sonatype-password')
+        NEXUS_ODE_PASSWORD = credentials('nexus-ode-password')
+    }
+
     stages {
         stage("Initialization") {
             steps {
