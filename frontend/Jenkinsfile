@@ -2,6 +2,11 @@
 
 pipeline {
   agent any
+
+  environment {
+    TIPTAP_PRO_TOKEN = credentials('tiptap-pro-token')
+  }
+
   stages {
     stage('Init') {
       steps {
