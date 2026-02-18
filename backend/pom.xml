@@ -15,10 +15,10 @@
     <version>2.5-develop-b2school-SNAPSHOT</version>
 
     <properties>
-        <entCoreVersion>6.13-SNAPSHOT</entCoreVersion>
-        <web-utils.version>3.3-SNAPSHOT</web-utils.version>
-        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
-	<modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
+        <entCoreVersion>6.14-develop-b2school-SNAPSHOT</entCoreVersion>
+        <web-utils.version>3.3-develop-b2school-SNAPSHOT</web-utils.version>
+        <vertxCronTimerVersion>3.0-develop-b2school-SNAPSHOT</vertxCronTimerVersion>
+	<modPostgresVersion>2.1-develop-b2school-SNAPSHOT</modPostgresVersion>
 	<scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
         <junitVersion>4.13.2</junitVersion>
