@@ -18,7 +18,7 @@
         <entCoreVersion>6.14-separation-SNAPSHOT</entCoreVersion>
         <entCoreLibsVersion>6.14-separation-SNAPSHOT</entCoreLibsVersion>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
-        <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
+        <modPostgresVersion>2.1-separation-SNAPSHOT</modPostgresVersion>
         <scramVersion>2.1</scramVersion>
         <jsoupVersion>1.15.4</jsoupVersion>
         <junitVersion>4.13.2</junitVersion>
