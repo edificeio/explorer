@@ -102,7 +102,7 @@ publish() {
 }
 
 image() {
-  ./edifice image --project-type=entcore $EDIFICE_CLI_DEBUG_OPTION --rebuild=false
+  ./edifice image $EDIFICE_CLI_DEBUG_OPTION --rebuild=false
 }
 
 for param in "$@"
