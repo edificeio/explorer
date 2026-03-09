@@ -33,7 +33,11 @@
       "sla": [1000, 1500, 2000, 3000, 5000, 6000, 8000, 10000]
     },
     "elasticsearchConfig":{
+      {% if explorerEsUris is defined %}
       "uris": {{ explorerEsUris }},
+      {% else %}
+      "uris": ["{{ explorerEsUrl }}"],
+      {% endif %}
       "poolSize": {{ explorerEsPoolSize | default(10) }},
       "keepAlive": {{ explorerEsKeepAlive | default('true') }},
       "user": "{{ explorerEsUser | default('') }}",
