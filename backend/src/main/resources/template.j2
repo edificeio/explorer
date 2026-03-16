@@ -4,7 +4,7 @@
     "main" : "com.opendigitaleducation.explorer.Explorer",
     "sql": true,
     "delete-folder-definitely": true,
-    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+    {% if explorerCleanFolderCron %}
         "clean-folder-cron": "0 0 5 * * ? 2099",
     {% else %}
         "clean-folder-cron": "0 0 5 * * ? *",
@@ -21,11 +21,7 @@
     "max-workertime-minutes":15,
     "stream": "redis",
     "create-index": {{ explorerCreateIndex | default('false') }},
-    {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}
-      "enable-job": {{ explorerEnableJob | default('true') }},
-  	{% else %}
-      "enable-job": false,
-    {% endif %}
+    "enable-job": {{ explorerEnableJob | default('true') }},
     {% if explorerMessageTransformers is defined %}
       "messageTransformers": {{ explorerMessageTransformers }},
     {% endif %}
