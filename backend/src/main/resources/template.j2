@@ -18,6 +18,13 @@
     "host": "https://{{ host }}",
     "userbook-host": "https://{{ host }}",
     "mode": "prod",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.PostgresProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "org.entcore.common.http.health.OpenSearchProbe"
+    ],
     "max-workertime-minutes":15,
     "stream": "redis",
     "create-index": {{ explorerCreateIndex | default('false') }},
