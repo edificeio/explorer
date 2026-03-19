@@ -166,7 +166,7 @@ publishNPM () {
   LOCAL_BRANCH=$(echo $GIT_BRANCH | sed -e "s|origin/||g")
   TAG_BRANCH=$([ "$LOCAL_BRANCH" = "main" ] && echo "latest" || echo "$LOCAL_BRANCH")
   
-  docker compose run -e NPM_TOKEN=$NPM_TOKEN -e GIT_BRANCH=$GIT_BRANCH --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm version:update"
+  #docker compose run -e NPM_TOKEN=$NPM_TOKEN -e GIT_BRANCH=$GIT_BRANCH --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm version:update"
   docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish --no-git-checks --access public --tag $TAG_BRANCH"
 }
 
