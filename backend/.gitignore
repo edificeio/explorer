@@ -38,6 +38,7 @@ src/main/resources/public/js/*.js
 rev-manifest.json
 node_modules
 bower_components
+edifice
 gradle/
 gradlew*
 package-lock.json
