@@ -105,6 +105,10 @@ image() {
   ./edifice image $EDIFICE_CLI_DEBUG_OPTION --rebuild=false
 }
 
+if [ ! -e .env ]; then
+  init
+fi
+
 for param in "$@"
 do
   case $param in
