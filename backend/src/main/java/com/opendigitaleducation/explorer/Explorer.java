@@ -25,6 +25,7 @@ package com.opendigitaleducation.explorer;
 
 import com.opendigitaleducation.explorer.controllers.ExplorerController;
 import com.opendigitaleducation.explorer.controllers.MuteController;
+import com.opendigitaleducation.explorer.controllers.TaskController;
 import com.opendigitaleducation.explorer.filters.AbstractFilter;
 import com.opendigitaleducation.explorer.folders.FolderExplorerPlugin;
 import com.opendigitaleducation.explorer.folders.ResourceExplorerDbSql;
@@ -37,6 +38,7 @@ import com.opendigitaleducation.explorer.services.impl.FolderServiceElastic;
 import com.opendigitaleducation.explorer.services.impl.ResourceServiceElastic;
 import com.opendigitaleducation.explorer.share.DefaultShareTableManager;
 import com.opendigitaleducation.explorer.share.ShareTableManager;
+import com.opendigitaleducation.explorer.tasks.CleanFolderTask;
 import com.opendigitaleducation.explorer.tasks.ExplorerTaskManager;
 import com.opendigitaleducation.explorer.tasks.MigrateCronTask;
 import fr.wseduc.cron.CronTrigger;
@@ -145,6 +147,8 @@ public class Explorer extends BaseServer {
           final ExplorerController explorerController = new ExplorerController(folderService, resourceService);
           addController(explorerController);
           addController(new MuteController(muteService));
+          // Enable cron tasks to be triggered via API
+          addController(new TaskController(new CleanFolderTask(postgresClient)));
           //configure filter
           AbstractFilter.setResourceService(resourceService);
           AbstractFilter.setFolderService(folderService);
