@@ -95,7 +95,7 @@ export default ({ mode }: { mode: string }) => {
     },
     rollupOptions: {
       treeshake: true,
-      external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
+      //external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
       output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
