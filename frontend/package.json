@@ -15,13 +15,12 @@
   "type": "module",
   "exports": {
     "./lib": {
-      "import": "./lib/index.js",
-      "types": "./lib/index.d.ts"
+      "import": "./dist/lib/index.js",
+      "types": "./dist/lib/index.d.ts"
     }
   },
   "files": [
     "dist/!(assets)",
-    "lib",
     "*.d.ts"
   ],
   "scripts": {

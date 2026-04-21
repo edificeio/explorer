@@ -86,7 +86,7 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const buildLib: BuildOptions = {
-    outDir: 'lib',
+    outDir: 'dist/lib',
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
