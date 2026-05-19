@@ -15,13 +15,12 @@
   "type": "module",
   "exports": {
     "./lib": {
-      "import": "./lib/index.js",
-      "types": "./lib/index.d.ts"
+      "import": "./dist/lib/index.js",
+      "types": "./dist/lib/index.d.ts"
     }
   },
   "files": [
     "dist/!(assets)",
-    "lib",
     "*.d.ts"
   ],
   "scripts": {
@@ -51,9 +50,9 @@
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "7.0.0",
-    "@edifice.io/react": "develop-pedago",
-    "@edifice.io/bootstrap": "develop-pedago",
-    "@edifice.io/client": "develop-pedago",
+    "@edifice.io/bootstrap": "feat-ENABLING-722",
+    "@edifice.io/client": "feat-ENABLING-722",
+    "@edifice.io/react": "feat-ENABLING-722",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "5.62.7",
     "clsx": "2.1.1",
