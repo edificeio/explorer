@@ -55,7 +55,9 @@
       "max-attempt": 10,
       "batch-size": {{ explorerBatchSize | default(10) }},
       "max-delay-ms": 2000,
-      "messageTransformers": [{"id": "htmlAnalyse", "minLength": 0}]
+      {% if explorerMessageTransformers is defined %}
+      "messageTransformers": {{ explorerMessageTransformers }}
+      {% endif %}
     },
     "applications": ["blog", "exercizer", "mindmap", "collaborativewall", "scrapbook", "timelinegenerator", "wiki", "homeworks", "collaborativeeditor"]
   }
