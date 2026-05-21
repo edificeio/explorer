@@ -54,9 +54,9 @@
       "consumer-block-ms": 0,
       "max-attempt": 10,
       "batch-size": {{ explorerBatchSize | default(10) }},
-      "max-delay-ms": 2000,
+      "max-delay-ms": 2000
       {% if explorerMessageTransformers is defined %}
-      "messageTransformers": {{ explorerMessageTransformers }}
+      ,"messageTransformers": {{ explorerMessageTransformers }}
       {% endif %}
     },
     "applications": ["blog", "exercizer", "mindmap", "collaborativewall", "scrapbook", "timelinegenerator", "wiki", "homeworks", "collaborativeeditor"]
