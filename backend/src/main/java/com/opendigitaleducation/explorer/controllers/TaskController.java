@@ -20,6 +20,6 @@ public class TaskController extends BaseController {
 	public void cleanFolder(final HttpServerRequest request) {
 		log.info("Triggered folder cleanup task");
 		cleanFolderTask.handle(0L);
-		render(null, 202);
+		render(request, 202);
 	}
 }
