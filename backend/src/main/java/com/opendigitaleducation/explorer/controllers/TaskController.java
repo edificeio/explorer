@@ -2,6 +2,8 @@ package com.opendigitaleducation.explorer.controllers;
 
 import com.opendigitaleducation.explorer.tasks.CleanFolderTask;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
@@ -17,6 +19,7 @@ public class TaskController extends BaseController {
 	}
 
 	@Post("api/internal/clean-folder")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void cleanFolder(final HttpServerRequest request) {
 		log.info("Triggered folder cleanup task");
 		cleanFolderTask.handle(0L);
