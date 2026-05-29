@@ -77,7 +77,7 @@
     <dependency>
       <groupId>org.entcore</groupId>
       <artifactId>test</artifactId>
-      <version>${entCoreVersion}</version>
+      <version>${entCoreLibsVersion}</version>
       <classifier>fat</classifier>
       <scope>test</scope>
     </dependency>
