@@ -13,8 +13,8 @@
   <artifactId>explorer</artifactId>
   <version>2.6-SNAPSHOT</version>
   <properties>
-    <entCoreVersion>6.15-SNAPSHOT</entCoreVersion>
-    <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+    <entCoreVersion>6.15-develop-integration-SNAPSHOT</entCoreVersion>
+    <entCoreLibsVersion>6.15-develop-integration-SNAPSHOT</entCoreLibsVersion>
     <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
     <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
     <scramVersion>2.1</scramVersion>
