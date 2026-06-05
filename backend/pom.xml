@@ -11,19 +11,19 @@
   </parent>
   <groupId>com.opendigitaleducation</groupId>
   <artifactId>explorer</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>2.6.1</version>
   <properties>
-    <entCoreVersion>6.15-SNAPSHOT</entCoreVersion>
-    <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
-    <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
-    <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+    <entCoreVersion>6.15.2</entCoreVersion>
+    <entCoreLibsVersion>6.15.1</entCoreLibsVersion>
+    <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
+    <modPostgresVersion>2.2.0</modPostgresVersion>
     <scramVersion>2.1</scramVersion>
     <jsoupVersion>1.15.4</jsoupVersion>
     <junitVersion>4.13.2</junitVersion>
     <sonar.organization>edificeio</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
-    <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+    <modJsonSchemaValidatorVersion>2.2.0</modJsonSchemaValidatorVersion>
+    <modMongoVersion>4.2.0</modMongoVersion>
   </properties>
   <scm>
     <connection>scm:git:https://github.com/edificeio/explorer.git</connection>
