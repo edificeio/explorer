@@ -62,6 +62,7 @@ export default ({ mode }: { mode: string }) => {
     assetsDir: '', // Put assets at root of dist
     cssCodeSplit: false,
     rollupOptions: {
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
       output: [
         {
           inlineDynamicImports: true,
@@ -86,7 +87,7 @@ export default ({ mode }: { mode: string }) => {
   };
 
   const buildLib: BuildOptions = {
-    outDir: 'lib',
+    outDir: 'dist/lib',
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
@@ -95,7 +96,7 @@ export default ({ mode }: { mode: string }) => {
     },
     rollupOptions: {
       treeshake: true,
-      external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
       output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
