@@ -63,9 +63,9 @@
     "zustand": "4.5.0"
   },
   "peerDependencies": {
-    "@edifice.io/bootstrap": "develop-enabling",
-    "@edifice.io/client": "develop-enabling",
-    "@edifice.io/react": "develop-enabling",
+    "@edifice.io/bootstrap": "*",
+    "@edifice.io/client": "*",
+    "@edifice.io/react": "*",
     "@tanstack/react-query": "5.62.7",
     "react": "18.3.1",
     "react-dom": "18.3.1"
