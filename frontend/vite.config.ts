@@ -4,7 +4,7 @@ import { BuildOptions, defineConfig, loadEnv } from 'vite';
 import dts from 'vite-plugin-dts';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-import { dependencies } from './package.json';
+import { dependencies, peerDependencies } from './package.json';
 import {
   hashEdificeBootstrap,
   queryHashVersion,
@@ -95,7 +95,11 @@ export default ({ mode }: { mode: string }) => {
     },
     rollupOptions: {
       treeshake: true,
-      external: [...Object.keys(dependencies || {}), 'react/jsx-runtime'],
+      external: [
+        ...Object.keys(dependencies || {}),
+        ...Object.keys(peerDependencies || {}),
+        'react/jsx-runtime',
+      ],
       output: {
         entryFileNames: `[name].js`,
         chunkFileNames: `[name].js`,
@@ -150,6 +154,15 @@ export default ({ mode }: { mode: string }) => {
           'node_modules/@edifice.io/bootstrap/dist/images',
         ),
       },
+      dedupe: [
+        'react',
+        'react-dom',
+        '@edifice.io/react',
+        '@edifice.io/client',
+        '@tanstack/react-query',
+        'react-hook-form',
+        'react-i18next',
+      ],
     },
   });
 };
