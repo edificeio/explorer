@@ -52,48 +52,15 @@ done
 
 clean () {
   rm -rf node_modules dist build .gradle .pnpm-store
-  rm -f package.json pnpm-lock.yaml
+  rm -f pnpm-lock.yaml
 }
 
-doInit () {
-  echo "[init] Get branch name from jenkins env..."
-  if [ ! -z "$FRONT_TAG" ]; then
-    echo "[init] Get tag name from jenkins param... $FRONT_TAG"
-    BRANCH_NAME="$FRONT_TAG"
-  else
-    BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[init] Get branch name from git..."
-      BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    fi
-  fi
-
-  echo "[init] Generate package.json from package.json.template..."
-  NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
-  cp package.json.template package.json
-  sed -i "s/%branch%/${BRANCH_NAME}/" package.json
-  sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
-
-  if [ "$1" == "Dev" ]
-  then
-    sed -i "s/%packageVersion%/link:..\/edifice-ts-client\//" package.json
-  else
-    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
-  fi
-
+init() {
   if [ "$NO_DOCKER" = "true" ] ; then
     pnpm install
   else
     docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm install"
   fi
-}
-
-init() {
-  doInit
-}
-
-initDev() {
-  doInit "Dev"
 }
 
 # Install local dependencies as tarball (installing as folder creates symlinks which won't resolve in the docker container)
@@ -133,6 +100,7 @@ linkDependencies () {
 
   # # Extract dependencies from package.json using sed
   DEPENDENCIES=$(sed -n '/"dependencies": {/,/}/p' package.json | sed -n 's/ *"@edifice\.io\/\([^"]*\)":.*/\1/p')
+  DEPENDENCIES="$DEPENDENCIES $(sed -n '/"peerDependencies": {/,/}/p' package.json | sed -n 's/ *"@edifice\.io\/\([^"]*\)":.*/\1/p')"
 
   # # Link each dependency if it exists in the edifice-frontend-framework
   for dep in $DEPENDENCIES; do
@@ -164,9 +132,20 @@ cleanDependencies() {
 publishNPM () {
   echo "[publish] Publish package..."
   LOCAL_BRANCH=$(echo $GIT_BRANCH | sed -e "s|origin/||g")
-  TAG_BRANCH=$([ "$LOCAL_BRANCH" = "main" ] && echo "latest" || echo "$LOCAL_BRANCH")
-  
-  #docker compose run -e NPM_TOKEN=$NPM_TOKEN -e GIT_BRANCH=$GIT_BRANCH --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm version:update"
+  TIMESTAMP=$(date +%Y%m%d%H%M%S)
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
+  LATEST_TAG=${LATEST_TAG#v}
+
+  if [ "$LOCAL_BRANCH" = "main" ]; then
+    TAG_BRANCH="latest"
+    NEW_VERSION="$LATEST_TAG"
+  else
+    TAG_BRANCH="$LOCAL_BRANCH"
+    NEW_VERSION="$LATEST_TAG-$LOCAL_BRANCH.$TIMESTAMP"
+    echo "[publish] Update version with the exact version"
+    docker compose run -e NPM_TOKEN=$NPM_PUBLIC_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm exec npm version $NEW_VERSION --no-git-tag-version"
+  fi
+
   docker compose run -e NPM_TOKEN=$NPM_PUBLIC_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish --no-git-checks --access public --tag $TAG_BRANCH"
 }
 
@@ -188,9 +167,6 @@ do
       ;;
     init)
       init
-      ;;
-    initDev)
-      initDev
       ;;
     localDep)
       localDep

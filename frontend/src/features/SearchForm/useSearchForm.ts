@@ -35,8 +35,8 @@ export const useSearchForm = () => {
     }
   };
 
-  const handleSearchSubmit = (e: React.MouseEvent): void => {
-    e.preventDefault();
+  const handleSearchSubmit = (e?: React.MouseEvent): void => {
+    e?.preventDefault();
 
     setSearchParams({
       search: inputSearch ? inputSearch : undefined,
