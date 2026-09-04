@@ -11,10 +11,10 @@
   </parent>
   <groupId>com.opendigitaleducation</groupId>
   <artifactId>explorer</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>2.6-broker-SNAPSHOT</version>
   <properties>
-    <entCoreVersion>6.16-SNAPSHOT</entCoreVersion>
-    <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
+    <entCoreVersion>6.16-broker-SNAPSHOT</entCoreVersion>
+    <entCoreLibsVersion>6.16-broker-SNAPSHOT</entCoreLibsVersion>
     <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
     <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
     <scramVersion>2.1</scramVersion>
