@@ -62,9 +62,9 @@
     "zustand": "4.5.0"
   },
   "peerDependencies": {
-    "@edifice.io/bootstrap": "develop-pedago",
-    "@edifice.io/client": "develop-pedago",
-    "@edifice.io/react": "develop-pedago",
+    "@edifice.io/bootstrap": "*",
+    "@edifice.io/client": "*",
+    "@edifice.io/react": "*",
     "@tanstack/react-query": "^5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
