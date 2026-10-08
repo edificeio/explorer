@@ -94,6 +94,7 @@ type Action = {
     fetchTreeData: (
       folderId: string,
       queryClient: QueryClient,
+      options?: { force?: boolean },
     ) => Promise<void>;
     gotoPreviousFolder: () => void;
     goToTrash: () => void;
@@ -295,11 +296,21 @@ const store = createStore<State & Action>()((set, get) => ({
       });
     },
     foldTreeItem: () => set((state) => ({ ...state, status: 'fold' })),
-    fetchTreeData: async (nodeId: string, queryClient: QueryClient) => {
+    fetchTreeData: async (
+      nodeId: string,
+      queryClient: QueryClient,
+      options?: { force?: boolean },
+    ) => {
       const folder = findNodeById(get().treeData, nodeId);
       const folderId = folder?.id as string;
 
-      if (Array.isArray(folder?.children) && !!folder.children.length) return;
+      // Children already loaded, unless the caller wants them reloaded.
+      if (
+        !options?.force &&
+        Array.isArray(folder?.children) &&
+        !!folder.children.length
+      )
+        return;
 
       const getQueryData = await queryClient.fetchQuery({
         queryKey: [
@@ -317,6 +328,8 @@ const store = createStore<State & Action>()((set, get) => ({
               folder: folderId,
             },
           }),
+        // A forced reload must hit the server, not the cache.
+        ...(options?.force ? { staleTime: 0 } : {}),
       });
 
       get().actions.setTreeData(
