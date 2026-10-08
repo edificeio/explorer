@@ -454,8 +454,13 @@ export const useMoveItem = () => {
   const useAssetIds = useResourceWithoutIds().length > 0;
   const resourceIds = useAssetIds ? assetIds : resourceRealIds;
 
-  const { clearSelectedIds, clearSelectedItems, setTreeData, setSearchParams } =
-    useStoreActions();
+  const {
+    clearSelectedIds,
+    clearSelectedItems,
+    fetchTreeData,
+    setTreeData,
+    setSearchParams,
+  } = useStoreActions();
 
   const { filters, trashed } = searchParams;
 
@@ -532,6 +537,14 @@ export const useMoveItem = () => {
           }
           return undefined;
         });
+      }
+
+      // Reload the destination's children from the server, so the sidebar
+      // tree matches it even if they had not been fully loaded yet.
+      if (folderIds.length > 0) {
+        fetchTreeData(variables, queryClient, { force: true }).catch(
+          console.error,
+        );
       }
 
       queryClient.invalidateQueries();
