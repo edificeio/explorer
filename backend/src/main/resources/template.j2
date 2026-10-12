@@ -4,7 +4,7 @@
     "main" : "com.opendigitaleducation.explorer.Explorer",
     "sql": true,
     "delete-folder-definitely": true,
-    "clean-folder-cron": {{ explorerCleanFolderCron | default('0 0 5 * * ? 2099') }},
+    "clean-folder-cron": "{{ explorerCleanFolderCron | default('0 0 5 * * ? 2099') }}",
     "port" : 8068,
     "auto-redeploy": false,
     "ssl": true,
