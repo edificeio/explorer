@@ -130,7 +130,7 @@ public class ExplorerController extends BaseController {
         });
     }
 
-    //resources?application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y
+    //resources?application=&resource_type=&id=&order_by=name:asc|desc&owner=true|false&public=true|false&shared=true|false&favorite=true|false&folder=id&search=FULL_TEXT_SEARCH&start_idx=X&page_size=Y&right_type=read|contrib|manager|publish|comment
     @Get("resources")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getResources(final HttpServerRequest request) {
@@ -640,6 +640,7 @@ public class ExplorerController extends BaseController {
         op.setStartIndex(queryParams.getLong("start_idx"));
         op.setSearchAfter(queryParams.getValue("search_after"));
         op.setTrashed(queryParams.getBoolean("trashed"));
+        op.setRightType(queryParams.getString("right_type"));
         // in case of search search everywhere
         op.setSearchEverywhere(op.getSearch().isPresent());
         // if the folder is the bin folder, search everywhere
