@@ -1,4 +1,7 @@
+import { ReactNode } from 'react';
+
 import {
+  IFolder,
   IResource,
   ResourceService,
   type App,
@@ -32,6 +35,12 @@ export interface AppParams {
   enableOnboarding?: boolean;
   /** Callback function triggered when a resource is created */
   onResourceCreated?: (resource: IResource) => void;
+  /**
+   * Render app specific actions in the header, before the create button.
+   * Only rendered for users having the create right.
+   * `currentFolder` is undefined while a search is active.
+   */
+  renderAppActions?: (props: { currentFolder?: Partial<IFolder> }) => ReactNode;
 }
 
 const rootElement = document.querySelector<HTMLElement>(

@@ -20,7 +20,7 @@ import { List } from '~/features/List/List';
 import { SearchForm } from '~/features/SearchForm/SearchForm';
 import { TreeViewContainer } from '~/features/SideBar/TreeViewContainer';
 import { useActions } from '~/services/queries';
-import { useSearchParams, useStoreActions } from '~/store';
+import { useCurrentFolder, useSearchParams, useStoreActions } from '~/store';
 import { ExplorerBreadcrumb } from './ExplorerBreadcrumb';
 
 import illuTrashDelete from '@images/onboarding/illu-trash-delete.svg';
@@ -63,6 +63,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
   }, [config]);
 
   const { currentApp } = useEdificeClient();
+  const currentFolder = useCurrentFolder();
   const { data: actions } = useActions(config.actions);
   const { isTrashedModalOpen, onTrashedCancel } = useTrashModal();
   const { isActionDisableModalOpen, onActionDisableCancel } = useDisableModal();
@@ -81,6 +82,7 @@ const Explorer = ({ config }: { config: AppParams }) => {
           render={() =>
             canCreate ? (
               <Suspense fallback={<LoadingScreen />}>
+                {config.renderAppActions?.({ currentFolder })}
                 <AppAction onResourceCreated={config.onResourceCreated} />
               </Suspense>
             ) : null
