@@ -13,11 +13,10 @@
         "userbook-host": "${host}",
         "mode" : "${mode}",
         "max-workertime-minutes":15,
-        "stream": "postgres",
+        "stream": "redis",
         "create-index": true,
         "elasticsearchConfig":{
             "uris": ["${explorerEsUrl}"],
-            "index": "explorer-index"
         },
         "ingest":{
             "retry-read-ms": 1000,
@@ -36,6 +35,16 @@
             "migrate-new-folder": true
         },
 	      "projects" : [],
-        "applications": ["blog", "exercizer", "mindmap", "scrapbook"]
+        "applications": [
+          "blog",
+          "exercizer",
+          "mindmap",
+          "scrapbook",
+          "homeworks",
+          "collaborativewall",
+          "collaborativeeditor",
+          "wiki",
+          "timelinegenerator"
+        ]
       }
     }
